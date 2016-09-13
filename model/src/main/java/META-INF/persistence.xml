@@ -23,6 +23,9 @@
 "javax.persistence.jdbc.user" - Standard JPA 2.0 database user for JSE deployments (was "eclipselink.jdbc.user" in EclipseLink 1.1).
 "javax.persistence.jdbc.password
     -->
+    <!--
+    CHECK: https://wiki.eclipse.org/EclipseLink/FAQ/JPA/PostgreSQL
+    -->
     <properties>
         <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
         <property name="javax.persistence.jdbc.url"    value="jdbc:postgresql://localhost:5432/mateuerp" />
