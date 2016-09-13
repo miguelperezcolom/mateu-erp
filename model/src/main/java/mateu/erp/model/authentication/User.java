@@ -15,7 +15,7 @@ import java.util.List;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MUUSER")
+@Table(name = "MA_USER")
 @Getter@Setter
 public class User {
 
@@ -23,13 +23,13 @@ public class User {
      * login must always be uppercase. It is the primary key.
      */
     @Id
-    @Column(name = "USRLOGIN")
+    @Column(name = "USRLOGIN", length = -1)
     private String login;
 
-    @Column(name = "USREMAIL")
+    @Column(name = "USREMAIL", length = -1)
     private String email;
 
-    @Column(name = "USRPASSWORD")
+    @Column(name = "USRPASSWORD", length = -1)
     private String password;
 
     @Column(name = "USRSTATUS")

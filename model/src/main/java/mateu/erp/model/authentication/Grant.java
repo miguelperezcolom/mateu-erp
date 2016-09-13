@@ -12,11 +12,13 @@ import javax.persistence.*;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MUGRANT")
+@Table(name = "MA_GRANT")
 @Getter@Setter
 public class Grant {
 
     @Id
+    @GeneratedValue(strategy=GenerationType.AUTO, generator="grant_seq_gen")
+    @SequenceGenerator(name="grant_seq_gen", sequenceName="GRAIDGRA_SEQ")
     @Column(name="GRAIDGRA")
     private long id;
 

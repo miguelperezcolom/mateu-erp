@@ -9,6 +9,8 @@ import mateu.erp.model.util.Helper;
 import java.util.Date;
 
 /**
+ * used to populate a database with initial values
+ *
  * Created by miguel on 13/9/16.
  */
 public class Populator {
@@ -17,6 +19,8 @@ public class Populator {
 
         System.out.println("Populating database...");
 
+
+        //authentication
         Helper.transact((em)->{
 
             // create super admin permission
@@ -35,6 +39,9 @@ public class Populator {
             em.persist(u);
 
         });
+
+        // multilanguage
+
 
         System.out.println("Database populated.");
 

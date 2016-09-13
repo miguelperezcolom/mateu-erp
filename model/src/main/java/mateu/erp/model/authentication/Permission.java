@@ -16,7 +16,7 @@ import javax.persistence.Table;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MUPERMISSION")
+@Table(name = "MA_PERMISSION")
 @Getter@Setter
 public class Permission {
 
@@ -24,7 +24,7 @@ public class Permission {
     @Column(name = "PERIDPER")
     private long id;
 
-    @Column(name = "PERNAME")
+    @Column(name = "PERNAME", length = -1)
     private String name;
 
 }
