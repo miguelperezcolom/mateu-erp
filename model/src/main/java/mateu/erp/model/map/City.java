@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * holder for countries
+ * holder for cities
  *
  * Created by miguel on 13/9/16.
  */
@@ -28,12 +28,20 @@ public class City {
     @Column(name = "CTYNAMEIDTRA")
     private Translation name;
 
+
     @ElementCollection
     @CollectionTable(
             name="MA_CITY_ALIAS",
             joinColumns=@JoinColumn(name="XXXIDCTY")
     )
     @Column(name="XXXALIAS")
+    /**
+     * sometimes the same city is known under different names, aka aliases (e.g. Palma de Mallorca is also known as Cuitat)
+     */
     private List<String> aliases = new ArrayList<>();
+
+    @ManyToOne
+    @Column(name = "CTYIDSTT")
+    private State state;
 
 }

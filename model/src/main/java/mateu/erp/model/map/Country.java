@@ -5,6 +5,8 @@ import lombok.Setter;
 import mateu.erp.model.multilanguage.Translation;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * holder for countries
@@ -24,4 +26,6 @@ public class Country {
     @Column(name = "COUNAMEIDTRA")
     private Translation name;
 
+    @OneToMany(mappedBy = "country")
+    private List<State> states = new ArrayList<>();
 }

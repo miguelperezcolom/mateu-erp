@@ -5,9 +5,11 @@ import lombok.Setter;
 import mateu.erp.model.multilanguage.Translation;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * holder for countries
+ * holder for states
  *
  * Created by miguel on 13/9/16.
  */
@@ -25,5 +27,12 @@ public class State {
     @ManyToOne
     @Column(name = "STTNAMEIDTRA")
     private Translation name;
+
+    @ManyToOne
+    @Column(name = "STTCOUISOCODE")
+    private Country country;
+
+    @OneToMany(mappedBy = "state")
+    private List<City> cities = new ArrayList<>();
 
 }
