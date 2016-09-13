@@ -1,0 +1,34 @@
+<persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+
+    <!-- By default your mappings can be defined in orm.xml file, -->
+    <!-- which is discovered automatically.                       -->
+    <!--
+    <mapping-file>META-INF/my-mappings.xml</mapping-file>
+    -->
+    ...
+    <jar-file>my-additional-jar.jar</jar-file>
+    ...
+    <!-- Enables auto discovery of persistent classes, -->
+    <!-- otherwise they must be listed using <class>  -->
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+
+    <!--
+"javax.persistence.transactionType" - Standard JPA PersistenceUnitTransactionType property, "JTA" or "RESOURCE_LOCAL".
+"javax.persistence.jtaDataSource" - Standard JPA JTA DataSource name.
+"javax.persistence.nonJtaDataSource" - Standard JPA non-JTA DataSource name.
+"javax.persistence.jdbc.driver" - Standard JPA 2.0 JDBC driver class name for JSE deployments (was "eclipselink.jdbc.driver" in EclipseLink 1.1).
+"javax.persistence.jdbc.url" - Standard JPA 2.0 JDBC URL for JSE deployments (was "eclipselink.jdbc.url" in EclipseLink 1.1).
+"javax.persistence.jdbc.user" - Standard JPA 2.0 database user for JSE deployments (was "eclipselink.jdbc.user" in EclipseLink 1.1).
+"javax.persistence.jdbc.password
+    -->
+    <properties>
+        <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
+        <property name="javax.persistence.jdbc.url"    value="jdbc:postgresql://localhost:5432/mateuerp" />
+        <property name="javax.persistence.jdbc.user" value="postgres" />
+        <property name="javax.persistence.jdbc.password" value="password" />
+        <property name="eclipselink.ddl-generation" value="create-tables" />
+        <property name="eclipselink.ddl-generation.output-mode" value="database" />
+    </properties>
+</persistence-unit>

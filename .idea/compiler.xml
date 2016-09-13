@@ -29,7 +29,7 @@
     <bytecodeTargetLevel>
       <module name="backoffice" target="1.5" />
       <module name="mateu-erp" target="1.5" />
-      <module name="model" target="1.5" />
+      <module name="model" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

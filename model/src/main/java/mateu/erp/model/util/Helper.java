@@ -5,12 +5,15 @@ package mateu.erp.model.util;
  */
 public class Helper {
 
-    public static void transact(Transaction t) {
+    public static void transact(Transactionable t) {
 
     }
 
-    public static void notransact(Transaction t) {
+    public static void notransact(Transactionable t) {
 
     }
 
+    public static String md5(String s) {
+        return s;
+    }
 }
