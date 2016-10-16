@@ -19,13 +19,16 @@ import javax.persistence.Table;
 public class Currency {
 
     @Id
-    @Column(name = "CURISOCODE", length = -1)
+    @Column(name = "CURISOCODE")
     private String isoCode;
 
-    @Column(name = "CURISO4217CODE", length = -1)
+    @Column(name = "CURISO4217CODE")
     private String iso4217Code;
 
-    @Column(name = "CURNAME", length = -1)
+    @Column(name = "CURNAME")
     private String name;
+
+    @Column(name = "CURDECIMALS")
+    private int decimals;
 
 }

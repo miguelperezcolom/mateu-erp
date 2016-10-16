@@ -25,7 +25,7 @@ public class City {
     private long id;
 
     @ManyToOne
-    @Column(name = "CTYNAMEIDTRA")
+    @JoinColumn(name = "CTYNAMEIDTRA")
     private Literal name;
 
 
@@ -41,7 +41,7 @@ public class City {
     private List<String> aliases = new ArrayList<>();
 
     @ManyToOne
-    @Column(name = "CTYIDSTT")
+    @JoinColumn(name = "CTYIDSTT")
     private State state;
 
 }

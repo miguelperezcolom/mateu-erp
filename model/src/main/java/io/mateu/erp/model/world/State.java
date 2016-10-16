@@ -25,11 +25,11 @@ public class State {
     private long id;
 
     @ManyToOne
-    @Column(name = "STTNAMEIDTRA")
+    @JoinColumn(name = "STTNAMEIDTRA")
     private Literal name;
 
     @ManyToOne
-    @Column(name = "STTCOUISOCODE")
+    @JoinColumn(name = "STTCOUISOCODE")
     private Country country;
 
     @OneToMany(mappedBy = "state")

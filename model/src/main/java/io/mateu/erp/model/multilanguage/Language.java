@@ -22,6 +22,6 @@ public class Language {
     @Column(name = "LANISOCODE")
     private String isoCode;
 
-    @Column(name = "LANNAME", length = -1)
+    @Column(name = "LANNAME")
     private String name;
 }

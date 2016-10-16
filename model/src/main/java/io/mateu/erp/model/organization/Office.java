@@ -21,7 +21,7 @@ public class Office {
     @Column(name = "OFFIDOFF")
     private long id;
 
-    @Column(name = "OFFNAME", length = -1)
+    @Column(name = "OFFNAME")
     private String name;
 
 

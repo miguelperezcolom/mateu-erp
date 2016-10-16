@@ -25,7 +25,7 @@ public class Zone {
     private long id;
 
     @ManyToOne
-    @Column(name = "ZONNAMEIDTRA")
+    @JoinColumn(name = "ZONNAMEIDTRA")
     private Literal name;
 
 

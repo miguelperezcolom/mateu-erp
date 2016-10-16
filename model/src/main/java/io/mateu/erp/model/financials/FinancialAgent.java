@@ -23,7 +23,7 @@ public class FinancialAgent {
     @Column(name = "FAGIDFAG")
     private long id;
 
-    @Column(name = "FAGNAME", length = -1)
+    @Column(name = "FAGNAME")
     private String name;
 
 }

@@ -22,11 +22,11 @@ public class Customer {
     @Column(name = "CUSIDCUS")
     private long id;
 
-    @Column(name = "CUSNAME", length = -1)
+    @Column(name = "CUSNAME")
     private String name;
 
 
     @ManyToOne
-    @Column(name = "CUSIDFAG")
+    @JoinColumn(name = "CUSIDFAG")
     private FinancialAgent financialAgent;
 }

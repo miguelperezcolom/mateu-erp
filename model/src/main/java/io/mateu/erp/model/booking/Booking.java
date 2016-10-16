@@ -22,17 +22,19 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 public class Booking {
 
     @Id
-    @Column(name = "BKNLOCATOR", length = -1)
+    @Column(name = "BKNLOCATOR")
     private String locator;
 
-    @Column(name = "BKNCREATEDBY")
+    @ManyToOne
+    @JoinColumn(name = "BKNCREATEDBY")
     private User createdBy;
 
     @Column(name = "BKNCREATED")
     @Temporal(TIMESTAMP)
     private Date created;
 
-    @Column(name = "BKNMODIFIEDBY")
+    @ManyToOne
+    @JoinColumn(name = "BKNMODIFIEDBY")
     private User modifiedBy;
 
     @Column(name = "BKNMODIFIED")

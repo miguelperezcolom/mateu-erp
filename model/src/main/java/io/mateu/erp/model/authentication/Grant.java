@@ -22,16 +22,20 @@ public class Grant {
     private long id;
 
     @ManyToOne
-    @Column(name = "GRAIDPER")
+    @JoinColumn(name = "GRAIDPER")
     private Permission permission;
 
     @ManyToOne
-    @Column(name = "GRAUSRLOGIN")
+    @JoinColumn(name = "GRAUSRLOGIN")
     private User user;
 
     public Grant(User u, Permission p) {
         setUser(u);
         setPermission(p);
+    }
+
+    public Grant() {
+
     }
 
     //TODO: add scope (hotel, office, ...)

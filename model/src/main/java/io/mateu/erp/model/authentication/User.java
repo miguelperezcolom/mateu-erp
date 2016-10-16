@@ -25,26 +25,28 @@ public class User {
      * login must always be uppercase. It is the primary key.
      */
     @Id
-    @Column(name = "USRLOGIN", length = -1)
+    @Column(name = "USRLOGIN")
     private String login;
 
-    @Column(name = "USREMAIL", length = -1)
+    @Column(name = "USREMAIL")
     private String email;
 
-    @Column(name = "USRPASSWORD", length = -1)
+    @Column(name = "USRPASSWORD")
     private String password;
 
     @Column(name = "USRSTATUS")
     private USER_STATUS status;
 
-    @Column(name = "USRCREATEDBY")
+    @ManyToOne
+    @JoinColumn(name = "USRCREATEDBY")
     private User createdBy;
 
     @Temporal(TIMESTAMP)
     @Column(name = "USRCREATED")
     private Date created;
 
-    @Column(name = "USRMODIFIEDBY")
+    @ManyToOne
+    @JoinColumn(name = "USRMODIFIEDBY")
     private User modifiedBy;
 
     @Temporal(TIMESTAMP)

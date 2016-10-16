@@ -21,28 +21,28 @@ public class Literal {
     @Column(name = "LITIDLIT")
     private long id;
 
-    @Column(name = "LITEN", length = -1)
+    @Column(name = "LITEN")
     private String en;
 
-    @Column(name = "LITES", length = -1)
+    @Column(name = "LITES")
     private String es;
 
-    @Column(name = "LITDE", length = -1)
+    @Column(name = "LITDE")
     private String de;
 
-    @Column(name = "LITFR", length = -1)
+    @Column(name = "LITFR")
     private String fr;
 
-    @Column(name = "LITIT", length = -1)
+    @Column(name = "LITIT")
     private String it;
 
-    @Column(name = "LITAR", length = -1)
+    @Column(name = "LITAR")
     private String ar;
 
-    @Column(name = "LITCZ", length = -1)
+    @Column(name = "LITCZ")
     private String cz;
 
-    @Column(name = "LITRU", length = -1)
+    @Column(name = "LITRU")
     private String ru;
 
 }

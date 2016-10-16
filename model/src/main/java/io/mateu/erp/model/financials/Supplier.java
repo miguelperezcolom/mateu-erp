@@ -23,10 +23,10 @@ public class Supplier {
     @Column(name = "SUPIDSUP")
     private long id;
 
-    @Column(name = "SUPNAME", length = -1)
+    @Column(name = "SUPNAME")
     private String name;
 
     @ManyToOne
-    @Column(name = "SUPIDFAG")
+    @JoinColumn(name = "SUPIDFAG")
     private FinancialAgent financialAgent;
 }

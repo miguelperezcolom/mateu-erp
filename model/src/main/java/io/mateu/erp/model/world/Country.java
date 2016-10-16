@@ -19,11 +19,11 @@ import java.util.List;
 public class Country {
 
     @Id
-    @Column(name = "COUISOCODE", length = -1)
+    @Column(name = "COUISOCODE")
     private String isoCode;
 
     @ManyToOne
-    @Column(name = "COUNAMEIDTRA")
+    @JoinColumn(name = "COUNAMEIDTRA")
     private Literal name;
 
     @OneToMany(mappedBy = "country")

@@ -24,8 +24,8 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 public class Invoice {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="customer_seq_gen")
-    @SequenceGenerator(name="customer_seq_gen", sequenceName="CUS_SEQ")
+    @GeneratedValue(strategy= GenerationType.AUTO, generator="invoice_seq_gen")
+    @SequenceGenerator(name="invoice_seq_gen", sequenceName="INV_SEQ")
     @Column(name = "INVIDINV")
     private long id;
 
@@ -34,32 +34,31 @@ public class Invoice {
     private Date created;
 
     @ManyToOne
-    @Column(name = "INVUSRLOGIN")
+    @JoinColumn(name = "INVUSRLOGIN")
     private User createdBy;
 
 
-    @Column(name = "INVNUMBER", length = -1)
+    @Column(name = "INVNUMBER")
     private String number;
 
-    @Temporal(DATE)
     @Column(name = "INVISSUEDATE")
     private LocalDate issueDate;
 
 
-    @Temporal(DATE)
     @Column(name = "INVTAXDATE")
     private LocalDate taxDate;
 
 
     @ManyToOne
-    @Column(name = "INVISSUERIDFAG")
+    @JoinColumn(name = "INVISSUERIDFAG")
     private FinancialAgent issuer;
 
     @ManyToOne
-    @Column(name = "INVRECIPIENTIDFAG")
+    @JoinColumn(name = "INVRECIPIENTIDFAG")
     private FinancialAgent recipient;
 
 
+    @OneToMany(mappedBy = "invoice")
     private List<AbstractInvoiceLine> lines = new ArrayList<>();
 
 

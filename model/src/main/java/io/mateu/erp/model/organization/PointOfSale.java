@@ -22,7 +22,7 @@ public class PointOfSale {
     @Column(name = "POSIDPOS")
     private long id;
 
-    @Column(name = "POSNAME", length = -1)
+    @Column(name = "POSNAME")
     private String name;
 
 }

@@ -6,5 +6,5 @@ import javax.persistence.Entity;
  * Created by miguel on 1/10/16.
  */
 @Entity
-public class TextLine extends AbstractInvoiceLine {
+public class HeaderInvoiceLine extends AbstractInvoiceLine {
 }

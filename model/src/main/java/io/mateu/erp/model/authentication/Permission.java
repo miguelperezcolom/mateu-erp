@@ -24,7 +24,7 @@ public class Permission {
     @Column(name = "PERIDPER")
     private long id;
 
-    @Column(name = "PERNAME", length = -1)
+    @Column(name = "PERNAME")
     private String name;
 
 }
