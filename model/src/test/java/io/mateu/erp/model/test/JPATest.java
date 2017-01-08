@@ -2,7 +2,7 @@ package io.mateu.erp.model.test;
 
 import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.Transactionable;
+import io.mateu.erp.model.util.JPATransaction;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -38,7 +38,9 @@ public class JPATest
      */
     public void testApp() throws Exception {
 
-        Helper.transact(new Transactionable() {
+
+
+        Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {
 
@@ -51,6 +53,7 @@ public class JPATest
 
             }
         });
+
 
 
         assertTrue( true );

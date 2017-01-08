@@ -5,7 +5,7 @@ import javax.persistence.EntityManager;
 /**
  * Created by miguel on 13/9/16.
  */
-public interface Transactionable {
+public interface JPATransaction {
 
     public void run(EntityManager em) throws Exception;
 

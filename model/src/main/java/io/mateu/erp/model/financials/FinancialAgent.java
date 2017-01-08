@@ -6,9 +6,9 @@ import lombok.Setter;
 import javax.persistence.*;
 
 /**
- * holder for a financial agent, tipically associated to a VAT ID (e.g. a customer, a supplier, ourselves)
+ * holder for a admin agent, tipically associated to a VAT ID (e.g. a customer, a supplier, ourselves)
  *
- * Sometimes the same financial agent will act as customer and as supplier. This is interesting to manage a balance of payments
+ * Sometimes the same admin agent will act as customer and as supplier. This is interesting to manage a balance of payments
  *
  * Created by miguel on 13/9/16.
  */

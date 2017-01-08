@@ -10,7 +10,7 @@ import java.util.Date;
 import static javax.persistence.TemporalType.TIMESTAMP;
 
 /**
- * holder for bookings. Basically a booking locator associated with a customer, under which we will
+ * holder for booking. Basically a booking locator associated with a customer, under which we will
  * keep a list of booked services, charges, etc
  *
  * Created by miguel on 13/9/16.

@@ -12,7 +12,7 @@ import javax.persistence.*;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_CUSTOMER")
+@Table(name = "MA_SUPPLIER")
 @Getter
 @Setter
 public class Supplier {

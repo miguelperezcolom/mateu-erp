@@ -5,6 +5,7 @@ import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.util.JPATransaction;
 
 import java.util.Date;
 
@@ -21,7 +22,7 @@ public class Populator {
 
 
         //authentication
-        Helper.transact((em)->{
+        Helper.transact((JPATransaction) (em)->{
 
             // create super admin permission
             Permission p = new Permission();
