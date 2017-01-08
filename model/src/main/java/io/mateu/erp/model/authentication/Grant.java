@@ -16,8 +16,8 @@ import javax.persistence.*;
 public class Grant {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO, generator="grant_seq_gen")
-    @SequenceGenerator(name="grant_seq_gen", sequenceName="GRAIDGRA_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="grant_seq_gen")
+    @SequenceGenerator(name="grant_seq_gen", sequenceName="GRAIDGRA_SEQ", allocationSize = 1)
     @Column(name="GRAIDGRA")
     private long id;
 

@@ -19,8 +19,8 @@ import java.util.List;
 public class City {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO, generator="city_seq_gen")
-    @SequenceGenerator(name="city_seq_gen", sequenceName="CTYIDCTY_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="city_seq_gen")
+    @SequenceGenerator(name="city_seq_gen", sequenceName="CTYIDCTY_SEQ", allocationSize = 1)
     @Column(name = "CTYIDCTY")
     private long id;
 

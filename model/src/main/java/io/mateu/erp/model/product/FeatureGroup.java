@@ -18,8 +18,8 @@ import java.util.List;
 public class FeatureGroup {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="featuregroup_seq_gen")
-    @SequenceGenerator(name="featuregroup_seq_gen", sequenceName="FGR_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="featuregroup_seq_gen")
+    @SequenceGenerator(name="featuregroup_seq_gen", sequenceName="FGR_SEQ", allocationSize = 1)
     @Column(name = "FGRIDFGR")
     private long id;
 

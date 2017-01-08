@@ -37,10 +37,11 @@
 
         <property name="eclipselink.weaving" value="static"/>
 
+        <!--
         <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
-<!--
-        <property name="javax.persistence.schema-generation.database.action" value="create"/>
 -->
+        <property name="javax.persistence.schema-generation.database.action" value="create"/>
+
         <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
         <property name="javax.persistence.jdbc.url"    value="jdbc:postgresql://localhost:5432/mateuerp" />
         <property name="javax.persistence.jdbc.user" value="postgres" />
@@ -48,10 +49,8 @@
         <!--
         <property name="eclipselink.ddl-generation" value="create-tables" />
         -->
-        <!--
         <property name="eclipselink.ddl-generation" value="create-or-extend-tables" />
         <property name="eclipselink.ddl-generation.output-mode" value="database" />
-        -->
         <property name="eclipselink.jdbc.uppercase-columns" value="true"/>
         <property name="eclipselink.jpa.uppercase-column-names" value="true"/>
 

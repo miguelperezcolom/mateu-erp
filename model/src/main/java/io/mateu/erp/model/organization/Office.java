@@ -16,8 +16,8 @@ import javax.persistence.*;
 public class Office {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="office_seq_gen")
-    @SequenceGenerator(name="office_seq_gen", sequenceName="OFFIDOFF_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="office_seq_gen")
+    @SequenceGenerator(name="office_seq_gen", sequenceName="OFFIDOFF_SEQ", allocationSize = 1)
     @Column(name = "OFFIDOFF")
     private long id;
 

@@ -39,6 +39,13 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Services") {
+            @Override
+            public void run() {
+
+            }
+        });
+
         m.add(new AbstractAction("Requests to suppliers") {
             @Override
             public void run() {

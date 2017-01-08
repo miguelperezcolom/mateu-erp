@@ -44,12 +44,14 @@ public class JPATest
             @Override
             public void run(EntityManager em) throws Exception {
 
+                /*
+
 
                 Permission p = new Permission();
                 p.setId(2);
                 p.setName("Prueba 2");
                 em.persist(p);
-
+        */
 
             }
         });

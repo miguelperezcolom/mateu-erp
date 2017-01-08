@@ -18,8 +18,8 @@ import javax.persistence.*;
 public class Supplier {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="supplier_seq_gen")
-    @SequenceGenerator(name="supplier_seq_gen", sequenceName="SUP_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="supplier_seq_gen")
+    @SequenceGenerator(name="supplier_seq_gen", sequenceName="SUP_SEQ", allocationSize = 1)
     @Column(name = "SUPIDSUP")
     private long id;
 

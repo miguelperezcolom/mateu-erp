@@ -16,8 +16,8 @@ import javax.persistence.*;
 public class Room {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO, generator="room_seq_gen")
-    @SequenceGenerator(name="room_seq_gen", sequenceName="ROO_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="room_seq_gen")
+    @SequenceGenerator(name="room_seq_gen", sequenceName="ROO_SEQ", allocationSize = 1)
     @Column(name = "ROOIDROO")
     private long id;
 

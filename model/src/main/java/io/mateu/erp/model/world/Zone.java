@@ -19,8 +19,8 @@ import java.util.List;
 public class Zone {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO, generator="zone_seq_gen")
-    @SequenceGenerator(name="zone_seq_gen", sequenceName="ZONIDZON_SEQ")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="zone_seq_gen")
+    @SequenceGenerator(name="zone_seq_gen", sequenceName="ZONIDZON_SEQ", allocationSize = 1)
     @Column(name = "ZONIDZON")
     private long id;
 
