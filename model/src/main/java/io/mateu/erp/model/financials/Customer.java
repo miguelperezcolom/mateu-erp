@@ -17,8 +17,7 @@ import javax.persistence.*;
 public class Customer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="customer_seq_gen")
-    @SequenceGenerator(name="customer_seq_gen", sequenceName="CUS_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CUSIDCUS")
     private long id;
 

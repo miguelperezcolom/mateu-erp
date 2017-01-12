@@ -1,12 +1,14 @@
 package io.mateu.erp.client.admin;
 
+import io.mateu.erp.client.mateu.MDDCallback;
+import io.mateu.erp.shared.mateu.ERPService;
+import io.mateu.erp.shared.mateu.ERPServiceAsync;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,42 +22,42 @@ public class AdminModule extends AbstractModule {
         m.add(new AbstractAction("Users") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.authentication.User", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Offices") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.organization.Office", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("POS") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.organization.PointOfSale", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Customers") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Customer", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Suppliers") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Supplier", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Languages") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.multilanguage.Language", new MDDCallback());
             }
         });
 

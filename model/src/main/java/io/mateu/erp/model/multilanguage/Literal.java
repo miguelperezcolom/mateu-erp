@@ -16,8 +16,7 @@ import javax.persistence.*;
 public class Literal {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="literal_seq_gen")
-    @SequenceGenerator(name="literal_seq_gen", sequenceName="LITIDLIT_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "LITIDLIT")
     private long id;
 

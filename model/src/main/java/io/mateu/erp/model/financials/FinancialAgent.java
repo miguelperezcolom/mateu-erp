@@ -18,12 +18,15 @@ import javax.persistence.*;
 public class FinancialAgent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="financialagent_seq_gen")
-    @SequenceGenerator(name="financialagent_seq_gen", sequenceName="FAG_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FAGIDFAG")
     private long id;
 
     @Column(name = "FAGNAME")
     private String name;
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -16,8 +16,7 @@ import javax.persistence.*;
 public class Board {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="board_seq_gen")
-    @SequenceGenerator(name="board_seq_gen", sequenceName="BOA_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "BOAIDBOA")
     private long id;
 

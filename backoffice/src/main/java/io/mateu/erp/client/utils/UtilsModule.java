@@ -1,6 +1,5 @@
 package io.mateu.erp.client.utils;
 
-import io.mateu.erp.client.admin.CustomerCRUD;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
@@ -20,7 +19,6 @@ public class UtilsModule extends AbstractModule {
         m.add(new AbstractAction("Queue") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
             }
         });
 

@@ -24,8 +24,7 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 public class Invoice {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="invoice_seq_gen")
-    @SequenceGenerator(name="invoice_seq_gen", sequenceName="INV_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "INVIDINV")
     private long id;
 

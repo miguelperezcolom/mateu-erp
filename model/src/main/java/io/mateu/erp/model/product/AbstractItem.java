@@ -20,8 +20,7 @@ import javax.persistence.*;
 public class AbstractItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="item_seq_gen")
-    @SequenceGenerator(name="item_seq_gen", sequenceName="ITM_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ITMIDITM")
     private long id;
 

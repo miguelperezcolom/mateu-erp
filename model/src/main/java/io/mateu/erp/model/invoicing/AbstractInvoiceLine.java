@@ -15,8 +15,7 @@ import javax.persistence.*;
 public abstract class AbstractInvoiceLine {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="invoiceline_seq_gen")
-    @SequenceGenerator(name="invoiceline_seq_gen", sequenceName="INL_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "INLIDINL")
     private long id;
 

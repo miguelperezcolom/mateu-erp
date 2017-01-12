@@ -19,8 +19,7 @@ import java.util.List;
 public class State {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="state_seq_gen")
-    @SequenceGenerator(name="state_seq_gen", sequenceName="STTIDSTT_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "STTIDSTT")
     private long id;
 

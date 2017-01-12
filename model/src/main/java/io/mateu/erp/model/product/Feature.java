@@ -16,8 +16,7 @@ import javax.persistence.*;
 public class Feature {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="feature_seq_gen")
-    @SequenceGenerator(name="feature_seq_gen", sequenceName="FEA_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "FEAIDFEA")
     private long id;
 

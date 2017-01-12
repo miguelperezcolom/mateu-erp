@@ -1,13 +1,14 @@
 package io.mateu.erp.client.financial;
 
-import io.mateu.erp.client.admin.CustomerCRUD;
+import io.mateu.erp.client.mateu.MDDCallback;
+import io.mateu.erp.shared.mateu.ERPService;
+import io.mateu.erp.shared.mateu.ERPServiceAsync;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,31 +19,34 @@ public class FinancialModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Invoices to customers") {
+        m.add(new AbstractAction("Agents") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.FinancialAgent", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Invoices from providers") {
+        m.add(new AbstractAction("Isued invoices") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
+            }
+        });
+
+        m.add(new AbstractAction("Received invoices") {
+            @Override
+            public void run() {
             }
         });
 
         m.add(new AbstractAction("Payment gateways") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
             }
         });
 
         m.add(new AbstractAction("VCC") {
             @Override
             public void run() {
-                MateuUI.openView(new CustomerCRUD());
             }
         });
 

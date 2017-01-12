@@ -1,35 +1,31 @@
-package io.mateu.erp.client.admin;
+package io.mateu.erp.client.mateu;
 
 import io.mateu.ui.core.client.components.fields.TextField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
-import io.mateu.ui.core.client.views.*;
-import io.mateu.ui.core.shared.AsyncCallback;
-import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.client.views.AbstractEditorView;
+import io.mateu.ui.core.client.views.AbstractForm;
+import io.mateu.ui.core.client.views.ViewForm;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by miguel on 3/1/17.
+ * Created by miguel on 11/1/17.
  */
-public class CustomerCRUD extends AbstractCRUDView {
+public abstract class BaseJPACRUDView extends JPACRUDView {
+
     @Override
     public AbstractEditorView getNewEditorView() {
-        return new BaseEditorView() {
-            @Override
-            public String getServerSideControllerKey() {
-                return "customer";
-            }
-
+        return new JPAEditorView(this) {
             @Override
             public String getTitle() {
-                return "Customer";
+                return getEntityClassName().substring(getEntityClassName().lastIndexOf(".") + 1);
             }
 
             @Override
             public AbstractForm createForm() {
-                return new ViewForm(this).add(new TextField<String>("name", "Name"));
+                return new ViewForm(this).add(new TextField("name", "Name"));
             }
         };
     }
@@ -40,22 +36,17 @@ public class CustomerCRUD extends AbstractCRUDView {
     }
 
     @Override
-    public void delete(List<Data> list, AsyncCallback<Void> asyncCallback) {
-
-    }
-
-    @Override
     public String getSql() {
-        return "select cusidcus, cusname from ma_customer order by cusname";
+        return "select x.id, x.name from " + getEntityClassName() + " x order by x.name";
     }
 
     @Override
     public String getTitle() {
-        return "Customers";
+        return getEntityClassName().substring(getEntityClassName().lastIndexOf(".") + 1) + "s";
     }
 
     @Override
     public AbstractForm createForm() {
-        return new ViewForm(this);
+        return new ViewForm(this).add(new TextField("name", "Name"));
     }
 }

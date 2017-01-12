@@ -17,8 +17,7 @@ import javax.persistence.*;
 public class PointOfSale {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="pointofsale_seq_gen")
-    @SequenceGenerator(name="pointofsale_seq_gen", sequenceName="POSIDPOS_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "POSIDPOS")
     private long id;
 

@@ -18,8 +18,7 @@ import java.util.List;
 public class DataSheet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="datasheet_seq_gen")
-    @SequenceGenerator(name="datasheet_seq_gen", sequenceName="DSH_SEQ", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "DSHIDDSH")
     private long id;
 

@@ -4,8 +4,10 @@ import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.server.ServerSideEditorViewController;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.Pair;
 import org.apache.commons.beanutils.BeanUtils;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Method;
 
@@ -37,6 +39,10 @@ public abstract class JPAServerSideEditorViewController extends ServerSideEditor
                             ok |= v instanceof Double;
                             ok |= v instanceof Integer;
                             ok |= v instanceof Boolean;
+                            if (em.contains(v)) {
+                                v = new Pair(em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(v), v.toString());
+                                ok = true;
+                            }
                             if (ok) data.set(n, v);
                         }
                         //data.set(n, BeanUtils.getProperty(o,n));
@@ -64,6 +70,7 @@ public abstract class JPAServerSideEditorViewController extends ServerSideEditor
                 } else {
                     o = getModelClass().newInstance();
                     em.persist(o);
+                    em.flush(); // to get the id
                     Method m = o.getClass().getMethod("getId");
                     id = m.invoke(o);
                     data.set("_id", id);
@@ -72,9 +79,13 @@ public abstract class JPAServerSideEditorViewController extends ServerSideEditor
                 for (Method m : o.getClass().getMethods()) {
                     if (!m.getName().equals("setId") && m.getName().startsWith("set")) {
                         String n = m.getName().substring("set".length()).toLowerCase();
-                        System.out.println("o." + m.getName() + "(" + data.get(m.getName().substring("set".length()).toLowerCase()) + ")");
+                        Object v = data.get(n);
+                        if (v != null && m.getParameterTypes()[0].isAnnotationPresent(Entity.class)) {
+                            v = em.find(m.getParameterTypes()[0], (v instanceof Pair)?((Pair)v).getValue():v);
+                        }
+                        System.out.println("o." + m.getName() + "(" + v + ")");
                         //m.invoke(o, data.get(n));
-                        BeanUtils.setProperty(o,n,data.get(n));
+                        BeanUtils.setProperty(o,n,v);
                     }
                 }
 
