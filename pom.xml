@@ -29,4 +29,12 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <repositories>
+        <repository>
+            <id>mateu-central</id>
+            <url>http://nexus.mateu.io/repository/mateu-central</url>
+        </repository>
+    </repositories>
+
+
 </project>

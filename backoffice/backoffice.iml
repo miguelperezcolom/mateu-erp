@@ -5,6 +5,7 @@
       <configuration>
         <webroots>
           <root url="file://$MODULE_DIR$/src/main/webapp" relative="/" />
+          <root url="file://$MODULE_DIR$/overlays/io.mateu.ui.port-vaadin-1.0-SNAPSHOT" relative="/" />
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src/main/java" />
@@ -46,6 +47,7 @@
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.19.0-GA" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:annotations:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.hsqldb:hsqldb:2.3.4" level="project" />
-    <orderEntry type="library" name="Maven: io.mateu.ui:port-javafx:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.ui:codegeneration-vaadin:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: io.mateu.ui:port-vaadin:war:1.0-SNAPSHOT" level="project" />
   </component>
 </module>
