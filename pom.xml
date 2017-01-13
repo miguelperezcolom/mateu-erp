@@ -18,14 +18,14 @@
         <repository>
             <uniqueVersion>false</uniqueVersion>
             <id>mateu-central</id>
-            <url>http://mateu.io:8081/repository/mateu-central/</url>
+            <url>http://nexus.mateu.io/repository/mateu-central/</url>
             <layout>default</layout>
         </repository>
         <snapshotRepository>
             <uniqueVersion>true</uniqueVersion>
             <id>mateu-central</id>
-            <url>http://mateu.io:8081/repository/mateu-central/</url>
-            <layout>legacy</layout>
+            <url>http://nexus.mateu.io/repository/mateu-central/</url>
+            <layout>default</layout>
         </snapshotRepository>
     </distributionManagement>
 
