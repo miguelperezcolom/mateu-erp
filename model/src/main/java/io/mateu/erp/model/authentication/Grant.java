@@ -11,21 +11,18 @@ import javax.persistence.*;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_GRANT")
+@Table(name = "_GRANT")
 @Getter@Setter
 public class Grant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="GRAIDGRA")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "GRAIDPER")
     private Permission permission;
 
     @ManyToOne
-    @JoinColumn(name = "GRAUSRLOGIN")
     private User user;
 
     public Grant(User u, Permission p) {

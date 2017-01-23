@@ -13,7 +13,6 @@ import javax.persistence.ManyToOne;
 public class BookingInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
-    @JoinColumn(name = "INLBKTLOCATOR")
     private Booking booking;
 
 }

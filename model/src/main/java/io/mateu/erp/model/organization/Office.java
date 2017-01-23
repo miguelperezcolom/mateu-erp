@@ -11,16 +11,13 @@ import javax.persistence.*;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_OFFICE")
 @Getter@Setter
 public class Office {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "OFFIDOFF")
     private long id;
 
-    @Column(name = "OFFNAME")
     private String name;
 
 

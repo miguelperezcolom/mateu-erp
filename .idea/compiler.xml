@@ -8,12 +8,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="backoffice" />
+        <module name="mddserverside" />
         <module name="model" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="backoffice" target="1.8" />
       <module name="mateu-erp" target="1.5" />
+      <module name="mddserverside" target="1.5" />
       <module name="model" target="1.8" />
     </bytecodeTargetLevel>
   </component>

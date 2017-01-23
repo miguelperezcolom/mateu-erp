@@ -15,15 +15,12 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-@Table(name = "MA_COUNTRY")
 public class Country {
 
     @Id
-    @Column(name = "COUISOCODE")
     private String isoCode;
 
     @ManyToOne
-    @JoinColumn(name = "COUNAMEIDTRA")
     private Literal name;
 
     @OneToMany(mappedBy = "country")

@@ -7,12 +7,10 @@ import io.mateu.erp.shared.mateu.ERPService;
 import io.mateu.erp.shared.mateu.MetaData;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
+import io.mateu.ui.mdd.serverside.annotations.*;
 import org.apache.commons.beanutils.BeanUtils;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.Query;
+import javax.persistence.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -57,6 +55,8 @@ public class ERPServiceImpl implements ERPService {
         int rowsPerPage = parameters.getInt("_rowsperpage");
         int fromRow = rowsPerPage * parameters.getInt("_currentpageindex");
         String jpql = parameters.getString("_sql");
+
+        d.getList("_data");
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -105,30 +105,83 @@ public class ERPServiceImpl implements ERPService {
 
                 Object o = null;
 
+                Class cl = Class.forName(entityClassName);
+
+                Field idField = null;
+                boolean generated = false;
+                for (Field f : cl.getDeclaredFields()) {
+                    if (f.isAnnotationPresent(Id.class)) {
+                        idField = f;
+                        if (f.isAnnotationPresent(GeneratedValue.class)) {
+                            generated = true;
+                        }
+                        break;
+                    }
+                }
+
                 Object id = data.get("_id");
                 if (id != null) {
                     o = em.find(Class.forName(entityClassName), (id instanceof Integer)?new Long((Integer)id):id);
                 } else {
                     o = Class.forName(entityClassName).newInstance();
                     em.persist(o);
-                    em.flush(); // to get the id
-                    Method m = o.getClass().getMethod("getId");
-                    id = m.invoke(o);
-                    data.set("_id", id);
+                    if (generated) {
+                        em.flush(); // to get the id
+                        Method m = o.getClass().getMethod(getGetter(idField));
+                        id = m.invoke(o);
+                    } else {
+                        id = data.get(idField.getName());
+                    }
                 }
 
-                for (Method m : o.getClass().getMethods()) {
-                    if (!m.getName().equals("setId") && m.getName().startsWith("set")) {
-                        String n = m.getName().substring("set".length());
-                        if (n.length() > 1) n = n.substring(0, 1).toLowerCase() + n.substring(1);
-                        else n = n.toLowerCase();
-                        Object v = data.get(n);
-                        if (v != null && m.getParameterTypes()[0].isAnnotationPresent(Entity.class)) {
-                            v = em.find(m.getParameterTypes()[0], (v instanceof Pair)?((Pair)v).getValue():v);
+                data.set("_id", id);
+
+                for (Field f : cl.getDeclaredFields()) {
+                    boolean updatable = true;
+                    if (f.isAnnotationPresent(Output.class)) {
+                        updatable = false;
+                    }
+
+                    if (updatable) {
+                        if (data.containsKey(f.getName())) {
+                            Object v = data.get(f.getName());
+                            if (v != null && v instanceof Pair) v = ((Pair)v).getValue();
+                            if (f.getType().isAnnotationPresent(Entity.class)) {
+                                Field parentField = null;
+                                for (Field ff : f.getType().getDeclaredFields()) {
+                                    if (ff.isAnnotationPresent(OneToMany.class)) {
+                                        OneToMany a = ff.getAnnotation(OneToMany.class);
+                                        if (f.getName().equals(a.mappedBy())) parentField = ff;
+                                    }
+                                }
+                                if (v != null) {
+                                    v = em.find(f.getType(), v);
+                                    if (parentField != null) {
+                                        List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                        if (!l.contains(o)) l.add(o);
+                                    }
+                                } else {
+                                    if (parentField != null) {
+                                        Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
+                                        if (current != null) {
+                                            List l = (List) current.getClass().getMethod(getGetter(parentField)).invoke(current);
+                                            l.remove(o);
+                                        }
+                                    }
+                                }
+                            }
+                            if (v != null && f.getType().isEnum()) {
+                                for (Object x : f.getType().getEnumConstants()) {
+                                    if (v.equals(x.toString())) {
+                                        v = x;
+                                        break;
+                                    }
+                                }
+                            }
+                            System.out.println("o." + getSetter(f) + "(" + v + ")");
+                            //m.invoke(o, data.get(n));
+                            BeanUtils.setProperty(o,f.getName(),v);
                         }
-                        System.out.println("o." + m.getName() + "(" + v + ")");
-                        //m.invoke(o, data.get(n));
-                        BeanUtils.setProperty(o,n,v);
                     }
                 }
 
@@ -139,6 +192,13 @@ public class ERPServiceImpl implements ERPService {
         return get(serverSideControllerKey, entityClassName, data.get("_id"));
     }
 
+    private String getGetter(Field f) {
+        return (("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType()))?"is":"get") + f.getName().substring(0, 1).toUpperCase() + f.getName().substring(1);
+    }
+
+    private String getSetter(Field f) {
+        return "set" + f.getName().substring(0, 1).toUpperCase() + f.getName().substring(1);
+    }
     @Override
     public Data get(String serverSideControllerKey, String entityClassName, Object id) throws IllegalAccessException, InstantiationException, Exception {
         Data data = new Data();
@@ -150,12 +210,15 @@ public class ERPServiceImpl implements ERPService {
 
                 data.set("_id", id);
 
-                for (Method m : o.getClass().getMethods()) {
-                    if (!m.getName().equals("getId") && m.getName().startsWith("get")) {
-                        String n = m.getName().substring("get".length());
-                        if (n.length() > 1) n = n.substring(0, 1).toLowerCase() + n.substring(1);
-                        else n = n.toLowerCase();
-                        Object v = m.invoke(o);
+                for (Field f : o.getClass().getDeclaredFields()) {
+                    boolean uneditable = false;
+                    if (f.isAnnotationPresent(Output.class)) {
+                        uneditable = false;
+                    }
+
+                    if (!uneditable) {
+                        Object v = o.getClass().getMethod(getGetter(f)).invoke(o);
+                        //Object v = BeanUtils.getProperty(o,f.getName());
                         if (v != null) {
                             boolean ok = false;
                             ok |= v.getClass().isPrimitive();
@@ -168,9 +231,17 @@ public class ERPServiceImpl implements ERPService {
                                 v = new Pair(em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(v), v.toString());
                                 ok = true;
                             }
-                            if (ok) data.set(n, v);
+                            if (f.getType().isEnum()) {
+                                for (Object x : f.getType().getEnumConstants()) {
+                                    if (x.equals(v)) {
+                                        v = new Pair("" + x, "" + x);
+                                        ok = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (ok) data.set(f.getName(), v);
                         }
-                        //data.set(n, BeanUtils.getProperty(o,n));
                     }
                 }
 
@@ -185,53 +256,113 @@ public class ERPServiceImpl implements ERPService {
         Data data = new Data();
         data.set("_entityClassName", entityClassName);
 
-        List<Data> _fields = new ArrayList<>();
-
         Class c = Class.forName(entityClassName);
 
-        for (Field f : c.getDeclaredFields()) {
-            Data d = new Data();
-            boolean upload = false;
+        List<Data> searchFormFields = new ArrayList<>();
+        List<Data> listColumns = new ArrayList<>();
+        List<Data> editorFormFields = new ArrayList<>();
 
-            if (f.isAnnotationPresent(Id.class)) {
-                d.set("_type", MetaData.FIELDTYPE_ID);
-                upload = true;
-            } else if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_INTEGER);
-                upload = true;
-            } else if (String.class.equals(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_STRING);
-                upload = true;
-            } else if (Date.class.equals(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_DATE);
-                upload = true;
-            } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_DOUBLE);
-                upload = true;
-            } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
-                upload = true;
-            } else {
-                boolean isEntity = false;
-                for (Annotation a : f.getType().getAnnotations()) {
-                    if (a.annotationType().equals(Entity.class)) {
-                        isEntity = true;
-                    }
-                }
-                d.set("_type", MetaData.FIELDTYPE_ENTITY);
-                d.set("_entityClassName", f.getType().getCanonicalName());
-                upload = true;
-            }
-            if (upload) {
-                d.set("_id", f.getName());
-                d.set("_label", f.getName());
-                _fields.add(d);
+        for (Field f : c.getDeclaredFields()) {
+            if (f.isAnnotationPresent(SearchFilter.class)) {
+                addField(searchFormFields, f);
             }
         }
 
-        data.set("_fields", _fields);
+        for (Field f : c.getDeclaredFields()) {
+            addField(editorFormFields, f);
+        }
+
+        for (Field f : c.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Id.class) || f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(SearchFilter.class)) {
+                addColumn(listColumns, f);
+            }
+        }
+
+        if (listColumns.size() <= 1) for (Field f : c.getDeclaredFields()) {
+            addColumn(listColumns, f);
+        }
+
+        Data dsf;
+        data.set("_searchform", dsf = new Data());
+        dsf.set("_fields", searchFormFields);
+        dsf.set("_columns", listColumns);
+        Data def;
+        data.set("_editorform", def = new Data());
+        def.set("_fields", editorFormFields);
+
 
         return data;
+    }
+
+    private void addColumn(List<Data> listColumns, Field f) {
+        addField(listColumns, f);
+    }
+
+    private void addField(List<Data> _fields, Field f) {
+        Data d = new Data();
+        boolean upload = false;
+
+        if (f.isAnnotationPresent(Required.class)) {
+            d.set("_required", true);
+        }
+
+        if (f.isAnnotationPresent(Output.class)) {
+            d.set("_type", MetaData.FIELDTYPE_OUTPUT);
+            upload = true;
+        } else if (f.isAnnotationPresent(TextArea.class)) {
+            d.set("_type", MetaData.FIELDTYPE_TEXTAREA);
+            upload = true;
+        } else if (f.isAnnotationPresent(Id.class)) {
+            if (f.isAnnotationPresent(GeneratedValue.class)) {
+                d.set("_type", MetaData.FIELDTYPE_ID);
+                upload = true;
+            } else {
+                d.set("_type", MetaData.FIELDTYPE_PK);
+                upload = true;
+            }
+        } else if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
+            d.set("_type", MetaData.FIELDTYPE_INTEGER);
+            upload = true;
+        } else if (String.class.equals(f.getType())) {
+            d.set("_type", MetaData.FIELDTYPE_STRING);
+            upload = true;
+        } else if (Date.class.equals(f.getType())) {
+            d.set("_type", MetaData.FIELDTYPE_DATE);
+            upload = true;
+        } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
+            d.set("_type", MetaData.FIELDTYPE_DOUBLE);
+            upload = true;
+        } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
+            d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
+            upload = true;
+        } else {
+            boolean isEntity = false;
+            for (Annotation a : f.getType().getAnnotations()) {
+                if (a.annotationType().equals(Entity.class)) {
+                    isEntity = true;
+                }
+            }
+            if (isEntity) {
+                d.set("_type", MetaData.FIELDTYPE_ENTITY);
+                d.set("_entityClassName", f.getType().getCanonicalName());
+                upload = true;
+            } else {
+                if (f.getType().isEnum()) {
+                    d.set("_type", MetaData.FIELDTYPE_ENUM);
+                    List<Pair> values = new ArrayList<>();
+                    for (Object x : f.getType().getEnumConstants()) {
+                        values.add(new Pair("" + x, "" + x));
+                    }
+                    d.set("_values", values);
+                    upload = true;
+                }
+            }
+        }
+        if (upload) {
+            d.set("_id", f.getName());
+            d.set("_label", f.getName());
+            _fields.add(d);
+        }
     }
 
     public static void main(String... args) throws Exception {

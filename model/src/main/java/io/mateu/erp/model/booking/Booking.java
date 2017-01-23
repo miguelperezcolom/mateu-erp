@@ -16,28 +16,22 @@ import static javax.persistence.TemporalType.TIMESTAMP;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_BOOKING")
 @Getter
 @Setter
 public class Booking {
 
     @Id
-    @Column(name = "BKNLOCATOR")
     private String locator;
 
     @ManyToOne
-    @JoinColumn(name = "BKNCREATEDBY")
     private User createdBy;
 
-    @Column(name = "BKNCREATED")
     @Temporal(TIMESTAMP)
     private Date created;
 
     @ManyToOne
-    @JoinColumn(name = "BKNMODIFIEDBY")
     private User modifiedBy;
 
-    @Column(name = "BKNMODIFIED")
     @Temporal(TIMESTAMP)
     private Date modified;
 

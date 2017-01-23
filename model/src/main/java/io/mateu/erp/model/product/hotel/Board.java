@@ -10,25 +10,20 @@ import javax.persistence.*;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@Table(name = "MA_BOARD")
 @Getter
 @Setter
 public class Board {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "BOAIDBOA")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "BOAIDHOT")
     private Hotel hotel;
 
     @ManyToOne
-    @JoinColumn(name = "BOAIDBRT")
     BoardType type;
 
     @ManyToOne
-    @JoinColumn(name = "BOADESCRIPTIONIDLIT")
     private Literal description;
 }

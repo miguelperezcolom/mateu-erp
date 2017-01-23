@@ -15,32 +15,23 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-@Table(name = "MA_CITY")
 public class City {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CTYIDCTY")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "CTYNAMEIDTRA")
     private Literal name;
 
 
     @ElementCollection
-    @CollectionTable(
-            name="MA_CITY_ALIAS",
-            joinColumns=@JoinColumn(name="XXXIDCTY")
-    )
-    @Column(name="XXXALIAS")
     /**
      * sometimes the same city is known under different names, aka aliases (e.g. Palma de Mallorca is also known as Cuitat)
      */
     private List<String> aliases = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "CTYIDSTT")
     private State state;
 
 }

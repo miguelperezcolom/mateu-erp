@@ -1,5 +1,8 @@
 package io.mateu.erp.client.cms;
 
+import io.mateu.erp.client.mateu.MDDCallback;
+import io.mateu.erp.shared.mateu.ERPService;
+import io.mateu.erp.shared.mateu.ERPServiceAsync;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
@@ -19,19 +22,20 @@ public class CMSModule extends AbstractModule {
         m.add(new AbstractAction("Websites") {
             @Override
             public void run() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Website", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Pages") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Page", new MDDCallback());
             }
         });
         m.add(new AbstractAction("Assets") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Asset", new MDDCallback());
             }
         });
 

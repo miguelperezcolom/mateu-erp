@@ -64,14 +64,14 @@ public class AdminModule extends AbstractModule {
         m.add(new AbstractAction("Translations") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.multilanguage.Literal", new MDDCallback());
             }
         });
 
         m.add(new AbstractAction("Templates") {
             @Override
             public void run() {
-
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.config.Template", new MDDCallback());
             }
         });
 

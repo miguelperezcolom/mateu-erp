@@ -11,19 +11,15 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 @Embeddable
 public class Amount {
 
-    @Basic
     private long value;
 
-    @Basic
     private int decimals;
 
-    @Basic
     private long nucs;
 
     @ManyToOne
     private Currency currency;
 
-    @Basic
     private double change;
 
     @Temporal(TIMESTAMP)
@@ -34,8 +30,8 @@ public class Amount {
 
     @Embedded
     @AttributeOverrides({
-      @AttributeOverride(name="level", column=@Column(name="EMPLOYMENT_LEVEL"))
-      @AttributeOverride(name="status", column=@Column(name="EMPLOYMENT_STATUS"))})
+      @AttributeOverride(name="level", column=@ListColumn(name="EMPLOYMENT_LEVEL"))
+      @AttributeOverride(name="status", column=@ListColumn(name="EMPLOYMENT_STATUS"))})
 
      */
 

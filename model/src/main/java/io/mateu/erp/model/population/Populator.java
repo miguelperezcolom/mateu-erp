@@ -1,9 +1,6 @@
 package io.mateu.erp.model.population;
 
-import io.mateu.erp.model.authentication.Grant;
-import io.mateu.erp.model.authentication.Permission;
-import io.mateu.erp.model.authentication.USER_STATUS;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.*;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 
@@ -34,7 +31,6 @@ public class Populator {
             User u = new User();
             u.setLogin("ADMIN");
             u.setPassword(Helper.md5("1"));
-            u.setCreated(new Date());
             u.setStatus(USER_STATUS.ACTIVE);
             u.getGrants().add(new Grant(u, p));
             em.persist(u);

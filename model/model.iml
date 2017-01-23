@@ -35,5 +35,6 @@
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.19.0-GA" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:annotations:2.0.1" level="project" />
     <orderEntry type="library" name="Maven: org.hsqldb:hsqldb:2.3.4" level="project" />
+    <orderEntry type="module" module-name="mddserverside" />
   </component>
 </module>

@@ -12,18 +12,15 @@ import java.util.List;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@Table(name = "MA_FEATUREGROUP")
 @Getter
 @Setter
 public class FeatureGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "FGRIDFGR")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "FGRNAMEIDLIT")
     private Literal name;
 
     @OneToMany(mappedBy = "group")

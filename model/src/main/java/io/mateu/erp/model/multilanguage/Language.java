@@ -14,14 +14,11 @@ import javax.persistence.Table;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_LANGUAGE")
 @Getter@Setter
 public class Language {
 
     @Id
-    @Column(name = "LANISOCODE")
     private String isoCode;
 
-    @Column(name = "LANNAME")
     private String name;
 }

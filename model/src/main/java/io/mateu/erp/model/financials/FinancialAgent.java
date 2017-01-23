@@ -13,16 +13,13 @@ import javax.persistence.*;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_FINANCIALAGENT")
 @Getter@Setter
 public class FinancialAgent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "FAGIDFAG")
     private long id;
 
-    @Column(name = "FAGNAME")
     private String name;
 
     @Override

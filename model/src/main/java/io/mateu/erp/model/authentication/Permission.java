@@ -16,15 +16,12 @@ import javax.persistence.Table;
  * Created by miguel on 13/9/16.
  */
 @Entity
-@Table(name = "MA_PERMISSION")
 @Getter@Setter
 public class Permission {
 
     @Id
-    @Column(name = "PERIDPER")
     private long id;
 
-    @Column(name = "PERNAME")
     private String name;
 
 }

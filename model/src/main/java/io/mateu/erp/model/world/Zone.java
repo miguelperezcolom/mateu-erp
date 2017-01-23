@@ -15,21 +15,17 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-@Table(name = "MA_ZONE")
 public class Zone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ZONIDZON")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "ZONNAMEIDTRA")
     private Literal name;
 
 
     @OneToMany
-    @JoinTable(name = "MA_ZONE_CITY", joinColumns = @JoinColumn(name = "XXXIDZON"), inverseJoinColumns = @JoinColumn(name = "XXXIDCTY"))
-    private List<City> cities = new ArrayList<>();
+     private List<City> cities = new ArrayList<>();
 
 }

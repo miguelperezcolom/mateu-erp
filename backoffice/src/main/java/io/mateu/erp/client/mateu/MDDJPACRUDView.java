@@ -1,10 +1,7 @@
 package io.mateu.erp.client.mateu;
 
 import io.mateu.erp.shared.mateu.MetaData;
-import io.mateu.ui.core.client.components.fields.CheckBoxField;
-import io.mateu.ui.core.client.components.fields.DoubleField;
-import io.mateu.ui.core.client.components.fields.IntegerField;
-import io.mateu.ui.core.client.components.fields.TextField;
+import io.mateu.ui.core.client.components.fields.*;
 import io.mateu.ui.core.client.components.fields.grids.CalendarField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
@@ -12,6 +9,7 @@ import io.mateu.ui.core.client.views.AbstractEditorView;
 import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.client.views.ViewForm;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,26 +49,38 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             @Override
             public AbstractForm createForm() {
                 ViewForm f = new ViewForm(this);
-                buildFromMetadata(f);
+                buildFromMetadata(f, getMetadata().getData("_editorform"));
                 return f;
             }
         };
     }
 
-    private void buildFromMetadata(ViewForm f) {
-        for (Data d : getMetadata().getList("_fields")) {
-            if (MetaData.FIELDTYPE_STRING.equals(d.getString("_type"))) {
-                f.add(new TextField(d.getString("_id"), d.getString("_label")));
+    private void buildFromMetadata(ViewForm f, Data metadata) {
+        for (Data d : metadata.getList("_fields")) {
+            AbstractField field = null;
+            if (MetaData.FIELDTYPE_OUTPUT.equals(d.getString("_type"))) {
+                f.add(field = new ShowTextField(d.getString("_id"), d.getString("_label")));
+            } else if (MetaData.FIELDTYPE_TEXTAREA.equals(d.getString("_type"))) {
+                f.add(field = new TextAreaField(d.getString("_id"), d.getString("_label")));
+            } else if (MetaData.FIELDTYPE_STRING.equals(d.getString("_type"))) {
+                f.add(field = new TextField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_INTEGER.equals(d.getString("_type"))) {
-                f.add(new IntegerField(d.getString("_id"), d.getString("_label")));
+                f.add(field = new IntegerField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_DOUBLE.equals(d.getString("_type"))) {
-                f.add(new DoubleField(d.getString("_id"), d.getString("_label")));
+                f.add(field = new DoubleField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_BOOLEAN.equals(d.getString("_type"))) {
-                f.add(new CheckBoxField(d.getString("_id"), d.getString("_label")));
+                f.add(field = new CheckBoxField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
-                f.add(new CalendarField(d.getString("_id"), d.getString("_label")));
+                f.add(field = new CalendarField(d.getString("_id"), d.getString("_label")));
+            } else if (MetaData.FIELDTYPE_ENUM.equals(d.getString("_type"))) {
+                f.add(field = new ComboBoxField(d.getString("_id"), d.getString("_label"), d.getPairList("_values")));
             } else if (MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type"))) {
-                f.add(new JPAComboBoxField(d.getString("_id"), d.getString("_label"), d.getString("_entityClassName")));
+                f.add(field = new JPAComboBoxField(d.getString("_id"), d.getString("_label"), d.getString("_entityClassName")));
+            } else if (MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
+                f.add(field = new PKField(d.getString("_id"), d.getString("_label")));
+            }
+            if (field != null && d.containsKey("_required")) {
+                field.setRequired(true);
             }
         }
     }
@@ -79,7 +89,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     public List<AbstractColumn> createExtraColumns() {
         List<AbstractColumn> cols = new ArrayList<>();
         int poscol = 1;
-        for (Data d : getMetadata().getList("_fields")) if (!"id".equals(d.getString("_id")) &&  !MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type"))) {
+        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type")) && !MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
             cols.add(new TextColumn("col" + poscol++, d.getString("_label"), 200, false));
         }
         return cols;
@@ -90,13 +100,49 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         String jpql = "select ";
         int poscol = 1;
         String orderField = null;
-        for (Data d : getMetadata().getList("_fields")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type"))) {
+        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (MetaData.FIELDTYPE_ID.equals(d.getString("_type")) || MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
+            poscol++;
+            jpql += "x." + d.getString("_id");
+            break;
+        }
+        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type")) && !MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
             if (poscol++ > 1) jpql += ",";
             jpql += "x." + d.getString("_id");
-            if (!"id".equals(d.getString("_id")) && orderField == null) orderField = d.getString("_id");
+            if (orderField == null) orderField = d.getString("_id");
         }
         jpql += " from " + getEntityClassName() + " x";
 
+        int posfilter = 0;
+        Data sfd = getForm().getData();
+        for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
+            if (!sfd.isEmpty(d.getString("_id"))) {
+                Object v = sfd.get(d.getString("_id"));
+                if (posfilter++ == 0) jpql += " where ";
+                else jpql += " and ";
+                if (v instanceof String) {
+                    jpql += "lower(x." + d.getString("_id") + ")";
+                    jpql += " like '%" + ((String) v).toLowerCase().replaceAll("'", "''") + "%' ";
+                }
+                else {
+                    jpql += "x." + d.getString("_id");
+                    if (v instanceof Pair) {
+                        Object vv = ((Pair)v).getValue();
+                        if ("enum".equals(d.getString("_type"))) {
+                            jpql += " == '" + vv + "' ";
+                        } else {
+                            jpql += ".id";
+                            if (v instanceof String) {
+                                jpql += " == '" + vv + "' ";
+                            } else {
+                                jpql += " == " + vv + " ";
+                            }
+                        }
+                    } else {
+                        jpql += " == " + v + " ";
+                    }
+                }
+            }
+        }
 
 
         if (orderField != null) jpql += " order by x." + orderField;
@@ -111,7 +157,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     @Override
     public AbstractForm createForm() {
         ViewForm f = new ViewForm(this);
-        buildFromMetadata(f);
+        buildFromMetadata(f, getMetadata().getData("_searchform"));
         return f;
     }
 

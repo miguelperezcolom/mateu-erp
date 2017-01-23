@@ -15,20 +15,16 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-@Table(name = "MA_STATE")
 public class State {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "STTIDSTT")
     private long id;
 
     @ManyToOne
-    @JoinColumn(name = "STTNAMEIDTRA")
     private Literal name;
 
     @ManyToOne
-    @JoinColumn(name = "STTCOUISOCODE")
     private Country country;
 
     @OneToMany(mappedBy = "state")

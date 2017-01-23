@@ -18,42 +18,32 @@ import static javax.persistence.TemporalType.TIMESTAMP;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@Table(name = "MA_INVOICE")
 @Getter
 @Setter
 public class Invoice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "INVIDINV")
     private long id;
 
     @Temporal(TIMESTAMP)
-    @Column(name = "INVCREATED")
     private Date created;
 
     @ManyToOne
-    @JoinColumn(name = "INVUSRLOGIN")
     private User createdBy;
 
 
-    @Column(name = "INVNUMBER")
     private String number;
 
-    @Column(name = "INVISSUEDATE")
     private LocalDate issueDate;
 
-
-    @Column(name = "INVTAXDATE")
     private LocalDate taxDate;
 
 
     @ManyToOne
-    @JoinColumn(name = "INVISSUERIDFAG")
     private FinancialAgent issuer;
 
     @ManyToOne
-    @JoinColumn(name = "INVRECIPIENTIDFAG")
     private FinancialAgent recipient;
 
 

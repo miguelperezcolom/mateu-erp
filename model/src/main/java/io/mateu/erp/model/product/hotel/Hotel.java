@@ -14,13 +14,11 @@ import java.util.List;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@DiscriminatorValue("HOTEL")
 @Getter
 @Setter
 public class Hotel extends AbstractPlaceable {
 
     @ManyToOne
-    @JoinColumn(name = "HOTIDHCA")
     private HotelCategory category;
 
     @OneToMany(mappedBy = "hotel")
@@ -29,7 +27,6 @@ public class Hotel extends AbstractPlaceable {
     @OneToMany(mappedBy = "hotel")
     private List<Board> boards = new ArrayList<>();
 
-    @Column(name = "HOTSTOPSALESSTRING")
     private String stopsales;
 
 }
