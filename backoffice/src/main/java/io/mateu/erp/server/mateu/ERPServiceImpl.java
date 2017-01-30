@@ -1,6 +1,6 @@
 package io.mateu.erp.server.mateu;
 
-import io.mateu.erp.model.financials.Customer;
+import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.shared.mateu.ERPService;
@@ -14,6 +14,7 @@ import javax.persistence.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -227,6 +228,13 @@ public class ERPServiceImpl implements ERPService {
                             ok |= v instanceof Double;
                             ok |= v instanceof Integer;
                             ok |= v instanceof Boolean;
+                            if (v.getClass().isAnnotationPresent(Embeddable.class)) {
+                                Method mts;
+                                if ((mts = v.getClass().getMethod("toString")) != null) {
+                                    v = mts.invoke(v);
+                                }
+                                ok = true;
+                            }
                             if (v.getClass().isAnnotationPresent(Entity.class)) {
                                 v = new Pair(em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(v), v.toString());
                                 ok = true;
@@ -269,7 +277,9 @@ public class ERPServiceImpl implements ERPService {
         }
 
         for (Field f : c.getDeclaredFields()) {
-            addField(editorFormFields, f);
+            if (!f.isAnnotationPresent(Ignored.class)) {
+                addField(editorFormFields, f);
+            }
         }
 
         for (Field f : c.getDeclaredFields()) {
@@ -299,55 +309,56 @@ public class ERPServiceImpl implements ERPService {
     }
 
     private void addField(List<Data> _fields, Field f) {
-        Data d = new Data();
-        boolean upload = false;
+        if (!f.isAnnotationPresent(Ignored.class)) {
 
-        if (f.isAnnotationPresent(Required.class)) {
-            d.set("_required", true);
-        }
+            Data d = new Data();
+            boolean upload = false;
 
-        if (f.isAnnotationPresent(Output.class)) {
-            d.set("_type", MetaData.FIELDTYPE_OUTPUT);
-            upload = true;
-        } else if (f.isAnnotationPresent(TextArea.class)) {
-            d.set("_type", MetaData.FIELDTYPE_TEXTAREA);
-            upload = true;
-        } else if (f.isAnnotationPresent(Id.class)) {
-            if (f.isAnnotationPresent(GeneratedValue.class)) {
-                d.set("_type", MetaData.FIELDTYPE_ID);
-                upload = true;
-            } else {
-                d.set("_type", MetaData.FIELDTYPE_PK);
-                upload = true;
+            if (f.isAnnotationPresent(Required.class)) {
+                d.set("_required", true);
             }
-        } else if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
-            d.set("_type", MetaData.FIELDTYPE_INTEGER);
-            upload = true;
-        } else if (String.class.equals(f.getType())) {
-            d.set("_type", MetaData.FIELDTYPE_STRING);
-            upload = true;
-        } else if (Date.class.equals(f.getType())) {
-            d.set("_type", MetaData.FIELDTYPE_DATE);
-            upload = true;
-        } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
-            d.set("_type", MetaData.FIELDTYPE_DOUBLE);
-            upload = true;
-        } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
-            d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
-            upload = true;
-        } else {
-            boolean isEntity = false;
-            for (Annotation a : f.getType().getAnnotations()) {
-                if (a.annotationType().equals(Entity.class)) {
-                    isEntity = true;
+
+            if (f.isAnnotationPresent(Output.class)) {
+                d.set("_type", MetaData.FIELDTYPE_OUTPUT);
+                upload = true;
+            } else if (f.isAnnotationPresent(TextArea.class)) {
+                d.set("_type", MetaData.FIELDTYPE_TEXTAREA);
+                upload = true;
+            } else if (f.isAnnotationPresent(Id.class)) {
+                if (f.isAnnotationPresent(GeneratedValue.class)) {
+                    d.set("_type", MetaData.FIELDTYPE_ID);
+                    upload = true;
+                } else {
+                    d.set("_type", MetaData.FIELDTYPE_PK);
+                    upload = true;
                 }
-            }
-            if (isEntity) {
-                d.set("_type", MetaData.FIELDTYPE_ENTITY);
-                d.set("_entityClassName", f.getType().getCanonicalName());
+            } else if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_INTEGER);
+                upload = true;
+            } else if (String.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_STRING);
+                upload = true;
+            } else if (Date.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_DATE);
+                upload = true;
+            } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_DOUBLE);
+                upload = true;
+            } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
                 upload = true;
             } else {
-                if (f.getType().isEnum()) {
+                boolean isEntity = false;
+                for (Annotation a : f.getType().getAnnotations()) {
+                    if (a.annotationType().equals(Entity.class)) {
+                        isEntity = true;
+                    }
+                }
+                if (isEntity) {
+                    d.set("_type", MetaData.FIELDTYPE_ENTITY);
+                    d.set("_entityClassName", f.getType().getCanonicalName());
+                    upload = true;
+                } else if (f.getType().isEnum()) {
                     d.set("_type", MetaData.FIELDTYPE_ENUM);
                     List<Pair> values = new ArrayList<>();
                     for (Object x : f.getType().getEnumConstants()) {
@@ -355,18 +366,29 @@ public class ERPServiceImpl implements ERPService {
                     }
                     d.set("_values", values);
                     upload = true;
+                } else if (List.class.isAssignableFrom(f.getType())) {
+                    d.set("_type", MetaData.FIELDTYPE_LIST);
+                    List<Data> cols = new ArrayList<>();
+                    ParameterizedType genericType = (ParameterizedType) f.getGenericType();
+                    Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
+                    for (Field ff : genericClass.getDeclaredFields()) {
+                        if (!ff.isAnnotationPresent(Id.class) && !ff.getType().equals(f.getDeclaringClass())) addColumn(cols, ff);
+                    }
+                    d.set("_cols", cols);
+                    upload = true;
                 }
             }
-        }
-        if (upload) {
-            d.set("_id", f.getName());
-            d.set("_label", f.getName());
-            _fields.add(d);
+            if (upload) {
+                d.set("_id", f.getName());
+                d.set("_label", f.getName());
+                _fields.add(d);
+            }
+
         }
     }
 
     public static void main(String... args) throws Exception {
-        System.out.println(new ERPServiceImpl().getMetaData(Customer.class.getCanonicalName()));
+        System.out.println(new ERPServiceImpl().getMetaData(Actor.class.getCanonicalName()));
     }
 
 }

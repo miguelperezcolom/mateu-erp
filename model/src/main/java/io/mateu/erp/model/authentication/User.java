@@ -1,5 +1,8 @@
 package io.mateu.erp.model.authentication;
 
+import io.mateu.ui.mdd.serverside.annotations.Ignored;
+import io.mateu.ui.mdd.serverside.annotations.ListColumn;
+import io.mateu.ui.mdd.serverside.annotations.NotInEditor;
 import io.mateu.ui.mdd.serverside.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,12 +33,19 @@ public class User {
      * login must always be uppercase. It is the primary key.
      */
     @Id
+    @ListColumn("Login")
     private String login;
 
+    @ListColumn("Name")
+    private String name;
+
+    @ListColumn("Email")
     private String email;
 
+    @Ignored
     private String password;
 
+    @ListColumn("Status")
     private USER_STATUS status;
 
 

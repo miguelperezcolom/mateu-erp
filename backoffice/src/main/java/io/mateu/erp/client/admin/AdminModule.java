@@ -40,17 +40,10 @@ public class AdminModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Customers") {
+        m.add(new AbstractAction("Actors") {
             @Override
             public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Customer", new MDDCallback());
-            }
-        });
-
-        m.add(new AbstractAction("Suppliers") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Supplier", new MDDCallback());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Actor", new MDDCallback());
             }
         });
 

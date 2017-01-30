@@ -7,6 +7,8 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import org.apache.commons.beanutils.BeanUtils;
 
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Method;
@@ -39,6 +41,13 @@ public abstract class JPAServerSideEditorViewController extends ServerSideEditor
                             ok |= v instanceof Double;
                             ok |= v instanceof Integer;
                             ok |= v instanceof Boolean;
+                            if (v.getClass().isAnnotationPresent(Embeddable.class)) {
+                                Method mts;
+                                if ((mts = v.getClass().getMethod("toString")) != null) {
+                                    v = mts.invoke(v);
+                                }
+                                ok = true;
+                            }
                             if (em.contains(v)) {
                                 v = new Pair(em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(v), v.toString());
                                 ok = true;

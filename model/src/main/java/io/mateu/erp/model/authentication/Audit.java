@@ -31,10 +31,19 @@ public class Audit {
     @Override
     public String toString() {
         String s = "";
-        if (getCreatedBy() != null) s += "Created by " + getCreatedBy().getLogin();
-        if (getCreated() != null) s += " " + getCreated();
-        if (getModifiedBy() != null) s += ", modified by " + getCreatedBy().getLogin();
-        if (getModified() != null) s += " " + getCreated();
+        String s1 = "";
+        if (getCreatedBy() != null) s1 += "by " + getCreatedBy().getLogin();
+        if (getCreated() != null) s1 += (("".equals(s1))?"":" ") + getCreated();
+        String s2 = "";
+        if (getModifiedBy() != null) s2 += "by " + getCreatedBy().getLogin();
+        if (getModified() != null) s2 += (("".equals(s1))?"":" ") + getCreated();
+
+        if (!"".equals(s1)) s += "Created " + s1;
+        if (!"".equals(s2)){
+            if ("".equals(s)) s += "Modified ";
+            else s += ", modified ";
+            s += s1;
+        }
 
         return s;
     }

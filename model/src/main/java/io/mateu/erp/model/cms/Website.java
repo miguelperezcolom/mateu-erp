@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.ui.mdd.serverside.annotations.Ignored;
 import io.mateu.ui.mdd.serverside.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,9 +30,11 @@ public class Website {
     private String url;
 
     @OneToMany(mappedBy = "website")
+    @Ignored
     private List<Page> pages = new ArrayList<>();
 
     @OneToMany
+    @Ignored
     private List<Asset> assets = new ArrayList<>();
 
     @Override

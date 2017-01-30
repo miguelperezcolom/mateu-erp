@@ -1,10 +1,13 @@
 package io.mateu.erp.client.mateu;
 
 import io.mateu.erp.shared.mateu.MetaData;
+import io.mateu.ui.core.client.app.AbstractAction;
+import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.components.fields.*;
 import io.mateu.ui.core.client.components.fields.grids.CalendarField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
+import io.mateu.ui.core.client.views.AbstractDialog;
 import io.mateu.ui.core.client.views.AbstractEditorView;
 import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.client.views.ViewForm;
@@ -78,6 +81,18 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 f.add(field = new JPAComboBoxField(d.getString("_id"), d.getString("_label"), d.getString("_entityClassName")));
             } else if (MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
                 f.add(field = new PKField(d.getString("_id"), d.getString("_label")));
+            } else if (MetaData.FIELDTYPE_LIST.equals(d.getString("_type"))) {
+                List<AbstractColumn> cols = new ArrayList<>();
+                for (Data dc : d.getList("_cols")) {
+                    if (MetaData.FIELDTYPE_STRING.equals(dc.getString("_type"))) {
+                        cols.add(new TextColumn(dc.getString("_id"), dc.getString("_label"), 100, true));
+                    } else if (MetaData.FIELDTYPE_ENTITY.equals(dc.getString("_type"))) {
+                        cols.add(new JPAComboBoxColumn(dc.getString("_id"), dc.getString("_label"), dc.getString("_entityClassName")));
+                    } else {
+                        cols.add(new TextColumn(dc.getString("_id"), dc.getString("_label"), 100, true));
+                    }
+                }
+                f.add(field = new GridField(d.getString("_id"), d.getString("_label"), cols));
             }
             if (field != null && d.containsKey("_required")) {
                 field.setRequired(true);
@@ -163,6 +178,42 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
     public Data getMetadata() {
         return metadata;
+    }
+
+    @Override
+    public List<AbstractAction> createActions() {
+        List<AbstractAction> as = super.createActions();
+        as.add(new AbstractAction("Metadata") {
+            @Override
+            public void run() {
+
+                System.out.println("metadata=" + getMetadata());
+
+                MateuUI.openView(new AbstractDialog() {
+                    @Override
+                    public void onOk(Data data) {
+
+                    }
+
+                    @Override
+                    public String getTitle() {
+                        return "Metadata";
+                    }
+
+                    @Override
+                    public Data initializeData() {
+
+                        return new Data("_metadata", new Data(getMetadata()));
+                    }
+
+                    @Override
+                    public AbstractForm createForm() {
+                        return new ViewForm(this).setLastFieldMaximized(true).add(new DataViewerField("_metadata"));
+                    }
+                });
+            }
+        });
+        return as;
     }
 
     @Override

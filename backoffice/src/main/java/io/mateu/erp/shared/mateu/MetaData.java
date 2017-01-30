@@ -16,4 +16,5 @@ public interface MetaData {
     public static final String FIELDTYPE_OUTPUT = "output";
     public static final String FIELDTYPE_TEXTAREA = "textarea";
     public static final String FIELDTYPE_ENUM = "enum";
+    public static final String FIELDTYPE_LIST = "list";
 }

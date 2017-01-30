@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.ui.mdd.serverside.annotations.Ignored;
 import io.mateu.ui.mdd.serverside.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,7 @@ public class Page {
     private String freemarker;
 
     @OneToMany(mappedBy = "parent")
+    @Ignored
     private List<Page> pages = new ArrayList<>();
 
 
