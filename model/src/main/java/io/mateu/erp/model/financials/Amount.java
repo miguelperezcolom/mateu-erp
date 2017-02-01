@@ -1,9 +1,8 @@
 package io.mateu.erp.model.financials;
 
-import javax.persistence.*;
-import java.util.Date;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
+import javax.persistence.Embeddable;
+import javax.persistence.ManyToOne;
+import java.time.LocalDateTime;
 
 /**
  * Created by miguel on 1/10/16.
@@ -20,19 +19,8 @@ public class Amount {
     @ManyToOne
     private Currency currency;
 
-    private double change;
+    private double changeRate;
 
-    @Temporal(TIMESTAMP)
-    private Date date;
-
-    /*
-
-
-    @Embedded
-    @AttributeOverrides({
-      @AttributeOverride(name="level", column=@ListColumn(name="EMPLOYMENT_LEVEL"))
-      @AttributeOverride(name="status", column=@ListColumn(name="EMPLOYMENT_STATUS"))})
-
-     */
+    private LocalDateTime date;
 
 }

@@ -1,18 +1,14 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.financials.FinancialAgent;
 import lombok.Getter;
 import lombok.Setter;
-import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.financials.FinancialAgent;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import static javax.persistence.TemporalType.DATE;
-import static javax.persistence.TemporalType.TIMESTAMP;
 
 /**
  * Created by miguel on 1/10/16.
@@ -26,11 +22,7 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Temporal(TIMESTAMP)
-    private Date created;
-
-    @ManyToOne
-    private User createdBy;
+    private Audit audit;
 
 
     private String number;

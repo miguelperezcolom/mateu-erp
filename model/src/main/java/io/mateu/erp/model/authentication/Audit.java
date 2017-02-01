@@ -3,10 +3,9 @@ package io.mateu.erp.model.authentication;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
-import java.util.Date;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
+import javax.persistence.Embeddable;
+import javax.persistence.ManyToOne;
+import java.time.LocalDateTime;
 
 /**
  * Created by miguel on 19/1/17.
@@ -18,14 +17,12 @@ public class Audit {
     @ManyToOne
     private User createdBy;
 
-    @Temporal(TIMESTAMP)
-    private Date created = new Date();
+    private LocalDateTime created = LocalDateTime.now();
 
     @ManyToOne
     private User modifiedBy;
 
-    @Temporal(TIMESTAMP)
-    private Date modified;
+    private LocalDateTime modified;
 
 
     @Override

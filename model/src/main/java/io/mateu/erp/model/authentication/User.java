@@ -2,17 +2,13 @@ package io.mateu.erp.model.authentication;
 
 import io.mateu.ui.mdd.serverside.annotations.Ignored;
 import io.mateu.ui.mdd.serverside.annotations.ListColumn;
-import io.mateu.ui.mdd.serverside.annotations.NotInEditor;
 import io.mateu.ui.mdd.serverside.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
 
 /**
  * holder for users of our erp. It can be an internal user or a user created for a customer or a supplier

@@ -3,7 +3,10 @@ package io.mateu.erp.model.financials;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  * holder for a admin agent, tipically associated to a VAT ID (e.g. a customer, a supplier, ourselves)

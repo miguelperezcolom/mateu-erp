@@ -3,7 +3,6 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.erp.model.booking.Booking;
 
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 /**

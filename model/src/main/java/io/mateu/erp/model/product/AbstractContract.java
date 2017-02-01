@@ -1,8 +1,8 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.Audit;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * Created by miguel on 1/10/16.
@@ -13,18 +13,12 @@ public class AbstractContract {
 
     private String title;
 
-    private Date validFrom;
+    private LocalDate validFrom;
 
-    private Date validTo;
+    private LocalDate validTo;
 
 
-    private Date created;
-
-    private User createdBy;
-
-    private Date modified;
-
-    private User modifiedBy;
+    private Audit audit;
 
 
     private double averagePrice;

@@ -1,13 +1,12 @@
 package io.mateu.erp.model.booking;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
-
-import static javax.persistence.TemporalType.TIMESTAMP;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * holder for booking. Basically a booking locator associated with a customer, under which we will
@@ -21,19 +20,32 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 public class Booking {
 
     @Id
-    private String locator;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @ManyToOne
-    private User createdBy;
+    @Embedded
+    private Audit audit;
 
-    @Temporal(TIMESTAMP)
-    private Date created;
+    private String leadName;
 
-    @ManyToOne
-    private User modifiedBy;
+    private String email;
 
-    @Temporal(TIMESTAMP)
-    private Date modified;
+    private String customerComments;
 
+    private String internalComments;
+
+    private int start;
+
+    private int end;
+
+    private boolean cancelled;
+
+    private double total;
+
+    private double balance;
+
+
+    @OneToMany(mappedBy = "booking")
+    private List<Service> services = new ArrayList<>();
 
 }

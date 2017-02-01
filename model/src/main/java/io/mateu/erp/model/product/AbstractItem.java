@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.multilanguage.Literal;
-import io.mateu.erp.model.world.City;
 import lombok.Getter;
 import lombok.Setter;
 

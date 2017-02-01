@@ -1,8 +1,8 @@
 package io.mateu.erp.model.world;
 
+import io.mateu.erp.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
-import io.mateu.erp.model.multilanguage.Literal;
 
 import javax.persistence.*;
 import java.util.ArrayList;
