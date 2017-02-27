@@ -24,4 +24,9 @@ public class Actor {
 
     @ManyToOne
     private FinancialAgent financialAgent;
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

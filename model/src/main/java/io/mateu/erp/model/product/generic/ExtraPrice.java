@@ -20,6 +20,9 @@ public class ExtraPrice {
     @ManyToOne
     private Extra extra;
 
+    @ManyToOne
+    private Price price;
+
     double basePrice;
     double pricePerDay;
 

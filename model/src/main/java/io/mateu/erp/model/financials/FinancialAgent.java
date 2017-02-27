@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.ui.mdd.server.annotations.UseIdToSelect;
 import lombok.Getter;
 import lombok.Setter;
 

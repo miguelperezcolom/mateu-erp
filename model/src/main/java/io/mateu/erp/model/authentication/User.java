@@ -1,8 +1,6 @@
 package io.mateu.erp.model.authentication;
 
-import io.mateu.ui.mdd.serverside.annotations.Ignored;
-import io.mateu.ui.mdd.serverside.annotations.ListColumn;
-import io.mateu.ui.mdd.serverside.annotations.Output;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +31,7 @@ public class User {
     private String login;
 
     @ListColumn("Name")
+    @Unmodifiable
     private String name;
 
     @ListColumn("Email")
@@ -45,6 +44,30 @@ public class User {
     private USER_STATUS status;
 
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Grant> grants = new ArrayList<Grant>();
+
+
+    @Action(name = "test est. 1")
+    public static void testEstatico1(@Required@Caption("a") String a, @Caption("b")String b) {
+        System.out.println("testEstatico1(" + a + ", " + b + ")");
+    }
+
+    @Action(name = "test est. 2")
+    public static String testEstatico2(String a, String b) {
+        System.out.println("testEstatico2(" + a + ", " + b + ")");
+        return "" + a + b;
+    }
+
+    @Action(name = "test 1")
+    public void test1(String a, String b) {
+        System.out.println("test1(" + a + ", " + b + ")");
+    }
+
+    @Action(name = "test 2")
+    public String test2(String a, String b) {
+        System.out.println("test2(" + a + ", " + b + ")");
+        return "" + a + b;
+    }
+
 }

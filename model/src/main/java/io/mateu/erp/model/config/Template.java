@@ -1,6 +1,6 @@
 package io.mateu.erp.model.config;
 
-import io.mateu.ui.mdd.serverside.annotations.TextArea;
+import io.mateu.ui.mdd.server.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 

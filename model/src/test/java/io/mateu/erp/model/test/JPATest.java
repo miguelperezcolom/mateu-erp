@@ -1,8 +1,7 @@
 package io.mateu.erp.model.test;
 
-import io.mateu.erp.model.authentication.Permission;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

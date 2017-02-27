@@ -37,7 +37,7 @@ public class Price {
     private double pricePerAdultAndDay;
     private double pricePerChildAndDay;
 
-    @OneToMany(mappedBy = "extra")
+    @OneToMany(mappedBy = "price")
     private List<ExtraPrice> pricePerExtra = new ArrayList<>();
 
 

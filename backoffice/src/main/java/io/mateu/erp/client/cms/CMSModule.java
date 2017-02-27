@@ -1,8 +1,8 @@
 package io.mateu.erp.client.cms;
 
-import io.mateu.erp.client.mateu.MDDCallback;
-import io.mateu.erp.shared.mateu.ERPService;
-import io.mateu.erp.shared.mateu.ERPServiceAsync;
+import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.shared.ERPService;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;

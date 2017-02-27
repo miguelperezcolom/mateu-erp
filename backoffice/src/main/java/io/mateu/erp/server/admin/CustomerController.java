@@ -1,7 +1,7 @@
 package io.mateu.erp.server.admin;
 
 import io.mateu.erp.model.financials.Actor;
-import io.mateu.erp.server.JPAServerSideEditorViewController;
+import io.mateu.ui.mdd.server.JPAServerSideEditorViewController;
 
 /**
  * Created by miguel on 7/1/17.

@@ -85,7 +85,7 @@
 
         <dependency>
             <groupId>io.mateu.ui</groupId>
-            <artifactId>mdd-serverside</artifactId>
+            <artifactId>mdd-annotations</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

@@ -10,7 +10,8 @@
     <modules>
         <module>model</module>
         <module>backoffice</module>
-        <module>mddserverside</module>
+        <module>mdd</module>
+        <module>mdd-annotations</module>
     </modules>
 
     <packaging>pom</packaging>

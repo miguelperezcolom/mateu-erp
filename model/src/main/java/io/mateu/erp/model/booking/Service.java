@@ -1,11 +1,13 @@
 package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.product.generic.Product;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,15 +34,17 @@ public class Service {
 
     private boolean cancelled;
 
-    private int start;
+    private LocalDate start;
 
-    private int end;
+    private LocalDate finish;
 
     private int units;
 
     private int adults;
 
     private int children;
+
+    private int[] ages;
 
     private double total;
 

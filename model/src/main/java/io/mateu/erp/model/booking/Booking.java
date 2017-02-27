@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +35,11 @@ public class Booking {
 
     private String internalComments;
 
-    private int start;
+    private LocalDate start;
 
-    private int end;
+    private LocalDate finish;
+
+    private boolean confirmed;
 
     private boolean cancelled;
 

@@ -4,7 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/backoffice/backoffice.iml" filepath="$PROJECT_DIR$/backoffice/backoffice.iml" />
       <module fileurl="file://$PROJECT_DIR$/mateu-erp.iml" filepath="$PROJECT_DIR$/mateu-erp.iml" />
-      <module fileurl="file://$PROJECT_DIR$/mddserverside/mddserverside.iml" filepath="$PROJECT_DIR$/mddserverside/mddserverside.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mdd/mdd.iml" filepath="$PROJECT_DIR$/mdd/mdd.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mdd-annotations/mdd-annotations.iml" filepath="$PROJECT_DIR$/mdd-annotations/mdd-annotations.iml" />
       <module fileurl="file://$PROJECT_DIR$/model/model.iml" filepath="$PROJECT_DIR$/model/model.iml" />
     </modules>
   </component>

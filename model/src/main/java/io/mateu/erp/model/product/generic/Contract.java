@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.generic;
 
+import io.mateu.erp.model.product.AbstractContract;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,13 +14,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Contract {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    private String name;
+public class Contract extends AbstractContract {
 
     @OneToMany(mappedBy = "contract")
     private List<Price> prices = new ArrayList<>();

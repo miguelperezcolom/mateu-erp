@@ -1,7 +1,7 @@
 package io.mateu.erp.model.cms;
 
-import io.mateu.ui.mdd.serverside.annotations.Ignored;
-import io.mateu.ui.mdd.serverside.annotations.TextArea;
+import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 
