@@ -3,6 +3,7 @@ package io.mateu.ui.mdd.server;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ERPService;
@@ -92,7 +93,15 @@ public class ERPServiceImpl implements ERPService {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {
-                r[0] = em.createQuery(jpaql).executeUpdate();
+                if (jpaql.startsWith("delete")) {
+                    for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select")).getResultList()) {
+                        if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete();
+                        em.remove(o);
+                        if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete();
+                    }
+                } else {
+                    r[0] = em.createQuery(jpaql).executeUpdate();
+                }
             }
         });
         return r[0];
@@ -135,6 +144,10 @@ public class ERPServiceImpl implements ERPService {
                         id = data.get(idField.getName());
                     }
                     newInstance = true;
+                }
+
+                if (o instanceof WithTriggers) {
+                    ((WithTriggers)o).beforeSet();
                 }
 
                 data.set("_id", id);
@@ -231,6 +244,10 @@ public class ERPServiceImpl implements ERPService {
                             BeanUtils.setProperty(o,f.getName(),v);
                         }
                     }
+                }
+
+                if (o instanceof WithTriggers) {
+                    ((WithTriggers)o).afterSet();
                 }
 
             }
