@@ -94,7 +94,7 @@ public class ERPServiceImpl implements ERPService {
             @Override
             public void run(EntityManager em) throws Exception {
                 if (jpaql.startsWith("delete")) {
-                    for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select")).getResultList()) {
+                    for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select x")).getResultList()) {
                         if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete();
                         em.remove(o);
                         if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete();
@@ -165,7 +165,7 @@ public class ERPServiceImpl implements ERPService {
                             if (f.getType().isAnnotationPresent(Entity.class)) {
                                 Field parentField = null;
                                 for (Field ff : f.getType().getDeclaredFields()) {
-                                    if (ff.isAnnotationPresent(OneToMany.class)) {
+                                    if (ff.isAnnotationPresent(OneToMany.class) && ff.getGenericType().getClass().equals(o.getClass())) {
                                         OneToMany a = ff.getAnnotation(OneToMany.class);
                                         if (f.getName().equals(a.mappedBy())) parentField = ff;
                                     }
