@@ -5,9 +5,9 @@ package io.mateu.ui.mdd.server.interfaces;
  */
 public interface WithTriggers {
 
-    public void beforeSet();
+    public void beforeSet(boolean isNew);
 
-    public void afterSet();
+    public void afterSet(boolean isNew);
 
     public void beforeDelete();
 

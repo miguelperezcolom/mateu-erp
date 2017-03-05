@@ -1,9 +1,6 @@
 package io.mateu.erp.client.admin;
 
-import io.mateu.ui.core.client.app.AbstractAction;
-import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MateuUI;
-import io.mateu.ui.core.client.app.MenuEntry;
+import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
@@ -46,6 +43,46 @@ public class AdminModule extends AbstractModule {
                 ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Actor", new MDDCallback());
             }
         });
+
+        m.add(new AbstractAction("Currencies") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Currency", new MDDCallback());
+            }
+        });
+
+
+        m.add(new AbstractMenu("Map") {
+            @Override
+            public List<MenuEntry> getEntries() {
+                List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new AbstractAction("Countries") {
+                    @Override
+                    public void run() {
+                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.Country", new MDDCallback());
+                    }
+                });
+
+                m.add(new AbstractAction("States") {
+                    @Override
+                    public void run() {
+                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.State", new MDDCallback());
+                    }
+                });
+
+                m.add(new AbstractAction("Cities") {
+                    @Override
+                    public void run() {
+                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.City", new MDDCallback());
+                    }
+                });
+
+                return m;
+            }
+        });
+
+
 
         m.add(new AbstractAction("Languages") {
             @Override

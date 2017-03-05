@@ -8,7 +8,7 @@ import javax.persistence.*;
 /**
  * Created by miguel on 25/2/17.
  */
-@Entity
+@Entity(name = "TransferContractPrice")
 @Getter
 @Setter
 public class Price {

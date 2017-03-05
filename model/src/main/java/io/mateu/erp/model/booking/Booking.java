@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.ui.mdd.server.annotations.UseIdToSelect;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@UseIdToSelect(ql = "select x.id, concat(x.leadName, ' - ', x.start, ' - ', x.id) from Booking x where x.id = xxxx")
 public class Booking {
 
     @Id

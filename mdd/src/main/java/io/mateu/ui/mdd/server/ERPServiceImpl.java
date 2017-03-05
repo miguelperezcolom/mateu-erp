@@ -147,7 +147,7 @@ public class ERPServiceImpl implements ERPService {
                 }
 
                 if (o instanceof WithTriggers) {
-                    ((WithTriggers)o).beforeSet();
+                    ((WithTriggers)o).beforeSet(newInstance);
                 }
 
                 data.set("_id", id);
@@ -247,7 +247,7 @@ public class ERPServiceImpl implements ERPService {
                 }
 
                 if (o instanceof WithTriggers) {
-                    ((WithTriggers)o).afterSet();
+                    ((WithTriggers)o).afterSet(newInstance);
                 }
 
             }
@@ -372,7 +372,7 @@ public class ERPServiceImpl implements ERPService {
 
 
 
-        for (Field f : c.getDeclaredFields()) {
+        for (Field f : getAllFields(c)) {
             if (f.isAnnotationPresent(SearchFilter.class)) {
                 addField(searchFormFields, new FieldInterfaced() {
                     @Override
@@ -410,7 +410,7 @@ public class ERPServiceImpl implements ERPService {
             }
         }
 
-        for (Field f : c.getDeclaredFields()) {
+        for (Field f : getAllFields(c)) {
             if (!f.isAnnotationPresent(Ignored.class)) {
                 addField(editorFormFields, new FieldInterfaced() {
                     @Override
@@ -448,14 +448,14 @@ public class ERPServiceImpl implements ERPService {
             }
         }
 
-        for (Field f : c.getDeclaredFields()) {
+        for (Field f : getAllFields(c)) {
             if (f.isAnnotationPresent(Id.class) || f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(SearchFilter.class)) {
                 addColumn(listColumns, f);
             }
         }
 
-        if (listColumns.size() <= 1) for (Field f : c.getDeclaredFields()) {
-            addColumn(listColumns, f);
+        if (listColumns.size() <= 1) for (Field f : getAllFields(c)) {
+            if (!(f.getType().isAnnotationPresent(Entity.class) || f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(MapKey.class))) addColumn(listColumns, f);
         }
 
 
@@ -485,6 +485,16 @@ public class ERPServiceImpl implements ERPService {
 
 
         return data;
+    }
+
+    private List<Field> getAllFields(Class c) {
+        List<Field> l = new ArrayList<>();
+
+        if (c.getSuperclass() != null && c.getSuperclass().isAnnotationPresent(Entity.class)) l.addAll(getAllFields(c.getSuperclass()));
+
+        for (Field f : c.getDeclaredFields()) l.add(f);
+
+        return l;
     }
 
     @Override
@@ -690,6 +700,27 @@ public class ERPServiceImpl implements ERPService {
             }
             if (upload) {
                 d.set("_id", f.getName());
+
+                //ancho columna y alineado
+                int ancho = 200;
+                String alineado = "left";
+                if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
+                    ancho = 80;
+                    alineado = "right";
+                } else if (Date.class.equals(f.getType()) || LocalDate.class.equals(f.getType())) {
+                    ancho = 122;
+                } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
+                    ancho = 80;
+                    alineado = "right";
+                } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
+                    ancho = 60;
+                }
+                d.set("_width", ancho);
+                d.set("_align", alineado);
+
+                if (f.isAnnotationPresent(StartsLine.class)) {
+                    d.set("_startsline", true);
+                }
 
                 if (f.isAnnotationPresent(Caption.class)) {
                     d.set("_label", f.getAnnotation(Caption.class).value());

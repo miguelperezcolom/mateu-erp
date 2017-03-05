@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by miguel on 25/2/17.
  */
-@Entity
+@Entity(name = "TransferContractZone")
 @Getter
 @Setter
 public class Zone {

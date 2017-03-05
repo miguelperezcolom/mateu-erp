@@ -7,6 +7,7 @@ import io.mateu.ui.core.client.components.Label;
 import io.mateu.ui.core.client.components.fields.*;
 import io.mateu.ui.core.client.components.fields.grids.CalendarField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
+import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
 import io.mateu.ui.core.client.data.ChangeListener;
 import io.mateu.ui.core.client.views.AbstractDialog;
@@ -121,6 +122,9 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             if (field != null && d.containsKey("_required")) {
                 field.setRequired(true);
             }
+            if (field != null && d.containsKey("_startsline")) {
+                field.setBeginingOfLine(true);
+            }
             if (field != null && d.containsKey("_unmodifiable")) {
                 System.out.println("field " + field.getId() + " is unmodifiable");
                 field.setUnmodifiable(true);
@@ -134,7 +138,10 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         List<AbstractColumn> cols = new ArrayList<>();
         int poscol = 1;
         for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type")) && !MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
-            cols.add(new TextColumn("col" + poscol++, d.getString("_label"), 200, false));
+            TextColumn col;
+            cols.add(col = new TextColumn("col" + poscol++, d.getString("_label"), d.getInt("_width"), false));
+            if ("center".equals(d.getString("_align"))) col.setAlignment(ColumnAlignment.CENTER);
+            if ("right".equals(d.getString("_align"))) col.setAlignment(ColumnAlignment.RIGHT);
         }
         return cols;
     }
