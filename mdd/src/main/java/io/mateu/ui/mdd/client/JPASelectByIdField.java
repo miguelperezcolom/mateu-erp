@@ -9,7 +9,7 @@ import io.mateu.ui.mdd.shared.ERPService;
 /**
  * Created by miguel on 12/1/17.
  */
-public class JPASelectByIdField extends SelectByIdField {
+public abstract class JPASelectByIdField extends SelectByIdField {
 
     public JPASelectByIdField(String id, String ql) {
         super(id, ql);

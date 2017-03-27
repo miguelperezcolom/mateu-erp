@@ -10,6 +10,7 @@ public interface MetaData {
     public static final String FIELDTYPE_DOUBLE = "double";
     public static final String FIELDTYPE_BOOLEAN = "boolean";
     public static final String FIELDTYPE_DATE = "date";
+    public static final String FIELDTYPE_DATETIME = "datetime";
     public static final String FIELDTYPE_ENTITY = "entity";
     public static final String FIELDTYPE_ID = "id";
     public static final String FIELDTYPE_PK = "pk";
@@ -17,4 +18,5 @@ public interface MetaData {
     public static final String FIELDTYPE_TEXTAREA = "textarea";
     public static final String FIELDTYPE_ENUM = "enum";
     public static final String FIELDTYPE_LIST = "list";
+    public static final String FIELDTYPE_GRID = "grid";
 }

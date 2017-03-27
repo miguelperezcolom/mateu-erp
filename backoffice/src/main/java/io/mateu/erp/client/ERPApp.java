@@ -26,6 +26,14 @@ public class ERPApp extends AbstractApplication {
 
     @Override
     public List<AbstractArea> getAreas() {
-        return Arrays.asList(new AdminArea(), new CMSArea(), new ProductArea(), new BookingArea(), new FinancialArea(), new ManagementArea(), new UtilsArea());
+        return Arrays.asList(
+                new AdminArea()
+        //        , new CMSArea()
+                , new ProductArea()
+                , new BookingArea()
+                , new FinancialArea()
+        //        , new ManagementArea()
+                , new UtilsArea()
+        );
     }
 }

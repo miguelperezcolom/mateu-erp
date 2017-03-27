@@ -1,6 +1,7 @@
 package io.mateu.erp.model.cms;
 
 import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,7 @@ public class Page {
     @ManyToOne
     private Website website;
 
+    @Required
     private String name;
 
     private boolean active;

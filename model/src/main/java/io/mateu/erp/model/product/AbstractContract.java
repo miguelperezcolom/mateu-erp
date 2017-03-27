@@ -1,14 +1,16 @@
 package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by miguel on 1/10/16.
@@ -22,18 +24,39 @@ public class AbstractContract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-
-    private boolean saleNotPurchase;
-
-    private String title;
-
-    private LocalDate validFrom;
-
-    private LocalDate validTo;
-
-
+    @Embedded
     private Audit audit;
 
+    @Required
+    private String title;
 
+    @Required
+    private ContractType type;
+
+    @Required
+    @ManyToOne
+    private BillingConcept billingConcept;
+
+    private boolean VATIncluded;
+
+    @StartsLine
+    @Required
+    private LocalDate validFrom;
+    @Required
+    private LocalDate validTo;
+
+    @StartsLine
+    @TextArea
+    private String specialTerms;
+
+    @ManyToOne
+    @StartsLine
+    @Required
+    private Actor supplier;
+
+    @OneToMany
+    private List<Actor> targets = new ArrayList<>();
+
+    @Ignored
     private double averagePrice;
 }

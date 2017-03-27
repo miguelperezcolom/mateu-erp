@@ -1,6 +1,8 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,12 +24,14 @@ public class State {
     private long id;
 
     @ManyToOne
-    private Literal name;
-
-    @ManyToOne
+    @Required
     private Country country;
 
+    @Required
+    private String name;
+
     @OneToMany(mappedBy = "state")
+    @Ignored
     private List<City> cities = new ArrayList<>();
 
 }

@@ -19,19 +19,6 @@ public class BookingModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Budgets") {
-            @Override
-            public void run() {
-            }
-        });
-
-        m.add(new AbstractAction("Groups") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Booking", new MDDCallback());
-            }
-        });
-
         m.add(new AbstractAction("Bookings") {
             @Override
             public void run() {
@@ -39,10 +26,10 @@ public class BookingModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Services") {
+        m.add(new AbstractAction("Transfers") {
             @Override
             public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Service", new MDDCallback());
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback());
             }
         });
 

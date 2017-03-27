@@ -1,5 +1,6 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,7 @@ public class Template {
 
     //TODO: falta lista aplicaciones
 
+    @Required
     private String name;
 
     @TextArea

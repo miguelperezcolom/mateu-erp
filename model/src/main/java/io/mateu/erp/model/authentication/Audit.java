@@ -1,9 +1,11 @@
 package io.mateu.erp.model.authentication;
 
+import io.mateu.ui.mdd.server.interfaces.AuditRecord;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Embeddable;
+import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
  */
 @Embeddable
 @Getter@Setter
-public class Audit {
+public class Audit implements AuditRecord {
 
     @ManyToOne
     private User createdBy;
@@ -32,16 +34,27 @@ public class Audit {
         if (getCreatedBy() != null) s1 += "by " + getCreatedBy().getLogin();
         if (getCreated() != null) s1 += (("".equals(s1))?"":" ") + getCreated();
         String s2 = "";
-        if (getModifiedBy() != null) s2 += "by " + getCreatedBy().getLogin();
-        if (getModified() != null) s2 += (("".equals(s1))?"":" ") + getCreated();
+        if (getModifiedBy() != null) s2 += "by " + getModifiedBy().getLogin();
+        if (getModified() != null) s2 += (("".equals(s1))?"":" ") + getModified();
 
         if (!"".equals(s1)) s += "Created " + s1;
         if (!"".equals(s2)){
             if ("".equals(s)) s += "Modified ";
             else s += ", modified ";
-            s += s1;
+            s += s2;
         }
 
         return s;
+    }
+
+    @Override
+    public void touch(EntityManager em, String login) {
+        if (login != null && !"".equals(login)) {
+            User u = em.find(User.class, login);
+            setModifiedBy(u);
+            if (getCreatedBy() == null) setCreatedBy(u);
+        }
+        if (getCreated() == null) setCreated(LocalDateTime.now());
+        setModified(LocalDateTime.now());
     }
 }

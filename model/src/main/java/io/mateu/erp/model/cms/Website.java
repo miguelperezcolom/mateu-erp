@@ -1,6 +1,7 @@
 package io.mateu.erp.model.cms;
 
 import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,6 +22,7 @@ public class Website {
     private long id;
 
     @SearchFilter
+    @Required
     private String name;
 
     @SearchFilter

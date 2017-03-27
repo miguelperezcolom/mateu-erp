@@ -1,6 +1,7 @@
 package io.mateu.erp.model.authentication;
 
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "_USER")
 @Getter@Setter
-public class User {
+public class User implements WithTriggers {
 
     @Embedded
     @Output
@@ -28,24 +29,29 @@ public class User {
      */
     @Id
     @ListColumn("Login")
+    @Unmodifiable
+    @Required
     private String login;
 
     @ListColumn("Name")
-    @Unmodifiable
+    @Required
     private String name;
 
     @ListColumn("Email")
+    @Required
     private String email;
 
     @Ignored
     private String password;
 
     @ListColumn("Status")
+    @Required
     private USER_STATUS status;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Grant> grants = new ArrayList<Grant>();
+    @OneToMany
+    @Ignored
+    private List<Permission> permissions = new ArrayList<Permission>();
 
 
     @Action(name = "test est. 1")
@@ -70,4 +76,23 @@ public class User {
         return "" + a + b;
     }
 
+    @Override
+    public void beforeSet(boolean isNew) throws Exception {
+
+    }
+
+    @Override
+    public void afterSet(boolean isNew) throws Exception {
+        setPassword("1");
+    }
+
+    @Override
+    public void beforeDelete() throws Exception {
+
+    }
+
+    @Override
+    public void afterDelete() throws Exception {
+
+    }
 }

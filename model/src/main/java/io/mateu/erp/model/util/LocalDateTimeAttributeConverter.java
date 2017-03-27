@@ -1,4 +1,4 @@
-package io.mateu.ui.mdd.server.util;
+package io.mateu.erp.model.util;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;

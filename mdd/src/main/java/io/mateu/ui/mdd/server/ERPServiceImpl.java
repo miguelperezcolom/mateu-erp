@@ -2,7 +2,10 @@ package io.mateu.ui.mdd.server;
 
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
+import io.mateu.ui.core.shared.PairList;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.interfaces.AuditRecord;
+import io.mateu.ui.mdd.server.interfaces.Translated;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -15,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.lang.reflect.Parameter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +30,8 @@ import java.util.Map;
 public class ERPServiceImpl implements ERPService {
     @Override
     public Object[][] select(String jpql) throws Exception {
+
+        System.out.println("jpql: " + jpql);
 
         List<Object[]> r = new ArrayList<>();
 
@@ -68,11 +74,15 @@ public class ERPServiceImpl implements ERPService {
                 q.setMaxResults(rowsPerPage);
                 List rs = q.getResultList();
                 for (Object o : rs) {
-                    Object[] l = (Object[]) o;
                     Data r;
                     d.getList("_data").add(r = new Data());
-                    if (l != null) for (int i = 0; i < l.length; i++) {
-                        r.set((i == 0)?"_id":"col" + i, l[i]);
+                    if (o.getClass().isArray()) {
+                        Object[] l = (Object[]) o;
+                        if (l != null) for (int i = 0; i < l.length; i++) {
+                            r.set((i == 0)?"_id":"col" + i, l[i]);
+                        }
+                    } else {
+                        r.set("_id", "" + o);
                     }
                 }
 
@@ -96,6 +106,40 @@ public class ERPServiceImpl implements ERPService {
                 if (jpaql.startsWith("delete")) {
                     for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select x")).getResultList()) {
                         if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete();
+
+                        for (Field f : getAllFields(o.getClass())) {
+                            if (f.getType().isAnnotationPresent(Entity.class)) {
+                                Object v = o.getClass().getMethod(getGetter(f)).invoke(o);
+                                if (v != null) {
+                                    Field parentField = null;
+                                    for (Field ff : getAllFields(f.getType())) {
+                                        try {
+                                            if (ff.isAnnotationPresent(OneToMany.class) && ((ParameterizedType) ff.getGenericType()).getActualTypeArguments()[0].equals(o.getClass())) {
+                                                OneToMany a = ff.getAnnotation(OneToMany.class);
+                                                if (f.getName().equals(a.mappedBy())) parentField = ff;
+                                            }
+                                        } catch (Exception e) {
+
+                                        }
+                                    }
+                                    if (parentField != null) {
+                                        if (parentField.isAnnotationPresent(MapKey.class)) {
+                                            String keyFieldName = parentField.getAnnotation(MapKey.class).name();
+                                            Field keyField = o.getClass().getDeclaredField(keyFieldName);
+                                            Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
+                                            Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                            if (m.containsKey(key)) m.remove(key);
+                                        } else {
+                                            List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                            l.remove(o);
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+
+
                         em.remove(o);
                         if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete();
                     }
@@ -119,7 +163,7 @@ public class ERPServiceImpl implements ERPService {
 
                 Field idField = null;
                 boolean generated = false;
-                for (Field f : cl.getDeclaredFields()) {
+                for (Field f : getAllFields(cl)) {
                     if (f.isAnnotationPresent(Id.class)) {
                         idField = f;
                         if (f.isAnnotationPresent(GeneratedValue.class)) {
@@ -152,96 +196,124 @@ public class ERPServiceImpl implements ERPService {
 
                 data.set("_id", id);
 
-                for (Field f : cl.getDeclaredFields()) {
+                //auditoría
+                for (Field f : getAllFields(cl)) if (AuditRecord.class.isAssignableFrom(f.getType())) {
+                    AuditRecord a = (AuditRecord) o.getClass().getMethod(getGetter(f)).invoke(o);
+                    if (a == null) {
+                        BeanUtils.setProperty(o, f.getName(), a = (AuditRecord) f.getType().newInstance());
+                    }
+                    a.touch(em, data.getString("_user"));
+                }
+
+
+                for (Field f : getAllFields(cl)) {
                     boolean updatable = true;
-                    if (f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
+                    if (AuditRecord.class.isAssignableFrom(f.getType()) || f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
                         updatable = false;
                     }
 
                     if (updatable) {
                         if (data.containsKey(f.getName())) {
                             Object v = data.get(f.getName());
-                            if (v != null && v instanceof Pair) v = ((Pair)v).getValue();
-                            if (f.getType().isAnnotationPresent(Entity.class)) {
-                                Field parentField = null;
-                                for (Field ff : f.getType().getDeclaredFields()) {
-                                    if (ff.isAnnotationPresent(OneToMany.class) && ff.getGenericType().getClass().equals(o.getClass())) {
-                                        OneToMany a = ff.getAnnotation(OneToMany.class);
-                                        if (f.getName().equals(a.mappedBy())) parentField = ff;
-                                    }
+                            if (v != null && v instanceof Pair) v = ((Pair) v).getValue();
+                            if (Translated.class.isAssignableFrom(f.getType())) {
+                                Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
+                                if (current == null) {
+                                    current = f.getType().newInstance();
+                                    BeanUtils.setProperty(o, f.getName(), current);
+                                    em.persist(current);
                                 }
-                                if (v != null) {
-                                    v = em.find(f.getType(), v);
-                                    if (parentField != null) {
+                                ((Translated) current).set((String) v);
+                            } else {
+
+                                if (f.isAnnotationPresent(ElementCollection.class)) {
+                                    List<Object> l = new ArrayList<>();
+                                    if (v != null) for (String x : ((String)v).split("\n")) {
+                                        l.add(x);
+                                    }
+                                    v = l;
+                                } else if (f.getType().isAnnotationPresent(Entity.class)) {
+                                    Field parentField = null;
+                                    for (Field ff : getAllFields(f.getType())) {
+                                        try {
+                                            if (ff.isAnnotationPresent(OneToMany.class) && ((ParameterizedType)ff.getGenericType()).getActualTypeArguments()[0].equals(o.getClass())) {
+                                                OneToMany a = ff.getAnnotation(OneToMany.class);
+                                                if (f.getName().equals(a.mappedBy())) parentField = ff;
+                                            }
+                                        } catch (Exception e) {
+
+                                        }
+                                    }
+                                    if (v != null) {
+                                        v = em.find(f.getType(), v);
+                                        if (parentField != null) {
                                         /*
     @OneToMany(mappedBy="albergue", cascade = CascadeType.ALL)
     @MapKey(name="fecha")
                                          */
-                                        if (parentField.isAnnotationPresent(MapKey.class)) {
-                                            String keyFieldName = parentField.getAnnotation(MapKey.class).name();
-                                            System.out.println("o = " + o);
-                                            System.out.println("o.class = " + o.getClass().getName());
-                                            System.out.println("keyFieldName = " + keyFieldName);
-                                            Field keyField = o.getClass().getDeclaredField(keyFieldName);
-                                            Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
-                                            System.out.println("key = " + key);
-                                            System.out.println("parentField = " + parentField.getName());
-                                            Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                            System.out.println("m = " + m);
-                                            if (!m.containsKey(key)) m.put(key, o);
-                                        } else {
-                                            List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                            if (!l.contains(o)) l.add(o);
-                                        }
-                                    }
-                                } else {
-                                    if (parentField != null) {
-                                        Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
-                                        if (current != null) {
                                             if (parentField.isAnnotationPresent(MapKey.class)) {
                                                 String keyFieldName = parentField.getAnnotation(MapKey.class).name();
+                                                System.out.println("o = " + o);
+                                                System.out.println("o.class = " + o.getClass().getName());
+                                                System.out.println("keyFieldName = " + keyFieldName);
                                                 Field keyField = o.getClass().getDeclaredField(keyFieldName);
                                                 Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
+                                                System.out.println("key = " + key);
+                                                System.out.println("parentField = " + parentField.getName());
                                                 Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                                if (m.containsKey(key)) m.remove(key);
+                                                System.out.println("m = " + m);
+                                                if (!m.containsKey(key)) m.put(key, o);
                                             } else {
-                                                List l = (List) current.getClass().getMethod(getGetter(parentField)).invoke(current);
-                                                l.remove(o);
+                                                List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                                if (!l.contains(o)) l.add(o);
+                                            }
+                                        }
+                                    } else {
+                                        if (parentField != null) {
+                                            Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
+                                            if (current != null) {
+                                                if (parentField.isAnnotationPresent(MapKey.class)) {
+                                                    String keyFieldName = parentField.getAnnotation(MapKey.class).name();
+                                                    Field keyField = o.getClass().getDeclaredField(keyFieldName);
+                                                    Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
+                                                    Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                                    if (m.containsKey(key)) m.remove(key);
+                                                } else {
+                                                    List l = (List) current.getClass().getMethod(getGetter(parentField)).invoke(current);
+                                                    l.remove(o);
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            }
-                            if (v != null && f.getType().isEnum()) {
-                                for (Object x : f.getType().getEnumConstants()) {
-                                    if (v.equals(x.toString())) {
-                                        v = x;
-                                        break;
+                                } else if (v != null && f.getType().isEnum()) {
+                                    for (Object x : f.getType().getEnumConstants()) {
+                                        if (v.equals(x.toString())) {
+                                            v = x;
+                                            break;
+                                        }
                                     }
-                                }
-                            }
-
-                            /*
-                            if (List.class.isAssignableFrom(f.getType())) {
+                                } else if (List.class.isAssignableFrom(f.getType())) {
                                 ParameterizedType genericType = (ParameterizedType) f.getGenericType();
                                 Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
 
-                                List<Data> dl = new ArrayList<>();
-
-                                List l = (List) v;
-                                for (Object x : l) {
-                                    Data dx = new Data();
-                                    fill(em, getId(x), dx, x);
-                                    dl.add(dx);
+                                if (f.isAnnotationPresent(OwnedList.class)) {
+                                    // todo: rellenar lista objetos...
+                                } else {
+                                    List<Object> l = new ArrayList<>();
+                                    List<Pair> ll = (v instanceof PairList)?((PairList)v).getValues(): (List<Pair>) v;
+                                    for (Pair p : ll) {
+                                        l.add(em.find(genericClass, p.getValue()));
+                                    }
+                                    v = l;
                                 }
-                                v = dl;
-                                ok = true;
-                            }
-                            */
 
-                            System.out.println("o." + getSetter(f) + "(" + v + ")");
-                            //m.invoke(o, data.get(n));
-                            BeanUtils.setProperty(o,f.getName(),v);
+                            }
+
+
+                                System.out.println("o." + getSetter(f) + "(" + v + ")");
+                                //m.invoke(o, data.get(n));
+                                BeanUtils.setProperty(o, f.getName(), v);
+                            }
                         }
                     }
                 }
@@ -275,6 +347,12 @@ public class ERPServiceImpl implements ERPService {
 
                 fill(em, id, data, o);
 
+                for (Method m : o.getClass().getDeclaredMethods()) {
+                    if ("toString".equals(m.getName())) {
+                        data.set("_tostring", m.invoke(o));
+                    }
+                }
+
             }
         });
 
@@ -284,7 +362,7 @@ public class ERPServiceImpl implements ERPService {
     private void fill(EntityManager em, Object id, Data data, Object o) throws Exception {
         if (id != null) data.set("_id", id);
 
-        for (Field f : o.getClass().getDeclaredFields()) {
+        for (Field f : getAllFields(o.getClass())) if (!f.isAnnotationPresent(Ignored.class) && !(f.isAnnotationPresent(Id.class) && f.isAnnotationPresent(GeneratedValue.class))) {
             boolean uneditable = false;
             if (f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Unmodifiable.class)) {
                 uneditable = false;
@@ -303,6 +381,7 @@ public class ERPServiceImpl implements ERPService {
                     ok |= v instanceof Integer;
                     ok |= v instanceof Boolean;
                     ok |= v instanceof LocalDate;
+                    ok |= v instanceof LocalDateTime;
                     if (v.getClass().isAnnotationPresent(Embeddable.class)) {
                         Method mts;
                         if ((mts = v.getClass().getMethod("toString")) != null) {
@@ -310,7 +389,10 @@ public class ERPServiceImpl implements ERPService {
                         }
                         ok = true;
                     }
-                    if (v.getClass().isAnnotationPresent(Entity.class)) {
+                    if (Translated.class.isAssignableFrom(v.getClass())) {
+                        v = ((Translated) v).get();
+                        ok = true;
+                    } else if (v.getClass().isAnnotationPresent(Entity.class)) {
                         v = new Pair(em.getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(v), v.toString());
                         ok = true;
                     }
@@ -323,19 +405,43 @@ public class ERPServiceImpl implements ERPService {
                             }
                         }
                     }
-                    if (List.class.isAssignableFrom(f.getType())) {
+                    if (f.isAnnotationPresent(ElementCollection.class)) {
+                        StringBuffer sb = new StringBuffer();
+                        boolean primero = true;
+                        for (Object x : (List<Object>)v) {
+                            if (primero) primero = false; else sb.append("\n");
+                            sb.append(x);
+                        }
+                        v = sb.toString();
+                        ok = true;
+                    } else if (List.class.isAssignableFrom(f.getType())) {
                         ParameterizedType genericType = (ParameterizedType) f.getGenericType();
                         Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
 
-                        List<Data> dl = new ArrayList<>();
+                        if (f.isAnnotationPresent(OwnedList.class)) {
+                            List<Data> dl = new ArrayList<>();
 
-                        List l = (List) v;
-                        for (Object x : l) {
-                            Data dx = new Data();
-                            fill(em, getId(x), dx, x);
-                            dl.add(dx);
+                            List l = (List) v;
+                            for (Object x : l) {
+                                Data dx = new Data();
+                                fill(em, getId(x), dx, x);
+                                dl.add(dx);
+                            }
+
+                            v = dl;
+                        } else {
+                            List<Pair> dl = new ArrayList<>();
+
+                            List l = (List) v;
+                            for (Object x : l) {
+                                dl.add(new Pair(getId(x), "" + x));
+                            }
+
+                            PairList pl = new PairList();
+                            pl.setValues(dl);
+                            v = pl;
                         }
-                        v = dl;
+
                         ok = true;
                     }
 
@@ -411,7 +517,7 @@ public class ERPServiceImpl implements ERPService {
         }
 
         for (Field f : getAllFields(c)) {
-            if (!f.isAnnotationPresent(Ignored.class)) {
+            if (!f.isAnnotationPresent(Ignored.class) && !(f.isAnnotationPresent(Id.class) && f.isAnnotationPresent(GeneratedValue.class))) {
                 addField(editorFormFields, new FieldInterfaced() {
                     @Override
                     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
@@ -448,16 +554,21 @@ public class ERPServiceImpl implements ERPService {
             }
         }
 
+        boolean hayListColumns = false;
         for (Field f : getAllFields(c)) {
             if (f.isAnnotationPresent(Id.class) || f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(SearchFilter.class)) {
+                hayListColumns |= f.isAnnotationPresent(ListColumn.class);
                 addColumn(listColumns, f);
             }
         }
 
-        if (listColumns.size() <= 1) for (Field f : getAllFields(c)) {
-            if (!(f.getType().isAnnotationPresent(Entity.class) || f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(MapKey.class))) addColumn(listColumns, f);
+        if (!hayListColumns) {
+            listColumns.clear();
+            for (Field f : getAllFields(c)) {
+                if (!(f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(MapKey.class) || f.isAnnotationPresent(ElementCollection.class) || f.isAnnotationPresent(NotInList.class)))
+                    addColumn(listColumns, f);
+            }
         }
-
 
 
 
@@ -623,8 +734,18 @@ public class ERPServiceImpl implements ERPService {
             Data d = new Data();
             boolean upload = false;
 
+            d.set("_qlname", f.getName());
+
             if (f.isAnnotationPresent(Required.class)) {
                 d.set("_required", true);
+            }
+
+            if (f.isAnnotationPresent(Tab.class)) {
+                d.set("_starttab", f.getAnnotation(Tab.class).value());
+            }
+
+            if (f.isAnnotationPresent(EndTabs.class)) {
+                d.set("_endtabs", true);
             }
 
             if (f.isAnnotationPresent(Unmodifiable.class)) {
@@ -651,14 +772,23 @@ public class ERPServiceImpl implements ERPService {
             } else if (String.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_STRING);
                 upload = true;
-            } else if (Date.class.equals(f.getType()) || LocalDate.class.equals(f.getType())) {
+            } else if (LocalDate.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_DATE);
+                upload = true;
+            } else if (Date.class.equals(f.getType()) || LocalDateTime.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_DATETIME);
                 upload = true;
             } else if ("double".equals(f.getType().getName()) || Double.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_DOUBLE);
                 upload = true;
             } else if ("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
+                upload = true;
+            } else if (Translated.class.isAssignableFrom(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_STRING);
+                upload = true;
+            } else if (f.isAnnotationPresent(ElementCollection.class)) {
+                d.set("_type", MetaData.FIELDTYPE_TEXTAREA);
                 upload = true;
             } else {
                 boolean isEntity = false;
@@ -670,6 +800,9 @@ public class ERPServiceImpl implements ERPService {
                 if (isEntity) {
                     d.set("_type", MetaData.FIELDTYPE_ENTITY);
                     d.set("_entityClassName", f.getType().getCanonicalName());
+
+                    for (Field ff : getAllFields(f.getType())) if ("name".equals(ff.getName()) || "title".equals(ff.getName())) d.set("_qlname", f.getName() + "." + ff.getName());
+
                     if (f.getType().isAnnotationPresent(UseIdToSelect.class)) {
                         d.set("_useidtoselect", true);
                         String ql = f.getType().getAnnotation(UseIdToSelect.class).ql();
@@ -688,13 +821,22 @@ public class ERPServiceImpl implements ERPService {
                     d.set("_values", values);
                     upload = true;
                 } else if (List.class.isAssignableFrom(f.getType())) {
-                    d.set("_type", MetaData.FIELDTYPE_LIST);
-                    List<Data> cols = new ArrayList<>();
+                    if (f.isAnnotationPresent(OwnedList.class)) {
+                        d.set("_type", MetaData.FIELDTYPE_GRID);
+                        List<Data> cols = new ArrayList<>();
 
-                    for (Field ff : f.getGenericClass().getDeclaredFields()) {
-                        if (!ff.isAnnotationPresent(Id.class) && !ff.getType().equals(f.getDeclaringClass())) addColumn(cols, ff);
+                        for (Field ff : f.getGenericClass().getDeclaredFields()) {
+                            if (!ff.isAnnotationPresent(Id.class) && !ff.getType().equals(f.getDeclaringClass())) addColumn(cols, ff);
+                        }
+                        d.set("_cols", cols);
+                    } else {
+                        d.set("_type", MetaData.FIELDTYPE_LIST);
+                        d.set("_entityClassName", f.getGenericClass().getCanonicalName());
+                        if (f.getGenericClass().isAnnotationPresent(QLForCombo.class)) {
+                            String ql = f.getGenericClass().getAnnotation(QLForCombo.class).ql();
+                            if (ql != null && !"".equals(ql.trim())) d.set("_ql", ql);
+                        }
                     }
-                    d.set("_cols", cols);
                     upload = true;
                 }
             }
@@ -724,11 +866,26 @@ public class ERPServiceImpl implements ERPService {
 
                 if (f.isAnnotationPresent(Caption.class)) {
                     d.set("_label", f.getAnnotation(Caption.class).value());
-                } else d.set("_label", f.getName());
+                } else d.set("_label", capitalize(f.getName()));
                 _fields.add(d);
             }
 
         }
+    }
+
+    private String capitalize(String s) {
+        if (s == null || "".equals(s)) return s;
+        String c = s.replaceAll(
+                String.format("%s|%s|%s",
+                        "(?<=[A-Z])(?=[A-Z][a-z])",
+                        "(?<=[^A-Z])(?=[A-Z])",
+                        "(?<=[A-Za-z])(?=[^A-Za-z])"
+                ),
+                " "
+        ).toLowerCase();
+        if (c.length() > 1) c = c.substring(0, 1).toUpperCase() + c.substring(1);
+
+        return c;
     }
 
     public static void main(String... args) throws Exception {

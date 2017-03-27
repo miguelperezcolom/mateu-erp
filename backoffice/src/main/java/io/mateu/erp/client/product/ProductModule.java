@@ -16,20 +16,20 @@ public class ProductModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Packages") {
+        if (false) m.add(new AbstractAction("Packages") {
             @Override
             public void run() {
 
             }
         });
-        m.add(new AbstractAction("Generic services") {
+        if (false) m.add(new AbstractAction("Generic services") {
             @Override
             public void run() {
 
             }
         });
 
-        m.add(new AbstractAction("Hotel") {
+        if (false) m.add(new AbstractAction("Hotel") {
             @Override
             public void run() {
 

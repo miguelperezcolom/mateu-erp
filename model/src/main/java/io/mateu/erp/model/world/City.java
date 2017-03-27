@@ -1,6 +1,9 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,8 +25,11 @@ public class City {
     private long id;
 
     @ManyToOne
-    private Literal name;
+    @Required
+    private State state;
 
+    @Required
+    private String name;
 
     @ElementCollection
     /**
@@ -31,7 +37,12 @@ public class City {
      */
     private List<String> aliases = new ArrayList<>();
 
-    @ManyToOne
-    private State state;
+    @OneToMany(mappedBy = "city")
+    @Ignored
+    private List<TransferPoint> transferPoints = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

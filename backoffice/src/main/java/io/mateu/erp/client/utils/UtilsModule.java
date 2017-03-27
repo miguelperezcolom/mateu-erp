@@ -22,6 +22,22 @@ public class UtilsModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("SQL") {
+            @Override
+            public void run() {
+
+                MateuUI.openView(new SQLView());
+            }
+        });
+
+        m.add(new AbstractAction("JPQL") {
+            @Override
+            public void run() {
+
+                MateuUI.openView(new JPQLView());
+            }
+        });
+
         return m;
     }
 }

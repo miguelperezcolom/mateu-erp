@@ -1,6 +1,9 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.QLForCombo;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,14 +21,17 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
+@QLForCombo(ql = "select x.isoCode, x.name from io.mateu.erp.model.world.Country x order by x.name")
 public class Country {
 
     @Id
+    @Required
     private String isoCode;
 
-    @ManyToOne
-    private Literal name;
+    @Required
+    private String name;
 
     @OneToMany(mappedBy = "country")
+    @Ignored
     private List<State> states = new ArrayList<>();
 }

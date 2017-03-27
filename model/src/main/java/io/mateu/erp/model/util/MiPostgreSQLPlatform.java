@@ -1,6 +1,7 @@
-package io.mateu.ui.mdd.server.util;
+package io.mateu.erp.model.util;
 
 import org.eclipse.persistence.internal.databaseaccess.FieldTypeDefinition;
+import org.eclipse.persistence.internal.helper.DatabaseField;
 import org.eclipse.persistence.platform.database.PostgreSQLPlatform;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class MiPostgreSQLPlatform extends PostgreSQLPlatform {
         t.put(String.class, new FieldTypeDefinition("TEXT", false));
         t.put(LocalDate.class, new FieldTypeDefinition("DATE", false));
         t.put(LocalDateTime.class, new FieldTypeDefinition("TIMESTAMP WITHOUT TIME ZONE", false));
+
         return t;
     }
 }

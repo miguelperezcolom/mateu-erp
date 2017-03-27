@@ -1,5 +1,8 @@
 package io.mateu.erp.model.product.transfer;
 
+import io.mateu.ui.mdd.server.annotations.ListColumn;
+import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,16 +21,26 @@ public class Price {
     private long id;
 
     @ManyToOne
+    @Required
+    @SearchFilter
     private Contract contract;
 
     @ManyToOne
-    private Vehicle vehicle;
-
-    private PricePer pricePer;
+    @Required
+    private Zone origin;
 
     @ManyToOne
-    private Zone zone;
+    @Required
+    private Zone destination;
 
+    @ManyToOne
+    @Required
+    private Vehicle vehicle;
+
+    @Required
+    private PricePer pricePer;
+
+    @Required
     private double price;
 
 }
