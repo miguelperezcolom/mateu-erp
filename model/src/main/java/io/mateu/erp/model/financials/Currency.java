@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,10 +17,12 @@ import javax.persistence.Id;
 public class Currency {
 
     @Id
+    @Required
     private String isoCode;
 
     private String iso4217Code;
 
+    @Required
     private String name;
 
     private int decimals;

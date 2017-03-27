@@ -1,5 +1,6 @@
 package io.mateu.erp.model.organization;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,7 @@ public class PointOfSale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
 
 }

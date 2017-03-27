@@ -1,5 +1,6 @@
 package io.mateu.erp.model.multilanguage;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +17,9 @@ import javax.persistence.Id;
 public class Language {
 
     @Id
+    @Required
     private String isoCode;
 
+    @Required
     private String name;
 }

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,5 +21,14 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
+
+    @Required
+    private int minPax;
+
+    @Required
+    private int maxPax;
+
+    private boolean onRequest;
 }

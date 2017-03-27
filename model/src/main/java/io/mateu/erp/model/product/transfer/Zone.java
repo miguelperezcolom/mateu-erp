@@ -1,5 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
+import io.mateu.erp.model.world.City;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,8 +21,12 @@ public class Zone {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
 
     @OneToMany
     private List<TransferPoint> points = new ArrayList<>();
+
+    @OneToMany
+    private List<City> cities = new ArrayList<>();
 }

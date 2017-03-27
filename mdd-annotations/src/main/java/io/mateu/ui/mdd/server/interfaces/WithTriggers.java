@@ -5,12 +5,12 @@ package io.mateu.ui.mdd.server.interfaces;
  */
 public interface WithTriggers {
 
-    public void beforeSet(boolean isNew);
+    public void beforeSet(boolean isNew) throws Exception;
 
-    public void afterSet(boolean isNew);
+    public void afterSet(boolean isNew) throws Exception;
 
-    public void beforeDelete();
+    public void beforeDelete() throws Exception;
 
-    public void afterDelete();
+    public void afterDelete() throws Exception;
 
 }

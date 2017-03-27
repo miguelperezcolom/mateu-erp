@@ -5,6 +5,6 @@ package io.mateu.erp.model.product.transfer;
  */
 public enum TransferPointType {
 
-    AIRPORT, HOTEL, BUSSTOP, LOCATION, TBA
+    AIRPORT, PORT, HOTEL, MEETINGPOINT, BUSSTOP, LOCATION, TBA
 
 }

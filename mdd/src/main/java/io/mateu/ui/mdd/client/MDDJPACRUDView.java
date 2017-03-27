@@ -20,6 +20,7 @@ import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.shared.ERPService;
 import io.mateu.ui.mdd.shared.MetaData;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,13 +91,96 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 field = new CheckBoxField(d.getString("_id"), d.getString("_label"));
             } else if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
                 field = new CalendarField(d.getString("_id"), d.getString("_label"));
+            } else if (MetaData.FIELDTYPE_DATETIME.equals(d.getString("_type"))) {
+                field = new DateTimeField(d.getString("_id"), d.getString("_label"));
             } else if (MetaData.FIELDTYPE_ENUM.equals(d.getString("_type"))) {
                 field = new ComboBoxField(d.getString("_id"), d.getString("_label"), d.getPairList("_values"));
             } else if (MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type"))) {
                 if (d.getBoolean("_useidtoselect")) {
                     String ql = d.getString("_ql");
                     if (ql == null) ql = "select x.id, x.name from " + d.getString("_entityClassName") + " x where x.id = xxxx";
-                    field = new JPASelectByIdField(d.getString("_id"), d.getString("_label"), ql);
+                    field = new JPASelectByIdField(d.getString("_id"), d.getString("_label"), ql) {
+
+                        Data metadata = null;
+
+                        @Override
+                        public AbstractEditorView getEditor() {
+                            JPAEditorView editor = new JPAEditorView(null) {
+
+                                public JPAEditorView get() {
+                                    return this;
+                                }
+
+                                @Override
+                                public String getEntityClassName() {
+                                    return d.getString("_entityClassName");
+                                }
+
+                                @Override
+                                public List<AbstractAction> createActions() {
+                                    List<AbstractAction> as = super.createActions();
+                                    for (Data da : metadata.getData("_editorform").getList("_actions")) {
+                                        as.add(createAction(this, da));
+                                    }
+                                    return as;
+                                }
+
+                                @Override
+                                public String getViewId() {
+                                    return d.getString("_entityClassName") + "-" + getInitialId();
+                                }
+
+                                @Override
+                                public String getTitle() {
+                                    return d.getString("_entityClassName").substring(getEntityClassName().lastIndexOf(".") + 1);
+                                }
+
+                                @Override
+                                public AbstractForm createForm() {
+                                    ViewForm f = new ViewForm(get());
+                                    buildFromMetadata(f, metadata.getData("_editorform"));
+                                    return f;
+                                }
+                            };
+                            return editor;
+                        }
+
+                        @Override
+                        public Pair getPair(Data editorData) {
+                            return new Pair(editorData.get("_id"), editorData.get("_tostring"));
+                        }
+
+                        @Override
+                        public void createNew() {
+                            if (metadata == null) ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData(d.getString("_entityClassName"), new Callback<Data>() {
+                                @Override
+                                public void onSuccess(Data result) {
+                                    metadata = result;
+                                    _createNew();
+                                }
+                            });
+                            else _createNew();
+                        }
+
+                        public void _createNew() {
+                            super.createNew();
+                        }
+
+                        @Override
+                        public void edit(Object id) {
+                            if (metadata == null) ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData(d.getString("_entityClassName"), new Callback<Data>() {
+                                @Override
+                                public void onSuccess(Data result) {
+                                    metadata = result;
+                                    _edit(id);                              }
+                            });
+                            else _edit(id);
+                        }
+
+                        public void _edit(Object id) {
+                            super.edit(id);
+                        }
+                    };
                 } else {
                     String ql = d.getString("_ql");
                     if (ql == null) ql = "select x.id, x.name from " + d.getString("_entityClassName") + " x order by x.name";
@@ -105,6 +189,10 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             } else if (MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
                 field = new PKField(d.getString("_id"), d.getString("_label"));
             } else if (MetaData.FIELDTYPE_LIST.equals(d.getString("_type"))) {
+                String ql = d.getString("_ql");
+                if (ql == null) ql = "select x.id, x.name from " + d.getString("_entityClassName") + " x order by x.name";
+                field = new JPAListSelectionField(d.getString("_id"), d.getString("_label"), ql);
+            } else if (MetaData.FIELDTYPE_GRID.equals(d.getString("_type"))) {
                 List<AbstractColumn> cols = new ArrayList<>();
                 for (Data dc : d.getList("_cols")) {
                     if (MetaData.FIELDTYPE_STRING.equals(dc.getString("_type"))) {
@@ -137,7 +225,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     public List<AbstractColumn> createExtraColumns() {
         List<AbstractColumn> cols = new ArrayList<>();
         int poscol = 1;
-        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type")) && !MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
+        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
             TextColumn col;
             cols.add(col = new TextColumn("col" + poscol++, d.getString("_label"), d.getInt("_width"), false));
             if ("center".equals(d.getString("_align"))) col.setAlignment(ColumnAlignment.CENTER);
@@ -156,10 +244,10 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             jpql += "x." + d.getString("_id");
             break;
         }
-        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ENTITY.equals(d.getString("_type")) && !MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
+        for (Data d : getMetadata().getData("_searchform").getList("_columns")) if (!MetaData.FIELDTYPE_ID.equals(d.getString("_type")) && !MetaData.FIELDTYPE_PK.equals(d.getString("_type"))) {
             if (poscol++ > 1) jpql += ",";
-            jpql += "x." + d.getString("_id");
-            if (orderField == null) orderField = d.getString("_id");
+            jpql += "x." + d.getString("_qlname");
+            if (orderField == null) orderField = d.getString("_qlname");
         }
         jpql += " from " + getEntityClassName() + " x";
 
@@ -179,17 +267,17 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     if (v instanceof Pair) {
                         Object vv = ((Pair)v).getValue();
                         if ("enum".equals(d.getString("_type"))) {
-                            jpql += " == '" + vv + "' ";
+                            jpql += " = '" + vv + "' ";
                         } else {
                             jpql += ".id";
                             if (v instanceof String) {
-                                jpql += " == '" + vv + "' ";
+                                jpql += " = '" + vv + "' ";
                             } else {
-                                jpql += " == " + vv + " ";
+                                jpql += " = " + vv + " ";
                             }
                         }
                     } else {
-                        jpql += " == " + v + " ";
+                        jpql += " = " + v + " ";
                     }
                 }
             }
@@ -212,6 +300,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         return f;
     }
 
+    @Override
     public Data getMetadata() {
         return metadata;
     }
@@ -333,7 +422,11 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         return createAction(da, new MDDActionHelper() {
             @Override
             public void onSuccess(Object result) {
-                MateuUI.alert("" + result);
+                if (result instanceof URL) {
+                    MateuUI.open((URL) result);
+                } else {
+                    MateuUI.alert("" + result);
+                }
             }
 
             @Override

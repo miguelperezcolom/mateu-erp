@@ -1,8 +1,11 @@
 package io.mateu.erp.server;
 
 import io.mateu.erp.model.authentication.Grant;
+import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.population.Populator;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.core.server.BaseServerSideApp;
@@ -13,6 +16,7 @@ import io.mateu.ui.core.shared.UserData;
 
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
+import java.io.IOException;
 
 /**
  * Created by miguel on 3/1/17.
@@ -67,18 +71,27 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
 
     @Override
     public UserData authenticate(String login, String password) throws Exception {
+        if (login == null || "".equals(login.trim()) || password == null || "".equals(password.trim())) throw new Exception("Username and password are required");
+
         UserData d = new UserData();
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {
+
+                if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
+                    Populator.populate();
+                }
+
+
                 User u = em.find(User.class, login.toLowerCase().trim());
                 if (u != null) {
+                    if (u.getPassword() == null) throw new Exception("Missing password for user " + login);
                     if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) throw new Exception("Wrong password");
                     if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
                     d.setName(u.getName());
                     d.setEmail(u.getEmail());
                     d.setLogin(login);
-                    for (Grant g : u.getGrants()) d.getPermissions().add(Math.toIntExact(g.getPermission().getId()));
+                    for (Permission p : u.getPermissions()) d.getPermissions().add(Math.toIntExact(p.getId()));
                 } else throw new Exception("No user with login " + login);
             }
         });
@@ -111,5 +124,17 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                 } else throw new Exception("No user with login " + login);
             }
         });
+    }
+
+    @Override
+    public String getXslfoForListing() throws Exception {
+        String[] s = {""};
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Exception {
+                s[0] = AppConfig.get(em).getXslfoForList();
+            }
+        });
+        return s[0];
     }
 }

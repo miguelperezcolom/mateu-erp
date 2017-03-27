@@ -1,7 +1,9 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Element;
 
 import javax.persistence.*;
 
@@ -19,14 +21,34 @@ public class Actor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
 
+    private String businessName;
 
-    @ManyToOne
-    private FinancialAgent financialAgent;
+    private String address;
+
+    private String vatIdentificationNumber;
+
+    private String email;
+
+    private String comments;
 
     @Override
     public String toString() {
         return getName();
+    }
+
+    public Element toXml() {
+        Element xml = new Element("actor");
+        xml.setAttribute("id", "" + getId());
+        xml.setAttribute("name", getName());
+        if (getBusinessName() != null) xml.setAttribute("bussinessName", getBusinessName());
+        if (getAddress() != null) xml.setAttribute("address", getBusinessName());
+        if (getVatIdentificationNumber() != null) xml.setAttribute("vaiIdentificationNumber", getVatIdentificationNumber());
+        if (getEmail() != null) xml.setAttribute("email", getEmail());
+        if (getComments() != null) xml.setAttribute("comments", getComments());
+
+        return xml;
     }
 }

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +21,7 @@ public class Asset {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
 
     private String path;

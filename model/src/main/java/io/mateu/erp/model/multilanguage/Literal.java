@@ -1,5 +1,6 @@
 package io.mateu.erp.model.multilanguage;
 
+import io.mateu.ui.mdd.server.interfaces.Translated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +16,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Getter@Setter
-public class Literal {
+public class Literal implements Translated {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,4 +38,13 @@ public class Literal {
 
     private String ru;
 
+    @Override
+    public void set(String text) {
+        setEs(text);
+    }
+
+    @Override
+    public String get() {
+        return getEs();
+    }
 }

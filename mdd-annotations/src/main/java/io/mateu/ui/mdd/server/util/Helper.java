@@ -209,4 +209,8 @@ public class Helper {
     public static Object[][] selectPage(String sql, int desdeFila, int numeroFilas) throws Exception {
         return select(sql + " LIMIT " + numeroFilas + " OFFSET " + desdeFila);
     }
+
+    public static void touch(Object o, EntityManager em, String login) {
+
+    }
 }

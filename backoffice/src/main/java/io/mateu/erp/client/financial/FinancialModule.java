@@ -19,113 +19,124 @@ public class FinancialModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Agents") {
+        if (false) m.add(new AbstractAction("Agents") {
             @Override
             public void run() {
                 ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.FinancialAgent", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Isued invoices") {
+        m.add(new AbstractAction("Billing concepts") {
             @Override
             public void run() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.BillingConcept", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Received invoices") {
-            @Override
-            public void run() {
-            }
-        });
+        if (false) {
 
-        m.add(new AbstractAction("Payment gateways") {
-            @Override
-            public void run() {
-            }
-        });
+            m.add(new AbstractAction("Isued invoices") {
+                @Override
+                public void run() {
+                }
+            });
 
-        m.add(new AbstractAction("VCC") {
-            @Override
-            public void run() {
-            }
-        });
+            m.add(new AbstractAction("Received invoices") {
+                @Override
+                public void run() {
+                }
+            });
 
-        m.add(new AbstractAction("VAT") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Payment gateways") {
+                @Override
+                public void run() {
+                }
+            });
 
-            }
-        });
+            m.add(new AbstractAction("VCC") {
+                @Override
+                public void run() {
+                }
+            });
 
-        m.add(new AbstractAction("Commissions") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("VAT") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Abseiling") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Commissions") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Prepayment") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Abseiling") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Portfolios") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Prepayment") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Payments") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Portfolios") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Collections") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Payments") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Bank remittances") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Collections") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Direct payments") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Bank remittances") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Bank reconciliation") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Direct payments") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
 
-        m.add(new AbstractAction("Accounting") {
-            @Override
-            public void run() {
+            m.add(new AbstractAction("Bank reconciliation") {
+                @Override
+                public void run() {
 
-            }
-        });
+                }
+            });
+
+            m.add(new AbstractAction("Accounting") {
+                @Override
+                public void run() {
+
+                }
+            });
+
+        }
 
         return m;
     }
