@@ -16,6 +16,14 @@ import java.time.LocalDateTime;
 @Getter@Setter
 public class Audit implements AuditRecord {
 
+    public Audit() {
+
+    }
+
+    public Audit(User u) {
+        this.createdBy = u;
+    }
+
     @ManyToOne
     private User createdBy;
 
@@ -54,6 +62,14 @@ public class Audit implements AuditRecord {
             setModifiedBy(u);
             if (getCreatedBy() == null) setCreatedBy(u);
         }
+        if (getCreated() == null) setCreated(LocalDateTime.now());
+        setModified(LocalDateTime.now());
+    }
+
+    public void touch(User user) {
+        setModifiedBy(user);
+        if (getCreatedBy() == null) setCreatedBy(user);
+
         if (getCreated() == null) setCreated(LocalDateTime.now());
         setModified(LocalDateTime.now());
     }

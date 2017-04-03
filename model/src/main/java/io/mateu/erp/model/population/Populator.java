@@ -8,6 +8,7 @@ import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.transfer.Contract;
+import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.core.server.BaseServiceImpl;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -48,15 +49,29 @@ public class Populator {
             em.persist(p);
 
 
-            // create user admin
-            User u = new User();
-            u.setLogin("admin");
-            u.setName("Admin");
-            //u.setPassword(Helper.md5("1"));
-            u.setPassword("1");
-            u.setStatus(USER_STATUS.ACTIVE);
-            u.getPermissions().add(p);
-            em.persist(u);
+{
+    // create user admin
+    User u = new User();
+    u.setLogin("admin");
+    u.setName("Admin");
+    //u.setPassword(Helper.md5("1"));
+    u.setPassword("1");
+    u.setStatus(USER_STATUS.ACTIVE);
+    u.getPermissions().add(p);
+    em.persist(u);
+}
+
+            {
+                // create user admin
+                User u = new User();
+                u.setLogin(Constants.IMPORTING_USER_LOGIN);
+                u.setName("Importing User");
+                //u.setPassword(Helper.md5("1"));
+                u.setPassword("1");
+                u.setStatus(USER_STATUS.ACTIVE);
+                u.getPermissions().add(p);
+                em.persist(u);
+            }
 
         });
 

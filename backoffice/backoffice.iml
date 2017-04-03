@@ -5,7 +5,7 @@
       <configuration>
         <webroots>
           <root url="file://$MODULE_DIR$/src/main/webapp" relative="/" />
-          <root url="file://$MODULE_DIR$/overlays/io.mateu.ui.port-vaadin-1.0-SNAPSHOT" relative="/" />
+          <root url="file://$MODULE_DIR$/overlays/io.mateu.ui.port-vaadin-1.0-20170305.170102-21" relative="/" />
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src/main/java" />
@@ -79,7 +79,7 @@
     <orderEntry type="library" name="Maven: org.apache.commons:commons-collections4:4.1" level="project" />
     <orderEntry type="library" name="Maven: org.jdom:jdom2:2.0.6" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:21.0" level="project" />
-    <orderEntry type="library" name="Maven: io.mateu.ui:codegeneration-vaadin:1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.mateu.ui:port-vaadin:war:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.ui:port-javafx:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.12" level="project" />
   </component>
 </module>

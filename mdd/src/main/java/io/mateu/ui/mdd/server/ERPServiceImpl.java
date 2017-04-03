@@ -8,6 +8,7 @@ import io.mateu.ui.mdd.server.interfaces.AuditRecord;
 import io.mateu.ui.mdd.server.interfaces.Translated;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ERPService;
 import io.mateu.ui.mdd.shared.MetaData;
@@ -24,131 +25,33 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static io.mateu.ui.mdd.server.util.JPAHelper.getAllFields;
+import static io.mateu.ui.mdd.server.util.JPAHelper.getGetter;
+import static io.mateu.ui.mdd.server.util.JPAHelper.getSetter;
+
+
 /**
  * Created by miguel on 11/1/17.
  */
 public class ERPServiceImpl implements ERPService {
     @Override
     public Object[][] select(String jpql) throws Exception {
-
-        System.out.println("jpql: " + jpql);
-
-        List<Object[]> r = new ArrayList<>();
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
-                Query q = em.createQuery(jpql);
-                List rs = q.getResultList();
-                for (Object o : rs) {
-                    r.add((Object[]) o);
-                }
-
-            }
-        });
-
-
-        return r.toArray(new Object[0][]);
+        return JPAHelper.select(jpql);
     }
 
     @Override
     public Object selectSingleValue(String jpql) throws Exception {
-        return null;
+        return JPAHelper.selectSingleValue(jpql);
     }
 
     @Override
     public Data selectPaginated(Data parameters) throws Exception {
-        Data d = new Data();
-
-        int rowsPerPage = parameters.getInt("_rowsperpage");
-        int fromRow = rowsPerPage * parameters.getInt("_currentpageindex");
-        String jpql = parameters.getString("_sql");
-
-        d.getList("_data");
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
-                Query q = em.createQuery(jpql);
-                q.setFirstResult(fromRow);
-                q.setMaxResults(rowsPerPage);
-                List rs = q.getResultList();
-                for (Object o : rs) {
-                    Data r;
-                    d.getList("_data").add(r = new Data());
-                    if (o.getClass().isArray()) {
-                        Object[] l = (Object[]) o;
-                        if (l != null) for (int i = 0; i < l.length; i++) {
-                            r.set((i == 0)?"_id":"col" + i, l[i]);
-                        }
-                    } else {
-                        r.set("_id", "" + o);
-                    }
-                }
-
-                int numRows = q.getMaxResults();
-                //d.set("_data_currentpageindex", from);
-                d.set("_data_pagecount", numRows / rowsPerPage + ((numRows % rowsPerPage == 0)?0:1));
-            }
-        });
-
-
-        return d;
-
+        return JPAHelper.selectPaginated(parameters);
     }
 
     @Override
     public int executeUpdate(String jpaql) throws Exception {
-        final int[] r = {0};
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
-                if (jpaql.startsWith("delete")) {
-                    for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select x")).getResultList()) {
-                        if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete();
-
-                        for (Field f : getAllFields(o.getClass())) {
-                            if (f.getType().isAnnotationPresent(Entity.class)) {
-                                Object v = o.getClass().getMethod(getGetter(f)).invoke(o);
-                                if (v != null) {
-                                    Field parentField = null;
-                                    for (Field ff : getAllFields(f.getType())) {
-                                        try {
-                                            if (ff.isAnnotationPresent(OneToMany.class) && ((ParameterizedType) ff.getGenericType()).getActualTypeArguments()[0].equals(o.getClass())) {
-                                                OneToMany a = ff.getAnnotation(OneToMany.class);
-                                                if (f.getName().equals(a.mappedBy())) parentField = ff;
-                                            }
-                                        } catch (Exception e) {
-
-                                        }
-                                    }
-                                    if (parentField != null) {
-                                        if (parentField.isAnnotationPresent(MapKey.class)) {
-                                            String keyFieldName = parentField.getAnnotation(MapKey.class).name();
-                                            Field keyField = o.getClass().getDeclaredField(keyFieldName);
-                                            Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
-                                            Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                            if (m.containsKey(key)) m.remove(key);
-                                        } else {
-                                            List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                            l.remove(o);
-                                        }
-
-                                    }
-                                }
-                            }
-                        }
-
-
-                        em.remove(o);
-                        if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete();
-                    }
-                } else {
-                    r[0] = em.createQuery(jpaql).executeUpdate();
-                }
-            }
-        });
-        return r[0];
+        return JPAHelper.executeUpdate(jpaql);
     }
 
     @Override
@@ -329,13 +232,7 @@ public class ERPServiceImpl implements ERPService {
         return get(serverSideControllerKey, entityClassName, data.get("_id"));
     }
 
-    private String getGetter(Field f) {
-        return (("boolean".equals(f.getType().getName()) || Boolean.class.equals(f.getType()))?"is":"get") + f.getName().substring(0, 1).toUpperCase() + f.getName().substring(1);
-    }
 
-    private String getSetter(Field f) {
-        return "set" + f.getName().substring(0, 1).toUpperCase() + f.getName().substring(1);
-    }
     @Override
     public Data get(String serverSideControllerKey, String entityClassName, Object id) throws IllegalAccessException, InstantiationException, Exception {
         Data data = new Data();
@@ -598,15 +495,7 @@ public class ERPServiceImpl implements ERPService {
         return data;
     }
 
-    private List<Field> getAllFields(Class c) {
-        List<Field> l = new ArrayList<>();
 
-        if (c.getSuperclass() != null && c.getSuperclass().isAnnotationPresent(Entity.class)) l.addAll(getAllFields(c.getSuperclass()));
-
-        for (Field f : c.getDeclaredFields()) l.add(f);
-
-        return l;
-    }
 
     @Override
     public Object runInServer(String className, String methodName, Data parameters) throws Exception {
