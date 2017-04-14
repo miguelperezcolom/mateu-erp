@@ -1,14 +1,19 @@
 package io.mateu.ui.mdd.server.annotations;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Created by miguel on 18/1/17.
  */
+@Repeatable(SearchFilters.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD) //can use in method only.
 public @interface SearchFilter {
+
+    String value() default "";
+
+    String ql() default "";
+
+    String field() default "";
+
 }

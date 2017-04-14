@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.transfer;
 
 import io.mateu.erp.model.world.City;
+import io.mateu.ui.mdd.server.annotations.QLForCombo;
 import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,13 +17,19 @@ import java.util.List;
 @Entity(name = "TransferContractZone")
 @Getter
 @Setter
+@QLForCombo(ql = "select x.id, concat(coalesce(x.group, '*'), ' - ', x.name) from TransferContractZone x order by x.group, x.name")
 public class Zone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "_group")
+    @SearchFilter
+    private String group;
+
     @Required
+    @SearchFilter
     private String name;
 
     @OneToMany

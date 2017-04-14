@@ -32,6 +32,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@UseAutocompleteToSelect()
 public class TransferPoint {
 
     @Id
@@ -47,6 +48,7 @@ public class TransferPoint {
 
     @ManyToOne
     @Required
+    @SearchFilter
     private City city;
 
     @ManyToOne
@@ -69,13 +71,13 @@ public class TransferPoint {
 
 
     @Action(name = "Print all")
-    public static URL dumpToPdf() throws Exception {
+    public static URL dumpToPdf() throws Throwable {
         URL[] url = new URL[1];
 
 
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
 
                 long t0 = new Date().getTime();
 
@@ -123,7 +125,7 @@ public class TransferPoint {
         return url[0];
     }
 
-    private static Document dumpWholeTreeToXml() throws Exception {
+    private static Document dumpWholeTreeToXml() throws Throwable {
         Element xml = new Element("all");
 
         Helper.transact(new JPATransaction() {
@@ -153,7 +155,7 @@ public class TransferPoint {
         return new Document(xml);
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Throwable {
         System.out.println(new XMLOutputter(Format.getPrettyFormat()).outputString(dumpWholeTreeToXml()));
         System.out.println(dumpToPdf());
     }

@@ -28,9 +28,11 @@ public class AbstractContract {
     private Audit audit;
 
     @Required
+    @SearchFilter
     private String title;
 
     @Required
+    @SearchFilter
     private ContractType type;
 
     @Required
@@ -52,6 +54,7 @@ public class AbstractContract {
     @ManyToOne
     @StartsLine
     @Required
+    @SearchFilter
     private Actor supplier;
 
     @OneToMany

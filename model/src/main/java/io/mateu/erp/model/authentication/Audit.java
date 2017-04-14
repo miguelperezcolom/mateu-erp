@@ -8,6 +8,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Created by miguel on 19/1/17.
@@ -29,13 +30,16 @@ public class Audit implements AuditRecord {
 
     @Override
     public String toString() {
+
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-mm-dd hh:MM:ss");
+
         String s = "";
         String s1 = "";
         if (getCreatedBy() != null) s1 += "by " + getCreatedBy().getLogin();
-        if (getCreated() != null) s1 += (("".equals(s1))?"":" ") + getCreated();
+        if (getCreated() != null) s1 += (("".equals(s1))?"":" ") + getCreated().format(f);
         String s2 = "";
         if (getModifiedBy() != null) s2 += "by " + getModifiedBy().getLogin();
-        if (getModified() != null) s2 += (("".equals(s1))?"":" ") + getModified();
+        if (getModified() != null) s2 += (("".equals(s1))?"":" ") + getModified().format(f);
 
         if (!"".equals(s1)) s += "Created " + s1;
         if (!"".equals(s2)){

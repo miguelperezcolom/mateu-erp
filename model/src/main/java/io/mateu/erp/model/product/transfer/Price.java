@@ -27,14 +27,17 @@ public class Price {
 
     @ManyToOne
     @Required
+    @SearchFilter
     private Zone origin;
 
     @ManyToOne
     @Required
+    @SearchFilter
     private Zone destination;
 
     @ManyToOne
     @Required
+    @SearchFilter
     private Vehicle vehicle;
 
     @Required

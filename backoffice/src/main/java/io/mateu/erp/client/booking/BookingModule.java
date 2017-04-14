@@ -26,10 +26,24 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Generics") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.generic.GenericService", new MDDCallback());
+            }
+        });
+
         m.add(new AbstractAction("Transfers") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback());
+            }
+        });
+
+        m.add(new AbstractAction("Mapping") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferPointMapping", new MDDCallback());
             }
         });
 

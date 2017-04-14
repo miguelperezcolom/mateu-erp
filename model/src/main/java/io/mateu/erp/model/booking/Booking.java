@@ -25,6 +25,7 @@ public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SearchFilter
     private long id;
 
     @Embedded
@@ -33,16 +34,21 @@ public class Booking {
 
     @ManyToOne
     @Required
+    @SearchFilter
     private Actor agency;
 
     @Required
+    @SearchFilter
     private String agencyReference;
 
     @StartsLine
     @Required
+    @SearchFilter
     private String leadName;
 
     private String email;
+
+    private String telephone;
 
     @StartsLine
     private boolean confirmed;
@@ -50,6 +56,7 @@ public class Booking {
     private boolean cancelled;
 
     @Ignored
+    @SearchFilter
     private LocalDate start;
 
     @Ignored

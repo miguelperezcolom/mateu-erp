@@ -24,7 +24,7 @@ public class Helper {
     private static EntityManagerFactory emf;
 
 
-    public static void transact(SQLTransaction t) throws Exception {
+    public static void transact(SQLTransaction t) throws Throwable {
 
         transact(new JPATransaction() {
             @Override
@@ -39,7 +39,7 @@ public class Helper {
 
 
 
-    public static void transact(JPATransaction t) throws Exception {
+    public static void transact(JPATransaction t) throws Throwable {
 
         EntityManager em = getEMF().createEntityManager();
 
@@ -71,7 +71,7 @@ public class Helper {
         return emf;
     }
 
-    public static void notransact(SQLTransaction t) throws Exception {
+    public static void notransact(SQLTransaction t) throws Throwable {
 
         transact(new JPATransaction() {
             @Override
@@ -83,7 +83,7 @@ public class Helper {
         });
 
     }
-    public static void notransact(JPATransaction t) throws Exception {
+    public static void notransact(JPATransaction t) throws Throwable {
 
         EntityManager em = getEMF().createEntityManager();
 
@@ -110,7 +110,7 @@ public class Helper {
     }
 
 
-    public static Object[][] select(String sql) throws Exception {
+    public static Object[][] select(String sql) throws Throwable {
         final Object[][][] r = {null};
 
         notransact(new SQLTransaction() {
@@ -144,7 +144,7 @@ public class Helper {
     }
 
 
-    public static void execute(String sql) throws Exception {
+    public static void execute(String sql) throws Throwable {
 
         transact(new SQLTransaction() {
             @Override
@@ -158,7 +158,7 @@ public class Helper {
 
     }
 
-    public static Object selectSingleValue(String sql) throws Exception {
+    public static Object selectSingleValue(String sql) throws Throwable {
         Object o = null;
         Object[][] r = select(sql);
         if (r.length > 0 && r[0].length > 0) o = r[0][0];
@@ -166,7 +166,7 @@ public class Helper {
     }
 
 
-    public static void update(String sql) throws Exception {
+    public static void update(String sql) throws Throwable {
 
         transact(new SQLTransaction() {
             @Override
@@ -198,7 +198,7 @@ public class Helper {
 
                 String aux = "select count(*) from (" + sql + ") x";
                 total = ((Long) selectSingleValue(aux)).intValue();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
@@ -206,7 +206,7 @@ public class Helper {
     }
 
 
-    public static Object[][] selectPage(String sql, int desdeFila, int numeroFilas) throws Exception {
+    public static Object[][] selectPage(String sql, int desdeFila, int numeroFilas) throws Throwable {
         return select(sql + " LIMIT " + numeroFilas + " OFFSET " + desdeFila);
     }
 

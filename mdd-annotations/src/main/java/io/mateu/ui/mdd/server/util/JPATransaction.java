@@ -7,6 +7,6 @@ import javax.persistence.EntityManager;
  */
 public interface JPATransaction {
 
-    public void run(EntityManager em) throws Exception;
+    public void run(EntityManager em) throws Throwable;
 
 }

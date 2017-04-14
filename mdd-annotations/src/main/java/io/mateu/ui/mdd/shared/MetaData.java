@@ -19,4 +19,9 @@ public interface MetaData {
     public static final String FIELDTYPE_ENUM = "enum";
     public static final String FIELDTYPE_LIST = "list";
     public static final String FIELDTYPE_GRID = "grid";
+    public static final String FIELDTYPE_FILE = "file";
+    public static final String FIELDTYPE_DATA = "data";
+    public static final String FIELDTYPE_USERDATA = "userdata";
+    public static final String FIELDTYPE_LISTDATA = "listdata";
+
 }

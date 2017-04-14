@@ -19,13 +19,13 @@ import io.mateu.ui.mdd.server.util.JPATransaction;
  */
 public class Populator {
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) throws Throwable {
 
         populate();
 
     }
 
-    public static void populate() throws Exception {
+    public static void populate() throws Throwable {
 
         System.out.println("Populating database...");
 

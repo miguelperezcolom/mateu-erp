@@ -1,5 +1,6 @@
 package io.mateu.erp.model.authentication;
 
+import io.mateu.erp.model.common.File;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
@@ -54,6 +55,11 @@ public class User implements WithTriggers {
     private List<Permission> permissions = new ArrayList<Permission>();
 
 
+    @Ignored
+    @ManyToOne
+    private File photo;
+
+
     @Action(name = "test est. 1")
     public static void testEstatico1(@Required@Caption("a") String a, @Caption("b")String b) {
         System.out.println("testEstatico1(" + a + ", " + b + ")");
@@ -77,22 +83,22 @@ public class User implements WithTriggers {
     }
 
     @Override
-    public void beforeSet(boolean isNew) throws Exception {
+    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
 
     }
 
     @Override
-    public void afterSet(boolean isNew) throws Exception {
+    public void afterSet(EntityManager em, boolean isNew) throws Exception {
         setPassword("1");
     }
 
     @Override
-    public void beforeDelete() throws Exception {
+    public void beforeDelete(EntityManager em) throws Exception {
 
     }
 
     @Override
-    public void afterDelete() throws Exception {
+    public void afterDelete(EntityManager em) throws Exception {
 
     }
 }

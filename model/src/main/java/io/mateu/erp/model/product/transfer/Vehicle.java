@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
 import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,7 @@ public class Vehicle {
     private long id;
 
     @Required
+    @SearchFilter
     private String name;
 
     @Required

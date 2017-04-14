@@ -11,10 +11,7 @@ import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.QLForCombo;
-import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -46,6 +43,7 @@ import java.util.*;
 public class Contract extends AbstractContract {
 
     @Required
+    @SearchFilter
     private TransferType transferType;
 
     @OneToMany(mappedBy = "contract")
@@ -54,7 +52,7 @@ public class Contract extends AbstractContract {
 
 
     @Action(name = "Pdf")
-    public URL toPdf() throws Exception {
+    public URL toPdf() throws Throwable {
         //String xslfo = "contract.xsl";
 
         URL[] url = new URL[1];

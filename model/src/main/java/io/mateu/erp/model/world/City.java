@@ -4,6 +4,7 @@ import io.mateu.erp.model.multilanguage.Literal;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,9 +27,11 @@ public class City {
 
     @ManyToOne
     @Required
+    @SearchFilter
     private State state;
 
     @Required
+    @SearchFilter
     private String name;
 
     @ElementCollection

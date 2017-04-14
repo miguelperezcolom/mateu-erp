@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -22,6 +23,7 @@ public class Actor {
     private long id;
 
     @Required
+    @SearchFilter
     private String name;
 
     private String businessName;

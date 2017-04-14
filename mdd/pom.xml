@@ -53,12 +53,10 @@
             <scope>compile</scope>
         </dependency>
 
-
         <dependency>
-            <groupId>io.mateu.ui</groupId>
-            <artifactId>code-generation</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.11</version>
         </dependency>
 
     </dependencies>
