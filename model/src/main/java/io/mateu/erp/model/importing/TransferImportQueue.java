@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class TransferImportQueue {
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) throws Throwable {
         //hace un select de las tareas en estado pending
         //por cada una llama a execute()
         Object[] ids = JPAHelper.selectObjects("select x.id from TransferImportTask x " +
@@ -28,7 +28,7 @@ public class TransferImportQueue {
                         t.execute(em);
                     }
                 });
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
         }

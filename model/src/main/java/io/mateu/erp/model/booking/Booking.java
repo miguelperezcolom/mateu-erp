@@ -102,12 +102,12 @@ public class Booking {
         }
     }
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args) throws Throwable {
         Actor a = new Actor();
         a.setId(1);
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 System.out.println(getByAgencyRef(em, "1234", a));
             }
         });

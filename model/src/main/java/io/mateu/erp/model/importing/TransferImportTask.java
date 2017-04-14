@@ -60,7 +60,7 @@ public abstract class TransferImportTask {
 
 
     @Action(name = "Run")
-    public static void run(UserData _user, List<Data> _selection) throws Exception {
+    public static void run(UserData _user, List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {
@@ -75,7 +75,7 @@ public abstract class TransferImportTask {
     }
 
     @Action(name = "Cancel")
-    public static void cancel(UserData _user, List<Data> _selection) throws Exception {
+    public static void cancel(UserData _user, List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {

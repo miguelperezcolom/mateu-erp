@@ -46,7 +46,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
         try {
             Helper.transact(new JPATransaction() {
                 @Override
-                public void run(EntityManager em) throws Exception {
+                public void run(EntityManager em) throws Throwable {
 
                     //ir a la web, hacer login y recuperar fichero
                     String xml = "";
@@ -79,7 +79,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
 
                 }
             });
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
 

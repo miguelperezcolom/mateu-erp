@@ -18,7 +18,7 @@ import java.util.Map;
 public class JPAHelper {
 
 
-    public static Object[] selectObjects(String jpql) throws Exception {
+    public static Object[] selectObjects(String jpql) throws Throwable {
 
         System.out.println("jpql: " + jpql);
 
@@ -40,7 +40,7 @@ public class JPAHelper {
         return r.toArray(new Object[0]);
     }
 
-    public static Object[][] select(String jpql) throws Exception {
+    public static Object[][] select(String jpql) throws Throwable {
 
         System.out.println("jpql: " + jpql);
 
@@ -48,7 +48,7 @@ public class JPAHelper {
 
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 Query q = em.createQuery(jpql);
                 List rs = q.getResultList();
                 for (Object o : rs) {
@@ -63,11 +63,11 @@ public class JPAHelper {
     }
 
 
-    public static Object selectSingleValue(String jpql) throws Exception {
+    public static Object selectSingleValue(String jpql) throws Throwable {
         Object[] v = new Object[1];
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 Query q = em.createQuery(jpql);
                 List rs = q.getResultList();
                 for (Object o : rs) {
@@ -81,7 +81,7 @@ public class JPAHelper {
     }
 
 
-    public static Data selectPaginated(Data parameters) throws Exception {
+    public static Data selectPaginated(Data parameters) throws Throwable {
         Data d = new Data();
 
         int rowsPerPage = parameters.getInt("_rowsperpage");
@@ -92,7 +92,7 @@ public class JPAHelper {
 
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 Query q = em.createQuery(jpql);
                 q.setFirstResult(fromRow);
                 q.setMaxResults(rowsPerPage);
@@ -122,14 +122,14 @@ public class JPAHelper {
     }
 
 
-    public static int executeUpdate(String jpaql) throws Exception {
+    public static int executeUpdate(String jpaql) throws Throwable {
         final int[] r = {0};
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 if (jpaql.startsWith("delete")) {
                     for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select x")).getResultList()) {
-                        if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete();
+                        if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete(em);
 
                         for (Field f : getAllFields(o.getClass())) {
                             if (f.getType().isAnnotationPresent(Entity.class)) {
@@ -165,7 +165,7 @@ public class JPAHelper {
 
 
                         em.remove(o);
-                        if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete();
+                        if (o instanceof WithTriggers) ((WithTriggers)o).afterDelete(em);
                     }
                 } else {
                     r[0] = em.createQuery(jpaql).executeUpdate();
