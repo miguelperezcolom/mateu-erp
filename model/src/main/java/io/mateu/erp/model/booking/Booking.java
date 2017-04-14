@@ -2,7 +2,10 @@ package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -80,5 +83,34 @@ public class Booking {
     @Override
     public String toString() {
         return "" + getId() + " - " + getLeadName() + " (" + ((getAgency() != null)?getAgency().getName():"No agency") + ")";
+    }
+
+
+    public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
+    {
+        try {
+            String jpql = "select x from Booking x" +
+                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
+            Query q = em.createQuery(jpql);
+            Booking b = (Booking) q.getResultList().get(0);
+            return b;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void main(String... args) throws Exception {
+        Actor a = new Actor();
+        a.setId(1);
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Exception {
+                System.out.println(getByAgencyRef(em, "1234", a));
+            }
+        });
+
     }
 }
