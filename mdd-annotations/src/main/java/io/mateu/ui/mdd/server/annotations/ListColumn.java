@@ -19,4 +19,6 @@ public @interface ListColumn {
     String ql() default "";
 
     String field() default "";
+
+    boolean order() default false;
 }

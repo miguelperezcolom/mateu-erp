@@ -41,7 +41,7 @@ public class Booking {
     private Actor agency;
 
     @Required
-    @SearchFilter
+    @SearchFilter(exactMatch = true)
     private String agencyReference;
 
     @StartsLine

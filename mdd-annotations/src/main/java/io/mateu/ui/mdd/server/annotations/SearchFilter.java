@@ -16,4 +16,6 @@ public @interface SearchFilter {
 
     String field() default "";
 
+    boolean exactMatch() default false;
+
 }

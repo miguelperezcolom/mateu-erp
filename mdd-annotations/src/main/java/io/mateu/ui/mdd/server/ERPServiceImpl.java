@@ -508,6 +508,7 @@ public class ERPServiceImpl implements ERPService {
         Class c = Class.forName(entityClassName);
 
 
+        if (c.isAnnotationPresent(Indelible.class)) data.set("_indelible", true);
 
         // buscamos subclases
 
@@ -565,7 +566,7 @@ public class ERPServiceImpl implements ERPService {
                         public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                             return f.getAnnotation(annotationClass);
                         }
-                    }, null, sf);
+                    }, null, sf, true);
                 }
             }
         }
@@ -584,6 +585,15 @@ public class ERPServiceImpl implements ERPService {
                 if (!(f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(MapKey.class) || f.isAnnotationPresent(ElementCollection.class) || f.isAnnotationPresent(NotInList.class)))
                     addColumn(listColumns, f);
             }
+        }
+
+        boolean ordered = false;
+        for (Data d : listColumns) if (!d.isEmpty("_order")) {
+            ordered = true;
+            break;
+        }
+        if (!ordered && listColumns.size() >= 2) {
+            listColumns.get(1).set("_order", 0);
         }
 
 
@@ -795,15 +805,15 @@ public class ERPServiceImpl implements ERPService {
                 public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                     return f.getAnnotation(annotationClass);
                 }
-            }, lc, null);
+            }, lc, null, false);
         }
     }
 
     private void addField(List<Data> _fields, FieldInterfaced f) {
-        addField(_fields, f, null, null);
+        addField(_fields, f, null, null, false);
     }
 
-    private void addField(List<Data> _fields, FieldInterfaced f, ListColumn listColumnAnnotation, SearchFilter searchFilterAnnotation) {
+    private void addField(List<Data> _fields, FieldInterfaced f, ListColumn listColumnAnnotation, SearchFilter searchFilterAnnotation, boolean buildingSearchForm) {
         if (!f.isAnnotationPresent(Ignored.class)) {
 
             Data d = new Data();
@@ -855,9 +865,15 @@ public class ERPServiceImpl implements ERPService {
                         }
                     }
                 } else if (!Strings.isNullOrEmpty(listColumnAnnotation.ql()))
-                d.set("_qlname", listColumnAnnotation.ql());
+                d.set("_colql", listColumnAnnotation.ql());
                 else d.set("_qlname", f.getName());
+                if (listColumnAnnotation.order()) {
+                    d.set("_order", 0);
+                    d.set("_ordercol", f.getName());
+                }
+
             } else if (searchFilterAnnotation != null) {
+                if (searchFilterAnnotation.exactMatch()) d.set("_exactmatch", true);
                 if (!Strings.isNullOrEmpty(searchFilterAnnotation.field())) {
                     d.set("_qlname", f.getName() + "." + searchFilterAnnotation.field());
                     for (Field ff : getAllFields(f.getType())) {
@@ -926,7 +942,7 @@ public class ERPServiceImpl implements ERPService {
             } else if (f.isAnnotationPresent(TextArea.class)) {
                 d.set("_type", MetaData.FIELDTYPE_TEXTAREA);
                 upload = true;
-            } else if (f.isAnnotationPresent(Id.class)) {
+            } else if (f.isAnnotationPresent(Id.class) && !buildingSearchForm) {
                 if (f.isAnnotationPresent(GeneratedValue.class)) {
                     d.set("_type", MetaData.FIELDTYPE_ID);
                     upload = true;
