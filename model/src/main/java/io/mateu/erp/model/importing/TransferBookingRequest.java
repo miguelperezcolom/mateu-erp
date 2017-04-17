@@ -180,6 +180,9 @@ public class TransferBookingRequest {
                         break;
                 }
                 s.setTransferType(tt);
+                s.setOffice(getTask().getOffice());
+                s.setPos(getTask().getPointOfSale());
+                s.setComment("" + vehicle + ", " + serviceType);
             }
 
 
@@ -198,6 +201,9 @@ public class TransferBookingRequest {
                         break;
                 }
                 s.setTransferType(tt);
+                s.setOffice(getTask().getOffice());
+                s.setPos(getTask().getPointOfSale());
+                s.setComment("" + vehicle + ", " + serviceType);
             }
 
 

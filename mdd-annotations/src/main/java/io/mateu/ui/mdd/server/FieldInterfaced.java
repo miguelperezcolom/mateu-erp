@@ -18,5 +18,7 @@ public interface FieldInterfaced {
 
     String getName();
 
+    String getId();
+
     <T extends Annotation> T getAnnotation(Class<T> annotationClass);
 }

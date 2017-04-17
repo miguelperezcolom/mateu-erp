@@ -584,6 +584,11 @@ public class ERPServiceImpl implements ERPService {
                         }
 
                         @Override
+                        public String getId() {
+                            return f.getName();
+                        }
+
+                        @Override
                         public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                             return f.getAnnotation(annotationClass);
                         }
@@ -668,6 +673,11 @@ public class ERPServiceImpl implements ERPService {
 
                     @Override
                     public String getName() {
+                        return f.getName();
+                    }
+
+                    @Override
+                    public String getId() {
                         return f.getName();
                     }
 
@@ -790,6 +800,11 @@ public class ERPServiceImpl implements ERPService {
 
                     @Override
                     public String getName() {
+                        return (p.isAnnotationPresent(io.mateu.ui.mdd.server.annotations.Parameter.class))?p.getAnnotation(io.mateu.ui.mdd.server.annotations.Parameter.class).name():p.getName();
+                    }
+
+                    @Override
+                    public String getId() {
                         return p.getName();
                     }
 
@@ -843,6 +858,11 @@ public class ERPServiceImpl implements ERPService {
 
                 @Override
                 public String getName() {
+                    return f.getName();
+                }
+
+                @Override
+                public String getId() {
                     return f.getName();
                 }
 
@@ -902,6 +922,11 @@ public class ERPServiceImpl implements ERPService {
                                 }
 
                                 @Override
+                                public String getId() {
+                                    return ff.getName();
+                                }
+
+                                @Override
                                 public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                                     return ff.getAnnotation(annotationClass);
                                 }
@@ -948,6 +973,11 @@ public class ERPServiceImpl implements ERPService {
 
                                 @Override
                                 public String getName() {
+                                    return ff.getName();
+                                }
+
+                                @Override
+                                public String getId() {
                                     return ff.getName();
                                 }
 
@@ -1106,7 +1136,7 @@ public class ERPServiceImpl implements ERPService {
                 }
             }
             if (upload) {
-                d.set("_id", f.getName());
+                d.set("_id", f.getId());
                 if (f.isAnnotationPresent(Selection.class)) {
                     d.set("_id", "_selection");
                     d.set("_type", MetaData.FIELDTYPE_LISTDATA);

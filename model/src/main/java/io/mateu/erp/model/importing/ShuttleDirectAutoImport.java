@@ -4,6 +4,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -42,7 +43,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
     }
 
     @Action(name = "Execute")
-    public void getBookings(LocalDate from, int days)
+    public void getBookings(@Parameter(name = "From") LocalDate from, @Parameter(name = "Days") int days)
     {
 
         try {
@@ -69,7 +70,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                     if (xml!=null && xml.length()>0)
                     {
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
-                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(u,getCustomer(),xml);
+                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(u,getCustomer(),xml, getOffice(), getPointOfSale());
                         em.persist(t);
                         getHistorial().add(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }
