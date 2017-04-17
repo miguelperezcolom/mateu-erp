@@ -6,6 +6,7 @@ import io.mateu.erp.model.financials.Actor;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -25,6 +26,7 @@ public abstract class TransferImportTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
     private String name;
 
     @Embedded
@@ -46,7 +48,7 @@ public abstract class TransferImportTask {
 
     public abstract void execute(EntityManager em);
 
-    public void cancel(User u)
+   /* public void cancel(User u)
     {
         this.status=STATUS.CANCELLED;
         //this.getAudit().touch(u);
@@ -56,14 +58,14 @@ public abstract class TransferImportTask {
     {
         this.status=STATUS.PENDING;
         //this.getAudit().touch(u);
-    }
+    }*/
 
 
-    @Action(name = "Run")
-    public static void run(UserData _user, List<Data> _selection) throws Throwable {
+    @Action(name = "Retry")
+    public static void retry(UserData _user, List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 for (Data x : _selection) {
                     Object id = x.get("_id");
                     TransferImportTask t = em.find(TransferImportTask.class, id);
@@ -78,7 +80,7 @@ public abstract class TransferImportTask {
     public static void cancel(UserData _user, List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 for (Data x : _selection) {
                     Object id = x.get("_id");
                     TransferImportTask t = em.find(TransferImportTask.class, id);

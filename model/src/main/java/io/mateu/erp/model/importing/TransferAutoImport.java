@@ -98,7 +98,6 @@ public abstract class TransferAutoImport {
         }
 
 
-       // for (int c = in.read(); c != -1; c = in.read())
-       //     System.out.print((char) c);
+
     }
 }

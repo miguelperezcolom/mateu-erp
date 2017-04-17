@@ -13,6 +13,8 @@ public abstract class AbstractJPAListView extends AbstractSqlListView {
 
     @Override
     public void rpc(Data parameters, AsyncCallback<Data> callback) {
+        parameters.set("_sql", this.getSql());
+        parameters.set("_rowsperpage", Integer.valueOf(3000));
         ERPServiceAsync s = MateuUI.create(ERPService.class);
         s.selectPaginated(parameters, callback);
     }

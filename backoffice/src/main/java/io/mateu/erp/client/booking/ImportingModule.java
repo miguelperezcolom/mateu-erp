@@ -27,10 +27,10 @@ public class ImportingModule extends AbstractModule {
         });
 
 
-        m.add(new AbstractAction("Importing Queue") {
+        m.add(new AbstractAction("Auto imports") {
             @Override
             public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.importing.TransferImportTask", new MDDCallback());
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.importing.TransferAutoImport", new MDDCallback());
             }
         });
 
