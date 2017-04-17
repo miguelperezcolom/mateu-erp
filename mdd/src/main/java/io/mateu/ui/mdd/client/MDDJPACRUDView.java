@@ -61,7 +61,12 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     return as;
                 }
 
-                @Override
+            @Override
+            public String getEntityClassName() {
+                return entityClassName;
+            }
+
+            @Override
                 public String getViewId() {
                     return entityClassName + "-" + getInitialId();
                 }
