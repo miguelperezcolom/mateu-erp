@@ -1,6 +1,7 @@
 package io.mateu.erp.model.importing;
 
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,13 +11,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 import java.net.URLEncoder;
 import java.net.URL;
 import java.net.HttpURLConnection;
-import java.util.Map;
 
 
 /**
@@ -41,7 +40,8 @@ public abstract class TransferAutoImport {
     private Actor customer;//cliente de las reservas
 
     @ElementCollection
-    private Map<LocalDateTime,String> historial = new HashMap<LocalDateTime,String>();
+    @Output
+    private List<String> historial = new ArrayList<String>();
 
     public abstract void getBookings(LocalDate from, int days);
 

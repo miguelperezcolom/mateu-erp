@@ -1,13 +1,20 @@
 package io.mateu.erp.model.importing;
 
+import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.product.transfer.TransferType;
+import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -70,6 +77,9 @@ public class TransferBookingRequest {
     private String departurePickupDate;
     private String departurePickupTime;
 
+    @ManyToOne
+    private Booking booking;
+
     public String validate()
     {
         String err="";
@@ -113,14 +123,82 @@ public class TransferBookingRequest {
                     //Buscamos la reserva
                     Booking b = Booking.getByAgencyRef(em, agencyReference, customer);
 
+            //TODO: comprobar que elegimos bien el servicio de llegada y el de salida, para el caso de que hubiésemos creado la reserva a mano
+
                     if (b==null)//Crear reserva nueva
                     {
 
+                        b = new Booking();
+                        b.setAudit(new Audit(em.find(User.class, Constants.IMPORTING_USER_LOGIN)));
+                        em.persist(b);
+
+
+                        if (TRANSFERTYPE.ARRIVAL.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
+                            TransferService s;
+                            b.getServices().add(s = new TransferService());
+                            s.setAudit(new Audit(em.find(User.class, Constants.IMPORTING_USER_LOGIN)));
+                            s.setBooking(b);
+                            em.persist(s);
+                        }
+
+
+                        if (TRANSFERTYPE.DEPARTURE.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
+                            TransferService s;
+                            b.getServices().add(s = new TransferService());
+                            s.setAudit(new Audit(em.find(User.class, Constants.IMPORTING_USER_LOGIN)));
+                            s.setBooking(b);
+                            em.persist(s);
+                        }
                     }
                     else //reserva ya existente --> actualizar
                     {
 
                     }
+
+
+            setBooking(b);
+
+            b.setAgencyReference(agencyReference);
+            b.setAgency(customer);
+            b.setEmail(email);
+            b.setLeadName(passengerName);
+            b.setTelephone(phone);
+
+            int posServei = 0;
+            if (TRANSFERTYPE.ARRIVAL.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
+                TransferService s = (TransferService) b.getServices().get(posServei++);
+                s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
+                s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
+                s.setFlightOriginOrDestination("" + arrivalOriginAirport);
+                s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
+                s.setPax(adults + children + babies);
+                s.setPickupText(arrivalAirport);
+                TransferType tt = TransferType.SHUTTLE;
+                switch (serviceType.toLowerCase()) {
+                    case "private":
+                        tt = TransferType.PRIVATE;
+                        break;
+                }
+                s.setTransferType(tt);
+            }
+
+
+            if (TRANSFERTYPE.DEPARTURE.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
+                TransferService s = (TransferService) b.getServices().get(posServei++);
+                s.setPickupText("" + departureResort + " (" + departureAddress + ")");
+                s.setFlightNumber("" + departureFlightCompany + departureFlightNumber);
+                s.setFlightOriginOrDestination("" + departureDestinationAirport);
+                s.setFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
+                s.setPax(adults + children + babies);
+                s.setDropoffText(departureAirport);
+                TransferType tt = TransferType.SHUTTLE;
+                switch (serviceType.toLowerCase()) {
+                    case "private":
+                        tt = TransferType.PRIVATE;
+                        break;
+                }
+                s.setTransferType(tt);
+            }
 
 
         } catch (Exception ex) {
@@ -129,6 +207,18 @@ public class TransferBookingRequest {
         }
         return result;
 
+    }
+
+    private LocalDateTime getTime(String s) throws  Exception {
+        try {
+            return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+        } catch (Exception e1) {
+            try {
+                return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            } catch (Exception e2) {
+                return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm a"));
+            }
+        }
     }
 
     public String toXml()

@@ -92,7 +92,8 @@ public class Booking {
             String jpql = "select x from Booking x" +
                     " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
             Query q = em.createQuery(jpql);
-            Booking b = (Booking) q.getResultList().get(0);
+            List<Booking> l = q.getResultList();
+            Booking b = (l.size() > 0)?l.get(0):null;
             return b;
         }
         catch (Exception e)

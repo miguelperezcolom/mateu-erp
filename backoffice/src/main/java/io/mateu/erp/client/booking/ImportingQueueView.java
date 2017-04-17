@@ -63,13 +63,13 @@ public class ImportingQueueView extends AbstractJPAListView {
     @Override
     public List<AbstractColumn> createColumns() {
         return Arrays.asList(
-                new TextColumn("id", "Task Id", 60, false),
-                new TextColumn("status", "Status", 60, false),
-                new TextColumn("created", "Created", 60, false),
-                new TextColumn("modified", "Modified", 60, false),
-                new TextColumn("name", "Name", 60, false),
-                new TextColumn("report", "Report", 100, false),
-                new TextColumn("priority", "Priority", 60, false)
+                new TextColumn("_id", "Task Id", 60, false),
+                new TextColumn("col1", "Status", 60, false),
+                new TextColumn("col2", "Created", 120, false),
+                new TextColumn("col3", "Modified", 120, false),
+                new TextColumn("col4", "Name", 200, false),
+                new TextColumn("col5", "Report", 100, false),
+                new TextColumn("col6", "Priority", 60, false)
 
         );
     }

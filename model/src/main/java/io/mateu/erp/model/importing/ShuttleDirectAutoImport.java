@@ -3,6 +3,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -40,6 +41,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
         this.setIdTransportista(idtransportista);
     }
 
+    @Action(name = "Execute")
     public void getBookings(LocalDate from, int days)
     {
 
@@ -51,13 +53,14 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                     //ir a la web, hacer login y recuperar fichero
                     String xml = "";
                     DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                    DateTimeFormatter dfh = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
                     String fdesde = from.format(df);
                     String fhasta = from.plusDays(days).format(df);
                     try {
                         xml = recuperarXml(fdesde,fhasta);
                     } catch (Exception e)
                     {
-                        getHistorial().put(LocalDateTime.now(),"Error: " + e.getMessage() + " \n " + e.getStackTrace());
+                        getHistorial().add(LocalDateTime.now().format(dfh) + " - Error: " + e.getMessage() + " \n " + e.getStackTrace());
                         e.printStackTrace();
                         return; //Salimos porque sin el fichero no podemos hacer nada
                     }
@@ -68,11 +71,11 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
                         ShuttleDirectImportTask t = new ShuttleDirectImportTask(u,getCustomer(),xml);
                         em.persist(t);
-                        getHistorial().put(LocalDateTime.now(),"Tarea creada");
+                        getHistorial().add(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }
                     else {
                         System.out.println("Error: el xml esta vacio!");
-                        getHistorial().put(LocalDateTime.now(),"Error: el xml esta vacio!");
+                        getHistorial().add(LocalDateTime.now().format(dfh) + " - Error: el xml esta vacio!");
                         return; //Salimos porque sin el fichero no podemos hacer nada
                     }
 

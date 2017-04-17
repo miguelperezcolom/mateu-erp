@@ -138,7 +138,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             super.open(propertyId, data);
         } else {
             for (Data d : getMetadata().getList("_subclasses")) {
-                Class type = data.get("col" + (data.getPropertyNames().size() - 2));
+                Class type = data.get("col" + (data.getPropertyNames().size() - 3));
                 if (d.get("_type").equals(type.getCanonicalName())) {
                     openEditor(getNewEditorView(d.get("_type"), d.get("_editorform")).setInitialId(data.get(propertyId)));
                     break;
