@@ -40,6 +40,13 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Transfers summary") {
+            @Override
+            public void run() {
+                MateuUI.openView(new TransfersSummaryView());
+            }
+        });
+
         m.add(new AbstractAction("Mapping") {
             @Override
             public void run() {

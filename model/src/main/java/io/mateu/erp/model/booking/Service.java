@@ -78,6 +78,10 @@ public abstract class Service {
     private boolean valued;
 
 
+    private boolean readyToSend;
+    private boolean orderSent;
+    private boolean orderConfirmed;
+
 
     @Ignored
     @SearchFilter
@@ -109,7 +113,7 @@ public abstract class Service {
     private List<PriceDetail> priceBreakdown = new ArrayList<>();
 
 
-
+    @Action(name = "Price")
     public void price(EntityManager em) {
         setValued(false);
         setTotal(0);

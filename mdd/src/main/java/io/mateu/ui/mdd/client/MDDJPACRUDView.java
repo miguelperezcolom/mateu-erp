@@ -5,10 +5,7 @@ import io.mateu.ui.core.client.app.Callback;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.components.fields.*;
 import io.mateu.ui.core.client.components.fields.grids.CalendarField;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
-import io.mateu.ui.core.client.components.fields.grids.columns.OutputColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
+import io.mateu.ui.core.client.components.fields.grids.columns.*;
 import io.mateu.ui.core.client.views.*;
 import io.mateu.ui.core.shared.CellStyleGenerator;
 import io.mateu.ui.core.shared.Data;
@@ -145,8 +142,12 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         }
     }
 
-    private void buildFromMetadata(ViewForm f, Data metadata, boolean buildingSearchForm) {
-        for (Data d : metadata.getList("_fields")) {
+    private void buildFromMetadata(AbstractForm f, Data metadata, boolean buildingSearchForm) {
+        buildFromMetadata(f, metadata.getList("_fields"), buildingSearchForm);
+    }
+
+    private void buildFromMetadata(AbstractForm f, List<Data> fieldsMetadata, boolean buildingSearchForm) {
+        for (Data d : fieldsMetadata) {
             List<AbstractField> fields = new ArrayList<>();
             if (MetaData.FIELDTYPE_OUTPUT.equals(d.getString("_type"))) {
                 fields.add(new ShowTextField(d.getString("_id"), d.getString("_label")));
@@ -279,17 +280,21 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             } else if (MetaData.FIELDTYPE_GRID.equals(d.getString("_type"))) {
                 List<AbstractColumn> cols = new ArrayList<>();
                 for (Data dc : d.getList("_cols")) {
-                    if (MetaData.FIELDTYPE_STRING.equals(dc.getString("_type"))) {
-                        cols.add(new TextColumn(dc.getString("_id"), dc.getString("_label"), 100, true));
-                    } else if (MetaData.FIELDTYPE_ENTITY.equals(dc.getString("_type"))) {
-                        String ql = dc.getString("_ql");
-                        if (ql == null) ql = "select x.id, x.name from " + dc.getString("_entityClassName") + " x order by x.name";
-                        cols.add(new JPAComboBoxColumn(dc.getString("_id"), dc.getString("_label"), ql));
-                    } else {
-                        cols.add(new TextColumn(dc.getString("_id"), dc.getString("_label"), 100, true));
-                    }
+                    cols.add(new OutputColumn(dc.getString("_id"), dc.getString("_label"), 100));
                 }
-                fields.add(new GridField(d.getString("_id"), d.getString("_label"), cols));
+                fields.add(new GridField(d.getString("_id"), d.getString("_label"), cols) {
+                    @Override
+                    public AbstractForm getDataForm(Data initialData) {
+                        AbstractForm f = new AbstractForm() {
+                            @Override
+                            public Data initializeData() {
+                                return (initialData != null)?initialData:super.initializeData();
+                            }
+                        };
+                        buildFromMetadata(f, d.getList("_cols"), false);
+                        return f;
+                    }
+                });
             }
             if (d.containsKey("_required")) {
                 for (AbstractField field : fields) field.setRequired(true);

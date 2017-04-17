@@ -9,9 +9,25 @@ import io.mateu.ui.core.shared.Data;
  */
 public class MDDCallback extends Callback<Data> {
 
+    private Data initialData = new Data();
+
+    public MDDCallback() {
+
+    }
+
+    public MDDCallback(Data initialData) {
+        this.initialData = initialData;
+    }
+
+
     @Override
     public void onSuccess(Data result) {
-        MateuUI.openView(new MDDJPACRUDView(result));
+        MateuUI.openView(new MDDJPACRUDView(result) {
+            @Override
+            public Data initializeData() {
+                return initialData;
+            }
+        } );
     }
 
 }

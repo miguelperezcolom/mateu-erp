@@ -51,23 +51,38 @@ public class ERPServiceImpl implements ERPService {
     }
 
     @Override
-    public Object selectSingleValue(String jpql) throws Exception {
-        return null;
+    public Object selectSingleValue(String jpql) throws Throwable {
+        System.out.println("jpql: " + jpql);
+
+        Object[] r = new Object[1];
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Exception {
+                Query q = em.createQuery(jpql);
+                r[0] = q.getSingleResult();
+            }
+        });
+
+
+        return r[0];
     }
 
     @Override
     public Data selectPaginated(Data parameters) throws Throwable {
         Data d = new Data();
 
+        long t0 = new Date().getTime();
+
         int rowsPerPage = parameters.getInt("_rowsperpage");
-        int fromRow = rowsPerPage * parameters.getInt("_currentpageindex");
+        int fromRow = rowsPerPage * parameters.getInt("_data_currentpageindex");
         String jpql = parameters.getString("_sql");
 
         d.getList("_data");
 
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 Query q = em.createQuery(jpql);
                 q.setFirstResult(fromRow);
                 q.setMaxResults(rowsPerPage);
@@ -85,8 +100,14 @@ public class ERPServiceImpl implements ERPService {
                     }
                 }
 
-                int numRows = q.getMaxResults();
-                //d.set("_data_currentpageindex", from);
+                String jpqlx = jpql.substring(jpql.toLowerCase().indexOf(" from "));
+                if (jpqlx.toLowerCase().contains(" order by ")) jpqlx = jpqlx.substring(0, jpqlx.toLowerCase().indexOf(" order by "));
+                jpqlx = "select count(x) " + jpqlx;
+                Long numRows = (Long) selectSingleValue(jpqlx);
+                long t = new Date().getTime() - t0;
+                d.set("_subtitle", "" + numRows + " records found in " + t + "ms.");
+                d.set("_data_currentpageindex", fromRow / rowsPerPage);
+                d.set("_data_totalrows", numRows);
                 d.set("_data_pagecount", numRows / rowsPerPage + ((numRows % rowsPerPage == 0)?0:1));
             }
         });
@@ -660,13 +681,23 @@ public class ERPServiceImpl implements ERPService {
         Data def = new Data();
         def.set("_fields", editorFormFields);
         List<Data> actions = new ArrayList<>();
-        for (Method m : c.getDeclaredMethods()) {
+        for (Method m : getAllMethods(c)) {
             if (!Modifier.isStatic(m.getModifiers())) {
                 addMethod(actions, m);
             }
         }
         def.set("_actions", actions);
         return def;
+    }
+
+    private List<Method> getAllMethods(Class c) {
+        List<Method> l = new ArrayList<>();
+
+        if (c.getSuperclass() != null && c.getSuperclass().isAnnotationPresent(Entity.class)) l.addAll(getAllMethods(c.getSuperclass()));
+
+        for (Method f : c.getDeclaredMethods()) l.add(f);
+
+        return l;
     }
 
     private List<Field> getAllFields(Class c) {
@@ -690,16 +721,6 @@ public class ERPServiceImpl implements ERPService {
 
         Object[] r = {null};
 
-        List<Object> vs = new ArrayList<>();
-        for (Parameter p : m.getParameters()) {
-            if (p.isAnnotationPresent(Selection.class)) {
-                vs.add(parameters.get("_selection"));
-            } else {
-                vs.add(parameters.get(p.getName()));
-            }
-        }
-        Object[] args = vs.toArray();
-
         if (!Modifier.isStatic(m.getModifiers())) {
             Method finalM = m;
             Helper.transact(new JPATransaction() {
@@ -707,13 +728,37 @@ public class ERPServiceImpl implements ERPService {
                 public void run(EntityManager em) throws Throwable {
                     try {
                         Object o = (parameters.isEmpty("_id"))?c.newInstance():em.find(c, parameters.get("_id"));
+                        List<Object> vs = new ArrayList<>();
+                        for (Parameter p : finalM.getParameters()) {
+                            if (p.isAnnotationPresent(Selection.class)) {
+                                vs.add(parameters.get("_selection"));
+                            } else if (EntityManager.class.isAssignableFrom(p.getType())) {
+                                vs.add(em);
+                            } else {
+                                vs.add(parameters.get(p.getName()));
+                            }
+                        }
+                        Object[] args = vs.toArray();
+
                         r[0] = finalM.invoke(o, args);
                     } catch (InvocationTargetException e) {
                         throw e.getTargetException();
                     }
                 }
             });
-        } else r[0] = m.invoke(null, args);
+        } else {
+            List<Object> vs = new ArrayList<>();
+            for (Parameter p : m.getParameters()) {
+                if (p.isAnnotationPresent(Selection.class)) {
+                    vs.add(parameters.get("_selection"));
+                } else {
+                    vs.add(parameters.get(p.getName()));
+                }
+            }
+            Object[] args = vs.toArray();
+
+            r[0] = m.invoke(null, args);
+        }
 
         return r[0];
     }
@@ -722,7 +767,7 @@ public class ERPServiceImpl implements ERPService {
         if (m.isAnnotationPresent(Action.class)) {
             List<Data> parameters = new ArrayList<>();
             for (Parameter p : m.getParameters()) {
-                addField(parameters, new FieldInterfaced() {
+                if (!EntityManager.class.isAssignableFrom(p.getType())) addField(parameters, new FieldInterfaced() {
                     @Override
                     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
                         return p.isAnnotationPresent(annotationClass);
@@ -980,9 +1025,6 @@ public class ERPServiceImpl implements ERPService {
             } else if (UserData.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_USERDATA);
                 upload = true;
-            } else if (List.class.isAssignableFrom(f.getType())) {
-                d.set("_type", MetaData.FIELDTYPE_LISTDATA);
-                upload = true;
             } else {
                 boolean isEntity = false;
                 for (Annotation a : f.getType().getAnnotations()) {
@@ -1065,6 +1107,10 @@ public class ERPServiceImpl implements ERPService {
             }
             if (upload) {
                 d.set("_id", f.getName());
+                if (f.isAnnotationPresent(Selection.class)) {
+                    d.set("_id", "_selection");
+                    d.set("_type", MetaData.FIELDTYPE_LISTDATA);
+                }
 
                 //ancho columna y alineado
                 int ancho = 200;

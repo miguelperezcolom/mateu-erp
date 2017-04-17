@@ -81,5 +81,7 @@
     <orderEntry type="library" name="Maven: io.mateu.ui:code-generation:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.12" level="project" />
     <orderEntry type="library" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.ui:codegeneration-vaadin:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.ui:port-vaadin:war:1.0-SNAPSHOT" level="project" />
   </component>
 </module>

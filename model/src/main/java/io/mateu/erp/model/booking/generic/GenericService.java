@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.generic;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -30,6 +31,7 @@ public class GenericService extends Service implements WithTriggers {
     private String description;
 
     @OneToMany(mappedBy = "service")
+    @OwnedList
     private List<PriceLine> priceLines = new ArrayList<>();
 
     @Override
