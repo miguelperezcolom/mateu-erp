@@ -17,8 +17,8 @@ public class TransferImportQueue {
         //hace un select de las tareas en estado pending
         //por cada una llama a execute()
         Object[] ids = JPAHelper.selectObjects("select x.id from TransferImportTask x " +
-                " where  x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.OK or x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.PENDING or x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.ERROR");
-
+                //" where  x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.OK or x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.PENDING or x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.ERROR");
+                " where x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.PENDING");
         for (Object id : ids) {
             try {
                 Helper.transact(new JPATransaction() {

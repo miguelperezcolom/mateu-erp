@@ -95,12 +95,12 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
         params.put("codeSupplierViajesAlameda",this.getLogin());
         params.put("passwordSupplierViajesAlameda",this.getPassword());
         params.put("comboFecha", "-1");
-        params.put("fechaInicio", "01/01/2017");
-        params.put("fechaFin", "31/12/2017");
+        params.put("fechaInicio", fini);
+        params.put("fechaFin", ffin);
         params.put("opcionListado", "0");
         params.put("orderQuery", "fechaTraslado desc");
-        params.put("fechaInicioElegida", "01/01/2017");
-        params.put("fechaFinElegida", "31/12/2017");
+        params.put("fechaInicioElegida", fini);
+        params.put("fechaFinElegida", ffin);
         params.put("Logeando", "1");
         params.put("idTransportista", this.getIdTransportista());
         params.put("idioma", "En");
@@ -111,6 +111,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
 
     }
 
+    /*
     public static void main(String[] args)
     {
         try {
@@ -127,8 +128,6 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
            e.printStackTrace();
         };
 
-
-
-    }
+    }*/
 
 }

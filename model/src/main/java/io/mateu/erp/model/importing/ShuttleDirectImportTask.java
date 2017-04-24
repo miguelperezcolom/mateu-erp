@@ -71,7 +71,6 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             //recorre cada transfer del fichero
             List<Element> ltr = root.getChild("transfers").getChildren();
             String res = "";
-
             for (Element tr : ltr) {
                 try {
                     result += "Ref. " + tr.getChildText("barcode") + ": ";
@@ -83,34 +82,23 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                         result += res;
                     else {
                         result += "Ok ";
-                        nOk++; //Vamos contando los que han ido bien
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result += "Error: " + e.getClass() + " - " + e.getMessage();
+                    result += "Error => " + e.getClass() + " - " + e.getMessage();
                 }
 
             }
-
+            this.setStatus(STATUS.OK);//fichero procesado
 
         } catch (Exception ex) {
             ex.printStackTrace();
             result += "General exception: " + ex.getClass() + " - " + ex.getMessage();
+            this.setStatus(STATUS.ERROR);//fichero no procesado
         }
 
-        try {
-            //finalmente se actualiza el audit, se cambia el estado a Done y se graba el informe final
-           this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
-            if (nOk > 0)
-                this.setStatus(STATUS.OK);
-            else
-                this.setStatus(STATUS.ERROR);
-
-            this.setReport(result);
-        } catch (Exception ex) {
-            System.out.println("Error updating task's final status:");
-            ex.printStackTrace();
-        }
+        this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+        this.setReport(result);
 
       }
 
@@ -127,9 +115,9 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
         String type = tr.getChildText("type");
         if (type.toUpperCase().contains("SHUTTLE"))
-            rq.setServiceType("SHUTTLE");
+            rq.setServiceType(TransferBookingRequest.SERVICETYPE.SHUTTLE);
         else
-            rq.setServiceType("PRIVATE");
+            rq.setServiceType(TransferBookingRequest.SERVICETYPE.PRIVATE);
         rq.setVehicle(type);
 
         rq.setPassengerName(tr.getChildText("passengername"));
