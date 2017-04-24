@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -124,19 +125,20 @@ public class TransferBookingRequest {
     //formato dd/MM/yyyy
     private String checkDayFormat(String day) {
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDateTime d = LocalDateTime.parse(day, df);
+        LocalDate d = LocalDate.parse(day.trim(), df);
         return df.format(d);
+        //LocalDateTime.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
     //formato HH:mm
     private String checkTimeFormat(String time) {
         DateTimeFormatter dh = DateTimeFormatter.ofPattern("HH:mm");
          try {
-            return dh.format(LocalDateTime.parse(time, DateTimeFormatter.ofPattern("HH:mm")));
+            return dh.format(LocalDateTime.parse("01/01/2015 " +time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         } catch (Exception e1) {
             try {
-                return dh.format(LocalDateTime.parse(time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+                return dh.format(LocalDateTime.parse("01/01/2015 " + time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
             } catch (Exception e2) {
-                return dh.format(LocalDateTime.parse(time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm a")));
+                return dh.format(LocalDateTime.parse("01/01/2015 " + time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm a")));
             }
         }
     }
@@ -198,6 +200,8 @@ public class TransferBookingRequest {
                 b.setEmail(email);
                 b.setComments(comments);
                //TODO: b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
+                setBooking(b);
+
                 //ojo, si la reserva es nueva no comprobamos fechas. La reserva se crea siempre
                 if ((TRANSFERTYPE.ARRIVAL.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)))
                 {
@@ -280,10 +284,11 @@ public class TransferBookingRequest {
                 if (hayCambios) {
                     //TODO:    b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
                     b.getAudit().touch(u);
+                    setBooking(b);
                 }
 
-            }
-           setBooking(b);
+            }//fin else
+
 
         } catch (Exception ex) {
             result += ex.getMessage();

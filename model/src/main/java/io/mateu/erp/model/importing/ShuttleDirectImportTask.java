@@ -71,21 +71,23 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             //recorre cada transfer del fichero
             List<Element> ltr = root.getChild("transfers").getChildren();
             String res = "";
+            String aux = "";
             for (Element tr : ltr) {
+                aux = "";
                 try {
-                    result += "Ref. " + tr.getChildText("barcode") + ": ";
+                    aux = "Ref. " + tr.getChildText("barcode") + ": ";
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                     TransferBookingRequest rq = rellenarTransferBookingRequest(tr);
                     res = rq.updateBooking(em);
                     //vamos guardando el resultado junto con la refAge para crear el informe final
                     if (res.length() > 0)//hay errores
-                        result += res;
-                    else {
+                        result += aux + res;
+                    /*else {
                         result += "Ok ";
-                    }
+                    }*/
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result += "Error => " + e.getClass() + " - " + e.getMessage();
+                    result += aux + "Error => " + e.getClass() + " - " + e.getMessage();
                 }
 
             }
