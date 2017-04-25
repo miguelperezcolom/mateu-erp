@@ -7,6 +7,7 @@ public interface MetaData {
 
     public static final String FIELDTYPE_STRING = "string";
     public static final String FIELDTYPE_INTEGER = "integer";
+    public static final String FIELDTYPE_LONG = "long";
     public static final String FIELDTYPE_DOUBLE = "double";
     public static final String FIELDTYPE_BOOLEAN = "boolean";
     public static final String FIELDTYPE_DATE = "date";

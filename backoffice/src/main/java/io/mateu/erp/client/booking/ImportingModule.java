@@ -34,7 +34,12 @@ public class ImportingModule extends AbstractModule {
             }
         });
 
-
+        m.add(new AbstractAction("Transfer requests") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.importing.TransferBookingRequest", new MDDCallback());
+            }
+        });
 
 
         return m;

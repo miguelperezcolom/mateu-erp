@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -31,9 +32,11 @@ public class TransferBookingRequest {
 
     @ManyToOne
     private TransferImportTask task;
+    @SearchFilter
     private String agencyReference;
 
     @ManyToOne
+    @SearchFilter
     private Actor customer;
 
     private String created;
@@ -41,6 +44,7 @@ public class TransferBookingRequest {
     private String serviceType;//Shuttle, Private, etc
     private String vehicle; //Si es un privado (taxi, minibus, etc)
 
+    @SearchFilter
     private String passengerName;
     private String phone;
     private String email;
@@ -78,6 +82,7 @@ public class TransferBookingRequest {
     private String departurePickupTime;
 
     @ManyToOne
+    @SearchFilter
     private Booking booking;
 
     public String validate()

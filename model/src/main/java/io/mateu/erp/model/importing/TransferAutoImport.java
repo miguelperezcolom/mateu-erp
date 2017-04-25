@@ -3,6 +3,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,6 +51,13 @@ public abstract class TransferAutoImport {
     @ElementCollection
     @Output
     private List<String> historial = new ArrayList<String>();
+
+
+    @Action(name = "Run Queue")
+    public static void runQueue() throws Throwable {
+        TransferImportQueue.run();
+    }
+
 
     public abstract void getBookings(LocalDate from, int days);
 

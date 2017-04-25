@@ -6,6 +6,7 @@ import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.client.ServerSideWizardCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
@@ -23,6 +24,20 @@ public class BookingModule extends AbstractModule {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Booking", new MDDCallback());
+            }
+        });
+
+        m.add(new AbstractAction("Services") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Service", new MDDCallback());
+            }
+        });
+
+        m.add(new AbstractAction("Purchase orders") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.PurchaseOrder", new MDDCallback());
             }
         });
 
@@ -54,12 +69,12 @@ public class BookingModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Requests to suppliers") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.ProviderRequest", new MDDCallback());
-            }
-        });
+//        m.add(new AbstractAction("Transfer operation") {
+//            @Override
+//            public void run() {
+//                ((ERPServiceAsync) MateuUI.create(ERPService.class)).execute("io.mateu.erp.model.booking.transfer.TransferPointMapping", null, null, new ServerSideWizardCallback());
+//            }
+//        });
 
         return m;
     }

@@ -7,12 +7,12 @@ import javax.persistence.EntityManager;
  */
 public interface WithTriggers {
 
-    public void beforeSet(EntityManager em, boolean isNew) throws Exception;
+    public void beforeSet(EntityManager em, boolean isNew) throws Throwable;
 
-    public void afterSet(EntityManager em, boolean isNew) throws Exception;
+    public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable;
 
-    public void beforeDelete(EntityManager em) throws Exception;
+    public void beforeDelete(EntityManager em) throws Throwable;
 
-    public void afterDelete(EntityManager em) throws Exception;
+    public void afterDelete(EntityManager em) throws Throwable;
 
 }

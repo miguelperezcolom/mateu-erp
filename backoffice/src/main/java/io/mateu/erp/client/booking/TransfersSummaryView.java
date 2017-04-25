@@ -1,11 +1,19 @@
 package io.mateu.erp.client.booking;
 
+import io.mateu.erp.shared.booking.BookingService;
+import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
+import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
+import io.mateu.ui.core.client.components.fields.grids.columns.DataColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.OutputColumn;
-import io.mateu.ui.core.client.views.AbstractForm;
-import io.mateu.ui.core.client.views.AbstractSqlListView;
-import io.mateu.ui.core.client.views.AbstractView;
-import io.mateu.ui.core.client.views.ViewForm;
+import io.mateu.ui.core.client.views.*;
+import io.mateu.ui.core.shared.AsyncCallback;
+import io.mateu.ui.core.shared.CellStyleGenerator;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.Pair;
+import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,21 +21,116 @@ import java.util.List;
 /**
  * Created by miguel on 15/4/17.
  */
-public class TransfersSummaryView extends AbstractSqlListView {
-    @Override
-    public String getSql() {
-        return "select start, airport, sum(pax), sum(pax), sum(pax), sum(pax), sum(pax) from service group by start, airport order by start, airport";
-    }
+public class TransfersSummaryView extends AbstractListView {
 
     @Override
     public List<AbstractColumn> createColumns() {
         List<AbstractColumn> l = new ArrayList<>();
-        l.add(new OutputColumn("date", "Date", 120));
-        l.add(new OutputColumn("pri_inb", "Pr.In", 120));
-        l.add(new OutputColumn("pri_out", "Pr.Out", 120));
-        l.add(new OutputColumn("shu_inb", "Sh.In", 120));
-        l.add(new OutputColumn("shu_out", "Sh.Out", 120));
+        l.add(new OutputColumn("col1", "Date", 120).setStyleGenerator(new CellStyleGenerator() {
+            @Override
+            public String getStyle(Object o) {
+                String s = "" + o;
+                String css = null;
+                if (s.endsWith("SAT") || s.endsWith("SUN")) css = "warning";
+                return css;
+            }
+        }));
+        l.add(new OutputColumn("col2", "Airport", 120));
+        l.add(new DataColumn("col3", "SHUTTLE In", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col4", "SHUTTLE Out", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col5", "PRIVATE In", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col6", "PRIVATE Out", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col7", "EXECUT In", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col8", "EXECUT Out", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col9", "INCOM In", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new DataColumn("col10", "INCOM Out", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
         return l;
+    }
+
+    private void linkedOn(String id, Data data) {
+        Data d = new Data();
+        d.set("start_from", data.get("_id"));
+        d.set("start_to", data.get("_id"));
+        int colNo = Integer.parseInt(id.replaceAll("col", ""));
+        switch (colNo) {
+            case 3:
+                d.set("transferType", new Pair("SHUTTLE", "SHUTTLE"));
+                d.set("direction", new Pair("INBOUND", "INBOUND"));
+                break;
+            case 4:
+                d.set("transferType", new Pair("SHUTTLE", "SHUTTLE"));
+                d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
+                break;
+            case 5:
+                d.set("transferType", new Pair("PRIVATE", "PRIVATE"));
+                d.set("direction", new Pair("INBOUND", "INBOUND"));
+                break;
+            case 6:
+                d.set("transferType", new Pair("PRIVATE", "PRIVATE"));
+                d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
+                break;
+            case 7:
+                d.set("transferType", new Pair("EXECUTIVE", "EXECUTIVE"));
+                d.set("direction", new Pair("INBOUND", "INBOUND"));
+                break;
+            case 8:
+                d.set("transferType", new Pair("EXECUTIVE", "EXECUTIVE"));
+                d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
+                break;
+            case 9:
+                d.set("transferType", new Pair("INCOMING", "INCOMING"));
+                d.set("direction", new Pair("INBOUND", "INBOUND"));
+                break;
+            case 10:
+                d.set("transferType", new Pair("INCOMING", "INCOMING"));
+                d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
+                break;        }
+        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback(d));
+    }
+
+    @Override
+    public void rpc(Data data, AsyncCallback<Data> callback) {
+        ((BookingServiceAsync)MateuUI.create(BookingService.class)).getTransferSummary(getForm().getData(), callback);
     }
 
     @Override

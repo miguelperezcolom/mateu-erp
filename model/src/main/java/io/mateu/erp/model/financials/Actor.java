@@ -1,7 +1,9 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.StartsLine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -24,17 +26,33 @@ public class Actor {
 
     @Required
     @SearchFilter
+    @ListColumn
     private String name;
 
+    @ListColumn
     private String businessName;
 
     private String address;
 
     private String vatIdentificationNumber;
 
+    @ListColumn
     private String email;
 
+    @ListColumn
     private String comments;
+
+    @ManyToOne
+    @Required
+    private Currency currency;
+
+
+    @StartsLine
+    private PurchaseOrderSendingMethod ordersSendingMethod;
+    private String sendOrdersTo;
+    private boolean automaticOrderSending;
+    private boolean automaticOrderConfirmation;
+
 
     @Override
     public String toString() {

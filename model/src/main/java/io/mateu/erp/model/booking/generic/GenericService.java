@@ -1,21 +1,26 @@
 package io.mateu.erp.model.booking.generic;
 
-import io.mateu.erp.model.booking.Service;
+import com.google.common.base.Strings;
+import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.annotations.Badges;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
+import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -31,6 +36,7 @@ public class GenericService extends Service implements WithTriggers {
     private String description;
 
     @OneToMany(mappedBy = "service")
+    @OrderBy("id asc")
     @OwnedList
     private List<PriceLine> priceLines = new ArrayList<>();
 
@@ -40,7 +46,20 @@ public class GenericService extends Service implements WithTriggers {
     }
 
     @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Exception {
+    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+        setProcessingStatus(ProcessingStatus.INITIAL);
+
+        LocalDate s = null, f = null;
+        for (PriceLine l : getPriceLines()) {
+            if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
+            if (l.getFinish() != null && (f == null || l.getFinish().isAfter(f))) f = l.getFinish();
+        }
+        setStart(s);
+        setFinish(f);
+
+        price(em);
+
+        checkPurchase(em);
 
     }
 
@@ -55,7 +74,30 @@ public class GenericService extends Service implements WithTriggers {
     }
 
     @Override
-    protected double rate(EntityManager em) throws Throwable {
+    public String createSignature() {
+        String s = "error when serializing";
+        try {
+            Map<String, Object> m = toMap();
+            m.put("description", getDescription());
+            List<Map<String, Object>> ls = new ArrayList<>();
+            for (PriceLine l : getPriceLines()) {
+                Map<String, Object> x;
+                ls.add(x = new HashMap<>());
+                x.put("units", l.getUnits());
+                x.put("description", l.getDescription());
+                x.put("start", l.getStart());
+                x.put("finish", l.getFinish());
+                x.put("priceperunit", l.getPricePerUnit());
+                x.put("priceperunitandnight", l.getPricePerUnitAndNight());
+            }
+            s = Helper.toJson(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+    @Override
+    public double rate(EntityManager em) throws Throwable {
         if (getPriceLines().size() == 0) throw new Throwable("No price lines");
         double value = 0;
         for (PriceLine l : getPriceLines()) {
@@ -69,8 +111,36 @@ public class GenericService extends Service implements WithTriggers {
         return value;
     }
 
+
+
+    @Override
+    public List<PurchaseOrderLine> toPurchaseLines(EntityManager em) {
+        List<PurchaseOrderLine> ls = new ArrayList<>();
+        for (PriceLine pl : getPriceLines()) {
+            PurchaseOrderLine l = new PurchaseOrderLine();
+            l.setAction(PurchaseOrderLineAction.ADD);
+            String d = "";
+            if (!Strings.isNullOrEmpty(pl.getDescription())) d += pl.getDescription();
+            if (pl.getStart() != null) d += " from " + pl.getStart().format(DateTimeFormatter.BASIC_ISO_DATE);
+            if (pl.getFinish() != null) d += " to " + pl.getFinish().format(DateTimeFormatter.BASIC_ISO_DATE);
+            if (d.startsWith(" ")) d = d.substring(1);
+            l.setDescription(d);
+            l.setUnits(pl.getUnits());
+            ls.add(l);
+        }
+        if (ls .size() == 0) {
+            PurchaseOrderLine l = new PurchaseOrderLine();
+            l.setAction(PurchaseOrderLineAction.ADD);
+            l.setDescription(getDescription());
+            l.setUnits(1);
+            ls.add(l);
+        }
+        return ls;
+    }
+
     @Subtitle
     public String getSubitle() {
         return super.toString();
     }
+
 }

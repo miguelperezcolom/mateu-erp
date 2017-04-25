@@ -103,7 +103,7 @@ public class ERPServiceImpl implements ERPService {
                 String jpqlx = jpql.substring(jpql.toLowerCase().indexOf(" from "));
                 if (jpqlx.toLowerCase().contains(" order by ")) jpqlx = jpqlx.substring(0, jpqlx.toLowerCase().indexOf(" order by "));
                 jpqlx = "select count(x) " + jpqlx;
-                Long numRows = (Long) selectSingleValue(jpqlx);
+                int numRows = ((Long) selectSingleValue(jpqlx)).intValue();
                 long t = new Date().getTime() - t0;
                 d.set("_subtitle", "" + numRows + " records found in " + t + "ms.");
                 d.set("_data_currentpageindex", fromRow / rowsPerPage);
@@ -122,7 +122,7 @@ public class ERPServiceImpl implements ERPService {
         final int[] r = {0};
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
+            public void run(EntityManager em) throws Throwable {
                 if (jpaql.startsWith("delete")) {
                     for (Object o : em.createQuery(jpaql.replaceFirst("delete", "select x")).getResultList()) {
                         if (o instanceof WithTriggers) ((WithTriggers)o).beforeDelete(em);
@@ -145,7 +145,7 @@ public class ERPServiceImpl implements ERPService {
                                                     }
                                                 }
                                             }
-                                        } catch (Exception e) {
+                                        } catch (Throwable e) {
 
                                         }
                                     }
@@ -185,196 +185,240 @@ public class ERPServiceImpl implements ERPService {
     public Data set(String serverSideControllerKey, String entityClassName, Data data) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
-            public void run(EntityManager em) throws Exception {
-
-                Object o = null;
+            public void run(EntityManager em) throws Throwable {
 
                 Class cl = Class.forName(entityClassName);
 
-                Field idField = null;
-                boolean generated = false;
-                for (Field f : getAllFields(cl)) {
-                    if (f.isAnnotationPresent(Id.class)) {
-                        idField = f;
-                        if (f.isAnnotationPresent(GeneratedValue.class)) {
-                            generated = true;
-                        }
-                        break;
-                    }
-                }
-
-                boolean newInstance = false;
-                Object id = data.get("_id");
-                if (id != null) {
-                    o = em.find(Class.forName(entityClassName), (id instanceof Integer)?new Long((Integer)id):id);
-                } else {
-                    o = Class.forName(entityClassName).newInstance();
-                    em.persist(o);
-                    if (generated) {
-                        em.flush(); // to get the id
-                        Method m = o.getClass().getMethod(getGetter(idField));
-                        id = m.invoke(o);
-                    } else {
-                        id = data.get(idField.getName());
-                    }
-                    newInstance = true;
-                }
-
-                if (o instanceof WithTriggers) {
-                    ((WithTriggers)o).beforeSet(em, newInstance);
-                }
-
-                data.set("_id", id);
-
-                //auditoría
-                for (Field f : getAllFields(cl)) if (AuditRecord.class.isAssignableFrom(f.getType())) {
-                    AuditRecord a = (AuditRecord) o.getClass().getMethod(getGetter(f)).invoke(o);
-                    if (a == null) {
-                        BeanUtils.setProperty(o, f.getName(), a = (AuditRecord) f.getType().newInstance());
-                    }
-                    a.touch(em, data.getString("_user"));
-                }
-
-
-                for (Field f : getAllFields(cl)) {
-                    boolean updatable = true;
-                    if (AuditRecord.class.isAssignableFrom(f.getType()) || f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
-                        updatable = false;
-                    }
-
-                    if (updatable) {
-                        if (data.containsKey(f.getName())) {
-                            Object v = data.get(f.getName());
-                            if (v != null && v instanceof Pair) v = ((Pair) v).getValue();
-                            if (File.class.isAssignableFrom(f.getType())) {
-                                File current = (File) o.getClass().getMethod(getGetter(f)).invoke(o);
-                                if (v == null) {
-                                    if (current != null) {
-                                        em.remove(current);
-                                        v = null;
-                                    }
-                                } else {
-                                    FileLocator l = (FileLocator) v;
-                                    if (current == null) {
-                                        current = (File) f.getType().newInstance();
-                                        BeanUtils.setProperty(o, f.getName(), current);
-                                        em.persist(current);
-                                    }
-                                    if (l.isModified()) {
-                                        current.set(l.getFileName(), l.getTmpPath());
-                                    }
-                                }
-                            } else if (Translated.class.isAssignableFrom(f.getType())) {
-                                Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
-                                if (current == null) {
-                                    current = f.getType().newInstance();
-                                    BeanUtils.setProperty(o, f.getName(), current);
-                                    em.persist(current);
-                                }
-                                ((Translated) current).set((String) v);
-                            } else {
-
-                                if (f.isAnnotationPresent(ElementCollection.class)) {
-                                    List<Object> l = new ArrayList<>();
-                                    if (v != null) for (String x : ((String)v).split("\n")) {
-                                        l.add(x);
-                                    }
-                                    v = l;
-                                } else if (f.getType().isAnnotationPresent(Entity.class)) {
-                                    Field parentField = null;
-                                    for (Field ff : getAllFields(f.getType())) {
-                                        try {
-                                            if (ff.isAnnotationPresent(OneToMany.class) && ((ParameterizedType)ff.getGenericType()).getActualTypeArguments()[0].equals(o.getClass())) {
-                                                OneToMany a = ff.getAnnotation(OneToMany.class);
-                                                if (f.getName().equals(a.mappedBy())) parentField = ff;
-                                            }
-                                        } catch (Exception e) {
-
-                                        }
-                                    }
-                                    if (v != null) {
-                                        v = em.find(f.getType(), v);
-                                        if (parentField != null) {
-                                        /*
-    @OneToMany(mappedBy="albergue", cascade = CascadeType.ALL)
-    @MapKey(name="fecha")
-                                         */
-                                            if (parentField.isAnnotationPresent(MapKey.class)) {
-                                                String keyFieldName = parentField.getAnnotation(MapKey.class).name();
-                                                System.out.println("o = " + o);
-                                                System.out.println("o.class = " + o.getClass().getName());
-                                                System.out.println("keyFieldName = " + keyFieldName);
-                                                Field keyField = o.getClass().getDeclaredField(keyFieldName);
-                                                Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
-                                                System.out.println("key = " + key);
-                                                System.out.println("parentField = " + parentField.getName());
-                                                Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                                System.out.println("m = " + m);
-                                                if (!m.containsKey(key)) m.put(key, o);
-                                            } else {
-                                                List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                                if (!l.contains(o)) l.add(o);
-                                            }
-                                        }
-                                    } else {
-                                        if (parentField != null) {
-                                            Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
-                                            if (current != null) {
-                                                if (parentField.isAnnotationPresent(MapKey.class)) {
-                                                    String keyFieldName = parentField.getAnnotation(MapKey.class).name();
-                                                    Field keyField = o.getClass().getDeclaredField(keyFieldName);
-                                                    Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
-                                                    Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
-                                                    if (m.containsKey(key)) m.remove(key);
-                                                } else {
-                                                    List l = (List) current.getClass().getMethod(getGetter(parentField)).invoke(current);
-                                                    l.remove(o);
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else if (v != null && f.getType().isEnum()) {
-                                    for (Object x : f.getType().getEnumConstants()) {
-                                        if (v.equals(x.toString())) {
-                                            v = x;
-                                            break;
-                                        }
-                                    }
-                                } else if (List.class.isAssignableFrom(f.getType())) {
-                                ParameterizedType genericType = (ParameterizedType) f.getGenericType();
-                                Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
-
-                                if (f.isAnnotationPresent(OwnedList.class)) {
-                                    // todo: rellenar lista objetos...
-                                } else {
-                                    List<Object> l = new ArrayList<>();
-                                    List<Pair> ll = (v instanceof PairList)?((PairList)v).getValues(): (List<Pair>) v;
-                                    for (Pair p : ll) {
-                                        l.add(em.find(genericClass, p.getValue()));
-                                    }
-                                    v = l;
-                                }
-
-                            }
-
-
-                                System.out.println("o." + getSetter(f) + "(" + v + ")");
-                                //m.invoke(o, data.get(n));
-                                BeanUtils.setProperty(o, f.getName(), v);
-                            }
-                        }
-                    }
-                }
-
-                if (o instanceof WithTriggers) {
-                    ((WithTriggers)o).afterSet(em, newInstance);
-                }
+                fill(em, cl, data);
 
             }
         });
 
 
         return get(serverSideControllerKey, entityClassName, data.get("_id"));
+    }
+
+    private Object fill(EntityManager em, Class cl, Data data) throws Throwable {
+        Object o = null;
+
+        Field idField = null;
+        boolean generated = false;
+        for (Field f : getAllFields(cl)) {
+            if (f.isAnnotationPresent(Id.class)) {
+                idField = f;
+                if (f.isAnnotationPresent(GeneratedValue.class)) {
+                    generated = true;
+                }
+                break;
+            }
+        }
+
+        boolean newInstance = false;
+        Object id = data.get("_id");
+        if (id != null) {
+            o = em.find(cl, (id instanceof Integer)?new Long((Integer)id):id);
+        } else {
+            o = cl.newInstance();
+            em.persist(o);
+            if (generated) {
+                em.flush(); // to get the id
+                Method m = o.getClass().getMethod(getGetter(idField));
+                id = m.invoke(o);
+            } else {
+                id = data.get(idField.getName());
+            }
+            newInstance = true;
+        }
+
+        if (o instanceof WithTriggers) {
+            ((WithTriggers)o).beforeSet(em, newInstance);
+        }
+
+        data.set("_id", id);
+
+        fillEntity(em, o, data, newInstance);
+
+        return o;
+    }
+
+    private void fillEntity(EntityManager em, Object o, Data data, boolean newInstance) throws Throwable {
+        //auditoría
+        for (Field f : getAllFields(o.getClass())) if (AuditRecord.class.isAssignableFrom(f.getType())) {
+            AuditRecord a = (AuditRecord) o.getClass().getMethod(getGetter(f)).invoke(o);
+            if (a == null) {
+                BeanUtils.setProperty(o, f.getName(), a = (AuditRecord) f.getType().newInstance());
+            }
+            a.touch(em, data.getString("_user"));
+        }
+
+
+        for (Field f : getAllFields(o.getClass())) {
+            boolean updatable = true;
+            if (AuditRecord.class.isAssignableFrom(f.getType()) || f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
+                updatable = false;
+            }
+
+            if (updatable) {
+                if (data.containsKey(f.getName())) {
+                    Object v = data.get(f.getName());
+                    if (v != null && v instanceof Pair) v = ((Pair) v).getValue();
+                    if (File.class.isAssignableFrom(f.getType())) {
+                        File current = (File) o.getClass().getMethod(getGetter(f)).invoke(o);
+                        if (v == null) {
+                            if (current != null) {
+                                em.remove(current);
+                                v = null;
+                            }
+                        } else {
+                            FileLocator l = (FileLocator) v;
+                            if (current == null) {
+                                current = (File) f.getType().newInstance();
+                                BeanUtils.setProperty(o, f.getName(), current);
+                                em.persist(current);
+                            }
+                            if (l.isModified()) {
+                                current.set(l.getFileName(), l.getTmpPath());
+                            }
+                        }
+                    } else if (Translated.class.isAssignableFrom(f.getType())) {
+                        Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
+                        if (current == null) {
+                            current = f.getType().newInstance();
+                            BeanUtils.setProperty(o, f.getName(), current);
+                            em.persist(current);
+                        }
+                        ((Translated) current).set((String) v);
+                    } else {
+
+                        if (f.isAnnotationPresent(ElementCollection.class)) {
+                            List<Object> l = new ArrayList<>();
+                            if (v != null) for (String x : ((String)v).split("\n")) {
+                                l.add(x);
+                            }
+                            v = l;
+                        } else if (f.getType().isAnnotationPresent(Entity.class)) {
+                            Field parentField = null;
+                            for (Field ff : getAllFields(f.getType())) {
+                                try {
+                                    if (ff.isAnnotationPresent(OneToMany.class) && ((ParameterizedType)ff.getGenericType()).getActualTypeArguments()[0].equals(o.getClass())) {
+                                        OneToMany a = ff.getAnnotation(OneToMany.class);
+                                        if (f.getName().equals(a.mappedBy())) parentField = ff;
+                                    }
+                                } catch (Exception e) {
+
+                                }
+                            }
+                            if (v != null) {
+                                v = em.find(f.getType(), v);
+                                if (parentField != null) {
+                                        /*
+    @OneToMany(mappedBy="albergue", cascade = CascadeType.ALL)
+    @MapKey(name="fecha")
+                                         */
+                                    if (parentField.isAnnotationPresent(MapKey.class)) {
+                                        String keyFieldName = parentField.getAnnotation(MapKey.class).name();
+                                        System.out.println("o = " + o);
+                                        System.out.println("o.class = " + o.getClass().getName());
+                                        System.out.println("keyFieldName = " + keyFieldName);
+                                        Field keyField = o.getClass().getDeclaredField(keyFieldName);
+                                        Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
+                                        System.out.println("key = " + key);
+                                        System.out.println("parentField = " + parentField.getName());
+                                        Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                        System.out.println("m = " + m);
+                                        if (!m.containsKey(key)) m.put(key, o);
+                                    } else {
+                                        List l = (List) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                        if (!l.contains(o)) l.add(o);
+                                    }
+                                }
+                            } else {
+                                if (parentField != null) {
+                                    Object current = o.getClass().getMethod(getGetter(f)).invoke(o);
+                                    if (current != null) {
+                                        if (parentField.isAnnotationPresent(MapKey.class)) {
+                                            String keyFieldName = parentField.getAnnotation(MapKey.class).name();
+                                            Field keyField = o.getClass().getDeclaredField(keyFieldName);
+                                            Object key = o.getClass().getMethod(getGetter(keyField)).invoke(o);
+                                            Map m = (Map) v.getClass().getMethod(getGetter(parentField)).invoke(v);
+                                            if (m.containsKey(key)) m.remove(key);
+                                        } else {
+                                            List l = (List) current.getClass().getMethod(getGetter(parentField)).invoke(current);
+                                            l.remove(o);
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (v != null && f.getType().isEnum()) {
+                            for (Object x : f.getType().getEnumConstants()) {
+                                if (v.equals(x.toString())) {
+                                    v = x;
+                                    break;
+                                }
+                            }
+                        } else if (List.class.isAssignableFrom(f.getType())) {
+                            ParameterizedType genericType = (ParameterizedType) f.getGenericType();
+                            Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
+
+                            if (f.isAnnotationPresent(OwnedList.class)) {
+                                // todo: rellenar lista objetos...
+                                String idfieldatx = "id";
+                                for (Field fx : getAllFields(genericClass)) if (fx.isAnnotationPresent(Id.class)) {
+                                    idfieldatx = fx.getName();
+                                    break;
+                                }
+                                List aux = (List)o.getClass().getMethod(getGetter(f)).invoke(o);
+                                List borrar = new ArrayList();
+                                for (Object x : aux) {
+                                    boolean found = false;
+                                    for (Data d : (List<Data>) v) {
+                                        if (x.getClass().getMethod(getGetter(x.getClass().getDeclaredField(idfieldatx))).invoke(x).equals(d.get("_id"))) {
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!found) borrar.add(x);
+                                }
+                                aux.removeAll(borrar);
+                                for (Object x : borrar) em.remove(x);
+                                for (Data d : (List<Data>) v) {
+                                    if (d.isEmpty("_id")) {
+                                        Object x = fill(em, genericClass, d);
+                                        if (f.isAnnotationPresent(OneToMany.class)) {
+                                            String mappedby = f.getAnnotation(OneToMany.class).mappedBy();
+                                            if (!Strings.isNullOrEmpty(mappedby)) {
+                                                x.getClass().getMethod(getSetter(x.getClass().getDeclaredField(mappedby)), o.getClass()).invoke(x, o);
+                                            }
+                                        }
+                                        aux.add(x);
+                                    } else {
+                                        fillEntity(em, em.find(genericClass, d.get("_id")), d, false);
+                                    }
+                                }
+                                break; // no hacer el set
+                            } else {
+                                List<Object> l = new ArrayList<>();
+                                List<Pair> ll = (v instanceof PairList)?((PairList)v).getValues(): (List<Pair>) v;
+                                for (Pair p : ll) {
+                                    l.add(em.find(genericClass, p.getValue()));
+                                }
+                                v = l;
+                            }
+
+                        }
+
+
+                        //System.out.println("o." + getSetter(f) + "(" + v + ")");
+                        //m.invoke(o, data.get(n));
+                        BeanUtils.setProperty(o, f.getName(), v);
+                    }
+                }
+            }
+        }
+
+        if (o instanceof WithTriggers) {
+            ((WithTriggers)o).afterSet(em, newInstance);
+        }
     }
 
     private String getGetter(Field f) {
@@ -402,6 +446,17 @@ public class ERPServiceImpl implements ERPService {
 
                     if (m.isAnnotationPresent(Subtitle.class)) {
                         data.set("_subtitle", m.invoke(o));
+                    }
+
+                    if (m.isAnnotationPresent(Badges.class)) {
+                        data.set("_badges", m.invoke(o));
+                    }
+                }
+
+                if (data.isEmpty("_badges")) for (Method m : getAllMethods(o.getClass())) {
+
+                    if (m.isAnnotationPresent(Badges.class)) {
+                        data.set("_badges", m.invoke(o));
                     }
                 }
 
@@ -520,14 +575,9 @@ public class ERPServiceImpl implements ERPService {
         return id;
     }
 
-
-    @Override
-    public Data getMetaData(String entityClassName) throws Exception {
+    public Data getMetadaData(Class c) throws Exception {
         Data data = new Data();
-        data.set("_entityClassName", entityClassName);
-
-        Class c = Class.forName(entityClassName);
-
+        data.set("_entityClassName", c.getName());
 
         if (c.isAnnotationPresent(Indelible.class)) data.set("_indelible", true);
 
@@ -539,7 +589,7 @@ public class ERPServiceImpl implements ERPService {
 
         List<Data> subclases = new ArrayList<>();
         for (Class s : subTypes) {
-            subclases.add(new Data("_name", capitalize(s.getSimpleName()), "_type", s.getCanonicalName(), "_editorform", getEditorForm(s)));
+            if (s.getCanonicalName() != null) subclases.add(new Data("_name", capitalize(s.getSimpleName()), "_type", s.getCanonicalName(), "_editorform", getEditorForm(s)));
         }
         if (subclases.size() > 0) data.set("_subclasses", subclases);
 
@@ -620,12 +670,13 @@ public class ERPServiceImpl implements ERPService {
         }
         if (!ordered && listColumns.size() >= 2) {
             listColumns.get(1).set("_order", 0);
+            listColumns.get(1).set("_ordercol", listColumns.get(1).get("_qlname"));
         }
 
 
 
 
-        for (Method m : c.getDeclaredMethods()) {
+        for (Method m : getAllMethods(c)) {
             if (Modifier.isStatic(m.getModifiers())) {
                 addMethod(staticActions, m);
             }
@@ -642,6 +693,14 @@ public class ERPServiceImpl implements ERPService {
         data.set("_editorform", getEditorForm(c));
 
         return data;
+    }
+
+
+    @Override
+    public Data getMetaData(String entityClassName) throws Exception {
+        Class c = Class.forName(entityClassName);
+
+        return getMetadaData(c);
     }
 
     private Data getEditorForm(Class c) {
@@ -744,6 +803,15 @@ public class ERPServiceImpl implements ERPService {
                                 vs.add(parameters.get("_selection"));
                             } else if (EntityManager.class.isAssignableFrom(p.getType())) {
                                 vs.add(em);
+                            } else if (p.getType().isAnnotationPresent(Entity.class)) {
+                                Object v = parameters.get(p.getName());
+                                if (v != null) {
+                                    Pair x = (Pair) v;
+                                    if (x.getValue() != null) {
+                                        v = em.find(p.getType(), x.getValue());
+                                    }
+                                }
+                                vs.add(v);
                             } else {
                                 vs.add(parameters.get(p.getName()));
                             }
@@ -757,20 +825,62 @@ public class ERPServiceImpl implements ERPService {
                 }
             });
         } else {
-            List<Object> vs = new ArrayList<>();
+            boolean needsEM = false;
             for (Parameter p : m.getParameters()) {
-                if (p.isAnnotationPresent(Selection.class)) {
-                    vs.add(parameters.get("_selection"));
-                } else {
-                    vs.add(parameters.get(p.getName()));
-                }
+                if (EntityManager.class.equals(p.getType())) needsEM = true;
             }
-            Object[] args = vs.toArray();
+            if (needsEM) {
+                Method finalM1 = m;
+                Helper.transact(new JPATransaction() {
+                    @Override
+                    public void run(EntityManager em) throws Throwable {
 
-            r[0] = m.invoke(null, args);
+                        List<Object> vs = new ArrayList<>();
+                        for (Parameter p : finalM1.getParameters()) {
+                            if (p.isAnnotationPresent(Selection.class)) {
+                                vs.add(parameters.get("_selection"));
+                            } else if (EntityManager.class.isAssignableFrom(p.getType())) {
+                                vs.add(em);
+                            } else if (p.getType().isAnnotationPresent(Entity.class)) {
+                                Object v = parameters.get(p.getName());
+                                if (v != null) {
+                                    Pair x = (Pair) v;
+                                    if (x.getValue() != null) {
+                                        v = em.find(p.getType(), x.getValue());
+                                    }
+                                }
+                                vs.add(v);
+                            } else {
+                                vs.add(parameters.get(p.getName()));
+                            }
+                        }
+                        Object[] args = vs.toArray();
+
+                        r[0] = finalM1.invoke(null, args);
+
+                    }
+                });
+            } else {
+                List<Object> vs = new ArrayList<>();
+                for (Parameter p : m.getParameters()) {
+                    if (p.isAnnotationPresent(Selection.class)) {
+                        vs.add(parameters.get("_selection"));
+                    } else {
+                        vs.add(parameters.get(p.getName()));
+                    }
+                }
+                Object[] args = vs.toArray();
+
+                r[0] = m.invoke(null, args);
+            }
         }
 
         return r[0];
+    }
+
+    @Override
+    public WizardPageVO execute(String wizardClassName, Object action, Data data) throws Throwable {
+        return ((AbstractServerSideWizard)Class.forName(wizardClassName).newInstance()).execute(action, data);
     }
 
     private void addMethod(List<Data> actions, Method m) {
@@ -817,6 +927,8 @@ public class ERPServiceImpl implements ERPService {
             Data a = new Data();
             a.set("_entityClassName", m.getDeclaringClass().getName());
             a.set("_name", m.getAnnotation(Action.class).name());
+            if (m.getAnnotation(Action.class).callOnEnterKeyPressed()) a.set("_callonenterkeypressed", true);
+            if (m.getAnnotation(Action.class).addAsButton()) a.set("_addasbutton", true);
             a.set("_methodname", m.getName());
             a.set("_parameters", parameters);
             Data def;
@@ -1011,7 +1123,7 @@ public class ERPServiceImpl implements ERPService {
                 d.set("_unmodifiable", true);
             }
 
-            if (f.isAnnotationPresent(Output.class)) {
+            if (f.isAnnotationPresent(Output.class) && searchFilterAnnotation == null) {
                 d.set("_type", MetaData.FIELDTYPE_OUTPUT);
                 upload = true;
             } else if (f.isAnnotationPresent(TextArea.class)) {
@@ -1025,8 +1137,11 @@ public class ERPServiceImpl implements ERPService {
                     d.set("_type", MetaData.FIELDTYPE_PK);
                     upload = true;
                 }
-            } else if ("int".equals(f.getType().getName()) || "long".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
+            } else if ("int".equals(f.getType().getName()) || Integer.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_INTEGER);
+                upload = true;
+            } else if ("long".equals(f.getType().getName()) || Long.class.equals(f.getType())) {
+                d.set("_type", MetaData.FIELDTYPE_LONG);
                 upload = true;
             } else if (String.class.equals(f.getType())) {
                 d.set("_type", MetaData.FIELDTYPE_STRING);

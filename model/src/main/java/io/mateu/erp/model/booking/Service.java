@@ -3,18 +3,21 @@ package io.mateu.erp.model.booking;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.product.generic.Product;
-import io.mateu.erp.model.product.transfer.Vehicle;
+import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.Parameter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by miguel on 31/1/17.
@@ -34,7 +37,6 @@ public abstract class Service {
 
     @ManyToOne
     @Required
-
     @SearchFilter(field = "id")
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
@@ -45,10 +47,20 @@ public abstract class Service {
 
     @StartsLine
     @ListColumn
+    @CellStyleGenerator(CancelledCellStyleGenerator.class)
     private boolean cancelled;
 
     @ListColumn
+    @CellStyleGenerator(NoShowCellStyleGenerator.class)
     private boolean noShow;
+
+    @ListColumn
+    @CellStyleGenerator(LockedCellStyleGenerator.class)
+    private boolean locked;
+
+    @ListColumn
+    @CellStyleGenerator(HeldCellStyleGenerator.class)
+    private boolean held;
 
 
     @TextArea
@@ -69,40 +81,53 @@ public abstract class Service {
     @ManyToOne
     private Actor preferredProvider;
 
+    private boolean alreadyPurchased;
+
+
     private boolean valueOverrided;
 
     private double overridedValue;
 
     @Output
     @ListColumn
+    @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
+    @Output
+    @ListColumn
+    @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
+    private ProcessingStatus processingStatus;
 
-    private boolean readyToSend;
-    private boolean orderSent;
-    private boolean orderConfirmed;
-
+    public void setProcessingStatus(ProcessingStatus processingStatus) {
+        this.processingStatus = processingStatus;
+        if (getProcessingStatus() != null) switch (getProcessingStatus()) {
+            case INITIAL: setEffectiveProcessingStatus(100); break;
+            case DATA_OK: setEffectiveProcessingStatus(200); break;
+            case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
+            case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
+            case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
+            case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
+            default: setEffectiveProcessingStatus(0);
+        }
+    }
 
     @Ignored
-    @SearchFilter
+    private int effectiveProcessingStatus;
+
+    @Output
     @ListColumn
+    @SearchFilter
+    private String providers;
+
+
+    @NotInEditor
+    @SearchFilter
+    @ListColumn(order = true)
     private LocalDate start;
 
     @Ignored
     @ListColumn
     private LocalDate finish;
-
-    @Ignored
-    private int units;
-
-    @Ignored
-    private int adults;
-
-    @Ignored
-    private int children;
-
-    @Ignored
-    private int[] ages;
 
     @Output
     @ListColumn
@@ -111,6 +136,89 @@ public abstract class Service {
     @Ignored
     @OneToMany
     private List<PriceDetail> priceBreakdown = new ArrayList<>();
+
+    @ManyToMany
+    @Ignored
+    private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
+
+
+    @Ignored
+    private String signature;
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("cancelled", isCancelled());
+        m.put("comment", getComment());
+        if (getPreferredProvider() != null) m.put("preferredprovider", getPreferredProvider());
+        m.put("start", getStart());
+        m.put("finish", getFinish());
+        return m;
+    }
+
+    @Action(name = "Send to provider")
+    public static void sendToProvider(EntityManager em, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider) {
+        for (Data d : selection) {
+            Service s = em.find(Service.class, d.get("_id"));
+            if (provider != null) s.setPreferredProvider(provider);
+            try {
+                s.checkPurchase(em);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+    }
+
+
+    public abstract String createSignature();
+
+    @Action(name = "Purchase")
+    public void checkPurchase(EntityManager em) throws Throwable {
+        if (isAlreadyPurchased()) {
+            setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+        } else if (getSignature() == null || !getSignature().equals(createSignature()) || !ProcessingStatus.PURCHASEORDERS_SENT.equals(getProcessingStatus())) {
+            setSignature(createSignature());
+            setProcessingStatus(ProcessingStatus.DATA_OK);
+            try {
+                generatePurchaseOrders(em);
+                setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+                for (PurchaseOrder po : getPurchaseOrders()) {
+                    if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
+                }
+                for (PurchaseOrder po : getPurchaseOrders()) {
+                    if (!po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
+                        try {
+                            po.send(em);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                boolean allSent = getPurchaseOrders().size() > 0;
+                boolean allConfirmed = getPurchaseOrders().size() > 0;
+                for (PurchaseOrder po : getPurchaseOrders()) {
+                    if (!po.isSent()) {
+                        allSent = false;
+                        allConfirmed = false;
+                    } else if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) {
+                        allConfirmed = false;
+                    }
+                }
+                if (allConfirmed) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+                else if (allSent) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+            String ps = "";
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                if (!"".equals(ps)) ps += ",";
+                ps += po.getProvider().getName();
+            }
+            setProviders(ps);
+
+        } else {
+            throw new Throwable("Nothing changed. No need to purchase again");
+        }
+    }
 
 
     @Action(name = "Price")
@@ -131,7 +239,40 @@ public abstract class Service {
         }
     }
 
-    protected abstract double rate(EntityManager em) throws Throwable;
+    @Badges
+    public List<Data> getBadges() {
+        List<Data> l = new ArrayList<>();
+        l.add(new Data("_css", "brown", "_value", "" + getTotal()));
+        l.add(new Data("_css", "green", "_value", "" + getProcessingStatus()));
+        return l;
+    }
+
+    public abstract double rate(EntityManager em) throws Throwable;
+
+    public void generatePurchaseOrders(EntityManager em) throws Throwable {
+        if (getPreferredProvider() == null) throw new Throwable("Preferred provider needed for service " + getId());
+        if (isHeld()) throw new Throwable("Service " + getId() + " is held");
+        PurchaseOrder po = null;
+        if (getPurchaseOrders().size() > 0) {
+            po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
+            if (!getPreferredProvider().equals(po.getProvider())) {
+                po.cancel(em);
+                po = null;
+            }
+        }
+        if (po == null) {
+            po = new PurchaseOrder();
+            em.persist(po);
+            po.setAudit(new Audit());
+            po.getServices().add(this);
+            getPurchaseOrders().add(po);
+            po.setStatus(PurchaseOrderStatus.PENDING);
+        }
+        po.setOffice(getOffice());
+        po.setProvider(getPreferredProvider());
+        po.setCurrency(getPreferredProvider().getCurrency());
+        po.updateLinesFromServices(em);
+    }
 
 
     @Override
@@ -140,4 +281,37 @@ public abstract class Service {
         if (getAudit() != null) s += getAudit();
         return s;
     }
+
+
+    @PrePersist
+    void prePersist() {
+
+    }
+
+    public static void main(String... args) {
+        Service s = new Service() {
+            @Override
+            public String createSignature() {
+                return null;
+            }
+
+            @Override
+            public double rate(EntityManager em) throws Throwable {
+                return 0;
+            }
+
+            @Override
+            public List<PurchaseOrderLine> toPurchaseLines(EntityManager em) {
+                return null;
+            }
+        };
+        s.setProcessingStatus(ProcessingStatus.DATA_OK);
+
+        System.out.println(s.getProcessingStatus().ordinal());
+
+    }
+
+    public abstract List<PurchaseOrderLine> toPurchaseLines(EntityManager em);
+
+
 }

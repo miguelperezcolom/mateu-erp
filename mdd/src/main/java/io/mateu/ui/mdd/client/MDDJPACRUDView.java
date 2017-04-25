@@ -3,6 +3,7 @@ package io.mateu.ui.mdd.client;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.Callback;
 import io.mateu.ui.core.client.app.MateuUI;
+import io.mateu.ui.core.client.components.Button;
 import io.mateu.ui.core.client.components.fields.*;
 import io.mateu.ui.core.client.components.fields.grids.CalendarField;
 import io.mateu.ui.core.client.components.fields.grids.columns.*;
@@ -10,13 +11,19 @@ import io.mateu.ui.core.client.views.*;
 import io.mateu.ui.core.shared.CellStyleGenerator;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
+import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.shared.ERPService;
+import io.mateu.ui.mdd.shared.MDDLink;
 import io.mateu.ui.mdd.shared.MetaData;
 
+import java.io.IOException;
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,7 +62,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 @Override
                 public List<AbstractAction> createActions() {
                     List<AbstractAction> as = super.createActions();
-                    for (Data da : formMetaData.getList("_actions")) {
+                    for (Data da : formMetaData.getList("_actions")) if (da.isEmpty("_addasbutton")) {
                         as.add(createAction(this, da));
                     }
                     return as;
@@ -79,7 +86,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 @Override
                 public AbstractForm createForm() {
                     ViewForm f = new ViewForm(this);
-                    buildFromMetadata(f, formMetaData, false);
+                    buildFromMetadata(this, f, formMetaData, false);
                     return f;
                 }
             };
@@ -137,8 +144,15 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         if (getMetadata().isEmpty("_subclasses")) {
             super.open(propertyId, data);
         } else {
+            Class type = null;
+            for (String n : data.getPropertyNames()) {
+                Object o = data.get(n);
+                if (o instanceof Class) {
+                    type = (Class) o;
+                    break;
+                }
+            }
             for (Data d : getMetadata().getList("_subclasses")) {
-                Class type = data.get("col" + (data.getPropertyNames().size() - 3));
                 if (d.get("_type").equals(type.getCanonicalName())) {
                     openEditor(getNewEditorView(d.get("_type"), d.get("_editorform")).setInitialId(data.get(propertyId)));
                     break;
@@ -147,8 +161,20 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         }
     }
 
-    private void buildFromMetadata(AbstractForm f, Data metadata, boolean buildingSearchForm) {
+    private void buildFromMetadata(AbstractEditorView view, AbstractForm f, Data metadata, boolean buildingSearchForm) {
         buildFromMetadata(f, metadata.getList("_fields"), buildingSearchForm);
+        for (Data da : metadata.getList("_actions")) {
+            if (da.getBoolean("_addasbutton")) {
+                AbstractAction a = createAction(view, da);
+                f.add(new Button(da.getString("_name")) {
+
+                    @Override
+                    public void run() {
+                        a.run();
+                    }
+                });
+            }
+        }
     }
 
     private void buildFromMetadata(AbstractForm f, List<Data> fieldsMetadata, boolean buildingSearchForm) {
@@ -162,6 +188,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 fields.add(new TextField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_INTEGER.equals(d.getString("_type"))) {
                 fields.add(new IntegerField(d.getString("_id"), d.getString("_label")));
+            } else if (MetaData.FIELDTYPE_LONG.equals(d.getString("_type"))) {
+                fields.add(new LongField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_DOUBLE.equals(d.getString("_type"))) {
                 fields.add(new DoubleField(d.getString("_id"), d.getString("_label")));
             } else if (MetaData.FIELDTYPE_BOOLEAN.equals(d.getString("_type"))) {
@@ -225,7 +253,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                                 @Override
                                 public AbstractForm createForm() {
                                     ViewForm f = new ViewForm(get());
-                                    buildFromMetadata(f, metadata.getData("_editorform"), false);
+                                    buildFromMetadata(f, metadata.getData("_editorform").getList("_fields"), false);
                                     return f;
                                 }
                             };
@@ -350,7 +378,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         // construimos la clausula select
         String jpql = "select ";
         int poscol = 0;
-        String orderField = null;
+        List<String> orderFields = new ArrayList<>();
 
         List<String> leftJoins = new ArrayList<>();
 
@@ -362,7 +390,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             else jpql += "x." + d.getString("_qlname");
 
             if (!d.isEmpty("_leftjoin") && !leftJoins.contains(d.getString("_leftjoin"))) leftJoins.add(d.getString("_leftjoin"));
-            if (!d.isEmpty("_order") && orderField == null) orderField = d.getString("_ordercol");
+            if (!d.isEmpty("_order")) orderFields.add(d.getString("_ordercol"));
         }
 
         if (!getMetadata().isEmpty("_subclasses")) jpql += ", type(x) ";
@@ -381,8 +409,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
             if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
                 String fx = "";
-                LocalDate del = sfd.get(d.getString("_id") + "_from");
-                LocalDate al = sfd.get(d.getString("_id") + "_to");
+                LocalDate del = toLocalDate(sfd.get(d.getString("_id") + "_from"));
+                LocalDate al = toLocalDate(sfd.get(d.getString("_id") + "_to"));
                 DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 if (del != null) fx += "x." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
                 if (al != null) {
@@ -397,8 +425,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 }
             } else if (MetaData.FIELDTYPE_DATETIME.equals(d.getString("_type"))) {
                 String fx = "";
-                LocalDate del = sfd.get(d.getString("_id") + "_from");
-                LocalDate al = sfd.get(d.getString("_id") + "_to");
+                LocalDate del = toLocalDate(sfd.get(d.getString("_id") + "_from"));
+                LocalDate al = toLocalDate(sfd.get(d.getString("_id") + "_to"));
                 DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 if (del != null) fx += "x." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
                 if (al != null) {
@@ -466,7 +494,15 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         if (!"".equals(filters)) jpql += " where " + filters;
 
 
-        if (orderField != null) jpql += " order by x." + orderField;
+        if (orderFields.size() > 0) {
+            jpql += " order by ";
+            boolean primero = true;
+            for (String of : orderFields) {
+                if (primero) primero = false;
+                else jpql += " , ";
+                jpql += " x." + of;
+            }
+        }
 
         i = 1;
         for (String lj : leftJoins) {
@@ -474,6 +510,18 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         }
 
         return jpql;
+    }
+
+    private LocalDate toLocalDate(Object o) {
+        LocalDate d = null;
+        if (o != null) {
+            if (o instanceof Date) {
+                d = Instant.ofEpochMilli(((Date) o).getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+            } else if (o instanceof LocalDate) {
+                d = (LocalDate) o;
+            }
+        }
+        return d;
     }
 
     @Override
@@ -484,7 +532,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     @Override
     public AbstractForm createForm() {
         ViewForm f = new ViewForm(this);
-        buildFromMetadata(f, getMetadata().getData("_searchform"), true);
+        buildFromMetadata(f, getMetadata().getData("_searchform").getList("_fields"), true);
         return f;
     }
 
@@ -533,7 +581,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     }
 
     private AbstractAction createAction(AbstractView v, Data da, MDDActionHelper h) {
-        return new AbstractAction(da.getString("_name")) {
+        return new AbstractAction(da.getString("_name"), da.getBoolean("_callonenterkeypressed")) {
             @Override
             public void run() {
 
@@ -580,7 +628,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                         @Override
                         public AbstractForm createForm() {
                             ViewForm f = new ViewForm(this);
-                            buildFromMetadata(f, da.getData("_form"), false);
+                            buildFromMetadata(f, da.getData("_form").getList("_fields"), false);
                             return f;
                         }
                     });
@@ -620,11 +668,36 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             public void onSuccess(Object result) {
                 if (result instanceof URL) {
                     MateuUI.open((URL) result);
+                } else if (result instanceof MDDLink) {
+                    MDDLink l = (MDDLink) result;
+                    switch (l.getActionType()) {
+                        case OPENEDITOR:
+                            ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(),  new MDDCallback(l.getData()) {
+                                @Override
+                                public void onSuccess(Data result) {
+                                    MateuUI.openView(new MDDJPACRUDView(result) {
+                                        @Override
+                                        public Data initializeData() {
+                                            return l.getData();
+                                        }
+                                    }.getNewEditorView().setInitialId(l.getData().get("_id")) );
+                                }
+                            });
+                            break;
+                        case OPENLIST:
+                            ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(), new MDDCallback(l.getData()));
+                            break;
+                            default: MateuUI.alert("Unkown operation " + l.getActionType());
+
+                    }
                 } else if (result instanceof Data) {
                     v.getForm().setData((Data) result);
+                } else if (result instanceof Void || result == null) {
+                    MateuUI.notifyDone("Done!");
                 } else {
                     MateuUI.alert("" + result);
                 }
+                v.load();
             }
 
             @Override
