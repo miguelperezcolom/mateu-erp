@@ -2,10 +2,14 @@ package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.financials.Currency;
+import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -75,14 +79,25 @@ public class Booking {
     @Ignored
     private double balance;
 
+    @Ignored
+    @ManyToOne
+    private Currency currency;
+
 
     @OneToMany(mappedBy = "booking")
+    @OrderColumn(name = "orderInBooking")
     @Ignored
     private List<Service> services = new ArrayList<>();
 
     @Override
     public String toString() {
         return "" + getId() + " - " + getLeadName() + " (" + ((getAgency() != null)?getAgency().getName():"No agency") + ")";
+    }
+
+
+    @Action(name = "Services")
+    public MDDLink openServices() {
+        return new MDDLink(Service.class, ActionType.OPENLIST, new Data("id", getId()));
     }
 
 

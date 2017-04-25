@@ -1,11 +1,16 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
 import io.mateu.ui.mdd.server.annotations.TextArea;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Created by miguel on 19/3/17.
@@ -46,8 +51,28 @@ public class AppConfig {
     private String xslfoForObject;
 
 
+    @StartsLine
+    @TextArea
+    private String purchaseOrderTemplate;
+
+
     public static AppConfig get(EntityManager em) {
         return em.find(AppConfig.class, 1l);
+    }
+
+    @Action(name = "Create dummy dates")
+    public void createDummyDates() throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                LocalDate d = LocalDate.parse("01/01/2000", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                LocalDate hasta = LocalDate.parse("01/01/2100", DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                while (d.isBefore(hasta)) {
+                    em.persist(new DummyDate(d));
+                    d = d.plusDays(1);
+                }
+            }
+        });
     }
 
 }

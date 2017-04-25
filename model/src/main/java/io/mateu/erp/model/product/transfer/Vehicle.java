@@ -33,4 +33,9 @@ public class Vehicle {
     private int maxPax;
 
     private boolean onRequest;
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

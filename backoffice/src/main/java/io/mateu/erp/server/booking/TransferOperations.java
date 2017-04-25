@@ -1,0 +1,88 @@
+package io.mateu.erp.server.booking;
+
+import io.mateu.erp.model.booking.Service;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.AbstractServerSideWizard;
+import io.mateu.ui.mdd.server.ERPServiceImpl;
+import io.mateu.ui.mdd.server.WizardPageVO;
+import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
+
+import javax.persistence.EntityManager;
+import java.time.LocalDate;
+import java.util.List;
+
+/**
+ * Created by miguel on 23/4/17.
+ */
+public class TransferOperations extends AbstractServerSideWizard {
+
+    enum Actions {
+        CHECKRETAINED, CHECKFLIGHTTIMES, MAP, SETPICKUPS, SENDTOPROVIDERS
+    }
+
+
+    @Override
+    public WizardPageVO execute(Object action, Data data) throws Throwable {
+        if (action == null) {
+            return getInitialPage(data);
+        } else {
+            Actions a = (Actions) action;
+            switch (a) {
+                case CHECKRETAINED:
+                    return getRetainedBookings(data);
+                case CHECKFLIGHTTIMES:
+                    break;
+                case MAP:
+                    break;
+                case SETPICKUPS:
+                    break;
+                case SENDTOPROVIDERS:
+                    break;
+
+            }
+            return null;
+        }
+    }
+
+    private WizardPageVO getRetainedBookings(Data data) throws Throwable {
+        WizardPageVO vo = new WizardPageVO();
+        vo.setData(data);
+        vo.setWizardClassName(this.getClass().getName());
+        vo.setFirstPage(true);
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                List<Service> l = em.createQuery("select x from TransferService x where x.start = ? and x.retained order by x.flighttime").setParameter(0, data.getDate("workDate")).getResultList();
+                if (l.size() == 0) {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+                        @Output
+                        String date;
+                    }.getClass()));
+                } else {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+                        @Output
+                        String date;
+                    }.getClass()));
+                }
+            }
+        });
+
+        return vo;
+    }
+
+    private WizardPageVO getInitialPage(Data data) throws Throwable {
+        WizardPageVO vo = new WizardPageVO();
+        vo.setData(data);
+        vo.setWizardClassName(this.getClass().getName());
+        vo.setFirstPage(true);
+        vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+            @Required
+            LocalDate workDate;
+        }.getClass()));
+        return vo;
+    }
+}

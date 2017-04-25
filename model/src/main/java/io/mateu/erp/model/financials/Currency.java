@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.ui.mdd.server.annotations.QLForCombo;
 import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Getter@Setter
+@QLForCombo(ql = "select x.isoCode, x.name from Currency x order by x.name")
 public class Currency {
 
     @Id

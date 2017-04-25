@@ -14,4 +14,8 @@ public @interface Action {
 
     String name();
 
+    boolean callOnEnterKeyPressed() default false;
+
+    boolean addAsButton() default false;
+
 }

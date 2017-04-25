@@ -38,6 +38,7 @@ public class TransferPointMapping implements WithTriggers {
     @SearchFilter
     private TransferPoint point;
 
+
     public TransferPointMapping() {
 
     }
@@ -47,7 +48,7 @@ public class TransferPointMapping implements WithTriggers {
     }
 
 
-    @Action(name = "Save and next")
+    @Action(name = "Save and next", callOnEnterKeyPressed = true, addAsButton = true)
     public Data saveAndNext(Data _data) throws Throwable {
         ERPServiceImpl s = new ERPServiceImpl();
         s.set("", TransferPointMapping.class.getName(), _data);
