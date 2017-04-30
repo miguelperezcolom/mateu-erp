@@ -1,5 +1,6 @@
 package io.mateu.erp.model.importing;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
@@ -15,7 +16,8 @@ import lombok.Setter;
 import org.jdom2.Element;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
-
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 
 import javax.persistence.Entity;
@@ -77,14 +79,33 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                     result += "Ref. " + tr.getChildText("barcode") + ": ";
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                     TransferBookingRequest rq = rellenarTransferBookingRequest(tr);
-                    res = rq.updateBooking(em);
-                    //vamos guardando el resultado junto con la refAge para crear el informe final
-                    if (res.length() > 0)//hay errores
-                        result += res;
-                    else {
+
+                    //miguel: buscar si ya existe y comprobar si ha cambiado algo...
+                    TransferBookingRequest rq0 = findTransferBookingRequest(em, rq.getCustomer(), rq.getAgencyReference());
+
+                    if (rq0 == null || (!Strings.isNullOrEmpty(rq.getSource()) && !rq.getSource().equals(rq0.getSource()))) {
+
+                        rq.setTask(this);
+                        getTransferBookingRequests().add(rq);
+                        em.persist(rq);
+                        try {
+                            res = rq.updateBooking(em);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        //vamos guardando el resultado junto con la refAge para crear el informe final
+                        if (res.length() > 0)//hay errores
+                            result += res;
+                        else {
+                            result += "Ok ";
+                            nOk++; //Vamos contando los que han ido bien
+                        }
+
+                    } else {
                         result += "Ok ";
                         nOk++; //Vamos contando los que han ido bien
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                     result += "Error: " + e.getClass() + " - " + e.getMessage();
@@ -114,16 +135,29 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
       }
 
+    private TransferBookingRequest findTransferBookingRequest(EntityManager em, Actor customer, String agencyReference) {
+        TransferBookingRequest rq = null;
+        List<TransferBookingRequest> l = em.createQuery("select x from " + TransferBookingRequest.class.getName() + " x where x.customer = :c and x.agencyReference = :r order by x.id desc").setParameter("c", customer).setParameter("r", agencyReference).getResultList();
+        if (l.size() > 0) {
+            rq = l.get(0);
+        }
+        return rq;
+    }
+
 
     private TransferBookingRequest rellenarTransferBookingRequest(Element tr)
     {
         TransferBookingRequest rq = new TransferBookingRequest();
-        rq.setTask(this);
         rq.setCustomer(this.getCustomer());
+
+        rq.setSource(new XMLOutputter(Format.getCompactFormat()).outputString(tr));
 
         rq.setAgencyReference(tr.getChildText("barcode"));
         rq.setCreated(tr.getAttributeValue("bookingdate"));
         rq.setModified(tr.getAttributeValue("datemodified"));
+
+
+        rq.setTypeAtSource(tr.getChildText("type"));
 
         String type = tr.getChildText("type");
         if (type.toUpperCase().contains("SHUTTLE"))
@@ -154,6 +188,8 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             rq.setTransferType(TransferBookingRequest.TRANSFERTYPE.ARRIVAL);
             isArrival=true;
         }
+
+        rq.setStatus(tr.getChildText("status"));
 
         if (isArrival)
         {

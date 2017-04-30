@@ -352,6 +352,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 cols.add(col = new OutputColumn("col" + poscol, d.getString("_label"), d.getInt("_width")));
                 if ("center".equals(d.getString("_align"))) col.setAlignment(ColumnAlignment.CENTER);
                 if ("right".equals(d.getString("_align"))) col.setAlignment(ColumnAlignment.RIGHT);
+                if (!d.isEmpty("_colwidth")) col.setWidth(d.get("_colwidth"));
                 if (!d.isEmpty("_cellstylegenerator")) try {
                     col.setStyleGenerator((CellStyleGenerator) Class.forName(d.getString("_cellstylegenerator")).newInstance());
                 } catch (InstantiationException e) {
@@ -697,7 +698,6 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 } else {
                     MateuUI.alert("" + result);
                 }
-                v.load();
             }
 
             @Override

@@ -2,13 +2,18 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
 import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.util.Constants;
+import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
@@ -26,10 +31,7 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -106,10 +108,8 @@ public class PurchaseOrder {
     @Ignored
     private List<Service> services = new ArrayList<>();
 
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    @OwnedList
-    private List<PurchaseOrderLine> lines = new ArrayList<>();
+    @ManyToMany
+    private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
 
     @Action(name = "Send")
     public void sendFromEditor(EntityManager em) throws Exception {
@@ -118,12 +118,20 @@ public class PurchaseOrder {
 
     @Action(name = "Send")
     public static void sendFromList(EntityManager em, @Selection List<Data> selection, @Parameter(name = "Email") String email) throws Exception {
+        SendPurchaseOrdersTask t = new SendPurchaseOrdersTask();
+        t.setStatus(TaskStatus.PENDING);
+        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+        t.setAudit(new Audit(em.find(User.class, Constants.SYSTEM_USER_LOGIN)));
+        String a = email;
         for (Data d : selection) {
             PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));
-            String a = email;
+            t.getPurchaseOrders().add(po);
+            po.getSendingTasks().add(t);
             if (Strings.isNullOrEmpty(a)) a = po.getProvider().getSendOrdersTo();
-            if (!Strings.isNullOrEmpty(a)) po.send(em, a);
         }
+        t.setTo(a);
+        if (!Strings.isNullOrEmpty(a)) em.persist(t);
+        t.execute(em, em.find(User.class, Constants.SYSTEM_USER_LOGIN));
     }
 
 
@@ -191,7 +199,7 @@ public class PurchaseOrder {
 
     }
 
-    private Map<String,Object> getData() {
+    public Map<String,Object> getData() {
         Map<String, Object> d = new HashMap<>();
 
         d.put("id", getId());
@@ -202,18 +210,24 @@ public class PurchaseOrder {
 
         List<Map<String, Object>> ls = new ArrayList<>();
 
-        for (PurchaseOrderLine l : getLines()) {
-            Map<String, Object> x;
-            ls.add(x = new HashMap<>());
+        List<Service> ss = new ArrayList<>(getServices());
 
-            x.put("id", l.getId());
-            x.put("description", l.getDescription());
-            x.put("action", l.getAction());
-            x.put("units", l.getUnits());
+        Collections.sort(ss, new Comparator<Service>() {
+            @Override
+            public int compare(Service o1, Service o2) {
+                LocalDateTime d1 = o1.getStart().atStartOfDay();
+                LocalDateTime d2 = o2.getStart().atStartOfDay();
+                if (o1 instanceof TransferService) d1 = ((TransferService)o1).getFlightTime();
+                if (o2 instanceof TransferService) d2 = ((TransferService)o2).getFlightTime();
+                return d1.compareTo(d2);
+            }
+        });
 
+        for (Service s : ss) {
+            ls.add(s.getData());
         }
 
-        d.put("lines", ls);
+        d.put("services", ls);
 
         return d;
     }
@@ -228,18 +242,6 @@ public class PurchaseOrder {
                 setStatus(PurchaseOrderStatus.PENDING);
             }
         }
-    }
-
-    public void updateLinesFromServices(EntityManager em) {
-        for (PurchaseOrderLine l : getLines()) em.remove(l);
-        getLines().clear();
-        LocalDate d = null;
-        for (Service s : getServices()) {
-            getLines().addAll(s.toPurchaseLines(em));
-            if (s.getStart() != null && (d == null || d.isAfter(s.getStart()))) d = s.getStart();
-        }
-        if (d != null) setStart(d);
-        for (PurchaseOrderLine l : getLines()) l.setOrder(this);
     }
 
     public void price(EntityManager em) {

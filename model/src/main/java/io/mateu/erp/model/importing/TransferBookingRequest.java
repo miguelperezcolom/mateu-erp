@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -22,6 +23,9 @@ import java.time.format.DateTimeFormatter;
  */
 
 @Entity
+@Table(indexes = {
+        @Index(name = "i_tbr_customer_and_reference", columnList = "customer,agencyReference")
+})
 @Getter
 @Setter
 public class TransferBookingRequest {
@@ -31,20 +35,27 @@ public class TransferBookingRequest {
     private long id;
 
     @ManyToOne
+    @SearchFilter(value="Task", field = "id")
+    @ListColumn(value="Task", field = "id")
     private TransferImportTask task;
     @SearchFilter
+    @ListColumn
     private String agencyReference;
 
     @ManyToOne
     @SearchFilter
+    @ListColumn
     private Actor customer;
 
+    @ListColumn
     private String created;
+    @ListColumn
     private String modified;
     private String serviceType;//Shuttle, Private, etc
     private String vehicle; //Si es un privado (taxi, minibus, etc)
 
     @SearchFilter
+    @ListColumn
     private String passengerName;
     private String phone;
     private String email;
@@ -56,6 +67,10 @@ public class TransferBookingRequest {
 
     public enum TRANSFERTYPE {ARRIVAL, DEPARTURE, BOTH};
     private TRANSFERTYPE transferType;
+
+    @ListColumn
+    private String status;
+    private String typeAtSource;
 
     private String arrivalAirport;
     private String arrivalResort;
@@ -84,6 +99,9 @@ public class TransferBookingRequest {
     @ManyToOne
     @SearchFilter
     private Booking booking;
+
+    @ListColumn
+    private String source;
 
     public String validate()
     {
@@ -188,6 +206,15 @@ public class TransferBookingRequest {
                 s.setOffice(getTask().getOffice());
                 s.setPos(getTask().getPointOfSale());
                 s.setComment("" + vehicle + ", " + serviceType);
+
+                s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
+
+                try {
+                    s.afterSet(em, false);
+                    s.price(em);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
 
 
@@ -209,7 +236,18 @@ public class TransferBookingRequest {
                 s.setOffice(getTask().getOffice());
                 s.setPos(getTask().getPointOfSale());
                 s.setComment("" + vehicle + ", " + serviceType);
+
+                s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
+
+                try {
+                    s.afterSet(em, false);
+                    s.price(em);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
+
+
 
 
         } catch (Exception ex) {

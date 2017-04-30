@@ -64,6 +64,18 @@ public class Populator {
             {
                 // create user admin
                 User u = new User();
+                u.setLogin(Constants.SYSTEM_USER_LOGIN);
+                u.setName("System");
+                //u.setPassword(Helper.md5("1"));
+                u.setPassword("1");
+                u.setStatus(USER_STATUS.ACTIVE);
+                u.getPermissions().add(p);
+                em.persist(u);
+            }
+
+            {
+                // create user admin
+                User u = new User();
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));

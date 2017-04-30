@@ -21,4 +21,6 @@ public @interface ListColumn {
     String field() default "";
 
     boolean order() default false;
+
+    int width() default -1;
 }

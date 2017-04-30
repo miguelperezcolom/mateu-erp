@@ -112,31 +112,29 @@ public class GenericService extends Service implements WithTriggers {
     }
 
 
+    public Map<String,Object> getData() {
+        Map<String, Object> d = super.getData();
 
-    @Override
-    public List<PurchaseOrderLine> toPurchaseLines(EntityManager em) {
-        List<PurchaseOrderLine> ls = new ArrayList<>();
+        d.put("id", getId());
+        d.put("locator", getBooking().getId());
+        d.put("leadName", getBooking().getLeadName());
+        d.put("agency", getBooking().getAgency().getName());
+        d.put("agencyReference", getBooking().getAgencyReference());
+        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        d.put("office", getOffice().getName());
+
+        d.put("comments", getComment());
+
+        List<Map<String, Object>> l = new ArrayList<>();
         for (PriceLine pl : getPriceLines()) {
-            PurchaseOrderLine l = new PurchaseOrderLine();
-            l.setAction(PurchaseOrderLineAction.ADD);
-            String d = "";
-            if (!Strings.isNullOrEmpty(pl.getDescription())) d += pl.getDescription();
-            if (pl.getStart() != null) d += " from " + pl.getStart().format(DateTimeFormatter.BASIC_ISO_DATE);
-            if (pl.getFinish() != null) d += " to " + pl.getFinish().format(DateTimeFormatter.BASIC_ISO_DATE);
-            if (d.startsWith(" ")) d = d.substring(1);
-            l.setDescription(d);
-            l.setUnits(pl.getUnits());
-            ls.add(l);
+            l.add(pl.getData());
         }
-        if (ls .size() == 0) {
-            PurchaseOrderLine l = new PurchaseOrderLine();
-            l.setAction(PurchaseOrderLineAction.ADD);
-            l.setDescription(getDescription());
-            l.setUnits(1);
-            ls.add(l);
-        }
-        return ls;
+        d.put("lines", l);
+
+        return d;
     }
+
 
     @Subtitle
     public String getSubitle() {

@@ -10,12 +10,14 @@ import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.UseIdToSelect;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -24,6 +26,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@UseIdToSelect(ql="select x.id, concat(x.status, ' - ', x.agency.name, ' - ', x.id) as text from TransferImportTask x where x.id = xxxx")
 public abstract class TransferImportTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +57,9 @@ public abstract class TransferImportTask {
 
     @ManyToOne
     private PointOfSale pointOfSale;
+
+    @OneToMany(mappedBy = "task")
+    List<TransferBookingRequest> transferBookingRequests = new ArrayList<>();
 
     public abstract void execute(EntityManager em);
 
