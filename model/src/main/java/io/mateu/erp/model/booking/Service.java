@@ -18,6 +18,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +49,8 @@ public abstract class Service {
     @ListColumn(value="Boking", field = "id")
     @ListColumn(field = "agencyReference")
     @ListColumn(field = "agency")
+    @SearchFilter(field = "leadName")
+    @ListColumn(field = "leadName")
     private Booking booking;
 
 
@@ -95,7 +98,6 @@ public abstract class Service {
 
     private boolean alreadyPurchased;
 
-
     private boolean valueOverrided;
 
     private double overridedValue;
@@ -130,6 +132,10 @@ public abstract class Service {
     @ListColumn
     @SearchFilter
     private String providers;
+
+    @Output
+    private LocalDateTime sentToProvider;
+
 
 
     @NotInEditor

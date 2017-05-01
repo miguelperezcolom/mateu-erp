@@ -80,7 +80,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
                 @Override
                 public String getTitle() {
-                    return entityClassName.substring(entityClassName.lastIndexOf(".") + 1);
+                    return formMetaData.getString("_rawtitle");
                 }
 
                 @Override
@@ -527,7 +527,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
     @Override
     public String getTitle() {
-        return getEntityClassName().substring(getEntityClassName().lastIndexOf(".") + 1) + "s";
+        return getMetadata().getString("_rawtitle");
     }
 
     @Override

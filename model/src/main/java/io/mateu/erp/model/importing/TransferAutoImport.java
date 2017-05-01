@@ -3,12 +3,12 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.persistence.Parameter;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -58,6 +58,10 @@ public abstract class TransferAutoImport {
         TransferImportQueue.run();
     }
 
+    @Action(name = "Execute")
+    public void execute(@io.mateu.ui.mdd.server.annotations.Parameter(name = "From") LocalDate from, @io.mateu.ui.mdd.server.annotations.Parameter(name = "Days") int days) {
+        getBookings(from, days);
+    }
 
     public abstract void getBookings(LocalDate from, int days);
 

@@ -578,6 +578,7 @@ public class ERPServiceImpl implements ERPService {
     public Data getMetadaData(Class c) throws Exception {
         Data data = new Data();
         data.set("_entityClassName", c.getName());
+        data.set("_rawtitle", capitalize(pluralize(c.getSimpleName())));
 
         if (c.isAnnotationPresent(Indelible.class)) data.set("_indelible", true);
 
@@ -756,6 +757,7 @@ public class ERPServiceImpl implements ERPService {
             }
         }
         def.set("_actions", actions);
+        def.set("_rawtitle", capitalize(c.getSimpleName()));
         return def;
     }
 
@@ -1300,6 +1302,13 @@ public class ERPServiceImpl implements ERPService {
         ).toLowerCase();
         if (c.length() > 1) c = c.substring(0, 1).toUpperCase() + c.substring(1);
 
+        return c;
+    }
+
+    private String pluralize(String s) {
+        if (s == null || "".equals(s)) return s;
+        String c = s + "s";
+        if (c.endsWith("ys")) c = c.replaceAll("ys$", "ies") ;
         return c;
     }
 

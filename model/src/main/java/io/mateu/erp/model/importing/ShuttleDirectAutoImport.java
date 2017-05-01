@@ -42,8 +42,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
         this.setIdTransportista(idtransportista);
     }
 
-    @Action(name = "Execute")
-    public void getBookings(@Parameter(name = "From") LocalDate from, @Parameter(name = "Days") int days)
+    public void getBookings(LocalDate from, int days)
     {
 
         try {
