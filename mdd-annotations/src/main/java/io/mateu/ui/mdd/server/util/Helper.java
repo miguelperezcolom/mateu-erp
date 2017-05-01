@@ -291,4 +291,8 @@ public class Helper {
     public static URL whichJar(Class c) {
         return c.getProtectionDomain().getCodeSource().getLocation();
     }
+
+    public static double roundEuros(double value) {
+        return Math.round(value * 100d) / 100d;
+    }
 }

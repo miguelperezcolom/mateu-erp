@@ -4,6 +4,7 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -28,7 +29,7 @@ import java.util.List;
 @Getter
 @Setter
 @UseIdToSelect(ql = "select x.id, concat(x.leadName, ' - ', x.agency.name, ' - ', x.id) as text from Booking x where x.id = xxxx")
-public class Booking {
+public class Booking implements WithTriggers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -83,6 +84,9 @@ public class Booking {
     @ManyToOne
     private Currency currency;
 
+    @Transient
+    private boolean wasCancelled = false;
+
 
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "orderInBooking")
@@ -99,6 +103,10 @@ public class Booking {
     public MDDLink openServices() {
         return new MDDLink(Service.class, ActionType.OPENLIST, new Data("id", getId()));
     }
+
+
+
+
 
 
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
@@ -127,6 +135,34 @@ public class Booking {
                 System.out.println(getByAgencyRef(em, "1234", a));
             }
         });
+
+    }
+
+    @Override
+    public void beforeSet(EntityManager em, boolean isNew) throws Throwable {
+        setWasCancelled(isCancelled());
+    }
+
+    @Override
+    public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable {
+        if (isCancelled() && isCancelled() != isWasCancelled()) {
+            cancel(em);
+        }
+    }
+
+    public void cancel(EntityManager em) {
+        for (Service s : getServices()) {
+            s.cancel(em);
+        }
+    }
+
+    @Override
+    public void beforeDelete(EntityManager em) throws Throwable {
+
+    }
+
+    @Override
+    public void afterDelete(EntityManager em) throws Throwable {
 
     }
 }

@@ -47,6 +47,9 @@ public class AbstractContract {
     @Required
     private LocalDate validTo;
 
+    private LocalDate bookingWindowFrom;
+    private LocalDate bookingWindowTo;
+
     @StartsLine
     @TextArea
     private String specialTerms;

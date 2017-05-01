@@ -5,6 +5,7 @@ package io.mateu.erp.model.util;
  */
 public class Constants {
 
+    public static final String SYSTEM_USER_LOGIN = "system";
     public static final String IMPORTING_USER_LOGIN = "importer";
 
 }

@@ -1,6 +1,7 @@
 package io.mateu.erp.model.config;
 
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -23,12 +24,21 @@ public class AppConfig {
     @Id
     private long id;
 
+    private String businessName;
+
+
     @StartsLine
     private String adminEmailSmtpHost;
+
+    private int adminEmailSmtpPort;
 
     private String adminEmailUser;
 
     private String adminEmailPassword;
+
+    private String adminEmailFrom;
+
+    private String adminEmailCC;
 
 
     @StartsLine
@@ -50,6 +60,8 @@ public class AppConfig {
     @TextArea
     private String xslfoForObject;
 
+    @TextArea
+    private String xslfoForTransfersList;
 
     @StartsLine
     @TextArea

@@ -706,7 +706,7 @@ public class ERPServiceImpl implements ERPService {
     private Data getEditorForm(Class c) {
         List<Data> editorFormFields = new ArrayList<>();
         for (Field f : getAllFields(c)) {
-            if (!f.isAnnotationPresent(Ignored.class) && !(f.isAnnotationPresent(Id.class) && f.isAnnotationPresent(GeneratedValue.class))) {
+            if (!f.isAnnotationPresent(Ignored.class) && !f.isAnnotationPresent(NotInEditor.class) && !(f.isAnnotationPresent(Id.class) && f.isAnnotationPresent(GeneratedValue.class))) {
                 addField(editorFormFields, new FieldInterfaced() {
                     @Override
                     public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
@@ -1053,6 +1053,7 @@ public class ERPServiceImpl implements ERPService {
                     d.set("_order", 0);
                     d.set("_ordercol", f.getName());
                 }
+                if (listColumnAnnotation.width() >= 0) d.set("_colwidth", listColumnAnnotation.width());
 
             } else if (searchFilterAnnotation != null) {
                 if (searchFilterAnnotation.exactMatch()) d.set("_exactmatch", true);

@@ -1,12 +1,16 @@
 package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import lombok.Getter;
@@ -14,6 +18,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,13 +42,20 @@ public abstract class Service {
 
     @ManyToOne
     @Required
-    @SearchFilter(field = "id")
+    @SearchFilter(value="Booking", field = "id")
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
-    @ListColumn(field = "id")
+    @ListColumn(value="Boking", field = "id")
     @ListColumn(field = "agencyReference")
     @ListColumn(field = "agency")
     private Booking booking;
+
+
+    @Ignored
+    @NotInEditor
+    @ListColumn
+    @CellStyleGenerator(IconCellStyleGenerator.class)
+    private String icon;
 
     @StartsLine
     @ListColumn
@@ -156,7 +168,7 @@ public abstract class Service {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider) {
+    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             if (provider != null) s.setPreferredProvider(provider);
@@ -164,6 +176,30 @@ public abstract class Service {
                 s.checkPurchase(em);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
+            }
+        }
+        Map<Actor, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
+        User u = em.find(User.class, _user.getLogin());
+        for (Data d : selection) {
+            Service s = em.find(Service.class, d.get("_id"));
+            if (provider != null) s.setPreferredProvider(provider);
+            for (PurchaseOrder po : s.getPurchaseOrders()) {
+                if (PurchaseOrderStatus.PENDING.equals(po.getStatus())) {
+                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                    if (t == null) {
+                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersTask());
+                        em.persist(t);
+                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                        t.setTo(po.getProvider().getSendOrdersTo());
+                        t.setCc(s.getOffice().getEmailCC());
+                        t.setOffice(s.getOffice());
+                        t.setProvider(po.getProvider());
+                        t.setStatus(TaskStatus.PENDING);
+                        t.setAudit(new Audit(u));
+                    }
+                    t.getPurchaseOrders().add(po);
+                    po.getSendingTasks().add(t);
+                }
             }
         }
     }
@@ -243,7 +279,17 @@ public abstract class Service {
     public List<Data> getBadges() {
         List<Data> l = new ArrayList<>();
         l.add(new Data("_css", "brown", "_value", "" + getTotal()));
-        l.add(new Data("_css", "green", "_value", "" + getProcessingStatus()));
+        String s = "";
+        ProcessingStatus v = getProcessingStatus();
+        switch (v) {
+            case INITIAL:
+            case DATA_OK: s = "azul"; break;
+            case PURCHASEORDERS_SENT:
+            case PURCHASEORDERS_READY: s = "naranja"; break;
+            case PURCHASEORDERS_CONFIRMED: s = "verde"; break;
+            case PURCHASEORDERS_REJECTED: s = "rojo"; break;
+        }
+        l.add(new Data("_css", s, "_value", "" + getProcessingStatus()));
         return l;
     }
 
@@ -271,7 +317,6 @@ public abstract class Service {
         po.setOffice(getOffice());
         po.setProvider(getPreferredProvider());
         po.setCurrency(getPreferredProvider().getCurrency());
-        po.updateLinesFromServices(em);
     }
 
 
@@ -299,11 +344,6 @@ public abstract class Service {
             public double rate(EntityManager em) throws Throwable {
                 return 0;
             }
-
-            @Override
-            public List<PurchaseOrderLine> toPurchaseLines(EntityManager em) {
-                return null;
-            }
         };
         s.setProcessingStatus(ProcessingStatus.DATA_OK);
 
@@ -311,7 +351,22 @@ public abstract class Service {
 
     }
 
-    public abstract List<PurchaseOrderLine> toPurchaseLines(EntityManager em);
 
+    public Map<String,Object> getData() {
+        Map<String, Object> d = new HashMap<>();
 
+        d.put("id", getId());
+        d.put("locator", getBooking().getId());
+        d.put("agency", getBooking().getAgency().getName());
+        d.put("agencyReference", getBooking().getAgencyReference());
+        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        d.put("office", getOffice().getName());
+
+        return d;
+    }
+
+    public void cancel(EntityManager em) {
+        setCancelled(true);
+    }
 }

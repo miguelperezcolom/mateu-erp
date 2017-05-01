@@ -2,6 +2,7 @@ package io.mateu.erp.client.booking;
 
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.client.app.MateuUI;
+import io.mateu.ui.core.client.components.fields.DateField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.components.fields.grids.columns.DataColumn;
@@ -15,6 +16,7 @@ import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,14 @@ import java.util.List;
  * Created by miguel on 15/4/17.
  */
 public class TransfersSummaryView extends AbstractListView {
+
+    @Override
+    public Data initializeData() {
+        Data d = super.initializeData();
+        d.set("start", LocalDate.now());
+        d.set("finish", LocalDate.now().plusMonths(6));
+        return d;
+    }
 
     @Override
     public List<AbstractColumn> createColumns() {
@@ -140,6 +150,6 @@ public class TransfersSummaryView extends AbstractListView {
 
     @Override
     public AbstractForm createForm() {
-        return new ViewForm(this);
+        return new ViewForm(this).add(new DateField("start", "From")).add(new DateField("finish", "To"));
     }
 }

@@ -2,6 +2,8 @@ package io.mateu.erp.model.product.transfer;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.AbstractContract;
@@ -11,6 +13,7 @@ import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -21,6 +24,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
@@ -46,9 +50,52 @@ public class Contract extends AbstractContract {
     @SearchFilter
     private TransferType transferType;
 
-    @OneToMany(mappedBy = "contract")
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     @Ignored
     private List<Price> prices = new ArrayList<>();
+
+
+    public static void cloneContracts(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "% increment") double percent, @Parameter(name = "Value increment") double amount) throws CloneNotSupportedException {
+        User u = em.find(User.class, user.getLogin());
+        for (Data d : selection) {
+            Contract c0 = em.find(Contract.class, d.get("_id"));
+            Contract c1 = c0.clone(em, u);
+            c1.increment(percent, amount);
+            em.persist(c1);
+        }
+    }
+
+
+    public Contract clone(EntityManager em, User u) {
+        Contract c = new Contract();
+        c.setAudit(new Audit());
+        c.setTransferType(getTransferType());
+        c.setBillingConcept(getBillingConcept());
+        c.setAveragePrice(getAveragePrice());
+        c.setBookingWindowFrom(getBookingWindowFrom());
+        c.setBookingWindowTo(getBookingWindowTo());
+        c.setSpecialTerms(getSpecialTerms());
+        c.setSupplier(getSupplier());
+        c.getTargets().addAll(getTargets());
+        c.setTitle("COPY OF " + getTitle());
+        c.setType(getType());
+        c.setValidFrom(getValidFrom());
+        c.setValidTo(getValidTo());
+        c.setVATIncluded(isVATIncluded());
+
+        for (Price p0 : getPrices()) {
+            Price p = p0.clone(em, u);
+            p.setContract(c);
+            c.getPrices().add(p);
+        }
+        return c;
+    }
+
+    private void increment(double percent, double amount) {
+        for (Price p : getPrices()) {
+            p.setPrice(Helper.roundEuros(p.getPrice() * (100d + percent) / 100d + amount));
+        }
+    }
 
 
     @Action(name = "Pdf")

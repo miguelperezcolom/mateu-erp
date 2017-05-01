@@ -4,6 +4,7 @@ import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.server.ServerSideHelper;
 import io.mateu.ui.core.shared.Data;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -49,9 +50,12 @@ public class BookingServiceImpl implements BookingService {
 
                 "from dummydate d left outer join service on d.value = start left outer join transferpoint a on a.id = airport_id " +
 
-                "where d.value >= now() and d.value < '2017-10-01' " +
+                "where 1 = 1 ";
 
-                "group by 1, 2, a.name order by 1, a.name";
+        if (!parameters.isEmpty("start")) sql += " and d.value >= '" + parameters.getLocalDate("start").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
+        if (!parameters.isEmpty("finish")) sql += " and d.value <= '" + parameters.getLocalDate("finish").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
+
+        sql += " group by 1, 2, a.name order by 1, a.name";
 
         long t0 = new Date().getTime();
 
