@@ -283,11 +283,11 @@ public abstract class Service {
         ProcessingStatus v = getProcessingStatus();
         switch (v) {
             case INITIAL:
-            case DATA_OK: s = "info"; break;
+            case DATA_OK: s = "azul"; break;
             case PURCHASEORDERS_SENT:
-            case PURCHASEORDERS_READY: s = "warning"; break;
-            case PURCHASEORDERS_CONFIRMED: s = "success"; break;
-            case PURCHASEORDERS_REJECTED: s = "danger"; break;
+            case PURCHASEORDERS_READY: s = "naranja"; break;
+            case PURCHASEORDERS_CONFIRMED: s = "verde"; break;
+            case PURCHASEORDERS_REJECTED: s = "rojo"; break;
         }
         l.add(new Data("_css", s, "_value", "" + getProcessingStatus()));
         return l;
