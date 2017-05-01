@@ -17,6 +17,7 @@ import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +42,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Entity
 @Getter
 @Setter
-public class PurchaseOrder {
+public class PurchaseOrder implements WithTriggers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -109,10 +110,11 @@ public class PurchaseOrder {
     private List<Service> services = new ArrayList<>();
 
     @ManyToMany
+    @Ignored
     private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
 
     @Action(name = "Send")
-    public void sendFromEditor(EntityManager em) throws Exception {
+    public void sendFromEditor(EntityManager em) throws Throwable {
         send(em);
     }
 
@@ -153,11 +155,11 @@ public class PurchaseOrder {
         return s;
     }
 
-    public void send(EntityManager em) throws Exception {
+    public void send(EntityManager em) throws Throwable {
         send(em, getProvider().getSendOrdersTo());
     }
 
-    public void send(EntityManager em, String toEmail) throws Exception {
+    public void send(EntityManager em, String toEmail) throws Throwable {
         if (Strings.isNullOrEmpty(toEmail)) throw new Exception("Email address is missing");
         setSignature(createSignature());
         Email email = new HtmlEmail();
@@ -182,20 +184,10 @@ public class PurchaseOrder {
         setSent(true);
         setSentTime(LocalDateTime.now());
 
-        for (Service s : getServices()) {
-            if (s.getEffectiveProcessingStatus() < 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
-            }
-        }
-
         if (getProvider().isAutomaticOrderConfirmation()) {
             setStatus(PurchaseOrderStatus.CONFIRMED);
-            for (Service s : getServices()) {
-                if (s.getEffectiveProcessingStatus() < 400) {
-                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-                }
-            }
         }
+        afterSet(em, false);
 
     }
 
@@ -246,5 +238,42 @@ public class PurchaseOrder {
 
     public void price(EntityManager em) {
         //todo: completar
+    }
+
+    @Override
+    public void beforeSet(EntityManager em, boolean isNew) throws Throwable {
+
+    }
+
+    @Override
+    public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable {
+        for (Service s : getServices()) {
+            if (s.getEffectiveProcessingStatus() < 300) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+            }
+
+            if (isSent() && s.getEffectiveProcessingStatus() < 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+                s.setSentToProvider(getSentTime());
+            }
+
+            if (PurchaseOrderStatus.REJECTED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
+            }
+
+            if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+            }
+        }
+    }
+
+    @Override
+    public void beforeDelete(EntityManager em) throws Throwable {
+
+    }
+
+    @Override
+    public void afterDelete(EntityManager em) throws Throwable {
+
     }
 }

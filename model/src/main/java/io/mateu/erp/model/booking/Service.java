@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.generic.PriceDetail;
@@ -18,6 +19,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +50,8 @@ public abstract class Service {
     @ListColumn(value="Boking", field = "id")
     @ListColumn(field = "agencyReference")
     @ListColumn(field = "agency")
+    @SearchFilter(field = "leadName")
+    @ListColumn(field = "leadName")
     private Booking booking;
 
 
@@ -58,6 +62,12 @@ public abstract class Service {
     private String icon;
 
     @StartsLine
+    @ListColumn(width = 60)
+    @CellStyleGenerator(ConfirmedCellStyleGenerator.class)
+    private ServiceConfirmationStatus answer = ServiceConfirmationStatus.CONFIRMED;
+
+    private String answerText;
+
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     private boolean cancelled;
@@ -95,7 +105,6 @@ public abstract class Service {
 
     private boolean alreadyPurchased;
 
-
     private boolean valueOverrided;
 
     private double overridedValue;
@@ -130,6 +139,10 @@ public abstract class Service {
     @ListColumn
     @SearchFilter
     private String providers;
+
+    @Output
+    private LocalDateTime sentToProvider;
+
 
 
     @NotInEditor
@@ -168,7 +181,7 @@ public abstract class Service {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider) {
+    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             if (provider != null) s.setPreferredProvider(provider);
@@ -189,13 +202,18 @@ public abstract class Service {
                     if (t == null) {
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersTask());
                         em.persist(t);
-                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                        t.setTo(po.getProvider().getSendOrdersTo());
-                        t.setCc(s.getOffice().getEmailCC());
                         t.setOffice(s.getOffice());
                         t.setProvider(po.getProvider());
                         t.setStatus(TaskStatus.PENDING);
                         t.setAudit(new Audit(u));
+                        if (!Strings.isNullOrEmpty(email)) {
+                            t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                            t.setTo(email);
+                        } else {
+                            t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                            t.setTo(po.getProvider().getSendOrdersTo());
+                        }
+                        t.setCc(s.getOffice().getEmailCC());
                     }
                     t.getPurchaseOrders().add(po);
                     po.getSendingTasks().add(t);

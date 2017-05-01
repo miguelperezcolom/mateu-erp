@@ -3,10 +3,7 @@ package io.mateu.erp.model.booking.transfer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.NotInList;
-import io.mateu.ui.mdd.server.annotations.Required;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -36,6 +33,7 @@ public class TransferPointMapping implements WithTriggers {
 
     @ManyToOne
     @SearchFilter
+    @SearchFilterIsNull(value = "Unmapped")
     private TransferPoint point;
 
 

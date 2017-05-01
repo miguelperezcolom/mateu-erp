@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.mateu.ui:port-javafx:1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/port-javafx/1.0-SNAPSHOT/port-javafx-1.0-20170425.051126-29.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/port-javafx/1.0-SNAPSHOT/port-javafx-1.0-20170425.051126-29-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/port-javafx/1.0-SNAPSHOT/port-javafx-1.0-20170425.051126-29-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

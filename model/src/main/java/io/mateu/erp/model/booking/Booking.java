@@ -85,6 +85,7 @@ public class Booking implements WithTriggers {
     private Currency currency;
 
     @Transient
+    @Ignored
     private boolean wasCancelled = false;
 
 
