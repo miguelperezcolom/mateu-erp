@@ -98,6 +98,7 @@ public class TransferService extends Service implements WithTriggers {
     private String flightOriginOrDestination;
 
     @StartsLine
+    private LocalDateTime importedPickupTime;
     @ListColumn
     private LocalDateTime pickupTime;
     private LocalDateTime pickupConfirmed;
