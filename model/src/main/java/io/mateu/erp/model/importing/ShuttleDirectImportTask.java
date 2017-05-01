@@ -8,6 +8,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -64,6 +65,11 @@ public class ShuttleDirectImportTask extends TransferImportTask {
     public void execute(EntityManager em) {
         String result = "";
         int nOk = 0;
+        int additions = 0;
+        int cancellations = 0;
+        int modifications = 0;
+        int unmodified = 0;
+        int errors = 0;
         try {
 
             SAXBuilder builder = new SAXBuilder();
@@ -84,7 +90,6 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                     TransferBookingRequest rq0 = findTransferBookingRequest(em, rq.getCustomer(), rq.getAgencyReference());
 
                     if (rq0 == null || (!Strings.isNullOrEmpty(rq.getSource()) && !rq.getSource().equals(rq0.getSource()))) {
-
                         rq.setTask(this);
                         getTransferBookingRequests().add(rq);
                         em.persist(rq);
@@ -94,21 +99,28 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                             e.printStackTrace();
                         }
                         //vamos guardando el resultado junto con la refAge para crear el informe final
-                        if (res.length() > 0)//hay errores
+                        if (res.length() > 0) {//hay errores
                             result += res;
-                        else {
+                            errors++;
+                        } else {
                             result += "Ok ";
                             nOk++; //Vamos contando los que han ido bien
+
+                            if ("cancellation".equalsIgnoreCase(rq.getStatus())) cancellations++;
+                            else if (rq0 == null) additions++;
+                            else modifications++;
                         }
 
                     } else {
                         result += "Ok ";
                         nOk++; //Vamos contando los que han ido bien
+                        unmodified++;
                     }
 
                 } catch (Exception e) {
                     e.printStackTrace();
                     result += "Error: " + e.getClass() + " - " + e.getMessage();
+                    errors++;
                 }
 
             }
@@ -122,6 +134,14 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         try {
             //finalmente se actualiza el audit, se cambia el estado a Done y se graba el informe final
            this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+
+           setAdditions(additions);
+           setModifications(modifications);
+           setCancellations(cancellations);
+           setUnmodified(unmodified);
+           setErrors(errors);
+           setTotal(additions + modifications + cancellations + unmodified + errors);
+
             if (nOk > 0)
                 this.setStatus(STATUS.OK);
             else

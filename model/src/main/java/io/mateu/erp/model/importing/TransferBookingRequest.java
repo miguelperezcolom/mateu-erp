@@ -202,6 +202,7 @@ public class TransferBookingRequest {
                         tt = TransferType.PRIVATE;
                         break;
                 }
+                if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
                 s.setTransferType(tt);
                 s.setOffice(getTask().getOffice());
                 s.setPos(getTask().getPointOfSale());
@@ -232,6 +233,7 @@ public class TransferBookingRequest {
                         tt = TransferType.PRIVATE;
                         break;
                 }
+                if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
                 s.setTransferType(tt);
                 s.setOffice(getTask().getOffice());
                 s.setPos(getTask().getPointOfSale());

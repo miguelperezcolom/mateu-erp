@@ -355,4 +355,8 @@ public abstract class Service {
 
         return d;
     }
+
+    public void cancel(EntityManager em) {
+        setCancelled(true);
+    }
 }

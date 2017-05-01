@@ -61,6 +61,19 @@ public abstract class TransferImportTask {
     @OneToMany(mappedBy = "task")
     List<TransferBookingRequest> transferBookingRequests = new ArrayList<>();
 
+    @ListColumn
+    private int additions;
+    @ListColumn
+    private int cancellations;
+    @ListColumn
+    private int modifications;
+    @ListColumn
+    private int unmodified;
+    @ListColumn
+    private int errors;
+    @ListColumn
+    private int total;
+
     public abstract void execute(EntityManager em);
 
    /* public void cancel(User u)
