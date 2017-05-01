@@ -22,9 +22,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by miguel on 12/1/17.
@@ -399,7 +397,9 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         jpql += " from " + getEntityClassName() + " x";
 
         int i = 1;
+        Map<String, Integer> ljs = new HashMap<>();
         for (String lj : leftJoins) {
+            ljs.put(lj, i);
             jpql += " left outer join x." + lj + " x" + i++ + " ";
         }
 
@@ -408,7 +408,14 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         String filters = "";
         Data sfd = getForm().getData();
         for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
-            if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
+            if (!d.isEmpty("_isnull")) {
+                Boolean v = sfd.getBoolean(d.getString("_id"));
+                if (v) {
+                    if (posfilter++ == 0) filters += "";
+                    else filters += " and ";
+                    filters += " " + ((ljs.containsKey(d.getString("_qlname")))?"x" + ljs.get(d.getString("_qlname")):"x." + d.getString("_qlname")) + " is null ";
+                }
+            } else if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
                 String fx = "";
                 LocalDate del = toLocalDate(sfd.get(d.getString("_id") + "_from"));
                 LocalDate al = toLocalDate(sfd.get(d.getString("_id") + "_to"));

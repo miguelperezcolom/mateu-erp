@@ -55,6 +55,7 @@ public class Contract extends AbstractContract {
     private List<Price> prices = new ArrayList<>();
 
 
+    @Action(name = "Clone contracts")
     public static void cloneContracts(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "% increment") double percent, @Parameter(name = "Value increment") double amount) throws CloneNotSupportedException {
         User u = em.find(User.class, user.getLogin());
         for (Data d : selection) {

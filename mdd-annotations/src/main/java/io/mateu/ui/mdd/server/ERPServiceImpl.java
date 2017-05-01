@@ -643,9 +643,49 @@ public class ERPServiceImpl implements ERPService {
                         public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                             return f.getAnnotation(annotationClass);
                         }
-                    }, null, sf, true);
+                    }, null, sf, null, true);
                 }
             }
+
+            if (f.isAnnotationPresent(SearchFilterIsNull.class)) {
+                addField(searchFormFields, new FieldInterfaced() {
+                    @Override
+                    public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                        return f.isAnnotationPresent(annotationClass);
+                    }
+
+                    @Override
+                    public Class<?> getType() {
+                        return Boolean.class;
+                    }
+
+                    @Override
+                    public Class<?> getGenericClass() {
+                        return null;
+                    }
+
+                    @Override
+                    public Class<?> getDeclaringClass() {
+                        return f.getDeclaringClass();
+                    }
+
+                    @Override
+                    public String getName() {
+                        return f.getName();
+                    }
+
+                    @Override
+                    public String getId() {
+                        return f.getName() + "_isnull";
+                    }
+
+                    @Override
+                    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                        return f.getAnnotation(annotationClass);
+                    }
+                }, null, null, f.getAnnotation(SearchFilterIsNull.class), true);
+            }
+
         }
 
         boolean hayListColumns = false;
@@ -984,15 +1024,15 @@ public class ERPServiceImpl implements ERPService {
                 public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
                     return f.getAnnotation(annotationClass);
                 }
-            }, lc, null, false);
+            }, lc, null, null, false);
         }
     }
 
     private void addField(List<Data> _fields, FieldInterfaced f) {
-        addField(_fields, f, null, null, false);
+        addField(_fields, f, null, null, null, false);
     }
 
-    private void addField(List<Data> _fields, FieldInterfaced f, ListColumn listColumnAnnotation, SearchFilter searchFilterAnnotation, boolean buildingSearchForm) {
+    private void addField(List<Data> _fields, FieldInterfaced f, ListColumn listColumnAnnotation, SearchFilter searchFilterAnnotation, SearchFilterIsNull searchFilterIsNullAnnotation, boolean buildingSearchForm) {
         if (!f.isAnnotationPresent(Ignored.class)) {
 
             Data d = new Data();
@@ -1003,6 +1043,9 @@ public class ERPServiceImpl implements ERPService {
             if (f.isAnnotationPresent(CellStyleGenerator.class)) d.set("_cellstylegenerator", f.getAnnotation(CellStyleGenerator.class).value().getName());
 
             if (listColumnAnnotation != null) {
+                if (!Strings.isNullOrEmpty(listColumnAnnotation.value())) {
+                    d.set("_label", listColumnAnnotation.value());
+                }
                 if (!Strings.isNullOrEmpty(listColumnAnnotation.field())) {
                     d.set("_qlname", f.getName() + "." + listColumnAnnotation.field());
                     for (Field ff : getAllFields(f.getType())) {
@@ -1057,7 +1100,63 @@ public class ERPServiceImpl implements ERPService {
                 }
                 if (listColumnAnnotation.width() >= 0) d.set("_colwidth", listColumnAnnotation.width());
 
+            } else if (searchFilterIsNullAnnotation != null) {
+                d.set("_isnull", true);
+                if (!Strings.isNullOrEmpty(searchFilterIsNullAnnotation.value())) {
+                    d.set("_label", searchFilterIsNullAnnotation.value());
+                }
+                if (!Strings.isNullOrEmpty(searchFilterIsNullAnnotation.field())) {
+                    d.set("_qlname", f.getName() + "." + searchFilterIsNullAnnotation.field());
+                    for (Field ff : getAllFields(f.getType())) {
+                        if (ff.getName().equals(searchFilterIsNullAnnotation.field())) {
+                            f = new FieldInterfaced() {
+                                @Override
+                                public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+                                    return ff.isAnnotationPresent(annotationClass);
+                                }
+
+                                @Override
+                                public Class<?> getType() {
+                                    return ff.getType();
+                                }
+
+                                @Override
+                                public Class<?> getGenericClass() {
+                                    ParameterizedType genericType = (ParameterizedType) ff.getGenericType();
+                                    Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
+                                    return genericClass;
+                                }
+
+                                @Override
+                                public Class<?> getDeclaringClass() {
+                                    return ff.getDeclaringClass();
+                                }
+
+                                @Override
+                                public String getName() {
+                                    return ff.getName();
+                                }
+
+                                @Override
+                                public String getId() {
+                                    return ff.getName();
+                                }
+
+                                @Override
+                                public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+                                    return ff.getAnnotation(annotationClass);
+                                }
+                            };
+                            break;
+                        }
+                    }
+                } else if (!Strings.isNullOrEmpty(searchFilterIsNullAnnotation.ql()))
+                    d.set("_qlname", searchFilterIsNullAnnotation.ql());
+                else d.set("_qlname", f.getName());
             } else if (searchFilterAnnotation != null) {
+                if (!Strings.isNullOrEmpty(searchFilterAnnotation.value())) {
+                    d.set("_label", searchFilterAnnotation.value());
+                }
                 if (searchFilterAnnotation.exactMatch()) d.set("_exactmatch", true);
                 if (!Strings.isNullOrEmpty(searchFilterAnnotation.field())) {
                     d.set("_qlname", f.getName() + "." + searchFilterAnnotation.field());
@@ -1126,7 +1225,10 @@ public class ERPServiceImpl implements ERPService {
                 d.set("_unmodifiable", true);
             }
 
-            if (f.isAnnotationPresent(Output.class) && searchFilterAnnotation == null) {
+            if (searchFilterIsNullAnnotation != null) {
+                d.set("_type", MetaData.FIELDTYPE_BOOLEAN);
+                upload = true;
+            } else if (f.isAnnotationPresent(Output.class) && searchFilterAnnotation == null) {
                 d.set("_type", MetaData.FIELDTYPE_OUTPUT);
                 upload = true;
             } else if (f.isAnnotationPresent(TextArea.class)) {
@@ -1281,9 +1383,11 @@ public class ERPServiceImpl implements ERPService {
                     d.set("_startsline", true);
                 }
 
-                if (f.isAnnotationPresent(Caption.class)) {
-                    d.set("_label", f.getAnnotation(Caption.class).value());
-                } else d.set("_label", capitalize(f.getName()));
+                if (d.isEmpty("_label")) {
+                    if (f.isAnnotationPresent(Caption.class)) {
+                        d.set("_label", f.getAnnotation(Caption.class).value());
+                    } else d.set("_label", capitalize(f.getName()));
+                }
                 _fields.add(d);
             }
 
