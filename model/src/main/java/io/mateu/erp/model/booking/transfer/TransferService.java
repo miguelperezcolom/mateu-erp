@@ -433,8 +433,11 @@ public class TransferService extends Service implements WithTriggers {
             ok &= ContractType.SALE.equals(c.getType());
             ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
             ok &= getTransferType().equals(c.getTransferType());
-            ok &= c.getValidFrom().isBefore(getStart());
-            ok &= c.getValidTo().isAfter(getFinish());
+            ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
+            ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
             if (ok) contracts.add(c);
         }
         if (contracts.size() == 0) throw new Exception("No valid contract");
@@ -524,6 +527,9 @@ public class TransferService extends Service implements WithTriggers {
             ok &= getTransferType().equals(c.getTransferType());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
             if (ok) contracts.add(c);
         }
         if (contracts.size() == 0) throw new Exception("No valid contract");

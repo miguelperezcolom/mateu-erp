@@ -190,62 +190,66 @@ public class TransferBookingRequest {
             int posServei = 0;
             if (TRANSFERTYPE.ARRIVAL.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
                 TransferService s = (TransferService) b.getServices().get(posServei++);
-                s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
-                s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
-                s.setFlightOriginOrDestination("" + arrivalOriginAirport);
-                s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
-                s.setPax(adults + children + babies);
-                s.setPickupText(arrivalAirport);
-                TransferType tt = TransferType.SHUTTLE;
-                switch (serviceType.toLowerCase()) {
-                    case "private":
-                        tt = TransferType.PRIVATE;
-                        break;
-                }
-                if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
-                s.setTransferType(tt);
-                s.setOffice(getTask().getOffice());
-                s.setPos(getTask().getPointOfSale());
-                s.setComment("" + vehicle + ", " + serviceType);
+                if (!s.isLocked()) {
+                    s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
+                    s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
+                    s.setFlightOriginOrDestination("" + arrivalOriginAirport);
+                    s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
+                    s.setPax(adults + children + babies);
+                    s.setPickupText(arrivalAirport);
+                    TransferType tt = TransferType.SHUTTLE;
+                    switch (serviceType.toLowerCase()) {
+                        case "private":
+                            tt = TransferType.PRIVATE;
+                            break;
+                    }
+                    if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
+                    s.setTransferType(tt);
+                    s.setOffice(getTask().getOffice());
+                    s.setPos(getTask().getPointOfSale());
+                    s.setComment("" + vehicle + ", " + serviceType);
 
-                s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
+                    s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
 
-                try {
-                    s.afterSet(em, false);
-                    s.price(em);
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                    try {
+                        s.afterSet(em, false);
+                        s.price(em);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
 
             if (TRANSFERTYPE.DEPARTURE.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
                 TransferService s = (TransferService) b.getServices().get(posServei++);
-                s.setPickupText("" + departureResort + " (" + departureAddress + ")");
-                s.setFlightNumber("" + departureFlightCompany + departureFlightNumber);
-                s.setFlightOriginOrDestination("" + departureDestinationAirport);
-                s.setFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
-                s.setPax(adults + children + babies);
-                s.setDropoffText(departureAirport);
-                TransferType tt = TransferType.SHUTTLE;
-                switch (serviceType.toLowerCase()) {
-                    case "private":
-                        tt = TransferType.PRIVATE;
-                        break;
-                }
-                if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
-                s.setTransferType(tt);
-                s.setOffice(getTask().getOffice());
-                s.setPos(getTask().getPointOfSale());
-                s.setComment("" + vehicle + ", " + serviceType);
+                if (!s.isLocked()) {
+                    s.setPickupText("" + departureResort + " (" + departureAddress + ")");
+                    s.setFlightNumber("" + departureFlightCompany + departureFlightNumber);
+                    s.setFlightOriginOrDestination("" + departureDestinationAirport);
+                    s.setFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
+                    s.setPax(adults + children + babies);
+                    s.setDropoffText(departureAirport);
+                    TransferType tt = TransferType.SHUTTLE;
+                    switch (serviceType.toLowerCase()) {
+                        case "private":
+                            tt = TransferType.PRIVATE;
+                            break;
+                    }
+                    if ("executive".equalsIgnoreCase(vehicle)) tt = TransferType.EXECUTIVE;
+                    s.setTransferType(tt);
+                    s.setOffice(getTask().getOffice());
+                    s.setPos(getTask().getPointOfSale());
+                    s.setComment("" + vehicle + ", " + serviceType);
 
-                s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
+                    s.setCancelled("Cancellation".equalsIgnoreCase(getStatus()));
 
-                try {
-                    s.afterSet(em, false);
-                    s.price(em);
-                } catch (Throwable e) {
-                    e.printStackTrace();
+                    try {
+                        s.afterSet(em, false);
+                        s.price(em);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 

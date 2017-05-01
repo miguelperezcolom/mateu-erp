@@ -279,7 +279,17 @@ public abstract class Service {
     public List<Data> getBadges() {
         List<Data> l = new ArrayList<>();
         l.add(new Data("_css", "brown", "_value", "" + getTotal()));
-        l.add(new Data("_css", "green", "_value", "" + getProcessingStatus()));
+        String s = "";
+        ProcessingStatus v = getProcessingStatus();
+        switch (v) {
+            case INITIAL:
+            case DATA_OK: s = "info"; break;
+            case PURCHASEORDERS_SENT:
+            case PURCHASEORDERS_READY: s = "warning"; break;
+            case PURCHASEORDERS_CONFIRMED: s = "success"; break;
+            case PURCHASEORDERS_REJECTED: s = "danger"; break;
+        }
+        l.add(new Data("_css", s, "_value", "" + getProcessingStatus()));
         return l;
     }
 

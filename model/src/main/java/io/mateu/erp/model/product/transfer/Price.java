@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
+import io.mateu.erp.model.authentication.User;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -46,4 +47,13 @@ public class Price {
     @Required
     private double price;
 
+    public Price clone(EntityManager em, User u) {
+        Price p = new Price();
+        p.setPrice(getPrice());
+        p.setDestination(getDestination());
+        p.setOrigin(getOrigin());
+        p.setPricePer(getPricePer());
+        p.setVehicle(getVehicle());
+        return p;
+    }
 }
