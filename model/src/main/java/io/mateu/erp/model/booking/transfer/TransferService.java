@@ -364,9 +364,10 @@ public class TransferService extends Service implements WithTriggers {
 
         if (getEffectivePickup() != null && getEffectiveDropoff() != null) setProcessingStatus(ProcessingStatus.DATA_OK);
 
-        price(em);
+
 
         try {
+            price(em);
             checkPurchase(em);
         } catch (Throwable e) {
             e.printStackTrace();

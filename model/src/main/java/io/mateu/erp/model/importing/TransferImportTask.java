@@ -7,10 +7,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.UseIdToSelect;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -29,22 +26,30 @@ import java.util.List;
 @UseIdToSelect(ql="select x.id, concat(x.status, ' - ', x.agency.name, ' - ', x.id) as text from TransferImportTask x where x.id = xxxx")
 public abstract class TransferImportTask {
     @Id
+    @ListColumn(order = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @ListColumn
     private String name;
 
     @Embedded
+    @ListColumn(width = 300)
+    @Output
+    @SearchFilter(field="modified")
     private Audit audit;
 
-    private String report;
+
     private int priority;
 
     public enum STATUS {PENDING,CANCELLED,OK,ERROR};
     @SearchFilter
+    @ListColumn
     private STATUS status;
 
     private String file;
+
+    @TextArea
     private String html;
     private byte[] email;
 
@@ -59,20 +64,57 @@ public abstract class TransferImportTask {
     private PointOfSale pointOfSale;
 
     @OneToMany(mappedBy = "task")
+    @Ignored
     List<TransferBookingRequest> transferBookingRequests = new ArrayList<>();
 
     @ListColumn
-    private int additions;
+    @Output
+    @TextArea
+    private String report;
+
     @ListColumn
-    private int cancellations;
+    @Output
+    private int additions=0;
     @ListColumn
-    private int modifications;
+    @Output
+    private int cancellations=0;
     @ListColumn
-    private int unmodified;
+    @Output
+    private int modifications=0;
     @ListColumn
-    private int errors;
+    @Output
+    private int unmodified=0;
     @ListColumn
-    private int total;
+    @Output
+    private int errors=0;
+    @ListColumn
+    @Output
+    private int total=0;
+
+    public void increaseAdditions()
+    {
+        this.additions ++;
+    }
+    public void increaseCancellations()
+    {
+        this.cancellations ++;
+    }
+    public void increaseModifications()
+    {
+        this.modifications ++;
+    }
+    public void increaseUnmodified()
+    {
+        this.unmodified ++;
+    }
+    public void increaseErrors()
+    {
+        this.errors ++;
+    }
+    public void increaseTotal()
+    {
+        this.total ++;
+    }
 
     public abstract void execute(EntityManager em);
 
@@ -90,7 +132,7 @@ public abstract class TransferImportTask {
 
 
     @Action(name = "Retry")
-    public static void retry(UserData _user, List<Data> _selection) throws Throwable {
+    public static void retry(UserData _user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
@@ -105,7 +147,7 @@ public abstract class TransferImportTask {
     }
 
     @Action(name = "Cancel")
-    public static void cancel(UserData _user, List<Data> _selection) throws Throwable {
+    public static void cancel(UserData _user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {

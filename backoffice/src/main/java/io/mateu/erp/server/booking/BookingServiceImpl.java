@@ -1,9 +1,13 @@
 package io.mateu.erp.server.booking;
 
+import io.mateu.erp.model.importing.TransferImportTask;
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.server.ServerSideHelper;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -117,5 +121,33 @@ public class BookingServiceImpl implements BookingService {
 
 
         }
+    }
+
+    @Override
+    public void retryImportationTasks(List<Data> selection) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                for (Data d : selection) {
+                    TransferImportTask t = em.find(TransferImportTask.class, d.get("_id"));
+                    t.setStatus(TransferImportTask.STATUS.PENDING);
+                    t.execute(em);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void cancelImportationTasks(List<Data> selection) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                for (Data d : selection) {
+                    TransferImportTask t = em.find(TransferImportTask.class, d.get("_id"));
+                    t.setStatus(TransferImportTask.STATUS.PENDING);
+                    t.execute(em);
+                }
+            }
+        });
     }
 }

@@ -13,6 +13,10 @@ public interface BookingService {
 
     public Data getTransferSummary(Data parameters) throws Throwable;
 
+    public void retryImportationTasks(List<Data> selection) throws Throwable;
+
+    public void cancelImportationTasks(List<Data> selection) throws Throwable;
+
     public void informPickupTime(List<Data> selection) throws Throwable;
 
 }

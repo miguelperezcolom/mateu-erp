@@ -19,13 +19,21 @@ public class ImportingModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
+        /*
         m.add(new AbstractAction("Importing Queue") {
             @Override
             public void run() {
                 MateuUI.openView(new ImportingQueueView());
             }
         });
+*/
 
+        m.add(new AbstractAction("Importing Queue") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.importing.TransferImportTask", new MDDCallback());
+            }
+        });
 
         m.add(new AbstractAction("Auto imports") {
             @Override

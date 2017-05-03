@@ -23,6 +23,9 @@ public class Audit implements AuditRecord {
 
     public Audit(User u) {
         this.createdBy = u;
+        this.modifiedBy = u;
+        this.created = LocalDateTime.now();
+        this.modified = LocalDateTime.now();
     }
 
     @ManyToOne

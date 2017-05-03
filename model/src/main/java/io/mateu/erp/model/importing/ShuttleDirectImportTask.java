@@ -7,15 +7,13 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPAHelper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
-
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 
 import javax.persistence.Entity;
@@ -61,7 +59,13 @@ public class ShuttleDirectImportTask extends TransferImportTask {
     @Override
     public void execute(EntityManager em) {
         String result = "";
-        int nOk = 0;
+        this.setAdditions(0);
+        this.setCancellations(0);
+        this.setModifications(0);
+        this.setUnmodified(0);
+        this.setErrors(0);
+        this.setTotal(0);
+
         try {
 
             SAXBuilder builder = new SAXBuilder();
@@ -74,8 +78,9 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             String aux = "";
             for (Element tr : ltr) {
                 aux = "";
+                this.increaseTotal();
                 try {
-                    aux = "Ref. " + tr.getChildText("barcode") + ": ";
+                    aux = "\nRef. " + tr.getChildText("barcode") + ": ";
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                     TransferBookingRequest rq = rellenarTransferBookingRequest(tr);
                     res = rq.updateBooking(em);
@@ -100,7 +105,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         }
 
         this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
-        this.setReport(result);
+        this.setReport(result.replaceFirst("\n",""));
 
       }
 
@@ -109,6 +114,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
     {
         TransferBookingRequest rq = new TransferBookingRequest();
         rq.setTask(this);
+        rq.setSource(new XMLOutputter(Format.getCompactFormat()).outputString(tr));
         rq.setCustomer(this.getCustomer());
 
         rq.setAgencyReference(tr.getChildText("barcode"));
@@ -117,9 +123,11 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
         String type = tr.getChildText("type");
         if (type.toUpperCase().contains("SHUTTLE"))
-            rq.setServiceType(TransferBookingRequest.SERVICETYPE.SHUTTLE);
+            rq.setServiceType(TransferType.SHUTTLE);
+        else if (type.toUpperCase().contains("EXECUTIVE"))
+            rq.setServiceType(TransferType.SHUTTLE);
         else
-            rq.setServiceType(TransferBookingRequest.SERVICETYPE.PRIVATE);
+            rq.setServiceType(TransferType.PRIVATE);
         rq.setVehicle(type);
 
         rq.setPassengerName(tr.getChildText("passengername"));
@@ -131,22 +139,30 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         if (!tr.getChildText("extras").isEmpty())
             rq.setExtras(Integer.parseInt(tr.getChildText("extras")));
 
-        rq.setComments(tr.getChildText("observations"));
+        //rq.setComments(tr.getChildText("observations"));
 
         //ARRIVAL o DEPARTURE? En shuttleDirect cada reserva es 1 trayecto (no tenemos Both)
         boolean isArrival=false;
-        rq.setTransferType(TransferBookingRequest.TRANSFERTYPE.DEPARTURE);//departure=el aerpuerto esta en el destino
+        rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.DEPARTURE);//departure=el aerpuerto esta en el destino
         String origin = tr.getChildText("origin");
         //Buscamos el aeropuerto, formato "???? (IBZ)"
         if (origin.indexOf("(")>0 &&  origin.indexOf(")")>0
                 && (origin.indexOf(")")-origin.indexOf("(")==4))
         {
-            rq.setTransferType(TransferBookingRequest.TRANSFERTYPE.ARRIVAL);
+            rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.ARRIVAL);
             isArrival=true;
         }
 
         if (isArrival)
         {
+            TransferBookingRequest.STATUS s =  TransferBookingRequest.STATUS.OK;
+            if (tr.getChildText("status").toUpperCase().equals("CANCELLATION"))
+                s= TransferBookingRequest.STATUS.CANCELLED;
+            rq.setArrivalStatus(s);
+
+            if (tr.getChildText("confirmationcode")!=null && !tr.getChildText("confirmationcode").isEmpty())
+                rq.setArrivalConfirmed(true);
+
             rq.setArrivalAirport(tr.getChildText("origin"));
             rq.setArrivalResort(tr.getChildText("destination"));
             rq.setArrivalAddress(tr.getChildText("addressproperty"));
@@ -155,11 +171,19 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             rq.setArrivalFlightNumber(tr.getChildText("flight"));
             rq.setArrivalFlightCompany(tr.getChildText("airline"));
             rq.setArrivalOriginAirport(tr.getChildText("originairport"));
-            //rq.setArrivalComments();
+            rq.setArrivalComments(tr.getChildText("observations"));
             rq.setArrivalPickupDate(tr.getChildText("datetransfer"));
             rq.setArrivalPickupTime(tr.getChildText("timetransfer"));
         }
         else { //departure
+            TransferBookingRequest.STATUS s =  TransferBookingRequest.STATUS.OK;
+            if (tr.getChildText("status").toUpperCase().equals("CANCELLATION"))
+                s= TransferBookingRequest.STATUS.CANCELLED;
+            rq.setDepartureStatus(s);
+
+            if (tr.getChildText("confirmationcode")!=null && !tr.getChildText("confirmationcode").isEmpty())
+                rq.setDepartureConfirmed(true);
+
             rq.setDepartureAirport(tr.getChildText("destination"));
             rq.setDepartureResort(tr.getChildText("origin"));
             rq.setDepartureAddress(tr.getChildText("addressproperty"));
@@ -168,7 +192,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             rq.setDepartureFlightNumber(tr.getChildText("flight"));
             rq.setDepartureFlightCompany(tr.getChildText("airline"));
             rq.setDepartureDestinationAirport(tr.getChildText("destinationairport"));
-           // rq.setDepartureComments(tr.getChildText("observations"));
+            rq.setDepartureComments(tr.getChildText("observations"));
             rq.setDeparturePickupDate(tr.getChildText("datetransfer"));
             rq.setDeparturePickupTime(tr.getChildText("timetransfer"));
         }
