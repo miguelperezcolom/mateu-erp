@@ -125,7 +125,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         if (type.toUpperCase().contains("SHUTTLE"))
             rq.setServiceType(TransferType.SHUTTLE);
         else if (type.toUpperCase().contains("EXECUTIVE"))
-            rq.setServiceType(TransferType.SHUTTLE);
+            rq.setServiceType(TransferType.EXECUTIVE);
         else
             rq.setServiceType(TransferType.PRIVATE);
         rq.setVehicle(type);

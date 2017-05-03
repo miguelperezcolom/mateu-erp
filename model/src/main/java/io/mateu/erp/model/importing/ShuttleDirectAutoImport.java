@@ -60,7 +60,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                         xml = recuperarXml(fdesde,fhasta);
                     } catch (Exception e)
                     {
-                        getHistorial().add(LocalDateTime.now().format(dfh) + " - Error: " + e.getMessage() + " \n " + e.getStackTrace());
+                        addHistory(LocalDateTime.now().format(dfh) + " - Error: " + e.getMessage() + " \n " + e.getStackTrace());
                         e.printStackTrace();
                         return; //Salimos porque sin el fichero no podemos hacer nada
                     }
@@ -71,11 +71,11 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
                         ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName(),u, getCustomer(),xml, getOffice(), getPointOfSale());
                         em.persist(t);
-                        getHistorial().add(LocalDateTime.now().format(dfh)+ " - Tarea creada");
+                        addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }
                     else {
                         System.out.println("Error: el xml esta vacio!");
-                        getHistorial().add(LocalDateTime.now().format(dfh) + " - Error: el xml esta vacio!");
+                        addHistory(LocalDateTime.now().format(dfh) + " - Error: el xml esta vacio!");
                         return; //Salimos porque sin el fichero no podemos hacer nada
                     }
 

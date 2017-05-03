@@ -3,7 +3,9 @@ package io.mateu.erp.model.booking;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPAHelper;
@@ -38,6 +40,8 @@ public class Booking implements WithTriggers {
 
     @Embedded
     @Output
+    @SearchFilter(field="created")
+    @SearchFilter(field="modified")
     private Audit audit;
 
     @ManyToOne
@@ -107,6 +111,10 @@ public class Booking implements WithTriggers {
 
 
 
+    @Action(name = "External updates")
+    public MDDLink openTransferBookingRequests() {
+        return new MDDLink(TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference()));
+    }
 
 
 

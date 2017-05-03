@@ -74,6 +74,9 @@ public abstract class TransferImportTask {
 
     @ListColumn
     @Output
+    private int errors=0;
+    @ListColumn
+    @Output
     private int additions=0;
     @ListColumn
     @Output
@@ -84,12 +87,12 @@ public abstract class TransferImportTask {
     @ListColumn
     @Output
     private int unmodified=0;
-    @ListColumn
-    @Output
-    private int errors=0;
+
     @ListColumn
     @Output
     private int total=0;
+
+
 
     public void increaseAdditions()
     {

@@ -52,6 +52,12 @@ public abstract class TransferAutoImport {
     @Output
     private List<String> historial = new ArrayList<String>();
 
+    protected void addHistory(String txt)
+    {
+        if (historial.size()>10)
+           historial.remove(0);
+        historial.add(txt);
+    }
 
     @Action(name = "Run Queue")
     public static void runQueue() throws Throwable {
