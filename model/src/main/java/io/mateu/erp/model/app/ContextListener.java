@@ -14,12 +14,16 @@ public class ContextListener implements javax.servlet.ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        hiloTaskRunner = new Thread(new TaskRunner());
-        hiloTaskRunner.start();
+        System.out.println("****ARRANCANDO TASKRUNNER****");
+        if (hiloTaskRunner == null) {
+            hiloTaskRunner = new Thread(new TaskRunner());
+            hiloTaskRunner.start();
+            System.out.println("****TASKRUNNER ARRANCADO****");
+        }
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
-        hiloTaskRunner.interrupt();
+        if (hiloTaskRunner != null) hiloTaskRunner.interrupt();
     }
 }

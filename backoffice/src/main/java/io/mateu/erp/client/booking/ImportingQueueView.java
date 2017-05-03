@@ -28,7 +28,7 @@ public class ImportingQueueView extends AbstractJPAListView {
         as.add(new AbstractAction("New Task") {
             @Override
             public void run() {
-                System.out.println("hola");
+
             }
         });
 
@@ -38,10 +38,11 @@ public class ImportingQueueView extends AbstractJPAListView {
     @Override
     public String getSql() {
          String sql = "select x.id, x.status, x.audit.created, x.audit.modified, x.name, x.report, x.priority" +
+                 ", x.additions, x.modifications, x.cancellations, x.unmodified, x.total " +
                 " from TransferImportTask x  where 1=1";
 
          if (getForm().getData().get("status")!=null)
-            sql +=   " and x.status = '" + getForm().getData().getData("status").get("value") + "'" ;
+            sql +=   " and x.status = '" + getForm().getData().getString("status") + "'" ;
         if (getForm().getData().getString("creatFrom")!=null)
             sql +=   " and  x.audit.created >= '" + getForm().getData().getDate("creatFrom") + "'" ;
         if (getForm().getData().getString("creatTo")!=null)
@@ -68,8 +69,13 @@ public class ImportingQueueView extends AbstractJPAListView {
                 new TextColumn("col2", "Created", 120, false),
                 new TextColumn("col3", "Modified", 120, false),
                 new TextColumn("col4", "Name", 200, false),
-                new TextColumn("col5", "Report", 500, false),
-                new TextColumn("col6", "Priority", 60, false)
+                new TextColumn("col5", "Report", 100, false),
+                new TextColumn("col6", "Priority", 60, false),
+                new TextColumn("col7", "Additions", 60, false),
+                new TextColumn("col8", "Modifications", 60, false),
+                new TextColumn("col9", "Cancellations", 60, false),
+                new TextColumn("col10", "Unmodified", 60, false),
+                new TextColumn("col11", "Total", 60, false)
 
         );
     }
@@ -84,10 +90,10 @@ public class ImportingQueueView extends AbstractJPAListView {
 
         return new ViewForm(this)
                 .add(new ComboBoxField("status", "Status", Arrays.asList(
-                        new Pair("io.mateu.erp.model.importing.TransferImportTask.STATUS.PENDING", "Pending")
-                        , new Pair("io.mateu.erp.model.importing.TransferImportTask.STATUS.ERROR", "Error")
-                        , new Pair("io.mateu.erp.model.importing.TransferImportTask.STATUS.OK", "Ok")
-                        , new Pair("io.mateu.erp.model.importing.TransferImportTask.STATUS.CANCELLED", "Cancelled")
+                        new Pair("PENDING", "Pending")
+                        , new Pair("ERROR", "Error")
+                        , new Pair("OK", "Ok")
+                        , new Pair("CANCELLED", "Cancelled")
 
                 )))
                 .add(new DateTimeField("creatFrom", "Created From"))

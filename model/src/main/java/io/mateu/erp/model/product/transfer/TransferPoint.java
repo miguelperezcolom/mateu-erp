@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
@@ -66,7 +67,14 @@ public class TransferPoint {
 
     @Override
     public String toString() {
-        return getName();
+        String s = getName();
+        if (!Strings.isNullOrEmpty(getInstructions())) s += " / " + getInstructions();
+        if (getAlternatePointForShuttle() != null) {
+            s += " (SHUTTLE: " + getAlternatePointForShuttle().getName();
+            if (!Strings.isNullOrEmpty(getAlternatePointForShuttle().getInstructions())) s += " / " + getAlternatePointForShuttle().getInstructions();
+            s += ")";
+        }
+        return s;
     }
 
 

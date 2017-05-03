@@ -460,7 +460,7 @@ public class ERPServiceImpl implements ERPService {
                     }
                 }
 
-                data.set("_title", capitalize(o.getClass().getSimpleName()) + " " + ((data.isEmpty("_tostring"))?id:data.get("_tostring")));
+                data.set("_title", Helper.capitalize(o.getClass().getSimpleName()) + " " + ((data.isEmpty("_tostring"))?id:data.get("_tostring")));
 
             }
         });
@@ -578,7 +578,7 @@ public class ERPServiceImpl implements ERPService {
     public Data getMetadaData(Class c) throws Exception {
         Data data = new Data();
         data.set("_entityClassName", c.getName());
-        data.set("_rawtitle", capitalize(pluralize(c.getSimpleName())));
+        data.set("_rawtitle", Helper.capitalize(Helper.pluralize(c.getSimpleName())));
 
         if (c.isAnnotationPresent(Indelible.class)) data.set("_indelible", true);
 
@@ -590,7 +590,7 @@ public class ERPServiceImpl implements ERPService {
 
         List<Data> subclases = new ArrayList<>();
         for (Class s : subTypes) {
-            if (s.getCanonicalName() != null) subclases.add(new Data("_name", capitalize(s.getSimpleName()), "_type", s.getCanonicalName(), "_editorform", getEditorForm(s)));
+            if (s.getCanonicalName() != null) subclases.add(new Data("_name", Helper.capitalize(s.getSimpleName()), "_type", s.getCanonicalName(), "_editorform", getEditorForm(s)));
         }
         if (subclases.size() > 0) data.set("_subclasses", subclases);
 
@@ -797,7 +797,7 @@ public class ERPServiceImpl implements ERPService {
             }
         }
         def.set("_actions", actions);
-        def.set("_rawtitle", capitalize(c.getSimpleName()));
+        def.set("_rawtitle", Helper.capitalize(c.getSimpleName()));
         return def;
     }
 
@@ -1386,7 +1386,7 @@ public class ERPServiceImpl implements ERPService {
                 if (d.isEmpty("_label")) {
                     if (f.isAnnotationPresent(Caption.class)) {
                         d.set("_label", f.getAnnotation(Caption.class).value());
-                    } else d.set("_label", capitalize(f.getName()));
+                    } else d.set("_label", Helper.capitalize(f.getName()));
                 }
                 _fields.add(d);
             }
@@ -1394,27 +1394,7 @@ public class ERPServiceImpl implements ERPService {
         }
     }
 
-    private String capitalize(String s) {
-        if (s == null || "".equals(s)) return s;
-        String c = s.replaceAll(
-                String.format("%s|%s|%s",
-                        "(?<=[A-Z])(?=[A-Z][a-z])",
-                        "(?<=[^A-Z])(?=[A-Z])",
-                        "(?<=[A-Za-z])(?=[^A-Za-z])"
-                ),
-                " "
-        ).toLowerCase();
-        if (c.length() > 1) c = c.substring(0, 1).toUpperCase() + c.substring(1);
 
-        return c;
-    }
-
-    private String pluralize(String s) {
-        if (s == null || "".equals(s)) return s;
-        String c = s + "s";
-        if (c.endsWith("ys")) c = c.replaceAll("ys$", "ies") ;
-        return c;
-    }
 
     public static void main(String... args) throws Exception {
         //System.out.println(new ERPServiceImpl().getMetaData(Actor.class.getCanonicalName()));

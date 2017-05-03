@@ -101,10 +101,12 @@ public class TransferService extends Service implements WithTriggers {
     private LocalDateTime importedPickupTime;
     @ListColumn
     private LocalDateTime pickupTime;
-    private LocalDateTime pickupConfirmed;
-    private PickupConfirmationWay pickupConfirmedThrough;
+    private LocalDateTime pickupConfirmedByTelephone;
+    private LocalDateTime pickupConfirmedByWeb;
+    private LocalDateTime pickupConfirmedByEmailToHotel;
 
-    private boolean arrivalNoShowed;
+    @Ignored
+    private boolean arrivalNoShow;
 
     @Ignored
     @ManyToOne
@@ -161,20 +163,6 @@ public class TransferService extends Service implements WithTriggers {
             public void run(EntityManager em) throws Throwable {
                 for (Data d : _selection) {
                     TransferService s = em.find(TransferService.class, d.get("_id"));
-                    s.price(em);
-                }
-            }
-        });
-    }
-
-    @Action(name = "Repair")
-    public static void repair(@Selection List<Data> _selection) throws Throwable {
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-                for (Data d : _selection) {
-                    TransferService s = em.find(TransferService.class, d.get("_id"));
-                    s.afterSet(em, false);
                     s.price(em);
                 }
             }
@@ -243,7 +231,7 @@ public class TransferService extends Service implements WithTriggers {
 
                     TransferService s = em.find(TransferService.class, d.get("_id"));
 
-                    if (!s.isCancelled()) {
+                    if (!s.isCancelled() && !s.isHeld()) {
 
                         LinkedHashMap<TransferDirection, LinkedHashMap<TransferType, List<TransferService>>> sf = ss.get(s.getStart());
                         if (sf == null) ss.put(s.getStart(), sf = new LinkedHashMap<>());
@@ -271,7 +259,7 @@ public class TransferService extends Service implements WithTriggers {
                     int totalPax = 0;
                     for (TransferService s : ss.get(f).get(d).get(t)) {
 
-                        if (!s.isCancelled()) {
+                        if (!s.isCancelled() && !s.isHeld()) {
 
                             totalPax += s.getPax();
 
@@ -402,14 +390,16 @@ public class TransferService extends Service implements WithTriggers {
         try {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("leadName", getBooking().getLeadName());
-            m.put("flighttime", getFlightTime());
-            m.put("flightnumber", getFlightNumber());
+            m.put("flightTime", getFlightTime());
+            m.put("flightNumber", getFlightNumber());
             m.put("pax", getPax());
             m.put("pickup", "" + getEffectivePickup());
             m.put("dropoff", "" + getEffectiveDropoff());
-            m.put("transfertype", getTransferType());
-            m.put("preferredvehicle", "" + getPreferredVehicle());
+            m.put("transferType", getTransferType());
+            m.put("preferredVehicle", "" + getPreferredVehicle());
+            //m.put("pickupTime", getPickupTime());
             m.put("comment", "" + getComment());
+            m.put("held", "" + isHeld());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();
@@ -585,7 +575,7 @@ public class TransferService extends Service implements WithTriggers {
         d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
         d.put("transferType", "" + getTransferType());
         d.put("flight", getFlightNumber());
-        d.put("flightDate", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        d.put("flightDate", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MMM-dd")));
         d.put("flightTime", getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         d.put("flightOriginOrDestination", getFlightOriginOrDestination());
         d.put("preferredVehicle", (getPreferredVehicle() != null)?getPreferredVehicle().getName():"");
@@ -610,10 +600,14 @@ public class TransferService extends Service implements WithTriggers {
                 break;
             }
         }
+        s += ". ";
         if (r != null) {
-            if (TransferDirection.OUTBOUND.equals(r.getDirection())) s += ". Returns " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"));
-            else  s += ". Arrives " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"));
-        } else s += ". This is the only service in this booking";
+            if (TransferDirection.OUTBOUND.equals(r.getDirection())) s += "Returns " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")) + ". ";
+            else  s += "Arrives " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")) + ". ";
+        } else s += "This is the only service in this booking. ";
+        if (isArrivalNoShow()) {
+            s += "Arrival was no show. ";
+        }
         return s;
     }
 

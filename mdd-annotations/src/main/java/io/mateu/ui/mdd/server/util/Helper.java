@@ -295,4 +295,26 @@ public class Helper {
     public static double roundEuros(double value) {
         return Math.round(value * 100d) / 100d;
     }
+
+    public static String capitalize(String s) {
+        if (s == null || "".equals(s)) return s;
+        String c = s.replaceAll(
+                String.format("%s|%s|%s",
+                        "(?<=[A-Z])(?=[A-Z][a-z])",
+                        "(?<=[^A-Z])(?=[A-Z])",
+                        "(?<=[A-Za-z])(?=[^A-Za-z])"
+                ),
+                " "
+        ).toLowerCase();
+        if (c.length() > 1) c = c.substring(0, 1).toUpperCase() + c.substring(1);
+
+        return c;
+    }
+
+    public static String pluralize(String s) {
+        if (s == null || "".equals(s)) return s;
+        String c = s + "s";
+        if (c.endsWith("ys")) c = c.replaceAll("ys$", "ies") ;
+        return c;
+    }
 }
