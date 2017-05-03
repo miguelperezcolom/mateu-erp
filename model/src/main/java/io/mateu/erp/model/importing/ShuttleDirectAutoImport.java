@@ -69,7 +69,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                     if (xml!=null && xml.length()>0)
                     {
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
-                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName(),u, getCustomer(),xml, getOffice(), getPointOfSale());
+                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),xml, getOffice(), getPointOfSale());
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }

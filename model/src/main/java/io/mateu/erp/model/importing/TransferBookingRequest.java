@@ -10,7 +10,9 @@ import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.StartsLine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,115 +35,197 @@ public class TransferBookingRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Output
     @ListColumn
-    private String source; //xml origen o csv
+    @Column(name = "_when")
+    LocalDateTime when = LocalDateTime.now();
 
+    @Output
     @ManyToOne
     private TransferImportTask task;
 
     @SearchFilter
+    @Output
     @ManyToOne
     private Actor customer;
 
     @SearchFilter
+    @Output
     private String agencyReference;
 
+    @Output
     private String created;//ojo, de momento estos campos no se estan aplicando en la reserva
+    @Output
     private String modified; //ojo, de momento estos campos no se estan aplicando en la reserva
 
     //public enum SERVICETYPE {SHUTTLE, PRIVATE};//Shuttle, Private, se pueden agregar mas...
     @ListColumn
+    @Output
     private TransferType serviceType; //Shuttle, Private, Executive
     @ListColumn
+    @Output
     private String vehicle; //Si es un privado (taxi, minibus, etc)
 
     @SearchFilter
+    @Output
     private String passengerName;
+    @ListColumn
+    @Output
     private String phone;
+    @ListColumn
+    @Output
     private String email;
     @ListColumn
+    @Output
     private int adults=0;
     @ListColumn
+    @Output
     private int children=0;
     @ListColumn
+    @Output
     private int babies=0;
     @ListColumn
+    @Output
     private int extras=0;
     @ListColumn
+    @Output
     private String comments;
 
     public enum TRANSFERSERVICES {ARRIVAL, DEPARTURE, BOTH};
     @ListColumn
+    @Output
     private TRANSFERSERVICES transferServices;
 
     public enum STATUS {OK, CANCELLED};
 
+
+@StartsLine
+    @ListColumn
+    @Output
     private STATUS arrivalStatus;
+    @ListColumn
+    @Output
     private String arrivalAirport;
+    @ListColumn
+    @Output
     private String arrivalResort;
+    @ListColumn
+    @Output
     private String arrivalAddress;
+    @ListColumn
+    @Output
     private boolean arrivalConfirmed=false;
 
-    //formato dd/MM/yyyy
-    private String arrivalFlightDate;
+    @Output
+    @ListColumn
+    private String arrivalFlightDate;//formato dd/MM/yyyy
     public void setArrivalFlightDate(String day)
     {
         arrivalFlightDate=checkDayFormat(day);
     }
-    //formato HH:mm
-    private String arrivalFlightTime;
+
+    @ListColumn
+    @Output
+    private String arrivalFlightTime;//formato HH:mm
     public void setArrivalFlightTime(String time)
     {
         arrivalFlightTime= checkTimeFormat(time);
     }
+    @ListColumn
+    @Output
     private String arrivalFlightNumber;
+    @ListColumn
+    @Output
     private String arrivalFlightCompany;
+    @ListColumn
+    @Output
     private String arrivalOriginAirport;
+    @ListColumn
+    @Output
     private String arrivalComments;
+    @ListColumn
+    @Output
     private String arrivalPickupDate;//formato dd/MM/yyyy
     public void setArrivalPickupDate(String day)
     {
         arrivalPickupDate= checkDayFormat(day);
     }
+    @ListColumn
+    @Output
     private String arrivalPickupTime;//formato HH:mm
     public void setArrivalPickupTime(String time)
     {
         arrivalPickupTime= checkTimeFormat(time);
     }
 
+    @StartsLine
+    @ListColumn
+    @Output
     private STATUS departureStatus;
+    @ListColumn
+    @Output
     private String departureAirport;
+    @ListColumn
+    @Output
     private String departureResort;
+    @ListColumn
+    @Output
     private String departureAddress;
+    @ListColumn
+    @Output
     private boolean departureConfirmed=false;
+    @ListColumn
+    @Output
     private String departureFlightDate;//formato dd/MM/yyyy
     public void setDepartureFlightDate(String day)
     {
         departureFlightDate=checkDayFormat(day);
     }
+    @ListColumn
+    @Output
     private String departureFlightTime;//formato HH:mm
     public void setDepartureFlightTime(String time)
     {
         departureFlightTime= checkTimeFormat(time);
     }
 
+    @ListColumn
+    @Output
     private String departureFlightNumber;
+    @ListColumn
+    @Output
     private String departureFlightCompany;
+    @ListColumn
+    @Output
     private String departureDestinationAirport;
+    @ListColumn
+    @Output
     private String departureComments;
+    @ListColumn
+    @Output
     private String departurePickupDate; //formato dd/MM/yyyy
     public void setDeparturePickupDate(String day)
     {
         departurePickupDate= checkDayFormat(day);
     }
+    @ListColumn
+    @Output
     private String departurePickupTime;//formato HH:mm
     public void setDeparturePickupTime(String time)
     {
         departurePickupTime= checkTimeFormat(time);
     }
 
+    @StartsLine
+    private String source; //xml origen o csv
+
+    @Output
     @ManyToOne
     private Booking booking;
+
+    @Output
+    @ListColumn
+    private String result;
 
 
     //formato dd/MM/yyyy
@@ -200,13 +284,16 @@ public class TransferBookingRequest {
 
     public String updateBooking(EntityManager em)
     {
-        String result="";
+        String _result="";
         try {
             //Validamos y si no va bien salimos devolviendo el error
-            result = validate();
-            if (result.length() > 0) return result;
+            _result = validate();
+            if (_result.length() > 0) {
+                this.result = _result;
+                return _result;
+            }
 
-            result = "";
+            _result = "";
 
             //Si ok, actualizamos la reserva...
             Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
@@ -291,13 +378,13 @@ public class TransferBookingRequest {
                     {
                         if (s.isLocked())
                         {
-                            result += "Changes in arrival not applied because it is locked";
+                            _result += "Changes in arrival not applied because it is locked";
                             this.getTask().increaseErrors();
                         }
                         else if (getTime(arrivalFlightDate + " " + arrivalFlightTime).isBefore(LocalDateTime.now().plusHours(1))
                                 || s.getFlightTime().isBefore(LocalDateTime.now()))
                         {//solo modificamos si la fecha es posterior y si la fecha del servicio no ha pasado
-                            result += "Changes in arrival not applied because the arrival date is in the past";
+                            _result += "Changes in arrival not applied because the arrival date is in the past";
                             this.getTask().increaseErrors();
                         }
                         else
@@ -334,13 +421,13 @@ public class TransferBookingRequest {
                     {
                         if (s.isLocked())
                         {
-                            result += "Changes in arrival not applied because it is locked";
+                            _result += "Changes in arrival not applied because it is locked";
                             this.getTask().increaseErrors();
                         }//solo modificamos si la fecha es posterior
                         else if (getTime(departureFlightDate + " " + departureFlightTime).isBefore(LocalDateTime.now().plusHours(1))
                                 || s.getFlightTime().isBefore(LocalDateTime.now()))
                         {
-                            result += "Changes in departure not applied because the arrival date is in the past";
+                            _result += "Changes in departure not applied because the arrival date is in the past";
                             this.getTask().increaseErrors();
                         }
                         else {
@@ -369,12 +456,17 @@ public class TransferBookingRequest {
 
 
         } catch (Throwable ex) {
-            result += ex.getMessage();
+            _result += ex.getMessage();
             ex.printStackTrace();
             this.getTask().increaseErrors();
         }
 
-        return result;
+        if (_result.isEmpty())
+            this.result = "Ok";
+        else
+            this.result = _result;
+
+        return _result;
     }
 
 
