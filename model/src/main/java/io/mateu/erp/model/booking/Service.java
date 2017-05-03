@@ -3,7 +3,9 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.PriceDetail;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
@@ -14,10 +16,13 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,6 +41,7 @@ public abstract class Service {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @ListColumn(width = 70)
     private long id;
 
     @Embedded
@@ -48,8 +54,8 @@ public abstract class Service {
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
     @ListColumn(value="Boking", field = "id")
-    @ListColumn(field = "agencyReference")
-    @ListColumn(field = "agency")
+    @ListColumn(field = "agencyReference", width = 150)
+    @ListColumn(field = "agency", width = 150)
     @SearchFilter(field = "leadName")
     @ListColumn(field = "leadName")
     private Booking booking;
@@ -65,6 +71,24 @@ public abstract class Service {
     @ListColumn(width = 60)
     @CellStyleGenerator(ConfirmedCellStyleGenerator.class)
     private ServiceConfirmationStatus answer = ServiceConfirmationStatus.CONFIRMED;
+
+    @ListColumn
+    @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
+    @NotInEditor
+    private ProcessingStatus processingStatus;
+
+    public void setProcessingStatus(ProcessingStatus processingStatus) {
+        this.processingStatus = processingStatus;
+        if (getProcessingStatus() != null) switch (getProcessingStatus()) {
+            case INITIAL: setEffectiveProcessingStatus(100); break;
+            case DATA_OK: setEffectiveProcessingStatus(200); break;
+            case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
+            case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
+            case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
+            case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
+            default: setEffectiveProcessingStatus(0);
+        }
+    }
 
     private String answerText;
 
@@ -86,8 +110,16 @@ public abstract class Service {
 
 
     @TextArea
+    @StartsLine
     private String comment;
 
+    @TextArea
+    private String privateComment;
+
+    @Output
+    private String changeLog;
+
+    @StartsLine
     private boolean alreadyInvoiced;
 
     @Required
@@ -114,23 +146,6 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
-    @Output
-    @ListColumn
-    @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
-    private ProcessingStatus processingStatus;
-
-    public void setProcessingStatus(ProcessingStatus processingStatus) {
-        this.processingStatus = processingStatus;
-        if (getProcessingStatus() != null) switch (getProcessingStatus()) {
-            case INITIAL: setEffectiveProcessingStatus(100); break;
-            case DATA_OK: setEffectiveProcessingStatus(200); break;
-            case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
-            case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
-            case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
-            case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
-            default: setEffectiveProcessingStatus(0);
-        }
-    }
 
     @Ignored
     private int effectiveProcessingStatus;
@@ -170,6 +185,10 @@ public abstract class Service {
     @Ignored
     private String signature;
 
+    @Transient
+    @Ignored
+    private String signatureBefore;
+
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", isCancelled());
@@ -178,6 +197,38 @@ public abstract class Service {
         m.put("start", getStart());
         m.put("finish", getFinish());
         return m;
+    }
+
+
+    //@Action(name = "Repair signature")
+    public static void repairSignature(@Selection List<Data> _selection) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                for (Data d : _selection) {
+                    Service s = em.find(Service.class, d.get("_id"));
+                    s.setSignature(s.createSignature());
+                }
+            }
+        });
+    }
+
+    @Action(name = "Repair bookings")
+    public static void repair(@Selection List<Data> _selection) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                for (Data d : _selection) {
+                    Service s = em.find(Service.class, d.get("_id"));
+                    if (s instanceof TransferService) {
+                        ((TransferService)s).afterSet(em, false);
+                    } else if (s instanceof GenericService) {
+                        ((GenericService)s).afterSet(em, false);
+                    }
+                    s.price(em);
+                }
+            }
+        });
     }
 
     @Action(name = "Send to provider")
@@ -197,26 +248,29 @@ public abstract class Service {
             Service s = em.find(Service.class, d.get("_id"));
             if (provider != null) s.setPreferredProvider(provider);
             for (PurchaseOrder po : s.getPurchaseOrders()) {
-                if (PurchaseOrderStatus.PENDING.equals(po.getStatus())) {
-                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                    if (t == null) {
-                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersTask());
-                        em.persist(t);
-                        t.setOffice(s.getOffice());
-                        t.setProvider(po.getProvider());
-                        t.setStatus(TaskStatus.PENDING);
-                        t.setAudit(new Audit(u));
-                        if (!Strings.isNullOrEmpty(email)) {
-                            t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                            t.setTo(email);
-                        } else {
-                            t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                            t.setTo(po.getProvider().getSendOrdersTo());
-                        }
-                        t.setCc(s.getOffice().getEmailCC());
+                SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                if (t == null) {
+                    taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersTask());
+                    em.persist(t);
+                    t.setOffice(s.getOffice());
+                    t.setProvider(po.getProvider());
+                    t.setStatus(TaskStatus.PENDING);
+                    t.setAudit(new Audit(u));
+                    if (!Strings.isNullOrEmpty(email)) {
+                        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                        t.setTo(email);
+                    } else {
+                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                        t.setTo(po.getProvider().getSendOrdersTo());
                     }
-                    t.getPurchaseOrders().add(po);
-                    po.getSendingTasks().add(t);
+                    t.setCc(s.getOffice().getEmailCC());
+                }
+                t.getPurchaseOrders().add(po);
+                po.getSendingTasks().add(t);
+                try {
+                    po.afterSet(em, false);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
             }
         }
@@ -346,12 +400,9 @@ public abstract class Service {
     }
 
 
-    @PrePersist
-    void prePersist() {
-
-    }
-
     public static void main(String... args) {
+
+        /*
         Service s = new Service() {
             @Override
             public String createSignature() {
@@ -366,6 +417,9 @@ public abstract class Service {
         s.setProcessingStatus(ProcessingStatus.DATA_OK);
 
         System.out.println(s.getProcessingStatus().ordinal());
+*/
+
+
 
     }
 
@@ -387,4 +441,69 @@ public abstract class Service {
     public void cancel(EntityManager em) {
         setCancelled(true);
     }
+
+    @PostLoad
+    public void postLoad() {
+        setSignatureBefore(getSignature());
+    }
+
+    @Transient
+    @Ignored
+    private List<String> vistos = new ArrayList<>();
+
+    @PreUpdate
+    public void preStore() {
+        String l = getChangeLog();
+        if (l == null) l = "";
+        boolean update = false;
+        if (Strings.isNullOrEmpty(getSignatureBefore())) {
+            if (vistos.size() == 0) {
+                if (!"".equals(l)) l += "\n";
+                l += "" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                l += " ";
+                l += "ADDED";
+                vistos.add("***");
+            }
+            update = true;
+        } else if (!getSignatureBefore().equals(getSignature())) {
+            try {
+                Map<String, Object> m0 = Helper.fromJson(getSignatureBefore());
+                Map<String, Object> m = Helper.fromJson(getSignature());
+                List<String> ks = new ArrayList<>();
+                ks.addAll(m0.keySet());
+                for (String k : m.keySet()) if (!ks.contains(k)) ks.add(k);
+                for (String k : ks) {
+                    Object v0 = m0.get(k);
+                    Object v = m.get(k);
+                    if (v0 == null) v0 = "---";
+                    if (v == null) v = "---";
+                    if (v0 instanceof Map && ((Map)v0).containsKey("chronology")) {
+                        Map x0 = (Map) v0;
+                        v0 = "" + x0.get("year") + "-" + x0.get("month") + "-" + x0.get("dayOfMonth") + " " + x0.get("hour") + ":" + x0.get("minute");
+                    }
+                    if (v instanceof Map && ((Map)v).containsKey("chronology")) {
+                        Map x0 = (Map) v;
+                        v = "" + x0.get("year") + "-" + x0.get("month") + "-" + x0.get("dayOfMonth") + " " + x0.get("hour") + ":" + x0.get("minute");
+                    }
+                    if (!v0.equals(v)) {
+                        if (!vistos.contains(k)) {
+                            if (vistos.size() == 0) {
+                                if (!"".equals(l)) l += "\n";
+                                l += "" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                                l += " ";
+                                l += "MODIFIED";
+                            }
+                            vistos.add(k);
+                            l += "\n" + Helper.capitalize(k) + ": " + v0 + " -> " + v;
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            update = true;
+        }
+        setChangeLog(l);
+    }
+
 }

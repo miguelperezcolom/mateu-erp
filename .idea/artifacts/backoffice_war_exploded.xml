@@ -34,7 +34,7 @@
           </element>
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />
-          <element id="library" level="project" name="Maven: io.mateu.ui:core:1.0-SNAPSHOT" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/core/1.0-SNAPSHOT/core-1.0-20170501.092044-36.jar" output-file-name="core-1.0-SNAPSHOT.jar" />
           <element id="library" level="project" name="Maven: org.hsqldb:hsqldb:2.3.4" />
           <element id="library" level="project" name="Maven: org.apache.xmlgraphics:fop:2.1" />
           <element id="library" level="project" name="Maven: org.apache.xmlgraphics:xmlgraphics-commons:2.1" />
@@ -65,11 +65,8 @@
           <element id="library" level="project" name="Maven: org.apache.commons:commons-collections4:4.1" />
           <element id="library" level="project" name="Maven: org.jdom:jdom2:2.0.6" />
           <element id="library" level="project" name="Maven: com.google.guava:guava:21.0" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/port-javafx/1.0-SNAPSHOT/port-javafx-1.0-20170425.051126-29.jar" output-file-name="port-javafx-1.0-SNAPSHOT.jar" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/code-generation/1.0-SNAPSHOT/code-generation-1.0-20170425.051121-32.jar" output-file-name="code-generation-1.0-SNAPSHOT.jar" />
-          <element id="library" level="project" name="Maven: org.controlsfx:controlsfx:8.40.12" />
-          <element id="library" level="project" name="Maven: de.jensd:fontawesomefx:8.9" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170425.051127-24.jar" output-file-name="codegeneration-vaadin-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170501.092048-25.jar" output-file-name="codegeneration-vaadin-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/code-generation/1.0-SNAPSHOT/code-generation-1.0-20170501.092043-33.jar" output-file-name="code-generation-1.0-SNAPSHOT.jar" />
         </element>
       </element>
       <element id="directory" name="META-INF">

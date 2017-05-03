@@ -17,6 +17,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -134,7 +135,7 @@ public class TransferBookingRequest {
         return err;
     }
 
-    public String updateBooking(EntityManager em)
+    public String updateBooking(EntityManager em, Map<String, Booking> newBookings)
     {
         String result="";
         try {
@@ -144,7 +145,8 @@ public class TransferBookingRequest {
 
             //Si ok, actualizamos la reserva...
                     //Buscamos la reserva
-                    Booking b = Booking.getByAgencyRef(em, agencyReference, customer);
+                    Booking b = newBookings.get(agencyReference);
+                    if (b == null) b = Booking.getByAgencyRef(em, agencyReference, customer);
 
             //TODO: comprobar que elegimos bien el servicio de llegada y el de salida, para el caso de que hubiésemos creado la reserva a mano
 
@@ -155,6 +157,7 @@ public class TransferBookingRequest {
                         b.setAudit(new Audit(em.find(User.class, Constants.IMPORTING_USER_LOGIN)));
                         em.persist(b);
 
+                        newBookings.put(agencyReference, b);
 
                         if (TRANSFERTYPE.ARRIVAL.equals(transferType) || TRANSFERTYPE.BOTH.equals(transferType)) {
                             TransferService s;

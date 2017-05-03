@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="Maven: io.mateu.ui:codegeneration-vaadin:1.0-SNAPSHOT">
     <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170425.051127-24.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170501.092048-25.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170425.051127-24-javadoc.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170501.092048-25-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170425.051127-24-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/io/mateu/ui/codegeneration-vaadin/1.0-SNAPSHOT/codegeneration-vaadin-1.0-20170501.092048-25-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

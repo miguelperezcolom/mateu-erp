@@ -3,6 +3,7 @@ package io.mateu.erp.model.importing;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -24,7 +25,9 @@ import org.jdom2.output.XMLOutputter;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -76,25 +79,31 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             Document doc = builder.build(new StringReader(this.getHtml()));
             Element root = doc.getRootElement();
 
+            Map<String, Booking> newBookings = new HashMap<>();
+            Map<String, TransferBookingRequest> newTransferBookinRequests = new HashMap<>();
+
             //recorre cada transfer del fichero
             List<Element> ltr = root.getChild("transfers").getChildren();
             String res = "";
 
             for (Element tr : ltr) {
                 try {
+                    tr.removeAttribute("num");
                     result += "Ref. " + tr.getChildText("barcode") + ": ";
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                     TransferBookingRequest rq = rellenarTransferBookingRequest(tr);
 
                     //miguel: buscar si ya existe y comprobar si ha cambiado algo...
-                    TransferBookingRequest rq0 = findTransferBookingRequest(em, rq.getCustomer(), rq.getAgencyReference());
+                    TransferBookingRequest rq0 = newTransferBookinRequests.get(rq.getAgencyReference());
+                    if (rq0 == null) rq0 = findTransferBookingRequest(em, rq.getCustomer(), rq.getAgencyReference());
 
                     if (rq0 == null || (!Strings.isNullOrEmpty(rq.getSource()) && !rq.getSource().equals(rq0.getSource()))) {
                         rq.setTask(this);
                         getTransferBookingRequests().add(rq);
                         em.persist(rq);
+                        newTransferBookinRequests.put(rq.getAgencyReference(), rq);
                         try {
-                            res = rq.updateBooking(em);
+                            res = rq.updateBooking(em, newBookings);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

@@ -4,8 +4,10 @@ import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.server.ServerSideHelper;
 import io.mateu.ui.core.shared.Data;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by miguel on 23/4/17.
@@ -34,17 +36,17 @@ public class BookingServiceImpl implements BookingService {
 
 
 
-                ", min(case when transfertype = 1 and direction in (0,2) then effectiveprocessingstatus else 0 end)" +
-                ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 0 end)" +
+                ", min(case when transfertype = 1 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 3 and direction in (0,2) then effectiveprocessingstatus else 0 end)" +
-                ", min(case when transfertype = 3 and direction = 1 then effectiveprocessingstatus else 0 end)" +
+                ", min(case when transfertype = 3 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 3 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 2 and direction in (0,2) then effectiveprocessingstatus else 0 end)" +
-                ", min(case when transfertype = 2 and direction = 1 then effectiveprocessingstatus else 0 end)" +
+                ", min(case when transfertype = 2 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 2 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 0 and direction in (0,2) then effectiveprocessingstatus else 0 end)" +
-                ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 0 end)" +
+                ", min(case when transfertype = 0 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
 
 
@@ -83,7 +85,7 @@ public class BookingServiceImpl implements BookingService {
                     else if (o instanceof Integer) v = (Integer)o;
                     else if (o instanceof Long) v = ((Long)o).intValue();
                     if ("0".equals("" + l[3 + i])) {
-                        css = "success";
+                        css = null;
                     } else {
                         if (v == 450) css = "danger";
                         else if (v < 500) css = "warning";
@@ -105,5 +107,15 @@ public class BookingServiceImpl implements BookingService {
         d.set("_data_pagecount", numRows / rowsPerPage + ((numRows % rowsPerPage == 0)?0:1));
 
         return d;
+    }
+
+    @Override
+    public void informPickupTime(List<Data> selection) throws Throwable {
+        for (Data s : selection) {
+            LocalDate d = s.get("_id");
+
+
+
+        }
     }
 }

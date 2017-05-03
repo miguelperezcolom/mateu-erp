@@ -56,4 +56,38 @@ public class SendEmailTask extends AbstractTask {
         email.send();
 
     }
+
+
+    public static void main(String... args) {
+
+        for (String[] x : new String[][] {
+                {"inboxtest@viajesibiza.es", "Y4t3n3m0sXML"}
+                , {"inbox@viajesibiza.es", "Y4t3n3m0sXML"}
+                , {"reservas@viajesibiza.es", "Y4t3n3m0sXML"}
+        }) {
+
+            try {
+
+                Email email = new HtmlEmail();
+                email.setHostName("mail.invisahoteles.com");
+                email.setSmtpPort(25);
+                email.setAuthenticator(new DefaultAuthenticator(x[0], x[1]));
+                //email.setSSLOnConnect(true);
+                email.setFrom(x[0]);
+
+                email.setSubject("test");
+                email.setMsg("test");
+                email.addTo("miguelperezcolom@gmail.com");
+                email.send();
+
+                System.out.println("" + x[0] + "/" + x[1] + " ok.");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
 }
