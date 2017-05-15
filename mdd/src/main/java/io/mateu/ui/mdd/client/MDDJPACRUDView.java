@@ -83,7 +83,18 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
                 @Override
                 public AbstractForm createForm() {
-                    ViewForm f = new ViewForm(this);
+                    ViewForm f = new ViewForm(this) {
+                        @Override
+                        public void setData(Data data, boolean only_) {
+                            if (data.containsKey("_links")) {
+                                for (Data x : data.getList("_links")) {
+                                    MDDLink l = (MDDLink) x;
+                                    x.set("_action", createAction(l));
+                                }
+                            }
+                            super.setData(data, only_);
+                        }
+                    };
                     buildFromMetadata(this, f, formMetaData, false);
                     return f;
                 }
@@ -380,6 +391,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         List<String> orderFields = new ArrayList<>();
 
         List<String> leftJoins = new ArrayList<>();
+        List<String> innerJoins = new ArrayList<>();
 
         // primero buscamos el id o pk
         for (Data d : getMetadata().getData("_searchform").getList("_columns")){
@@ -389,7 +401,12 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             else jpql += "x." + d.getString("_qlname");
 
             if (!d.isEmpty("_leftjoin") && !leftJoins.contains(d.getString("_leftjoin"))) leftJoins.add(d.getString("_leftjoin"));
+            if (!d.isEmpty("_innerjoin") && !innerJoins.contains(d.getString("_innerjoin"))) innerJoins.add(d.getString("_innerjoin"));
             if (!d.isEmpty("_order")) orderFields.add(d.getString("_ordercol"));
+        }
+        for (Data d : getMetadata().getData("_searchform").getList("_fields")){
+            if (!d.isEmpty("_leftjoin") && !leftJoins.contains(d.getString("_leftjoin"))) leftJoins.add(d.getString("_leftjoin"));
+            if (!d.isEmpty("_innerjoin") && !innerJoins.contains(d.getString("_innerjoin"))) innerJoins.add(d.getString("_innerjoin"));
         }
 
         if (!getMetadata().isEmpty("_subclasses")) jpql += ", type(x) ";
@@ -402,28 +419,39 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             ljs.put(lj, i);
             jpql += " left outer join x." + lj + " x" + i++ + " ";
         }
+        Map<String, Integer> ijs = new HashMap<>();
+        for (String ij : innerJoins) {
+            ijs.put(ij, i);
+            jpql += " inner join x." + ij + " x" + i++ + " ";
+        }
 
 
         int posfilter = 0;
         String filters = "";
         Data sfd = getForm().getData();
         for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
+
+            String x = "x";
+            if (!d.isEmpty("_leftjoin")) x += ljs.get(d.getString("_leftjoin"));
+            if (!d.isEmpty("_innerjoin")) x += ijs.get(d.getString("_innerjoin"));
+
+
             if (!d.isEmpty("_isnull")) {
                 Boolean v = sfd.getBoolean(d.getString("_id"));
                 if (v) {
                     if (posfilter++ == 0) filters += "";
                     else filters += " and ";
-                    filters += " " + ((ljs.containsKey(d.getString("_qlname")))?"x" + ljs.get(d.getString("_qlname")):"x." + d.getString("_qlname")) + " is null ";
+                    filters += " " + ((ljs.containsKey(d.getString("_qlname")))?x + ljs.get(d.getString("_qlname")):x + "." + d.getString("_qlname")) + " is null ";
                 }
             } else if (MetaData.FIELDTYPE_DATE.equals(d.getString("_type"))) {
                 String fx = "";
                 LocalDate del = toLocalDate(sfd.get(d.getString("_id") + "_from"));
                 LocalDate al = toLocalDate(sfd.get(d.getString("_id") + "_to"));
                 DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                if (del != null) fx += "x." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
+                if (del != null) fx += x + "." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
                 if (al != null) {
                     if (!"".equals(fx)) fx += " and ";
-                    fx += "x." + d.getString("_qlname") + " <= {d '" + al.format(f) + "'}";
+                    fx += x + "." + d.getString("_qlname") + " <= {d '" + al.format(f) + "'}";
                 }
                 if (!"".equals(fx)) {
                     if (posfilter++ == 0) filters += "";
@@ -436,11 +464,11 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 LocalDate del = toLocalDate(sfd.get(d.getString("_id") + "_from"));
                 LocalDate al = toLocalDate(sfd.get(d.getString("_id") + "_to"));
                 DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                if (del != null) fx += "x." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
+                if (del != null) fx += x + "." + d.getString("_qlname") + " >= {d '" + del.format(f) + "'}";
                 if (al != null) {
                     al = al.plusDays(1);
                     if (!"".equals(fx)) fx += " and ";
-                    fx += "x." + d.getString("_qlname") + " < {d '" + al.format(f) + "'}";
+                    fx += x + "." + d.getString("_qlname") + " < {d '" + al.format(f) + "'}";
                 }
                 if (!"".equals(fx)) {
                     if (posfilter++ == 0) filters += "";
@@ -453,7 +481,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 if (d.getBoolean("_useidtoselect")) {
                     if (posfilter++ == 0) filters += "";
                     else filters += " and ";
-                    filters += "x." + d.getString("_id");
+                    filters += x + "." + d.getString("_id");
                     filters += ".id";
                     if ("string".equalsIgnoreCase(d.getString("_idtype"))) {
                         filters += " = '" + v + "' ";
@@ -464,9 +492,9 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     if (v instanceof String) {
                         if (posfilter++ == 0) filters += "";
                         else filters += " and ";
-                        if (d.getBoolean("_exactmatch")) filters += "x." + d.getString("_qlname") + " = '" + ((String) v).toLowerCase().replaceAll("'", "''") + "'";
+                        if (d.getBoolean("_exactmatch")) filters += x + "." + d.getString("_qlname") + " = '" + ((String) v).toLowerCase().replaceAll("'", "''") + "'";
                         else {
-                            filters += "lower(x." + d.getString("_qlname") + ")";
+                            filters += "lower(" + x + "." + d.getString("_qlname") + ")";
                             filters += " like '%" + ((String) v).toLowerCase().replaceAll("'", "''") + "%' ";
                         }
                     }
@@ -476,7 +504,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                             if (vv != null) {
                                 if (posfilter++ == 0) filters += "";
                                 else filters += " and ";
-                                filters += "x." + d.getString("_qlname");
+                                filters += x + "." + d.getString("_qlname");
                                 if ("enum".equals(d.getString("_type"))) {
                                     filters += " = " + d.getString("_enumtype") + "." + vv + " ";
                                 } else {
@@ -492,7 +520,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                         } else {
                             if (posfilter++ == 0) filters += "";
                             else filters += " and ";
-                            filters += "x." + d.getString("_qlname");
+                            filters += x + "." + d.getString("_qlname");
                             filters += " = " + v + " ";
                         }
                     }
@@ -510,11 +538,6 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 else jpql += " , ";
                 jpql += " x." + of;
             }
-        }
-
-        i = 1;
-        for (String lj : leftJoins) {
-            jpql = jpql.replaceAll("x\\." + lj.replaceAll("\\.", "\\.") + "\\.", "x" + i++ + ".");
         }
 
         return jpql;
@@ -678,26 +701,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     MateuUI.open((URL) result);
                 } else if (result instanceof MDDLink) {
                     MDDLink l = (MDDLink) result;
-                    switch (l.getActionType()) {
-                        case OPENEDITOR:
-                            ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(),  new MDDCallback(l.getData()) {
-                                @Override
-                                public void onSuccess(Data result) {
-                                    MateuUI.openView(new MDDJPACRUDView(result) {
-                                        @Override
-                                        public Data initializeData() {
-                                            return l.getData();
-                                        }
-                                    }.getNewEditorView().setInitialId(l.getData().get("_id")) );
-                                }
-                            });
-                            break;
-                        case OPENLIST:
-                            ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(), new MDDCallback(l.getData()));
-                            break;
-                            default: MateuUI.alert("Unkown operation " + l.getActionType());
-
-                    }
+                    createAction(l).run();
                 } else if (result instanceof Data) {
                     v.getForm().setData((Data) result);
                 } else if (result instanceof Void || result == null) {
@@ -712,6 +716,33 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 parameters.set("_id", v.getForm().getData().get("_id"));
             }
         });
+    }
+
+    private AbstractAction createAction(MDDLink l) {
+        return new AbstractAction(l.getCaption()) {
+            @Override
+            public void run() {
+                switch (l.getActionType()) {
+                    case OPENEDITOR:
+                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(),  new MDDCallback(l.getData()) {
+                            @Override
+                            public void onSuccess(Data result) {
+                                MateuUI.openView(new MDDJPACRUDView(result) {
+                                    @Override
+                                    public Data initializeData() {
+                                        return l.getData();
+                                    }
+                                }.getNewEditorView().setInitialId(l.getData().get("_id")) );
+                            }
+                        });
+                        break;
+                    case OPENLIST:
+                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(l.getEntityClassName(), new MDDCallback(l.getData()));
+                        break;
+                    default: MateuUI.alert("Unkown operation " + l.getActionType());
+                }
+            }
+        };
     }
 
     @Override

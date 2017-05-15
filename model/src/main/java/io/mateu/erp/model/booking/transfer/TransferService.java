@@ -1,12 +1,18 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
+import freemarker.template.TemplateException;
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
+import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SMSTask;
+import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.views.AbstractListView;
@@ -18,6 +24,7 @@ import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.JPAController;
 import io.mateu.ui.mdd.server.JPAServerSideEditorViewController;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -25,11 +32,14 @@ import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.HtmlEmail;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -98,11 +108,14 @@ public class TransferService extends Service implements WithTriggers {
     private String flightOriginOrDestination;
 
     @StartsLine
+    @Output
     private LocalDateTime importedPickupTime;
     @ListColumn
     private LocalDateTime pickupTime;
     private LocalDateTime pickupConfirmedByTelephone;
+    @Output
     private LocalDateTime pickupConfirmedByWeb;
+    @Output
     private LocalDateTime pickupConfirmedByEmailToHotel;
 
     @Ignored
@@ -115,6 +128,10 @@ public class TransferService extends Service implements WithTriggers {
     @ManyToOne
     @Ignored
     private TransferService returnTransfer;
+
+    @ManyToMany
+    @Ignored
+    private List<AbstractTask> tasks = new ArrayList<>();
 
 
     /*
@@ -143,8 +160,10 @@ public class TransferService extends Service implements WithTriggers {
         return _data;
     }
 
-    @Action(name = "Open return")
-    public MDDLink openReturn() throws Exception {
+    @Links
+    public List<MDDLink> getLinks() {
+        List<MDDLink> l = super.getLinks();
+
         TransferService r = null;
         for (Service s : getBooking().getServices()) {
             if (s.getId() != getId() && s instanceof TransferService) {
@@ -152,9 +171,11 @@ public class TransferService extends Service implements WithTriggers {
                 break;
             }
         }
-        if (r != null) return new MDDLink(TransferService.class, ActionType.OPENEDITOR, new Data("_id", r.getId()));
-        else throw new Exception("This is the only service in this booking");
+        if (r != null) l.add(new MDDLink((TransferDirection.OUTBOUND.equals(r.getDirection()))?"Outbound":"Inbound", TransferService.class, ActionType.OPENEDITOR, new Data("_id", r.getId())));
+
+        return l;
     }
+
 
     @Action(name = "Price")
     public static void price(@Selection List<Data> _selection) throws Throwable {
@@ -270,11 +291,19 @@ public class TransferService extends Service implements WithTriggers {
                             es.setAttribute("agency", "" + s.getBooking().getAgency().getName());
                             if (s.getBooking().getAgencyReference() != null) es.setAttribute("agencyReference", s.getBooking().getAgencyReference());
                             es.setAttribute("leadName", "" + s.getBooking().getLeadName());
-                            if (s.getBooking().getComments() != null) es.setAttribute("comments", s.getBooking().getComments());
+                            String comments = "";
+                            if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
+                            if (s.getComment() != null) comments += s.getComment();
+                            es.setAttribute("comments", comments);
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
+                                es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
+                            }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
+                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getCity().getName());
                             if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
                             if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                             es.setAttribute("transferType", "" + s.getTransferType());
@@ -319,6 +348,119 @@ public class TransferService extends Service implements WithTriggers {
         return new URL(baseUrl + "/" + temp.getName());
     }
 
+    @Action(name = "Send pickup times")
+    public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@Required String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
+        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(TransferService.class));
+
+        Office office = null;
+        
+        Data[] r = new Data[1];
+
+        view.getForm().setData(parameters);
+
+        view.rpc(parameters, new AsyncCallback<Data>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                caught.printStackTrace();
+            }
+
+            @Override
+            public void onSuccess(Data result) {
+                r[0] = result;
+            }
+        });
+
+
+        LinkedHashMap<LocalDate, LinkedHashMap<TransferDirection, LinkedHashMap<TransferType, List<TransferService>>>> ss = new LinkedHashMap<>();
+
+        List<Object[]> hoja = new ArrayList<>();
+        hoja.add(new Object[] {
+                "ref"
+                , "lead name"
+                , "pax"
+                , "pickup"
+                , "dropoff"
+                , "transfer type"
+                , "vehicle"
+                , "flight number"
+                , "flight date"
+                , "flight time"
+                , "flight origin/destination"
+                , "pickup date"
+                , "pickup time"
+                , "comments"
+                , "comments"
+                , "agency"
+                , "agency ref"
+        });
+
+        List<Data> data = r[0].getList("_data");
+        for (Data d : data) {
+
+            TransferService s = em.find(TransferService.class, d.get("_id"));
+
+            if (!s.isCancelled() && !s.isHeld() && TransferDirection.OUTBOUND.equals(s.getDirection())) {
+                
+                if (office == null) office = s.getOffice(); 
+
+                hoja.add(new Object[] {
+                        s.getId()
+                        , s.getBooking().getLeadName()
+                        , s.getPax()
+                        , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
+                        , (s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()
+                        , "" + s.getTransferType()
+                        , (s.getPreferredVehicle() != null)?s.getPreferredVehicle().getName():""
+                        , s.getFlightNumber()
+                        , s.getFlightTime().toLocalDate()
+                        , s.getFlightTime().toLocalTime()
+                        , s.getFlightOriginOrDestination()
+                        , (s.getPickupTime() != null)?s.getPickupTime().toLocalDate():null
+                        , (s.getPickupTime() != null)?s.getPickupTime().toLocalTime():null
+                        , s.getBooking().getComments()
+                        , s.getComment()
+                        , s.getBooking().getAgency().getName()
+                        , s.getBooking().getAgencyReference()
+                });
+
+            }
+        }
+
+        File excel = Helper.writeExcel(new Object[][][] {
+                hoja.toArray(new Object[0][0])
+        });
+
+
+        AppConfig appconfig = AppConfig.get(em);
+
+        // Create the attachment
+//                EmailAttachment attachment = new EmailAttachment();
+//                attachment.setPath("mypictures/john.jpg");
+//                attachment.setDisposition(EmailAttachment.ATTACHMENT);
+//                attachment.setDescription("Picture of John");
+//                attachment.setName("John");
+
+        // Create the email message
+        HtmlEmail email = new HtmlEmail();
+        //Email email = new HtmlEmail();
+        email.setHostName((office != null)?office.getEmailHost():appconfig.getAdminEmailSmtpHost());
+        email.setSmtpPort((office != null)?office.getEmailPort():appconfig.getAdminEmailSmtpPort());
+        email.setAuthenticator(new DefaultAuthenticator((office != null)?office.getEmailUsuario():appconfig.getAdminEmailUser(), (office != null)?office.getEmailPassword():appconfig.getAdminEmailPassword()));
+        //email.setSSLOnConnect(true);
+        email.setFrom((office != null)?office.getEmailFrom():appconfig.getAdminEmailFrom());
+        if (!Strings.isNullOrEmpty((office != null)?office.getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress((office != null)?office.getEmailCC():appconfig.getAdminEmailCC()));
+
+        email.setSubject("PICKUP TIMES");
+        if (msg != null) email.setMsg(msg);
+        email.addTo(toEmail);
+
+        if (excel != null) email.attach(excel);
+
+
+        email.send();
+
+    }
+
 
     @Override
     public void beforeSet(EntityManager em, boolean isNew) {
@@ -333,8 +475,10 @@ public class TransferService extends Service implements WithTriggers {
         if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
         if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
 
-        setStart(getFlightTime().toLocalDate());
-        setFinish(getFlightTime().toLocalDate());
+        LocalDate s = getFlightTime().toLocalDate();
+        if (getFlightTime().getHour() < 6) s = s.minusDays(1);
+        setStart(s);
+        setFinish(s);
 
         TransferPoint p = null;
         if (getPickup() != null) p = getPickup();
@@ -364,7 +508,7 @@ public class TransferService extends Service implements WithTriggers {
 
         if (getEffectivePickup() != null && getEffectiveDropoff() != null) setProcessingStatus(ProcessingStatus.DATA_OK);
 
-
+        if (isCancelled() && getSentToProvider() == null) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
 
         try {
             price(em);
@@ -412,6 +556,7 @@ public class TransferService extends Service implements WithTriggers {
     public double rate(EntityManager em) throws Throwable {
 
         // verificamos que tenemos lo que necesitamos para valorar
+        setPriceReport("");
 
         mapTransferPoints(em);
 
@@ -450,10 +595,18 @@ public class TransferService extends Service implements WithTriggers {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
+        Price bestPrice = null;
         for (Price p : prices) {
             double v = p.getPrice();
             if (PricePer.PAX.equals(p.getPricePer())) v = getPax() * p.getPrice();
-            if (v < value) value = v;
+            if (v < value) {
+                value = v;
+                bestPrice = p;
+            }
+        }
+
+        if (bestPrice != null) {
+            setPriceReport("Used price from " + bestPrice.getOrigin().getName() + " to " + bestPrice.getDestination().getName() + " in " + bestPrice.getVehicle().getName() + " from contract " + bestPrice.getContract().getTitle());
         }
 
         return value;
@@ -570,8 +723,17 @@ public class TransferService extends Service implements WithTriggers {
         d.put("comments", getComment());
         d.put("direction", "" + getDirection());
         d.put("pax", getPax());
-        d.put("pickup", "" + ((getEffectivePickup() != null)?getEffectivePickup().getName():getPickupText()));
+
+        TransferPoint p = getEffectivePickup();
+        if (p != null && TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+            p = p.getAlternatePointForShuttle();
+            d.put("alternatePickup", "" + p.getName());
+        }
+
+        d.put("pickup", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
+        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getCity().getName():""));
         d.put("dropoff", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getName():getDropoffText()));
+        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getCity().getName():""));
         d.put("providers", getProviders());
         d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
         d.put("transferType", "" + getTransferType());
@@ -612,6 +774,59 @@ public class TransferService extends Service implements WithTriggers {
         return s;
     }
 
+    @Action(name = "Inform pickup time")
+    public static void informPickupTimeBatch(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
+        for (Data d : selection) {
+            TransferService s = em.find(TransferService.class, d.get("_id"));
 
+            s.informPickupTime(user, em);
+
+        }
+    }
+
+
+    @Action(name = "Mark as purchased")
+    public static void markAsConfirmed(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
+        for (Data d : selection) {
+            TransferService s = em.find(TransferService.class, d.get("_id"));
+
+            s.setAlreadyPurchased(true);
+
+            s.afterSet(em, false);
+
+        }
+    }
+
+    @Action(name = "Inform pickup time")
+    public void informPickupTime(UserData user, EntityManager em) throws Throwable {
+        if (getPickupTime() != null) {
+            long tel = 0;
+            try {
+                tel = Long.parseLong(getBooking().getTelephone().replaceAll("[\\(\\)\\+]", ""));
+            } catch (Exception e) {
+
+            }
+            if (tel > 0 && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
+                SMSTask t = new SMSTask(tel, Helper.freemark(AppConfig.get(em).getPickupSmsTemplate(), getData()));
+                getTasks().add(t);
+                em.persist(t);
+            } else if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
+                TransferPoint p = getEffectivePickup();
+                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                    p = p.getAlternatePointForShuttle();
+                }
+                SendEmailTask t = new SendEmailTask();
+                t.setOffice(getOffice());
+                t.setCc(getOffice().getEmailCC());
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setTo(getEffectivePickup().getEmail());
+                t.run(em, em.find(User.class, user.getLogin()));
+                getTasks().add(t);
+                em.persist(t);
+                setPickupConfirmedByEmailToHotel(LocalDateTime.now());
+            }
+        }
+    }
 
 }

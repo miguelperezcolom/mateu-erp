@@ -69,6 +69,13 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Import pickup times") {
+            @Override
+            public void run() {
+                MateuUI.openView(new PickupTimeImportingView());
+            }
+        });
+
 //        m.add(new AbstractAction("Transfer operation") {
 //            @Override
 //            public void run() {

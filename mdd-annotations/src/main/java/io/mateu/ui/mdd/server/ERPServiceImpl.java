@@ -451,12 +451,21 @@ public class ERPServiceImpl implements ERPService {
                     if (m.isAnnotationPresent(Badges.class)) {
                         data.set("_badges", m.invoke(o));
                     }
+
+                    if (m.isAnnotationPresent(Links.class)) {
+                        data.set("_links", m.invoke(o));
+                    }
                 }
 
                 if (data.isEmpty("_badges")) for (Method m : getAllMethods(o.getClass())) {
-
                     if (m.isAnnotationPresent(Badges.class)) {
                         data.set("_badges", m.invoke(o));
+                    }
+                }
+
+                if (data.isEmpty("_links")) for (Method m : getAllMethods(o.getClass())) {
+                    if (m.isAnnotationPresent(Links.class)) {
+                        data.set("_links", m.invoke(o));
                     }
                 }
 
@@ -619,9 +628,12 @@ public class ERPServiceImpl implements ERPService {
 
                         @Override
                         public Class<?> getGenericClass() {
-                            ParameterizedType genericType = (ParameterizedType) f.getGenericType();
-                            Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
-                            return genericClass;
+                            Type t = f.getGenericType();
+                            if (t instanceof ParameterizedType) {
+                                ParameterizedType genericType = (ParameterizedType) t;
+                                Class<?> genericClass = (Class<?>) genericType.getActualTypeArguments()[0];
+                                return genericClass;
+                            } else return null;
                         }
 
                         @Override
@@ -691,15 +703,17 @@ public class ERPServiceImpl implements ERPService {
         boolean hayListColumns = false;
         for (Field f : getAllFields(c)) {
             if (f.isAnnotationPresent(Id.class) || f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(SearchFilter.class) || f.isAnnotationPresent(ListColumns.class) || f.isAnnotationPresent(SearchFilters.class)) {
-                hayListColumns |= f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(ListColumns.class);
-                addColumn(listColumns, f);
+                if (!(f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(ManyToMany.class) || f.isAnnotationPresent(MapKey.class) || f.isAnnotationPresent(ElementCollection.class) || f.isAnnotationPresent(NotInList.class))) {
+                    hayListColumns |= f.isAnnotationPresent(ListColumn.class) || f.isAnnotationPresent(ListColumns.class);
+                    addColumn(listColumns, f);
+                }
             }
         }
 
         if (!hayListColumns) {
             listColumns.clear();
             for (Field f : getAllFields(c)) {
-                if (!(f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(MapKey.class) || f.isAnnotationPresent(ElementCollection.class) || f.isAnnotationPresent(NotInList.class)))
+                if (!(f.isAnnotationPresent(OneToMany.class) || f.isAnnotationPresent(ManyToMany.class) || f.isAnnotationPresent(MapKey.class) || f.isAnnotationPresent(ElementCollection.class) || f.isAnnotationPresent(NotInList.class)))
                     addColumn(listColumns, f);
             }
         }
@@ -1160,8 +1174,15 @@ public class ERPServiceImpl implements ERPService {
                 if (searchFilterAnnotation.exactMatch()) d.set("_exactmatch", true);
                 if (!Strings.isNullOrEmpty(searchFilterAnnotation.field())) {
                     d.set("_qlname", f.getName() + "." + searchFilterAnnotation.field());
-                    for (Field ff : getAllFields(f.getType())) {
+                    Class aux = f.getGenericClass();
+                    if (aux == null || Class.class.equals(aux)) aux = f.getType();
+                    else {
+                        d.set("_innerjoin", f.getName());
+                        d.set("_qlname", searchFilterAnnotation.field());
+                    }
+                    for (Field ff : getAllFields(aux)) {
                         if (ff.getName().equals(searchFilterAnnotation.field())) {
+                            FieldInterfaced finalF = f;
                             f = new FieldInterfaced() {
                                 @Override
                                 public boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
@@ -1192,7 +1213,7 @@ public class ERPServiceImpl implements ERPService {
 
                                 @Override
                                 public String getId() {
-                                    return ff.getName();
+                                    return finalF.getName() + "." + ff.getName();
                                 }
 
                                 @Override
@@ -1296,6 +1317,12 @@ public class ERPServiceImpl implements ERPService {
                         for (Field ff : getAllFields(f.getType())) if ("name".equals(ff.getName()) || "title".equals(ff.getName())) {
                             d.set("_qlname", d.get("_qlname") + "." + ff.getName());
                             defaultQl = defaultQl.replaceAll("\\.name", "." + ff.getName());
+                        }
+
+                        if (!d.isEmpty("_leftjoin")) {
+                            for (Field ff : getAllFields(f.getType())) if (ff.isAnnotationPresent(Id.class)) {
+                                d.set("_qlname", ff.getName());
+                            }
                         }
 
                         if (f.getType().isAnnotationPresent(UseIdToSelect.class)) {

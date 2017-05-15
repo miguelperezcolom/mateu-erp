@@ -2,16 +2,17 @@ package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.Selection;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,11 +32,26 @@ public abstract class AbstractTask {
     @Ignored
     private Audit audit;
 
+    @ListColumn
     private LocalDateTime started;
+    @ListColumn
     private LocalDateTime finished;
-    private TaskStatus status;
+    @ListColumn
+    @SearchFilter
+    private TaskStatus status = TaskStatus.PENDING;
+    @ListColumn
+    @SearchFilter
     private TaskResult result;
+    @ListColumn
     private String log;
+    @ManyToMany
+    @SearchFilter(value="Service Id", field = "id")
+    @NotInList
+    private List<Service> services = new ArrayList<>();
+    @ManyToMany
+    @SearchFilter(value="Booking Id", field = "id")
+    @NotInList
+    private List<Booking> bookings = new ArrayList<>();
 
     public void execute(EntityManager em, User user) {
         try {

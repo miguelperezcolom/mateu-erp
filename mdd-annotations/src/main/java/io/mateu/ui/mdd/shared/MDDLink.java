@@ -17,7 +17,21 @@ public class MDDLink extends Data {
         setActionType(actionType);
     }
 
+    public MDDLink(String caption, Class entityClass, ActionType actionType, Data data) {
+        setCaption(caption);
+        setEntityClassName(entityClass.getName());
+        setData(data);
+        setActionType(actionType);
+    }
 
+
+    public String getCaption() {
+        return get("_caption");
+    }
+
+    public void setCaption(String caption) {
+        set("_caption", caption);
+    }
 
     public String getEntityClassName() {
         return get("_entityClassName");

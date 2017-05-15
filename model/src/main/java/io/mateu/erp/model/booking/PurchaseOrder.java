@@ -13,6 +13,7 @@ import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -21,10 +22,8 @@ import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
-import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 
 import javax.mail.internet.InternetAddress;
@@ -33,8 +32,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * Created by miguel on 25/2/17.
@@ -105,8 +102,9 @@ public class PurchaseOrder implements WithTriggers {
     private String signature;
 
 
+    @SearchFilter(value="Service Id", field = "id")
+    @NotInEditor
     @ManyToMany(mappedBy = "purchaseOrders")
-    @Ignored
     private List<Service> services = new ArrayList<>();
 
     @ManyToMany

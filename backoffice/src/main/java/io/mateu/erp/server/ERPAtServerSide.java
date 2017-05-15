@@ -91,7 +91,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
         System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
         System.out.println("Temp file : " + temp.getAbsolutePath());
 
-        if (!temp.exists()) {
+        if (true || !temp.exists()) {
             System.out.println("writing temp file to " + temp.getAbsolutePath());
             Utils.write(temp, bytes);
         } else {

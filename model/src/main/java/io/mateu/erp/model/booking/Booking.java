@@ -4,6 +4,7 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
+import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -100,23 +101,17 @@ public class Booking implements WithTriggers {
 
     @Override
     public String toString() {
-        return "" + getId() + " - " + getLeadName() + " (" + ((getAgency() != null)?getAgency().getName():"No agency") + ")";
+        return "" + getId() + " / " + ((getAgencyReference() != null)?getAgencyReference():"") + " - " + getLeadName() + " (" + ((getAgency() != null)?getAgency().getName():"No agency") + ") " + ((getComments() != null)?getComments():"");
     }
 
 
-    @Action(name = "Services")
-    public MDDLink openServices() {
-        return new MDDLink(Service.class, ActionType.OPENLIST, new Data("id", getId()));
+    @Links
+    public List<MDDLink> getLinks() {
+        List<MDDLink> l = new ArrayList<>();
+        l.add(new MDDLink("Services", Service.class, ActionType.OPENLIST, new Data("booking.id", getId())));
+        l.add(new MDDLink("Updates", TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference())));
+        return l;
     }
-
-
-
-    @Action(name = "External updates")
-    public MDDLink openTransferBookingRequests() {
-        return new MDDLink(TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference()));
-    }
-
-
 
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
     {

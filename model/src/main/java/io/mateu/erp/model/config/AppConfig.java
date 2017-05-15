@@ -40,6 +40,9 @@ public class AppConfig {
 
     private String adminEmailCC;
 
+    @StartsLine
+    private String clickatellApiKey;
+
 
     @StartsLine
     @TextArea
@@ -67,6 +70,11 @@ public class AppConfig {
     @TextArea
     private String purchaseOrderTemplate;
 
+    @TextArea
+    private String pickupSmsTemplate;
+
+    @TextArea
+    private String pickupEmailTemplate;
 
     public static AppConfig get(EntityManager em) {
         return em.find(AppConfig.class, 1l);

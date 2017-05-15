@@ -11,6 +11,8 @@ import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
@@ -18,6 +20,8 @@ import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,7 +54,7 @@ public abstract class Service {
 
     @ManyToOne
     @Required
-    @SearchFilter(value="Booking", field = "id")
+    @SearchFilter(value="Booking Id", field = "id")
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
     @ListColumn(value="Boking", field = "id")
@@ -132,11 +136,6 @@ public abstract class Service {
 
 
     @StartsLine
-    @ManyToOne
-    private Actor preferredProvider;
-
-    private boolean alreadyPurchased;
-
     private boolean valueOverrided;
 
     private double overridedValue;
@@ -146,9 +145,22 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
+    @Output
+    @ListColumn
+    private double total;
+
+    @Output
+    private String priceReport;
 
     @Ignored
     private int effectiveProcessingStatus;
+
+    @StartsLine
+    @ManyToOne
+    private Actor preferredProvider;
+
+    private boolean alreadyPurchased;
+
 
     @Output
     @ListColumn
@@ -169,9 +181,6 @@ public abstract class Service {
     @ListColumn
     private LocalDate finish;
 
-    @Output
-    @ListColumn
-    private double total;
 
     @Ignored
     @OneToMany
@@ -200,14 +209,21 @@ public abstract class Service {
     }
 
 
-    //@Action(name = "Repair signature")
+    @Action(name = "Repair signature")
     public static void repairSignature(@Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
                 for (Data d : _selection) {
                     Service s = em.find(Service.class, d.get("_id"));
-                    s.setSignature(s.createSignature());
+                    if (s instanceof TransferService) {
+                        TransferService t = (TransferService) s;
+                        LocalDate z = t.getFlightTime().toLocalDate();
+                        if (t.getFlightTime().getHour() < 6) z = z.minusDays(1);
+                        t.setStart(z);
+                        t.setFinish(z);
+                    }
+                    //s.setSignature(s.createSignature());
                 }
             }
         });
@@ -232,9 +248,10 @@ public abstract class Service {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email) {
+    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
+            s.setAlreadyPurchased(false);
             if (provider != null) s.setPreferredProvider(provider);
             try {
                 s.checkPurchase(em);
@@ -264,6 +281,7 @@ public abstract class Service {
                         t.setTo(po.getProvider().getSendOrdersTo());
                     }
                     t.setCc(s.getOffice().getEmailCC());
+                    t.setPostscript(postscript);
                 }
                 t.getPurchaseOrders().add(po);
                 po.getSendingTasks().add(t);
@@ -279,13 +297,15 @@ public abstract class Service {
 
     public abstract String createSignature();
 
+
     @Action(name = "Purchase")
     public void checkPurchase(EntityManager em) throws Throwable {
-        if (isAlreadyPurchased()) {
+        if (!isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
             setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-        } else if (getSignature() == null || !getSignature().equals(createSignature()) || !ProcessingStatus.PURCHASEORDERS_SENT.equals(getProcessingStatus())) {
             setSignature(createSignature());
+        } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setProcessingStatus(ProcessingStatus.DATA_OK);
+            setSignature(createSignature());
             try {
                 generatePurchaseOrders(em);
                 setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
@@ -336,12 +356,14 @@ public abstract class Service {
         if (isValueOverrided()) {
             setTotal(getOverridedValue());
             setValued(true);
+            setPriceReport("Used overrided value");
         }
         else {
             try {
                 setTotal(rate(em));
                 setValued(true);
             } catch (Throwable throwable) {
+                setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
                 throwable.printStackTrace();
             }
         }
@@ -365,30 +387,42 @@ public abstract class Service {
         return l;
     }
 
+    public List<MDDLink> getLinks() {
+        List<MDDLink> l = new ArrayList<>();
+        l.add(new MDDLink("Booking", Booking.class, ActionType.OPENEDITOR, new Data("_id", getBooking().getId())));
+        l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("services.id", getId())));
+        l.add(new MDDLink("Purchase orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("services.id", getId())));
+        return l;
+    }
+
+
     public abstract double rate(EntityManager em) throws Throwable;
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
         if (getPreferredProvider() == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
-        PurchaseOrder po = null;
-        if (getPurchaseOrders().size() > 0) {
-            po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
-            if (!getPreferredProvider().equals(po.getProvider())) {
-                po.cancel(em);
-                po = null;
+        if (isCancelled() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
+        if (!ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())) {
+            PurchaseOrder po = null;
+            if (getPurchaseOrders().size() > 0) {
+                po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
+                if (!getPreferredProvider().equals(po.getProvider())) {
+                    po.cancel(em);
+                    po = null;
+                }
             }
+            if (po == null) {
+                po = new PurchaseOrder();
+                em.persist(po);
+                po.setAudit(new Audit());
+                po.getServices().add(this);
+                getPurchaseOrders().add(po);
+                po.setStatus(PurchaseOrderStatus.PENDING);
+            }
+            po.setOffice(getOffice());
+            po.setProvider(getPreferredProvider());
+            po.setCurrency(getPreferredProvider().getCurrency());
         }
-        if (po == null) {
-            po = new PurchaseOrder();
-            em.persist(po);
-            po.setAudit(new Audit());
-            po.getServices().add(this);
-            getPurchaseOrders().add(po);
-            po.setStatus(PurchaseOrderStatus.PENDING);
-        }
-        po.setOffice(getOffice());
-        po.setProvider(getPreferredProvider());
-        po.setCurrency(getPreferredProvider().getCurrency());
     }
 
 
@@ -444,12 +478,17 @@ public abstract class Service {
 
     @PostLoad
     public void postLoad() {
+        setAlreadyPurchasedBefore(isAlreadyPurchased());
         setSignatureBefore(getSignature());
     }
 
     @Transient
     @Ignored
     private List<String> vistos = new ArrayList<>();
+
+    @Transient
+    @Ignored
+    private boolean alreadyPurchasedBefore;
 
     @PreUpdate
     public void preStore() {

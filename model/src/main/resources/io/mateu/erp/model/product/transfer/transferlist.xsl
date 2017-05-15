@@ -189,6 +189,17 @@
                                                                         <xsl:otherwise><xsl:value-of select="@pickup"/></xsl:otherwise>
                                                                     </xsl:choose>
                                                                 </fo:block>
+                                                                <fo:block>
+                                                                    <xsl:choose>
+                                                                        <xsl:when test="@direction = 'INBOUND'"><xsl:value-of select="@dropoffResort"/></xsl:when>
+                                                                        <xsl:otherwise><xsl:value-of select="@pickupResort"/></xsl:otherwise>
+                                                                    </xsl:choose>
+                                                                </fo:block>
+                                                                <xsl:if test="@alternatePickup">
+                                                                    <fo:block font-style="italic">
+                                                                        <xsl:value-of select="@alternatePickup"/>
+                                                                    </fo:block>
+                                                                </xsl:if>
                                                             </fo:table-cell>
                                                             <fo:table-cell text-align="right" font-size="8pt"
                                                                            padding="1mm"

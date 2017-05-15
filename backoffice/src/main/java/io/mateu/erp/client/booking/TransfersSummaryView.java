@@ -1,6 +1,8 @@
 package io.mateu.erp.client.booking;
 
 import io.mateu.erp.shared.booking.BookingService;
+import io.mateu.ui.core.client.app.AbstractAction;
+import io.mateu.ui.core.client.app.Callback;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.components.fields.DateField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
@@ -32,6 +34,28 @@ public class TransfersSummaryView extends AbstractListView {
         d.set("finish", LocalDate.now().plusMonths(6));
         return d;
     }
+
+
+    @Override
+    public List<AbstractAction> createActions() {
+        List<AbstractAction> l = super.createActions();
+
+        l.add(new AbstractAction("Inform pickups") {
+            @Override
+            public void run() {
+                ((BookingServiceAsync)MateuUI.create(BookingService.class)).informPickupTime(MateuUI.getApp().getUserData(), getSelection(), new Callback<Void>() {
+                    @Override
+                    public void onSuccess(Void result) {
+                        super.onSuccess(result);
+                        search();
+                    }
+                });
+            }
+        });
+
+        return l;
+    }
+
 
     @Override
     public List<AbstractColumn> createColumns() {
@@ -94,6 +118,7 @@ public class TransfersSummaryView extends AbstractListView {
                 linkedOn(getId(), data);
             }
         }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new OutputColumn("col12", "PU Infd.", 120));
         return l;
     }
 

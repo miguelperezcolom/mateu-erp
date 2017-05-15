@@ -1,8 +1,11 @@
-package io.mateu.erp.model.booking;
+package io.mateu.erp.model.workflow;
 
 import com.google.common.base.Strings;
 import freemarker.template.TemplateException;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.PurchaseOrderStatus;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -54,6 +57,8 @@ public class SendPurchaseOrdersTask extends AbstractTask {
     private Actor provider;
 
     private PurchaseOrderSendingMethod method;
+
+    private String postscript;
 
     public SendPurchaseOrdersTask() {
 
@@ -277,6 +282,7 @@ public class SendPurchaseOrdersTask extends AbstractTask {
         Map<String, Object> d = new HashMap<>();
         List<Map<String, Object>> t = new ArrayList<>();
         List<Map<String, Object>> g = new ArrayList<>();
+        if (!Strings.isNullOrEmpty(getPostscript())) d.put("postscript", getPostscript());
         for (PurchaseOrder po : getPurchaseOrders()) {
             for (Service s : po.getServices()) {
                 Map<String, Object> ds = s.getData();
