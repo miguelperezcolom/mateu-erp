@@ -44,7 +44,7 @@ public class File implements io.mateu.ui.mdd.server.interfaces.File {
         if (getName() == null || "".equals(getName().trim())) fileName = "" + getId();
         if (fileName.lastIndexOf(".") < fileName.length() - 1) {
             extension = fileName.substring(fileName.lastIndexOf("."));
-            fileName = fileName.substring(0, fileName.lastIndexOf("."));
+            fileName = fileName.substring(0, fileName.lastIndexOf(".")).replaceAll(" ", "_");
         }
 
         java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(fileName, extension):new java.io.File(new java.io.File(System.getProperty("tmpdir")), fileName + extension);
@@ -52,7 +52,7 @@ public class File implements io.mateu.ui.mdd.server.interfaces.File {
         System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
         System.out.println("Temp file : " + temp.getAbsolutePath());
 
-        if (!temp.exists()) {
+        if (System.getProperty("tmpdir") == null || !temp.exists()) {
             System.out.println("writing temp file to " + temp.getAbsolutePath());
             Utils.write(temp, bytes);
         } else {

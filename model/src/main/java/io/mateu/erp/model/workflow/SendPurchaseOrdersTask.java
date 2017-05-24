@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.generic.GenericService;
+import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
@@ -22,12 +23,15 @@ import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.*;
 import org.apache.poi.hssf.usermodel.*;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
+import javax.activation.DataSource;
 import javax.mail.internet.InternetAddress;
+import javax.mail.util.*;
+import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -49,9 +53,6 @@ public class SendPurchaseOrdersTask extends AbstractTask {
 
     @ManyToOne
     private Office office;
-
-    @ManyToMany(mappedBy = "sendingTasks")
-    private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
     @ManyToOne
     private Actor provider;
@@ -99,9 +100,10 @@ public class SendPurchaseOrdersTask extends AbstractTask {
                 File attachment = createExcel();
                 if (attachment != null) email.attach(attachment);
 
+                email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toPrivateXml(getPurchaseOrders())).getBytes(), "text/xml"), "private.xml", "xml for privates");
+                email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
 
                 email.send();
-
 
                 break;
             case XMLISLANDBUS:
@@ -143,7 +145,7 @@ public class SendPurchaseOrdersTask extends AbstractTask {
             numcol = 0;
             row = sheet.createRow(numfila++);
 
-            for (String h : new String[]{"Ref.", "Status", "Service", "Vehicle", "Direction", "Pickup", "Pickup time", "Dropoff", "Flight", "Flight date", "Flight time", "Origin/destination", "Pax", "Lead name", "Agency ref.", "Comments"}){
+            for (String h : new String[]{"Ref.", "Status", "Service", "Vehicle", "Direction", "Pickup", "Pickup resort", "Pickup time", "Dropoff", "Dropoff resort", "Flight", "Flight date", "Flight time", "Origin/destination", "Pax", "Lead name", "Agency ref.", "Comments"}){
                 cell = row.createCell(numcol++);
                 cell.setCellValue(h);
             }
@@ -153,7 +155,7 @@ public class SendPurchaseOrdersTask extends AbstractTask {
                 row = sheet.createRow(numfila++);
 
                 numcol = 0;
-                for (String id : new String[] {"po", "status", "transferType", "preferredVehicle", "direction", "pickup", "pickupTime", "dropoff", "flight", "flightDate", "flightTime", "flightOriginOrDestination", "pax", "leadName", "agencyReference", "comments"}){
+                for (String id : new String[] {"po", "status", "transferType", "preferredVehicle", "direction", "pickup", "pickupResort", "pickupTime", "dropoff", "dropoffResort", "flight", "flightDate", "flightTime", "flightOriginOrDestination", "pax", "leadName", "agencyReference", "comments"}){
                     cell = row.createCell(numcol++);
 
                     Object o = x.get(id);

@@ -3,10 +3,13 @@ package io.mateu.erp.model.workflow;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,12 +49,25 @@ public abstract class AbstractTask {
     private String log;
     @ManyToMany
     @SearchFilter(value="Service Id", field = "id")
-    @NotInList
+    @NotInEditor
     private List<Service> services = new ArrayList<>();
     @ManyToMany
     @SearchFilter(value="Booking Id", field = "id")
-    @NotInList
+    @NotInEditor
     private List<Booking> bookings = new ArrayList<>();
+
+    @ManyToMany(mappedBy = "sendingTasks")
+    @SearchFilter(value="Purchase Order Id", field = "id")
+    @NotInEditor
+    private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
+
+
+    @Links
+    public List<MDDLink> getLinks() {
+        List<MDDLink> l = new ArrayList<>();
+        l.add(new MDDLink("Purchase Orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("sendingTasks.id", getId())));
+        return l;
+    }
 
     public void execute(EntityManager em, User user) {
         try {

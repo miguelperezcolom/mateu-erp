@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class GenericService extends Service implements WithTriggers {
         return s;
     }
     @Override
-    public double rate(EntityManager em) throws Throwable {
+    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
         if (getPriceLines().size() == 0) throw new Throwable("No price lines");
         double value = 0;
         for (PriceLine l : getPriceLines()) {

@@ -5,15 +5,20 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.PriceDetail;
+import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.product.transfer.TransferType;
+import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
+import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -24,16 +29,21 @@ import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
-import java.io.IOException;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 
 /**
  * Created by miguel on 31/1/17.
@@ -45,6 +55,7 @@ public abstract class Service {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SearchFilter
     @ListColumn(width = 70)
     private long id;
 
@@ -76,10 +87,19 @@ public abstract class Service {
     @CellStyleGenerator(ConfirmedCellStyleGenerator.class)
     private ServiceConfirmationStatus answer = ServiceConfirmationStatus.CONFIRMED;
 
+    private String answerText;
+
+    @ListColumn(width = 60)
+    @CellStyleGenerator(ValidCellStyleGenerator.class)
+    private ValidationStatus validationStatus = ValidationStatus.VALID;
+
+    @Output
+    private String validationMessage;
+
     @ListColumn
     @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
     @NotInEditor
-    private ProcessingStatus processingStatus;
+    private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 
     public void setProcessingStatus(ProcessingStatus processingStatus) {
         this.processingStatus = processingStatus;
@@ -93,8 +113,6 @@ public abstract class Service {
             default: setEffectiveProcessingStatus(0);
         }
     }
-
-    private String answerText;
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
@@ -186,8 +204,9 @@ public abstract class Service {
     @OneToMany
     private List<PriceDetail> priceBreakdown = new ArrayList<>();
 
+    @SearchFilter(value="Purchase Order Id", field = "id")
     @ManyToMany
-    @Ignored
+    @NotInEditor
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
@@ -197,6 +216,50 @@ public abstract class Service {
     @Transient
     @Ignored
     private String signatureBefore;
+
+    public void updateProcessingStatus(EntityManager em) {
+        if (isAlreadyPurchased()) {
+            setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+        } else if (getFinish() != null && getFinish().isAfter(LocalDate.now())) {
+            setProcessingStatus(ProcessingStatus.INITIAL);
+            if (isCancelled() && getSentToProvider() == null) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+            else if (isAllMapped(em)) {
+                setProcessingStatus(ProcessingStatus.DATA_OK);
+
+                if (getPurchaseOrders().size() > 0) {
+                    setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+
+                    boolean allSent = true;
+
+                    for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) if (!po.isSent()) allSent = false;
+
+                    if (allSent) {
+                        setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+
+                        boolean allConfirmed = true;
+                        boolean anyRejected = false;
+
+                        for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) {
+                            if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) allConfirmed = false;
+                            if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
+                        }
+
+                        if (allConfirmed) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+                        else if (anyRejected) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
+
+                    }
+
+                }
+
+            }
+        } else {
+            // finished service. Nothing to do
+        }
+    }
+
+    public boolean isAllMapped(EntityManager em) {
+        return true;
+    }
 
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
@@ -216,13 +279,16 @@ public abstract class Service {
             public void run(EntityManager em) throws Throwable {
                 for (Data d : _selection) {
                     Service s = em.find(Service.class, d.get("_id"));
-                    if (s instanceof TransferService) {
-                        TransferService t = (TransferService) s;
-                        LocalDate z = t.getFlightTime().toLocalDate();
-                        if (t.getFlightTime().getHour() < 6) z = z.minusDays(1);
-                        t.setStart(z);
-                        t.setFinish(z);
-                    }
+                    s.validate(em);
+
+//                    if (s instanceof TransferService) {
+//                        TransferService t = (TransferService) s;
+//                        LocalDate z = t.getFlightTime().toLocalDate();
+//                        if (t.getFlightTime().getHour() < 6) z = z.minusDays(1);
+//                        t.setStart(z);
+//                        t.setFinish(z);
+//                    }
+
                     //s.setSignature(s.createSignature());
                 }
             }
@@ -292,6 +358,13 @@ public abstract class Service {
                 }
             }
         }
+//        for (SendPurchaseOrdersTask t : taskPerProvider.values()) {
+//            try {
+//                t.execute(em, u);
+//            } catch (Throwable e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
 
@@ -301,14 +374,11 @@ public abstract class Service {
     @Action(name = "Purchase")
     public void checkPurchase(EntityManager em) throws Throwable {
         if (!isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
-            setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
             setSignature(createSignature());
         } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
-            setProcessingStatus(ProcessingStatus.DATA_OK);
             setSignature(createSignature());
             try {
                 generatePurchaseOrders(em);
-                setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
                 for (PurchaseOrder po : getPurchaseOrders()) {
                     if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
                 }
@@ -321,18 +391,6 @@ public abstract class Service {
                         }
                     }
                 }
-                boolean allSent = getPurchaseOrders().size() > 0;
-                boolean allConfirmed = getPurchaseOrders().size() > 0;
-                for (PurchaseOrder po : getPurchaseOrders()) {
-                    if (!po.isSent()) {
-                        allSent = false;
-                        allConfirmed = false;
-                    } else if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) {
-                        allConfirmed = false;
-                    }
-                }
-                if (allConfirmed) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-                else if (allSent) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
             } catch (Throwable e) {
                 e.printStackTrace();
             }
@@ -357,10 +415,16 @@ public abstract class Service {
             setTotal(getOverridedValue());
             setValued(true);
             setPriceReport("Used overrided value");
+        } else if (isCancelled()) {
+            setValued(true);
+            setTotal(0);
+            setPriceReport("Value 0 as it is cancelled");
         }
         else {
             try {
-                setTotal(rate(em));
+                StringWriter sw = new StringWriter();
+                setTotal(rate(em, true, new PrintWriter(sw)));
+                setPriceReport(sw.toString());
                 setValued(true);
             } catch (Throwable throwable) {
                 setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
@@ -369,13 +433,124 @@ public abstract class Service {
         }
     }
 
+    @Action(name = "Print POs")
+    public URL printOrders(EntityManager em) throws Throwable {
+
+        Document xml = new Document();
+        Element arrel = new Element("root");
+        xml.addContent(arrel);
+
+        arrel.setAttribute("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+
+        String[] xslfo = {""};
+
+        AppConfig appconfig = AppConfig.get(em);
+
+        xslfo[0] = appconfig.getXslfoForPurchaseOrder();
+
+        arrel.setAttribute("businessName", appconfig.getBusinessName());
+
+
+        for (PurchaseOrder po : getPurchaseOrders()) {
+
+
+            Element epo;
+            arrel.addContent(epo = new Element("po").setAttribute("id", "" + po.getId()));
+            if (po.getProvider() != null && po.getProvider().getName() != null) epo.setAttribute("provider", po.getProvider().getName());
+
+            for (Service sx : po.getServices()) {
+
+                if (Service.this instanceof TransferService) {
+
+                    TransferService s = (TransferService) Service.this;
+
+                    Element eg;
+                    epo.addContent(eg = new Element("group"));
+                    eg.setAttribute("date", "" + s.getStart().format(DateTimeFormatter.ofPattern("yyyy-MMM-dd")));
+                    eg.setAttribute("direction", "" + s.getDirection());
+                    eg.setAttribute("type", "" + s.getTransferType());
+
+
+                    int totalPax = 0;
+                    {
+
+                        if (!s.isCancelled() && !s.isHeld()) {
+
+                            totalPax += s.getPax();
+
+                            Element es;
+                            eg.addContent(es = new Element("service"));
+
+                            es.setAttribute("id", "" + s.getId());
+                            es.setAttribute("agency", "" + s.getBooking().getAgency().getName());
+                            if (s.getBooking().getAgencyReference() != null) es.setAttribute("agencyReference", s.getBooking().getAgencyReference());
+                            es.setAttribute("leadName", "" + s.getBooking().getLeadName());
+                            String comments = "";
+                            if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
+                            if (s.getComment() != null) comments += s.getComment();
+                            es.setAttribute("comments", comments);
+                            es.setAttribute("direction", "" + s.getDirection());
+                            es.setAttribute("pax", "" + s.getPax());
+                            es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
+                            if (TransferType.SHUTTLE.equals(s.getTransferType()) && s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
+                                es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
+                            }
+                            es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
+                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getCity().getName());
+                            if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
+                            if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                            es.setAttribute("transferType", "" + s.getTransferType());
+                            if (s.getReturnTransfer() != null) {
+                                if (s.getReturnTransfer().isNoShow()) es.setAttribute("wasNoShow", "");
+                                if (TransferDirection.OUTBOUND.equals(s.getReturnTransfer().getDirection())) es.setAttribute("returns", s.getReturnTransfer().getFlightTime().format(DateTimeFormatter.BASIC_ISO_DATE));
+                            }
+                            if (s.getFlightNumber() != null) es.setAttribute("flight", s.getFlightNumber());
+                            es.setAttribute("flightTime", s.getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                            if (s.getFlightOriginOrDestination() != null) es.setAttribute("flightOriginOrDestination", s.getFlightOriginOrDestination());
+
+                            if (s.getPreferredVehicle() != null)  es.setAttribute("preferredVehicle", s.getPreferredVehicle().getName());
+                        }
+
+                    }
+                    eg.setAttribute("totalPax", "" + totalPax);
+                }
+
+            }
+
+        }
+
+
+        String archivo = UUID.randomUUID().toString();
+
+        File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".pdf"):new File(new File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+        System.out.println("Temp file : " + temp.getAbsolutePath());
+
+        FileOutputStream fileOut = new FileOutputStream(temp);
+        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+        System.out.println("xslfo=" + xslfo[0]);
+        System.out.println("xml=" + sxml);
+        fileOut.write(fop(new StreamSource(new StringReader(xslfo[0])), new StreamSource(new StringReader(sxml))));
+        fileOut.close();
+
+        String baseUrl = System.getProperty("tmpurl");
+        if (baseUrl == null) {
+            return temp.toURI().toURL();
+        }
+        return new URL(baseUrl + "/" + temp.getName());
+    }
+
+
     @Badges
     public List<Data> getBadges() {
         List<Data> l = new ArrayList<>();
         l.add(new Data("_css", "brown", "_value", "" + getTotal()));
         String s = "";
         ProcessingStatus v = getProcessingStatus();
-        switch (v) {
+        if (v != null) switch (v) {
             case INITIAL:
             case DATA_OK: s = "azul"; break;
             case PURCHASEORDERS_SENT:
@@ -396,7 +571,7 @@ public abstract class Service {
     }
 
 
-    public abstract double rate(EntityManager em) throws Throwable;
+    public abstract double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable;
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
         if (getPreferredProvider() == null) throw new Throwable("Preferred provider needed for service " + getId());
@@ -469,6 +644,9 @@ public abstract class Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
+        d.put("valued", isValued());
+        d.put("total", getTotal());
+
         return d;
     }
 
@@ -489,6 +667,12 @@ public abstract class Service {
     @Transient
     @Ignored
     private boolean alreadyPurchasedBefore;
+
+
+    public void validate(EntityManager em) {
+        setValidationStatus(ValidationStatus.VALID);
+        setValidationMessage("");
+    }
 
     @PreUpdate
     public void preStore() {

@@ -42,10 +42,7 @@ import org.jdom2.output.XMLOutputter;
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -299,7 +296,7 @@ public class TransferService extends Service implements WithTriggers {
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
+                            if (TransferType.SHUTTLE.equals(s.getTransferType()) && s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
@@ -379,7 +376,9 @@ public class TransferService extends Service implements WithTriggers {
                 , "lead name"
                 , "pax"
                 , "pickup"
+                , "pickup resort"
                 , "dropoff"
+                , "dropoff resort"
                 , "transfer type"
                 , "vehicle"
                 , "flight number"
@@ -408,7 +407,9 @@ public class TransferService extends Service implements WithTriggers {
                         , s.getBooking().getLeadName()
                         , s.getPax()
                         , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
+                        , (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null)?s.getEffectivePickup().getCity().getName():""
                         , (s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()
+                        , (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null)?s.getEffectiveDropoff().getCity().getName():""
                         , "" + s.getTransferType()
                         , (s.getPreferredVehicle() != null)?s.getPreferredVehicle().getName():""
                         , s.getFlightNumber()
@@ -470,8 +471,6 @@ public class TransferService extends Service implements WithTriggers {
     @Override
     public void afterSet(EntityManager em, boolean isNew) throws Throwable {
 
-        setProcessingStatus(ProcessingStatus.INITIAL);
-
         if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
         if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
 
@@ -506,10 +505,6 @@ public class TransferService extends Service implements WithTriggers {
 
         setDirection(d);
 
-        if (getEffectivePickup() != null && getEffectiveDropoff() != null) setProcessingStatus(ProcessingStatus.DATA_OK);
-
-        if (isCancelled() && getSentToProvider() == null) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-
         try {
             price(em);
             checkPurchase(em);
@@ -517,6 +512,42 @@ public class TransferService extends Service implements WithTriggers {
             e.printStackTrace();
         }
 
+        updateProcessingStatus(em);
+        validate(em);
+
+    }
+
+    @Override
+    public void validate(EntityManager em) {
+        super.validate(em);
+        if (ValidationStatus.VALID.equals(getValidationStatus())) {
+            if (getEffectivePickup() == null) {
+                addValidationMessage("Missing pickup or not mapped");
+                setValidationStatus(ValidationStatus.INVALID);
+            }
+            if (getEffectiveDropoff() == null) {
+                addValidationMessage("Missing dropoff or not mapped");
+                setValidationStatus(ValidationStatus.INVALID);
+            }
+            if (getPickupTime() != null && getPickupTime().plusHours(2).isAfter(getFlightTime())) {
+                addValidationMessage("Pickup time less than 2 hours before flight time");
+                if (ValidationStatus.VALID.equals(getValidationStatus())) setValidationStatus(ValidationStatus.WARNING);
+            }
+        }
+    }
+
+    private void addValidationMessage(String s) {
+        if (!Strings.isNullOrEmpty(s)) {
+            String x = getValidationMessage();
+            if (x == null) x = "";
+            if (!"".equals(x)) x += ". ";
+            setValidationMessage(x + s);
+        }
+    }
+
+    @Override
+    public boolean isAllMapped(EntityManager em) {
+        return getEffectivePickup() != null && getEffectiveDropoff() != null;
     }
 
     @Override
@@ -553,11 +584,9 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     @Override
-    public double rate(EntityManager em) throws Throwable {
+    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
 
         // verificamos que tenemos lo que necesitamos para valorar
-        setPriceReport("");
-
         mapTransferPoints(em);
 
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
@@ -606,7 +635,7 @@ public class TransferService extends Service implements WithTriggers {
         }
 
         if (bestPrice != null) {
-            setPriceReport("Used price from " + bestPrice.getOrigin().getName() + " to " + bestPrice.getDestination().getName() + " in " + bestPrice.getVehicle().getName() + " from contract " + bestPrice.getContract().getTitle());
+            report.print("Used price from " + bestPrice.getOrigin().getName() + " to " + bestPrice.getDestination().getName() + " in " + bestPrice.getVehicle().getName() + " from contract " + bestPrice.getContract().getTitle());
         }
 
         return value;
@@ -735,6 +764,7 @@ public class TransferService extends Service implements WithTriggers {
         d.put("dropoff", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getName():getDropoffText()));
         d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getCity().getName():""));
         d.put("providers", getProviders());
+        d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
         d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
         d.put("transferType", "" + getTransferType());
         d.put("flight", getFlightNumber());
@@ -809,6 +839,7 @@ public class TransferService extends Service implements WithTriggers {
             if (tel > 0 && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark(AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
+                t.run(em, em.find(User.class, user.getLogin()));
                 em.persist(t);
             } else if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
                 TransferPoint p = getEffectivePickup();

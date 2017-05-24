@@ -15,15 +15,15 @@
 
             </fo:layout-master-set>
 
-            <xsl:for-each select="group">
+            <xsl:for-each select="po/group">
 
                 <fo:page-sequence master-reference="dinA4">
 
                     <!-- Header -->
                     <fo:static-content flow-name="xsl-region-before">
                         <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow">
-                            <fo:table-column column-width="74mm"></fo:table-column>
-                            <fo:table-column column-width="100mm" border-right-style="solid"
+                            <fo:table-column column-width="110mm"></fo:table-column>
+                            <fo:table-column column-width="64mm" border-right-style="solid"
                                              border-right-width="1px"></fo:table-column>
                             <fo:table-body>
                                 <fo:table-row>
@@ -31,6 +31,13 @@
                                     <fo:block>
                                         <xsl:value-of select="/root/@businessName"></xsl:value-of>
                                     </fo:block>
+                                        <fo:block font-size="12pt" color="white">x</fo:block>
+                                        <fo:block font-size="12pt" font-weight="normal">
+                                            Purchase Order Nº: <fo:inline font-size="20pt" font-weight="bold"><xsl:value-of select="../@id"></xsl:value-of></fo:inline>
+                                        </fo:block>
+                                        <fo:block font-size="12pt" font-weight="normal">
+                                            Provider: <xsl:value-of select="../@provider"></xsl:value-of>
+                                        </fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="9pt" font-weight="bold" padding="1mm">
                                         <fo:block>

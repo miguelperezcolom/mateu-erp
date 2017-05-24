@@ -64,6 +64,10 @@ public class TransferPoint {
 
     private String fax;
 
+    @StartsLine
+    @ManyToOne
+    private State gatewayOf;
+
 
     @Override
     public String toString() {

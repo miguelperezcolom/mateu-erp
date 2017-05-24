@@ -1,6 +1,7 @@
 package io.mateu.erp.server.booking;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.DummyDate;
@@ -51,6 +52,8 @@ public class BookingServiceImpl implements BookingService {
                 ", sum(case when transfertype = 0 and direction = 1 then pax else 0 end)" +
 
 
+                ", to_char(pickupTimeInformed, 'Mon-dd HH24:MI')" +
+
 
                 ", min(case when transfertype = 1 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
                 ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
@@ -65,8 +68,17 @@ public class BookingServiceImpl implements BookingService {
                 ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
 
-                ", to_char(pickupTimeInformed, 'Mon-dd HH24:MI')" +
+                ", max(case when transfertype = 1 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 1 and direction = 1 then validationstatus else 0 end)" +
 
+                ", max(case when transfertype = 3 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 3 and direction = 1 then validationstatus else 0 end)" +
+
+                ", max(case when transfertype = 2 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 2 and direction = 1 then validationstatus else 0 end)" +
+
+                ", max(case when transfertype = 0 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 0 and direction = 1 then validationstatus else 0 end)" +
 
 
                 "from dummydate d left outer join service on d.value = start left outer join transferpoint a on a.id = airport_id " +
@@ -96,19 +108,31 @@ public class BookingServiceImpl implements BookingService {
                 for (int i = 0; i < 8; i++) {
                     Data dx = new Data();
                     dx.set("_text", "" + l[3 + i]);
-                    dx.set("_status", l[3 + i + 8]);
+                    dx.set("_status", l[3 + i + 8 + 1]);
                     String css = "";
-                    Object o = l[3 + i + 8];
+                    Object o = l[3 + i + 8 + 1];
                     int v = 0;
                     if (o == null) v = 0;
                     else if (o instanceof Integer) v = (Integer)o;
                     else if (o instanceof Long) v = ((Long)o).intValue();
+
+                    o = l[3 + i + 8 + 1 + 8];
+                    int w = 0;
+                    if (o == null) w = 0;
+                    else if (o instanceof Integer) w = (Integer)o;
+                    else if (o instanceof Long) w = ((Long)o).intValue();
+
                     if ("0".equals("" + l[3 + i])) {
                         css = null;
                     } else {
                         if (v == 450) css = "rojo";
                         else if (v < 500) css = "naranja";
                         else if (v >= 500) css = "verde";
+
+                        css += " ";
+                        if (w == 0) css += "cell-valid";
+                        else if (w < 2) css += "cell-warning";
+                        else if (w >= 2) css += "cell-invalid";
                     }
                     dx.set("_css", css);
                     r.set("col" + (3 + i), dx);
@@ -139,7 +163,7 @@ public class BookingServiceImpl implements BookingService {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
-                    List<TransferService> l = em.createQuery("select x from " + TransferService.class.getName() + " x where start = :s and direction = :d order by flightTime asc").setParameter("s", d).setParameter("d", TransferDirection.OUTBOUND).getResultList();
+                    List<TransferService> l = em.createQuery("select x from " + TransferService.class.getName() + " x where x.start = :s and x.direction = :d order by x.flightTime asc").setParameter("s", d).setParameter("d", TransferDirection.OUTBOUND).getResultList();
 
                     for (TransferService s : l) {
                         try {
@@ -171,45 +195,7 @@ public class BookingServiceImpl implements BookingService {
                 @Override
                 public void run(EntityManager em) throws Throwable {
                     Object[][] l = Helper.parseExcel(new File(((FileLocator) data.get("file")).getTmpPath()))[0];
-                    int colref = -1;
-                    int colfecha = -1;
-                    int colhora = -1;
-
-                    for (int fila = 0; fila < l.length; fila++) {
-                        if (colref < 0 || colfecha < 0 || colhora < 0) {
-                            for (int col = 0; col < l[fila].length; col++) {
-                                if ("ref".equalsIgnoreCase("" + l[fila][col])) colref = col;
-                                if ("pickup date".equalsIgnoreCase("" + l[fila][col])) colfecha = col;
-                                if ("pickup time".equalsIgnoreCase("" + l[fila][col])) colhora = col;
-                            }
-                        } else {
-                            try {
-                                String ref = (l[fila][colref] != null)?"" + l[fila][colref]:null;
-                                Date fecha = (Date) l[fila][colfecha];
-                                Date hora = (Date) l[fila][colhora];
-
-                                if (ref == null) pw.println("line " + fila + ": missing ref");
-                                else if (fecha == null) pw.println("line " + fila + ": missing pickup date");
-                                else if (hora == null) pw.println("line " + fila + ": missing pickup time");
-                                else {
-                                    long id = (long) Double.parseDouble(ref);
-                                    TransferService s = em.find(TransferService.class, id);
-                                    LocalDateTime pud = Instant.ofEpochMilli(fecha.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-                                    LocalDateTime put = Instant.ofEpochMilli(hora.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-                                    s.setPickupTime(LocalDateTime.of(pud.getYear(), pud.getMonth(), pud.getDayOfMonth(), put.getHour(), put.getMinute()));
-
-                                    pw.println("line " + fila + ": pickup time for service id " + id + " setted to " + s.getPickupTime());
-                                }
-
-                            } catch (Exception e) {
-                                pw.println("line " + fila + ": " + e.getClass().getName() + ":" + e.getMessage());
-                            }
-                        }
-                    }
-                    if (colref < 0) throw new Throwable("Missing ref col");
-                    if (colfecha < 0) throw new Throwable("Missing pickup date col");
-                    if (colhora < 0) throw new Throwable("Missing pickup time col");
+                    Importer.importPickupTimes(em, l, pw);
                 }
             });
         }

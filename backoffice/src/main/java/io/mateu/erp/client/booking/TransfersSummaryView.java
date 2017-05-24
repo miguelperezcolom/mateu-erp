@@ -118,7 +118,7 @@ public class TransfersSummaryView extends AbstractListView {
                 linkedOn(getId(), data);
             }
         }.setAlignment(ColumnAlignment.RIGHT));
-        l.add(new OutputColumn("col12", "PU Infd.", 120));
+        l.add(new OutputColumn("col11", "PU Infd.", 120));
         return l;
     }
 

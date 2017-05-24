@@ -8,6 +8,6 @@ import io.mateu.ui.core.shared.CellStyleGenerator;
 public class LockedCellStyleGenerator implements CellStyleGenerator {
     @Override
     public String getStyle(Object o) {
-        return (o != null && o instanceof Boolean && ((Boolean)o))?"warning":"info";
+        return (o != null && o instanceof Boolean && ((Boolean)o))?"warning":"success";
     }
 }

@@ -268,6 +268,7 @@ public class ERPServiceImpl implements ERPService {
                             if (current != null) {
                                 em.remove(current);
                                 v = null;
+                                BeanUtils.setProperty(o, f.getName(), v);
                             }
                         } else {
                             FileLocator l = (FileLocator) v;
@@ -507,7 +508,10 @@ public class ERPServiceImpl implements ERPService {
                         }
                         ok = true;
                     }
-                    if (Translated.class.isAssignableFrom(v.getClass())) {
+                    if (v instanceof File) {
+                        v = ((File)v).toFileLocator();
+                        ok = true;
+                    } else if (Translated.class.isAssignableFrom(v.getClass())) {
                         v = ((Translated) v).get();
                         ok = true;
                     } else if (v.getClass().isAnnotationPresent(Entity.class)) {
@@ -523,10 +527,7 @@ public class ERPServiceImpl implements ERPService {
                             }
                         }
                     }
-                    if (v instanceof File) {
-                        v = ((File)v).toFileLocator();
-                        ok = true;
-                    }
+
                     if (f.isAnnotationPresent(ElementCollection.class)) {
                         StringBuffer sb = new StringBuffer();
                         boolean primero = true;

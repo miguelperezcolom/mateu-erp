@@ -7,12 +7,16 @@ import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import io.mateu.ui.core.server.SQLTransaction;
 import io.mateu.ui.core.server.Utils;
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -21,6 +25,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -355,6 +367,15 @@ public class Helper {
 
 
         Workbook wb = WorkbookFactory.create(f);
+
+        return readExcel(wb);
+    }
+
+    public static Object[][][] readExcel(Workbook wb) throws IOException, InvalidFormatException {
+
+
+        List<Object[][]> l0 = new ArrayList<Object[][]>();
+
         for (int poshoja = 0; poshoja < wb.getNumberOfSheets(); poshoja++) {
             List<Object[]> l1 = new ArrayList<Object[]>();
             Sheet sheet = wb.getSheetAt(poshoja);
@@ -378,7 +399,7 @@ public class Helper {
                                 case FORMULA: break;
                                 case NUMERIC:
                                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
-                                        Date date = HSSFDateUtil.getJavaDate(cell.getNumericCellValue());
+                                        Date date = cell.getDateCellValue();
                                         if (date != null)
                                             v = date;
                                     }
@@ -472,5 +493,90 @@ public class Helper {
         return temp;
     }
 
+
+
+    public static void resend(String host, int port, String user, String password, Message m, String subject, String to) throws MessagingException, EmailException, IOException {
+        resend(host, port, user, password, m, subject, to, null, null);
+    }
+
+    public static void resend(String host, int port, String user, String password, Message m, String subject, String to, String cc) throws MessagingException, EmailException, IOException {
+        resend(host, port, user, password, m, subject, to, cc, null);
+    }
+
+    public static void resend(String host, int port, String user, String password, Message m, String subject, String to, String cc, String postscript) throws MessagingException, EmailException, IOException {
+
+        HtmlEmail email = new HtmlEmail();
+        //Email email = new HtmlEmail();
+        email.setHostName(host);
+        email.setSmtpPort(port);
+        email.setAuthenticator(new DefaultAuthenticator(user, password));
+        //email.setSSLOnConnect(true);
+
+
+
+        System.out.println("EmailHelper-->resend : " + " , to : " + to + " , user : "+ user + "  , cc  : "  + cc );
+
+        if (subject == null) subject = "";
+        if (!"".equals(subject)) subject += " / ";
+        subject += m.getSubject();
+
+        try{
+            InternetAddress sender = (InternetAddress)m.getFrom()[0];
+            subject += " - SENDER: " + sender.getAddress();
+        }catch (Exception e) {
+            subject += " - NO SENDER";
+        }
+        email.setSubject(subject);
+        email.setFrom(user);
+
+        System.out.println("Resending email to : " + to);
+
+        if (!com.google.common.base.Strings.isNullOrEmpty(cc)) email.getCcAddresses().add(new InternetAddress(cc));
+
+        email.addTo(to);
+
+        if (!com.google.common.base.Strings.isNullOrEmpty(postscript)) {
+            email.addPart(postscript, "text/html");
+        }
+
+        email.addPart((MimeMultipart) m.getContent());
+
+        email.buildMimeMessage();
+        email.sendMimeMessage();
+
+    }
+
+
+    public static void addTos(Message m, String qui) throws EmailException, AddressException, MessagingException {
+
+        StringTokenizer st = new StringTokenizer(qui, ";, ");
+        while (st.hasMoreTokens()) {
+            String adreca = st.nextToken();
+            if (!adreca.trim().equals("")) {
+                m.addRecipient(Message.RecipientType.TO,
+                        new InternetAddress(adreca.trim()));
+            }
+
+        }
+
+    }
+
+    public static int max(int... values) {
+        int max = Integer.MIN_VALUE;
+        for (int value : values) if (value > max) max = value;
+        return max;
+    }
+
+    public static LocalDateTime toLocalDateTime(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        return LocalDateTime.of(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND));
+    }
+
+    public static LocalDate toLocalDate(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        return LocalDate.of(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
+    }
 
 }

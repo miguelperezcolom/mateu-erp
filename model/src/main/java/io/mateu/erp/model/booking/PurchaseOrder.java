@@ -13,6 +13,7 @@ import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
@@ -20,6 +21,8 @@ import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -28,6 +31,8 @@ import org.apache.commons.mail.HtmlEmail;
 
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -92,11 +97,17 @@ public class PurchaseOrder implements WithTriggers {
     private double overridedValue;
 
     @Output
+    private boolean valued;
+
+    @Output
     @ListColumn
     double total;
     @ManyToOne
     @Required
     Currency currency;
+
+    @Output
+    private String priceReport;
 
     @Ignored
     private String signature;
@@ -108,8 +119,23 @@ public class PurchaseOrder implements WithTriggers {
     private List<Service> services = new ArrayList<>();
 
     @ManyToMany
-    @Ignored
+    @JoinTable(
+            name="purchaseorder_task",
+            joinColumns=@JoinColumn(name="purchaseorders_ID"),
+            inverseJoinColumns=@JoinColumn(name="sendingtasks_ID"))
+    @SearchFilter(value="Task Id", field = "id")
+    @NotInEditor
     private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
+
+
+    @Links
+    public List<MDDLink> getLinks() {
+        List<MDDLink> l = new ArrayList<>();
+        l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("purchaseOrders.id", getId())));
+        l.add(new MDDLink("Services", Service.class, ActionType.OPENLIST, new Data("purchaseOrders.id", getId())));
+        return l;
+    }
+
 
     @Action(name = "Send")
     public void sendFromEditor(EntityManager em) throws Throwable {
@@ -196,7 +222,11 @@ public class PurchaseOrder implements WithTriggers {
         d.put("provider", getProvider().getName());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
-        d.put("office", getOffice().getName());
+        if (getOffice() != null) d.put("office", getOffice().getName());
+        d.put("sent", isSent());
+        d.put("sentTime", getSentTime());
+        d.put("valued", isValued());
+        d.put("total", getTotal());
 
         List<Map<String, Object>> ls = new ArrayList<>();
 
@@ -235,8 +265,49 @@ public class PurchaseOrder implements WithTriggers {
     }
 
     public void price(EntityManager em) {
-        //todo: completar
+        setValued(false);
+        setTotal(0);
+        if (isValueOverrided()) {
+            setTotal(getOverridedValue());
+            setValued(true);
+            setPriceReport("Used overrided value");
+        }
+        else {
+            try {
+                StringWriter sw = new StringWriter();
+                setTotal(rate(em, new PrintWriter(sw)));
+                setPriceReport(sw.toString());
+                setValued(true);
+            } catch (Throwable throwable) {
+                setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
+                throwable.printStackTrace();
+            }
+        }
     }
+
+    private double rate(EntityManager em, PrintWriter report) throws Throwable {
+        double total = 0;
+        for (Service s : getServices()) {
+            double serviceCost = s.rate(em, false, report);
+            total += serviceCost;
+        }
+        return Helper.roundEuros(total);
+    }
+
+
+    @Action(name = "Price")
+    public static void price(EntityManager em, @Selection List<Data> selection) {
+        for (Data d : selection) {
+            PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));
+            try {
+                po.price(em);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
 
     @Override
     public void beforeSet(EntityManager em, boolean isNew) throws Throwable {

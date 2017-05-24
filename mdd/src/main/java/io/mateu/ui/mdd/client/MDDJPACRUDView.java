@@ -419,16 +419,29 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             ljs.put(lj, i);
             jpql += " left outer join x." + lj + " x" + i++ + " ";
         }
+
+        Data sfd = getForm().getData();
+
         Map<String, Integer> ijs = new HashMap<>();
         for (String ij : innerJoins) {
             ijs.put(ij, i);
-            jpql += " inner join x." + ij + " x" + i++ + " ";
+
+            // buscamos entre los filtros si tenemos que utilizar el inner join
+            boolean used = false;
+
+            for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
+                if (!d.isEmpty("_innerjoin")) if (ij.equals(d.getString("_innerjoin"))) {
+                    used = (sfd.get(d.getString("_id"))) != null;
+
+                }
+            }
+
+            if (used) jpql += " inner join x." + ij + " x" + i++ + " ";
         }
 
 
         int posfilter = 0;
         String filters = "";
-        Data sfd = getForm().getData();
         for (Data d : getMetadata().getData("_searchform").getList("_fields")) {
 
             String x = "x";

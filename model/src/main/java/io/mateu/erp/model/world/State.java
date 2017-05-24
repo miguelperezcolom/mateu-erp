@@ -1,6 +1,7 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
@@ -33,5 +34,9 @@ public class State {
     @OneToMany(mappedBy = "state")
     @Ignored
     private List<City> cities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "gatewayOf")
+    @Ignored
+    private List<TransferPoint> gateways = new ArrayList<>();
 
 }

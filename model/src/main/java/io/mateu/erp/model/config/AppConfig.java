@@ -1,5 +1,6 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.erp.model.common.File;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
@@ -26,6 +27,9 @@ public class AppConfig {
 
     private String businessName;
 
+    @ManyToOne
+    private File logo;
+
 
     @StartsLine
     private String adminEmailSmtpHost;
@@ -39,6 +43,15 @@ public class AppConfig {
     private String adminEmailFrom;
 
     private String adminEmailCC;
+
+    @StartsLine
+    private String pop3Host;
+
+    private String pop3User;
+
+    private String pop3Password;
+
+    private String pop3ReboundToEmail;
 
     @StartsLine
     private String clickatellApiKey;
@@ -65,6 +78,9 @@ public class AppConfig {
 
     @TextArea
     private String xslfoForTransfersList;
+
+    @TextArea
+    private String xslfoForPurchaseOrder;
 
     @StartsLine
     @TextArea

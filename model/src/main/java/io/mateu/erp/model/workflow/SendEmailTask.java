@@ -16,6 +16,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
+import java.net.URL;
 import java.time.LocalDateTime;
 
 /**
@@ -42,17 +43,35 @@ public class SendEmailTask extends AbstractTask {
 
         AppConfig appconfig = AppConfig.get(em);
 
-        Email email = new HtmlEmail();
+        HtmlEmail email = new HtmlEmail();
         email.setHostName((getOffice() != null)?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
         email.setSmtpPort((getOffice() != null)?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
         email.setAuthenticator(new DefaultAuthenticator((getOffice() != null)?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), (getOffice() != null)?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
         //email.setSSLOnConnect(true);
         email.setFrom((getOffice() != null)?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
+        if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
+            for (String s : ((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
+                if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
+            }
+        }
 
         email.setSubject(getSubject());
-        email.setMsg(getMessage());
-        email.addTo(getTo());
+
+        String msg = getMessage();
+
+        if (msg.contains("mylogosrc") && appconfig.getLogo() != null) {
+            URL url = new URL(appconfig.getLogo().toFileLocator().getUrl());
+            String cid = email.embed(url, "" + appconfig.getBusinessName() + " logo");
+            msg = msg.replaceAll("mylogosrc", "cid:" + cid);
+        }
+
+        email.setMsg(msg);
+
+        for (String s : getTo().split("[;, ]")) {
+            if (!Strings.isNullOrEmpty(s)) email.addTo(s);
+        }
+
+
         email.send();
 
     }
@@ -62,8 +81,8 @@ public class SendEmailTask extends AbstractTask {
 
         for (String[] x : new String[][] {
                 {"inboxtest@viajesibiza.es", "Y4t3n3m0sXML"}
-                , {"inbox@viajesibiza.es", "Y4t3n3m0sXML"}
-                , {"reservas@viajesibiza.es", "Y4t3n3m0sXML"}
+                //, {"inbox@viajesibiza.es", "Y4t3n3m0sXML"}
+                //, {"reservas@viajesibiza.es", "Y4t3n3m0sXML"}
         }) {
 
             try {
@@ -86,6 +105,11 @@ public class SendEmailTask extends AbstractTask {
                 e.printStackTrace();
             }
 
+        }
+
+
+        for (String s : "miguel@x.z;wdeheu@wiw.aa;; jdeidje@udud.aa dheh@ss.ee".split("[;, ]")) {
+            System.out.println("==>" + s + ".");
         }
 
 

@@ -544,7 +544,7 @@ public class TransferBookingRequest {
 
         if (arrivalPickupDate!=null && arrivalPickupTime!=null) {
             t = getTime(arrivalPickupDate + " " + arrivalPickupTime);
-            if (!s.getImportedPickupTime().equals(t)) return true;
+            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t)) return true;
         }
         else if (s.getImportedPickupTime()!=null) return true;
 
@@ -604,7 +604,7 @@ public class TransferBookingRequest {
 
         if (departurePickupDate!=null && departurePickupTime!=null) {
             t = getTime(departurePickupDate + " " + departurePickupTime);
-            if (!s.getImportedPickupTime().equals(t)) return true;
+            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t)) return true;
         }
         else if (s.getImportedPickupTime()!=null) return true;
 
