@@ -41,7 +41,7 @@ public class PickupTimeImportingView extends AbstractView {
     }
 
     @Override
-    public AbstractForm createForm() {
-        return new ViewForm(this).add(new FileField("file", "Excel file"));
+    public void build() {
+        add(new FileField("file", "Excel file"));
     }
 }

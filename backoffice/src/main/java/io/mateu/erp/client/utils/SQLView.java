@@ -34,13 +34,14 @@ public class SQLView extends AbstractSqlListView {
     }
 
     @Override
+    public void build() {
+        add(new TextField("sql"));
+    }
+
+    @Override
     public void search() {
         String sql = getForm().getData().getString("sql");
         if (sql != null && !"".equals(sql.trim())) super.search();
     }
 
-    @Override
-    public AbstractForm createForm() {
-        return new ViewForm(this).add(new TextField("sql"));
-    }
 }

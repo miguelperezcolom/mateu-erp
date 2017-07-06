@@ -174,7 +174,7 @@ public class TransfersSummaryView extends AbstractListView {
     }
 
     @Override
-    public AbstractForm createForm() {
-        return new ViewForm(this).add(new DateField("start", "From")).add(new DateField("finish", "To"));
+    public void build() {
+        add(new DateField("start", "From")).add(new DateField("finish", "To"));
     }
 }

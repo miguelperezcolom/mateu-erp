@@ -15,4 +15,6 @@ public interface FinancialService {
 
     public URL generalReport(LocalDate from, LocalDate to) throws Throwable;
 
+    public URL exportToBeroni(LocalDate from, LocalDate to) throws Throwable;
+
 }

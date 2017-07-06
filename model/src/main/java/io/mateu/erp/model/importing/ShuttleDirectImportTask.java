@@ -136,9 +136,13 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         rq.setChildren(Integer.parseInt(tr.getChildText("children")));
         rq.setBabies(Integer.parseInt(tr.getChildText("babies")));
 
-        if (!tr.getChildText("extras").isEmpty())
-            rq.setExtras(Integer.parseInt(tr.getChildText("extras")));
 
+
+        String extras = "";
+        if (!tr.getChildText("extras").isEmpty())
+            //rq.setExtras(Integer.parseInt(tr.getChildText("extras")));
+            extras = tr.getChildText("extras");
+        if (!"".equals(extras)) extras += " ";
         //rq.setComments(tr.getChildText("observations"));
 
         //ARRIVAL o DEPARTURE? En shuttleDirect cada reserva es 1 trayecto (no tenemos Both)
@@ -171,7 +175,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             rq.setArrivalFlightNumber(tr.getChildText("flight"));
             rq.setArrivalFlightCompany(tr.getChildText("airline"));
             rq.setArrivalOriginAirport(tr.getChildText("originairport"));
-            rq.setArrivalComments(tr.getChildText("observations"));
+            rq.setArrivalComments(extras + tr.getChildText("observations"));
             rq.setArrivalPickupDate(tr.getChildText("datetransfer"));
             rq.setArrivalPickupTime(tr.getChildText("timetransfer"));
         }
@@ -192,7 +196,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             rq.setDepartureFlightNumber(tr.getChildText("flight"));
             rq.setDepartureFlightCompany(tr.getChildText("airline"));
             rq.setDepartureDestinationAirport(tr.getChildText("destinationairport"));
-            rq.setDepartureComments(tr.getChildText("observations"));
+            rq.setDepartureComments(extras + tr.getChildText("observations"));
             rq.setDeparturePickupDate(tr.getChildText("datetransfer"));
             rq.setDeparturePickupTime(tr.getChildText("timetransfer"));
         }

@@ -40,6 +40,11 @@ public class JPQLView extends AbstractSqlListView {
     }
 
     @Override
+    public void build() {
+        add(new TextField("sql"));
+    }
+
+    @Override
     public void rpc(Data parameters, AsyncCallback<Data> callback) {
         parameters.set("_sql", getSql());
         parameters.set("_rowsperpage", 100);
@@ -53,8 +58,4 @@ public class JPQLView extends AbstractSqlListView {
         if (sql != null && !"".equals(sql.trim())) super.search();
     }
 
-    @Override
-    public AbstractForm createForm() {
-        return new ViewForm(this).add(new TextField("sql"));
-    }
 }

@@ -1,0 +1,1 @@
+io.mateu.erp.client.ERPApp

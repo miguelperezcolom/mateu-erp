@@ -1,15 +1,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>parent</artifactId>
-        <groupId>io.mateu.ui</groupId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.mateu.erp</groupId>
     <artifactId>backoffice</artifactId>
-    <packaging>${packaging.type}</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <name>backoffice</name>
     <url>http://maven.apache.org</url>
@@ -22,6 +18,46 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>io.mateu</groupId>
+                <artifactId>mateu-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </plugin>
+
+
+
+
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+
+                    <overlays>
+                        <overlay></overlay>
+                        <overlay>
+                            <groupId>io.mateu.ui</groupId>
+                            <artifactId>port-vaadin</artifactId>
+                            <!--
+                            <classifier>war</classifier>
+                            -->
+                            <!--
+                            <excludes>
+                                <exclude>WEB-INF/classes/images/sampleimage-dependency.jpg</exclude>
+                            </excludes>
+                            -->
+                        </overlay>
+                    </overlays>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>9.2.3.v20140905</version>
             </plugin>
         </plugins>
     </build>
@@ -51,6 +87,26 @@
             <artifactId>mdd</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.mateu.ui</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.mateu.ui</groupId>
+            <artifactId>port-javafx</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.mateu.ui</groupId>
+            <artifactId>port-vaadin</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <type>war</type>
         </dependency>
 
     </dependencies>

@@ -52,8 +52,8 @@ public class FinancialModule extends AbstractModule {
                     }
 
                     @Override
-                    public AbstractForm createForm() {
-                        return new ViewForm(this).add(new DateField("from", "From")).add(new DateField("to", "To"));
+                    public void build() {
+                        add(new DateField("from", "From")).add(new DateField("to", "To"));
                     }
                 });
             }
@@ -79,12 +79,35 @@ public class FinancialModule extends AbstractModule {
                     }
 
                     @Override
-                    public AbstractForm createForm() {
-                        return new ViewForm(this).add(new DateField("from", "From")).add(new DateField("to", "To"));
+                    public void build() {
+                        add(new DateField("from", "From")).add(new DateField("to", "To"));
                     }
                 });
             }
         });
+
+        m.add(new AbstractAction("Export to Beroni") {
+            @Override
+            public void run() {
+                MateuUI.openView(new AbstractDialog() {
+                    @Override
+                    public void onOk(Data data) {
+                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).exportToBeroni(data.getLocalDate("from"), data.getLocalDate("to"), new Callback<>());
+                    }
+
+                    @Override
+                    public String getTitle() {
+                        return "Reprice";
+                    }
+
+                    @Override
+                    public void build() {
+                        add(new DateField("from", "From")).add(new DateField("to", "To"));
+                    }
+                });
+            }
+        });
+
 
         if (false) {
 

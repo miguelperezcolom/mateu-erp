@@ -98,7 +98,7 @@ public class GenericService extends Service implements WithTriggers {
         return s;
     }
     @Override
-    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
         if (getPriceLines().size() == 0) throw new Throwable("No price lines");
         double value = 0;
         for (PriceLine l : getPriceLines()) {

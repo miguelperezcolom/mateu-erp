@@ -86,10 +86,8 @@ public class ImportingQueueView extends AbstractJPAListView {
     }
 
     @Override
-    public AbstractForm createForm() {
-
-        return new ViewForm(this)
-                .add(new ComboBoxField("status", "Status", Arrays.asList(
+    public void build() {
+        add(new ComboBoxField("status", "Status", Arrays.asList(
                         new Pair("PENDING", "Pending")
                         , new Pair("ERROR", "Error")
                         , new Pair("OK", "Ok")

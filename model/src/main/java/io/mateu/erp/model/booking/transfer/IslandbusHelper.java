@@ -139,7 +139,7 @@ public class IslandbusHelper {
 
     public static Document toShuttleXml(List<PurchaseOrder> pos) {
         Element root;
-        Document doc = new Document(root = new Element("Partes"));
+        Document doc = new Document(root = new Element("traslados"));
         int parte = 1;
 
         //DDMMYY
@@ -147,10 +147,7 @@ public class IslandbusHelper {
         DateTimeFormatter dfx = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter hf = DateTimeFormatter.ofPattern("HH:mm");
 
-
-        Element xmlS = new Element("traslados");
-        root.addContent(xmlS);
-        xmlS.setAttribute("terminal", "AEROPUERTO IBIZA");
+        root.setAttribute("terminal", "AEROPUERTO IBIZA");
 
         for (PurchaseOrder po : pos) {
 
@@ -168,12 +165,12 @@ public class IslandbusHelper {
                         firstTime = time;
                     }
                 }
-                if (firstTime != null) xmlS.setAttribute("fecha", firstTime.format(dfx));
+                if (firstTime != null) root.setAttribute("fecha", firstTime.format(dfx));
 
 
                 for (TransferService s : transfers) {
                     Element shut = new Element("traslado");
-                    xmlS.addContent(shut);
+                    root.addContent(shut);
 
                     String touroperador = s.getBooking().getAgency().getName();
                     touroperador = touroperador.replaceAll(" ","").toUpperCase();

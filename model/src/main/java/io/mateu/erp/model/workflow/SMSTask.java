@@ -45,7 +45,9 @@ text
 
         //https://platform.clickatell.com/messages/http/send?apiKey=QMgaPs3zToSOdMvT0_gqkQ==&to=34629602085&content=Testxx
 
-        setAnswer(Helper.httpGet("https://platform.clickatell.com/messages/http/send?apiKey=" + UrlEscapers.urlFormParameterEscaper().escape(AppConfig.get(em).getClickatellApiKey()) + "&to=" + getTelephoneNumber() + "&content=" + UrlEscapers.urlFormParameterEscaper().escape(getContent())));
+        String u = "https://platform.clickatell.com/messages/http/send?apiKey=" + UrlEscapers.urlFormParameterEscaper().escape(AppConfig.get(em).getClickatellApiKey()) + "&to=" + getTelephoneNumber() + "&content=" + UrlEscapers.urlFormParameterEscaper().escape(getContent());
+
+        setAnswer(Helper.httpGet(u));
 
 
     }

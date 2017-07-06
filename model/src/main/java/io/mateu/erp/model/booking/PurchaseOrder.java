@@ -48,6 +48,7 @@ public class PurchaseOrder implements WithTriggers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SearchFilter
     private long id;
 
     @Embedded
@@ -288,7 +289,7 @@ public class PurchaseOrder implements WithTriggers {
     private double rate(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
         for (Service s : getServices()) {
-            double serviceCost = s.rate(em, false, report);
+            double serviceCost = s.rate(em, false, getProvider(), report);
             total += serviceCost;
         }
         return Helper.roundEuros(total);
@@ -333,6 +334,11 @@ public class PurchaseOrder implements WithTriggers {
             if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
                 s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
             }
+        }
+        try {
+            price(em);
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
     }
 

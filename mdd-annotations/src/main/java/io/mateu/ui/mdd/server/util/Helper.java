@@ -350,6 +350,7 @@ public class Helper {
     }
 
     public static String httpGet(String url) throws IOException {
+        System.out.println("HTTP GET " + url);
         HttpRequestFactory requestFactory =
                 HTTP_TRANSPORT.createRequestFactory(new HttpRequestInitializer() {
                     @Override
@@ -579,4 +580,32 @@ public class Helper {
         return LocalDate.of(c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH));
     }
 
+    public static Map<String,Object> hashmap(Object... args) {
+        Map<String,Object> m = new HashMap<>();
+        int pos = 0;
+        Object o0 = null;
+        for (Object o : args) {
+            if (pos > 0 && pos % 2 == 1) {
+                m.put("" + o0, o);
+            } else {
+                o0 = o;
+            }
+            pos++;
+        }
+        return m;
+    }
+
+    public static double roundOffEuros(double v) {
+        return Math.round(100d * v) / 100d;
+    }
+
+    public static int toInt(String s) {
+        int v = 0;
+        try {
+            v = Integer.parseInt(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return v;
+    }
 }

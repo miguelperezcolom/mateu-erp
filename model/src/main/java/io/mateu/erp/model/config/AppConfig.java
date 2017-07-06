@@ -54,6 +54,7 @@ public class AppConfig {
     private String pop3ReboundToEmail;
 
     @StartsLine
+    private boolean clickatellEnabled;
     private String clickatellApiKey;
 
 
@@ -91,6 +92,9 @@ public class AppConfig {
 
     @TextArea
     private String pickupEmailTemplate;
+
+    @TextArea
+    private String pickupSmsTemplateEs;
 
     public static AppConfig get(EntityManager em) {
         return em.find(AppConfig.class, 1l);

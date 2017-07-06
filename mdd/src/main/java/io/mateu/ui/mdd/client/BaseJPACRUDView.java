@@ -24,8 +24,8 @@ public abstract class BaseJPACRUDView extends JPACRUDView {
             }
 
             @Override
-            public AbstractForm createForm() {
-                return new ViewForm(this).add(new TextField("name", "Name"));
+            public void build() {
+                add(new TextField("name", "Name"));
             }
         };
     }

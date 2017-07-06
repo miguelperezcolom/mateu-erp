@@ -53,6 +53,11 @@ public class Actor {
     private boolean automaticOrderSending;
     private boolean automaticOrderConfirmation;
 
+    @StartsLine
+    private boolean exportableToinvoicingApp;
+    private String idInInvoicingApp;
+    private boolean shuttleTransfersInOwnInvoice;
+
 
     @Override
     public String toString() {
@@ -71,4 +76,5 @@ public class Actor {
 
         return xml;
     }
+
 }

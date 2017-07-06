@@ -254,7 +254,7 @@ public class ERPServiceImpl implements ERPService {
 
         for (Field f : getAllFields(o.getClass())) {
             boolean updatable = true;
-            if (AuditRecord.class.isAssignableFrom(f.getType()) || f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
+            if (AuditRecord.class.isAssignableFrom(f.getType()) || f.isAnnotationPresent(Output.class) || f.isAnnotationPresent(Ignored.class) || f.isAnnotationPresent(NotInEditor.class) || (!newInstance && f.isAnnotationPresent(Unmodifiable.class))) {
                 updatable = false;
             }
 
@@ -1234,6 +1234,15 @@ public class ERPServiceImpl implements ERPService {
             if (f.isAnnotationPresent(Required.class)) {
                 d.set("_required", true);
             }
+
+            if (f.isAnnotationPresent(Order.class)) {
+                Order o = f.getAnnotation(Order.class);
+                d.set("_order", o.priority());
+                d.set("_orderdesc", o.desc());
+                d.set("_ordercol", f.getName());
+            }
+
+
 
             if (f.isAnnotationPresent(Tab.class)) {
                 d.set("_starttab", f.getAnnotation(Tab.class).value());

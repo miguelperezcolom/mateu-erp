@@ -11,6 +11,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.client.util.store.FileDataStoreFactory;
+import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -111,6 +113,10 @@ public class GoogleCalendarTester {
 
         // List the next 10 events from the primary calendar.
         DateTime now = new DateTime(System.currentTimeMillis());
+        for (String k : service.calendarList().list().keySet()) {
+            System.out.println("**********");
+            System.out.println(k);
+        }
         Events events = service.events().list("primary")
                 .setMaxResults(10)
                 .setTimeMin(now)

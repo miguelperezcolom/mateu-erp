@@ -30,4 +30,9 @@ public class ServerSideWizardView extends AbstractWizard {
     public String getTitle() {
         return null;
     }
+
+    @Override
+    public void build() {
+
+    }
 }

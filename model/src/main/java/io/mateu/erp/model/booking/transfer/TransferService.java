@@ -13,6 +13,7 @@ import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
+import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.views.AbstractListView;
@@ -82,6 +83,7 @@ public class TransferService extends Service implements WithTriggers {
     private TransferPoint pickup;
     @ManyToOne
     @Output
+    @SearchFilter
     private TransferPoint effectivePickup;
 
 
@@ -91,6 +93,7 @@ public class TransferService extends Service implements WithTriggers {
     private TransferPoint dropoff;
     @ManyToOne
     @Output
+    @SearchFilter
     private TransferPoint effectiveDropoff;
 
     @StartsLine
@@ -114,6 +117,8 @@ public class TransferService extends Service implements WithTriggers {
     private LocalDateTime pickupConfirmedByWeb;
     @Output
     private LocalDateTime pickupConfirmedByEmailToHotel;
+    @Output
+    private LocalDateTime pickupConfirmedBySMS;
 
     @Ignored
     private boolean arrivalNoShow;
@@ -372,7 +377,8 @@ public class TransferService extends Service implements WithTriggers {
 
         List<Object[]> hoja = new ArrayList<>();
         hoja.add(new Object[] {
-                "ref"
+                "po"
+                , "ref"
                 , "lead name"
                 , "pax"
                 , "pickup"
@@ -400,10 +406,14 @@ public class TransferService extends Service implements WithTriggers {
 
             if (!s.isCancelled() && !s.isHeld() && TransferDirection.OUTBOUND.equals(s.getDirection())) {
                 
-                if (office == null) office = s.getOffice(); 
+                if (office == null) office = s.getOffice();
+
+                Long poId = null;
+                if (s.getPurchaseOrders().size() > 0) poId = s.getPurchaseOrders().get(0).getId();
 
                 hoja.add(new Object[] {
-                        s.getId()
+                        poId
+                        , s.getId()
                         , s.getBooking().getLeadName()
                         , s.getPax()
                         , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
@@ -584,7 +594,7 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
 
         // verificamos que tenemos lo que necesitamos para valorar
         mapTransferPoints(em);
@@ -596,8 +606,9 @@ public class TransferService extends Service implements WithTriggers {
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
-            ok &= ContractType.SALE.equals(c.getType());
+            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale && ContractType.PURCHASE.equals(c.getType()));
             ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= supplier == null || supplier.equals(c.getSupplier());
             ok &= getTransferType().equals(c.getTransferType());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
@@ -644,21 +655,15 @@ public class TransferService extends Service implements WithTriggers {
     @Override
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
 
-        // si ya existe entonces
+        // hay algún contrato directo?
+            //si ya hay purchase orders comprobar que sea el mismo proveedor
+            //si no es el mismo proveedor entonces cancelar existente
+            //crear purchase order si es necesario
+        // si no haycontrato directo pero están en provincias diferentes y es posible llegar a través de los gateways?
+            //cancelar las pos que no tengan bien el proveedor
+            //crear las pos que hagan falta
 
-        // comprobar desglose
 
-        // para cada purchaseOrder comprobar firma y actualizar estado si es necesario
-
-        // puede que haya que eliminar purchaseOrders que sobren (o cancelarlas si ya se han enviado)
-
-        // si no...
-
-        // si es shuttle entonces buscar alguna petición que encaje
-
-        // si no hay ninguna petición que podamos utilizar entonces crear una nueva
-
-        // ...fin si no
 
         Actor provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
         if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
@@ -757,6 +762,10 @@ public class TransferService extends Service implements WithTriggers {
         if (p != null && TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
             p = p.getAlternatePointForShuttle();
             d.put("alternatePickup", "" + p.getName());
+
+            d.put("pickupPointInfo", "" + p.getName());
+        } else {
+            d.put("pickupPointInfo", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
         }
 
         d.put("pickup", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
@@ -836,26 +845,54 @@ public class TransferService extends Service implements WithTriggers {
             } catch (Exception e) {
 
             }
-            if (tel > 0 && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
-                SMSTask t = new SMSTask(tel, Helper.freemark(AppConfig.get(em).getPickupSmsTemplate(), getData()));
+            if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
+                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
-                t.run(em, em.find(User.class, user.getLogin()));
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                //t.run(em, em.find(User.class, user.getLogin()));
+                setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
-            } else if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
+            }
+
+            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
                 TransferPoint p = getEffectivePickup();
                 if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
                     p = p.getAlternatePointForShuttle();
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
                 t.setTo(getEffectivePickup().getEmail());
-                t.run(em, em.find(User.class, user.getLogin()));
+                //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
+            }
+        }
+    }
+
+
+    @Action(name = "Test SMS")
+    public void testPickupTime(UserData user, EntityManager em, @Parameter(name = "mobile nr. (34628...)") String sms) throws Throwable {
+        if (getPickupTime() != null) {
+
+            AppConfig appconfig = AppConfig.get(em);
+
+            long tel = 0;
+            try {
+                tel = Long.parseLong(sms.replaceAll("[\\(\\)\\+]", ""));
+            } catch (Exception e) {
+
+            }
+            if (tel > 0 && !Strings.isNullOrEmpty(appconfig.getClickatellApiKey())) {
+                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                getTasks().add(t);
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                //t.run(em, em.find(User.class, user.getLogin()));
+                em.persist(t);
             }
         }
     }

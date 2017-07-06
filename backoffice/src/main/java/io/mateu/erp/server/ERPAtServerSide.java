@@ -167,6 +167,16 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
     }
 
     @Override
+    public UserData signUp(String s, String s1, String s2, String s3) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public String recoverPassword(String s) throws Throwable {
+        return null;
+    }
+
+    @Override
     public String getXslfoForListing()throws Throwable {
         String[] s = {""};
         Helper.transact(new JPATransaction() {

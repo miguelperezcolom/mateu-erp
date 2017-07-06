@@ -1,21 +1,22 @@
 package io.mateu.erp.server.financial;
 
+import com.google.common.io.Files;
+import io.mateu.erp.model.beroni.P1105;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.beroni.P1101;
+import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.shared.financial.FinancialService;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.*;
 
 import javax.persistence.EntityManager;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -41,13 +42,6 @@ public class FinancialServiceImpl implements FinancialService {
                         s.price(em);
                     } catch (Throwable e) {
                         e.printStackTrace();
-                    }
-                    for (PurchaseOrder po : s.getPurchaseOrders()) {
-                        try {
-                            po.price(em);
-                        } catch (Throwable e) {
-                            e.printStackTrace();
-                        }
                     }
                 }
 
@@ -95,6 +89,58 @@ public class FinancialServiceImpl implements FinancialService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public URL exportToBeroni(LocalDate from, LocalDate to) throws Throwable {
+
+        URL[] u = new URL[1];
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.start >= :a and x.start <= :b order by x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintWriter pw = new PrintWriter(baos);
+
+                writeBeroniTxt(pw, em, AppConfig.get(em), l);
+
+
+                String archivo = UUID.randomUUID().toString();
+
+                File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".xls"):new File(new File(System.getProperty("tmpdir")), archivo + ".xls");
+
+
+                System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+                System.out.println("Temp file : " + temp.getAbsolutePath());
+
+                System.out.println(System.getProperty("java.io.tmpdir"));
+
+                Files.write(baos.toByteArray(), temp);
+
+                String baseUrl = System.getProperty("tmpurl");
+                if (baseUrl == null) {
+                    u[0] = temp.toURI().toURL();
+                }
+                u[0] = new URL(baseUrl + "/" + temp.getName());
+
+
+            }
+        });
+
+        return u[0];
+    }
+
+    private void writeBeroniTxt(PrintWriter pw, EntityManager em, AppConfig appConfig, List<Service> l) {
+
+        for (Service s : l) if (!s.isCancelled() && !s.getBooking().getAgency().isExportableToinvoicingApp()) {
+            pw.println(new P1101(em, appConfig, s));
+            for (PurchaseOrder po : s.getPurchaseOrders()) if (!po.isCancelled()) {
+                pw.println(new P1105(em, appConfig, s, po));
+            }
+        }
+
     }
 
     private void fillGeneralReport(HSSFWorkbook workbook, Data data) {
@@ -205,11 +251,11 @@ public class FinancialServiceImpl implements FinancialService {
         cell = row.createCell(col++);
         cell.setCellValue("Total");
 
-        for (Data d : data.getList("agencies")) {
+        for (boolean soloShuttle : new boolean[] {false, true}) for (Data d : (soloShuttle)?data.getList("agenciesshuttleonly"):data.getList("agencies")) {
             row = sheet.createRow(fila++);
             col = 3;
             cell = row.createCell(col++);
-            cell.setCellValue(d.getString("name"));
+            cell.setCellValue(d.getString("name") + ((soloShuttle)?" SHUTTLE ONLY":""));
             cell = row.createCell(col++);
             cell.setCellStyle(cellStyleInt);
             cell.setCellValue(d.getInt("valued"));
@@ -257,9 +303,9 @@ public class FinancialServiceImpl implements FinancialService {
 
         // sales per agency
 
-        for (Data d : data.getList("agencies")) {
+        for (boolean soloShuttle : new boolean[] {false, true}) for (Data d : (soloShuttle)?data.getList("agenciesshuttleonly"):data.getList("agencies")) {
 
-            sheet = workbook.createSheet(d.getString("name"));
+            sheet = workbook.createSheet(d.getString("name") + ((soloShuttle)?" SHUTTLE ONLY":""));
 
             fila = 3;
             col = 0;
@@ -298,9 +344,51 @@ public class FinancialServiceImpl implements FinancialService {
             fila++;fila++;
 
 
+            // purchase per provider
+
+            fila++;fila++;
+
+            row = sheet.createRow(fila++);
+            col = 1;
+            cell = row.createCell(col++);
+            cell.setCellValue("Provider");
+            cell = row.createCell(col++);
+            cell.setCellValue("Valued");
+            cell = row.createCell(col++);
+            cell.setCellValue("Not valued");
+            cell = row.createCell(col++);
+            cell.setCellValue("Total");
+
+            double totalCompra = 0;
+            for (Data dx : d.getList("providers")) {
+                row = sheet.createRow(fila++);
+                col = 1;
+                cell = row.createCell(col++);
+                cell.setCellValue(dx.getString("name"));
+                cell = row.createCell(col++);
+                cell.setCellStyle(cellStyleInt);
+                cell.setCellValue(dx.getInt("valued"));
+                cell = row.createCell(col++);
+                cell.setCellStyle(cellStyleInt);
+                cell.setCellValue(dx.getInt("notvalued"));
+                cell = row.createCell(col++);
+                cell.setCellStyle(cellStyleAmount);
+                cell.setCellValue(dx.getDouble("total"));
+                totalCompra += dx.getDouble("total");
+            }
+            row = sheet.createRow(fila++);
+            col = 3;
+            cell = row.createCell(col++);
+            cell.setCellValue("Total");
+            cell = row.createCell(col++);
+            cell.setCellStyle(cellStyleAmount);
+            cell.setCellValue(Helper.roundEuros(totalCompra));
+
+            fila++;fila++;
+
             row = sheet.createRow(fila++);
             col = 0;
-            for (String h : new String[]{"Ref.", "Status", "Service", "Vehicle", "Direction", "Pickup", "Pickup resort", "Pickup time", "Dropoff", "Dropoff resort", "Flight", "Flight date", "Flight time", "Origin/destination", "Pax", "Lead name", "Agency ref.", "Valued", "Total", "Comments"}){
+            for (String h : new String[]{"Ref.", "Status", "Service", "Vehicle", "Direction", "Pickup", "Pickup resort", "Pickup time", "Dropoff", "Dropoff resort", "Flight", "Flight date", "Flight time", "Origin/destination", "Pax", "Lead name", "Agency ref.", "Valued", "Total", "Pchse. valued", "Cost", "Comments"}){
                 cell = row.createCell(col++);
                 cell.setCellValue(h);
             }
@@ -310,7 +398,7 @@ public class FinancialServiceImpl implements FinancialService {
                 row = sheet.createRow(fila++);
 
                 col = 0;
-                for (String id : new String[] {"id", "status", "transferType", "preferredVehicle", "direction", "pickup", "pickupResort", "pickupTime", "dropoff", "dropoffResort", "flight", "flightDate", "flightTime", "flightOriginOrDestination", "pax", "leadName", "agencyReference", "valued", "total", "comments"}){
+                for (String id : new String[] {"id", "status", "transferType", "preferredVehicle", "direction", "pickup", "pickupResort", "pickupTime", "dropoff", "dropoffResort", "flight", "flightDate", "flightTime", "flightOriginOrDestination", "pax", "leadName", "agencyReference", "valued", "total", "purchaseValued", "totalCost", "comments"}){
                     cell = row.createCell(col++);
 
                     Object o = s.get(id);
@@ -353,7 +441,7 @@ public class FinancialServiceImpl implements FinancialService {
                 row = sheet.createRow(fila++);
 
                 col = 0;
-                for (String id : new String[] {"leadName", "", "", "agencyReference", "start", "total", "", "total", "total"}){
+                for (String id : new String[] {"leadName", "", "", "agencyReference", "startddmmyyyy", "base", "iva", "", "total"}){
                     cell = row.createCell(col++);
 
                     Object o = s.get(id);
@@ -389,10 +477,9 @@ public class FinancialServiceImpl implements FinancialService {
 
         // purchase per provider
 
-
         for (Data d : data.getList("providers")) {
 
-            sheet = workbook.createSheet(d.getString("name"));
+            sheet = workbook.createSheet(d.getString("name") + " (PROVIDER  )");
 
             fila = 3;
             col = 0;
@@ -485,17 +572,28 @@ public class FinancialServiceImpl implements FinancialService {
                 List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.start >= :a and x.start <= :b order by x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
 
-                Map<Actor, Data> dataPerAgency = new HashMap<>();
-                Map<Actor, Data> dataPerProvider = new HashMap<>();
+                Map<Actor, Data> dataPerAgency = new LinkedHashMap<>();
+                Map<Actor, Data> dataPerAgencyOnlyShuttle = new LinkedHashMap<>();
+                Map<Actor, Map<Actor, Data>> dataPerAgencyAndProvider = new LinkedHashMap<>();
+                Map<Actor, Map<Actor, Data>> dataPerAgencyAndProviderOnlyShuttle = new LinkedHashMap<>();
+                Map<Actor, Data> dataPerProvider = new LinkedHashMap<>();
 
                 double totalventa = 0;
                 double totalcompra = 0;
 
                 for (Service s : l) {
 
-                    Data agencyData = dataPerAgency.get(s.getBooking().getAgency());
+                    Map<Actor, Data> dpa = dataPerAgency;
+                    Map<Actor, Map<Actor, Data>> dpaap = dataPerAgencyAndProvider;
+
+                    if (s.getBooking().getAgency().isShuttleTransfersInOwnInvoice() && s instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) {
+                        dpa = dataPerAgencyOnlyShuttle;
+                        dpaap = dataPerAgencyAndProviderOnlyShuttle;
+                    }
+
+                    Data agencyData = dpa.get(s.getBooking().getAgency());
                     if (agencyData == null) {
-                        dataPerAgency.put(s.getBooking().getAgency(), agencyData = new Data());
+                        dpa.put(s.getBooking().getAgency(), agencyData = new Data());
                         agencyData.set("name", s.getBooking().getAgency().getName());
                     }
 
@@ -517,41 +615,94 @@ public class FinancialServiceImpl implements FinancialService {
                         agencyData.set("valued", valoradas);
                         agencyData.set("notvalued", novaloradas);
                         agencyData.set("total", Helper.roundEuros(total));
+
                     }
 
                     for (PurchaseOrder po : s.getPurchaseOrders()) if (po.getProvider() != null) {
 
-                        Data providerData = dataPerProvider.get(po.getProvider());
-                        if (providerData == null) {
-                            dataPerProvider.put(po.getProvider(), providerData = new Data());
-                            providerData.set("name", po.getProvider().getName());
+                        // para esta agencia
+                        {
+                            Map<Actor, Data> aux = dpaap.get(s.getBooking().getAgency());
+                            if (aux == null) {
+                                dpaap.put(s.getBooking().getAgency(), aux = new HashMap<Actor, Data>());
+                            }
+                            Data providerData = aux.get(po.getProvider());
+                            if (providerData == null) {
+                                aux.put(po.getProvider(), providerData = new Data());
+                                providerData.set("name", po.getProvider().getName());
+                            }
+
+
+                            int valoradas = providerData.getInt("valued");
+                            int novaloradas = providerData.getInt("notvalued");
+                            double total = providerData.getDouble("total");
+
+                            if (po.isValued()) {
+                                valoradas++;
+                                total += po.getTotal();
+                            } else {
+                                novaloradas++;
+                            }
+
+                            providerData.set("valued", valoradas);
+                            providerData.set("notvalued", novaloradas);
+                            providerData.set("total", Helper.roundEuros(total));
+
+                            providerData.getList("orders").add(new Data(po.getData()));
                         }
 
 
-                        int valoradas = providerData.getInt("valued");
-                        int novaloradas = providerData.getInt("notvalued");
-                        double total = providerData.getDouble("total");
+                        // total
+                        {
+                            Data providerData = dataPerProvider.get(po.getProvider());
+                            if (providerData == null) {
+                                dataPerProvider.put(po.getProvider(), providerData = new Data());
+                                providerData.set("name", po.getProvider().getName());
+                            }
 
-                        if (po.isValued()) {
-                            valoradas++;
-                            total += po.getTotal();
-                            totalcompra += po.getTotal();
-                        } else {
-                            novaloradas++;
+
+                            int valoradas = providerData.getInt("valued");
+                            int novaloradas = providerData.getInt("notvalued");
+                            double total = providerData.getDouble("total");
+
+                            if (po.isValued()) {
+                                valoradas++;
+                                total += po.getTotal();
+                                totalcompra += po.getTotal();
+                            } else {
+                                novaloradas++;
+                            }
+
+                            providerData.set("valued", valoradas);
+                            providerData.set("notvalued", novaloradas);
+                            providerData.set("total", Helper.roundEuros(total));
+
+                            providerData.getList("orders").add(new Data(po.getData()));
                         }
-
-                        providerData.set("valued", valoradas);
-                        providerData.set("notvalued", novaloradas);
-                        providerData.set("total", Helper.roundEuros(total));
-
-                        providerData.getList("orders").add(new Data(po.getData()));
 
                     }
 
                 }
 
 
+                for (Actor a : dataPerAgency.keySet()) {
+                    Map<Actor, Data> aux = dataPerAgencyAndProvider.get(a);
+                    if (aux != null) {
+                        Data d = dataPerAgency.get(a);
+                        d.getList("providers").addAll(aux.values());
+                    }
+                }
+
+                for (Actor a : dataPerAgencyOnlyShuttle.keySet()) {
+                    Map<Actor, Data> aux = dataPerAgencyAndProviderOnlyShuttle.get(a);
+                    if (aux != null) {
+                        Data d = dataPerAgencyOnlyShuttle.get(a);
+                        d.getList("providers").addAll(aux.values());
+                    }
+                }
+
                 data.getList("agencies").addAll(dataPerAgency.values());
+                data.getList("agenciesshuttleonly").addAll(dataPerAgencyOnlyShuttle.values());
                 data.getList("providers").addAll(dataPerProvider.values());
 
                 data.set("from", from);

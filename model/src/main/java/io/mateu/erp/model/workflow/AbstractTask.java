@@ -14,7 +14,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,8 +83,12 @@ public abstract class AbstractTask {
 
             setStatus(TaskStatus.FINISHED);
             setResult(TaskResult.OK);
+            setLog("done " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         } catch (Throwable e) {
             e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw));
+            setLog(sw.toString() + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             setStatus(TaskStatus.FINISHED);
             setResult(TaskResult.ERROR);
         }

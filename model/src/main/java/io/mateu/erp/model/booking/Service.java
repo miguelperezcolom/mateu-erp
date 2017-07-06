@@ -170,6 +170,15 @@ public abstract class Service {
     @Output
     private String priceReport;
 
+    @Output
+    @ListColumn
+    @CellStyleGenerator(ValuedCellStyleGenerator.class)
+    private boolean purchaseValued;
+
+    @Output
+    @ListColumn
+    private double totalCost;
+
     @Ignored
     private int effectiveProcessingStatus;
 
@@ -296,19 +305,41 @@ public abstract class Service {
     }
 
     @Action(name = "Repair bookings")
-    public static void repair(@Selection List<Data> _selection) throws Throwable {
+    public static void repair() throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
-                for (Data d : _selection) {
-                    Service s = em.find(Service.class, d.get("_id"));
-                    if (s instanceof TransferService) {
-                        ((TransferService)s).afterSet(em, false);
-                    } else if (s instanceof GenericService) {
-                        ((GenericService)s).afterSet(em, false);
+
+                System.out.println("***REPARAR BOOKINGS*****");
+
+                Object[][] r = Helper.select("select purchaseorders_id from (select purchaseorders_id, count(*) from service_purchaseorder group by 1 having count(*) > 1) x");
+
+                Helper.transact(new JPATransaction() {
+                    @Override
+                    public void run(EntityManager em) throws Throwable {
+                        for (Object[] l : r) {
+                            long id = new Long("" + l[0]);
+                            PurchaseOrder po = em.find(PurchaseOrder.class, id);
+                            System.out.println("***revisando po " + id + "*****");
+                            if (po.getServices().size() > 1) {
+                                System.out.println("***po " + id + " tiene más de 1 servicio*****");
+                                List<Service> x = new ArrayList<>();
+                                for (Service s : po.getServices()) {
+                                    if (s instanceof TransferService && TransferDirection.OUTBOUND.equals(((TransferService) s).getDirection())) {
+                                        x.add(s);
+                                    }
+                                }
+                                for (Service s : x) {
+                                    System.out.println("***corrigiendo servicio " + s.getId() + "*****");
+                                    po.getServices().remove(s);
+                                    s.getPurchaseOrders().remove(po);
+                                    s.checkPurchase(em);
+                                }
+                            }
+                        }
                     }
-                    s.price(em);
-                }
+                });
+
             }
         });
     }
@@ -373,7 +404,7 @@ public abstract class Service {
 
     @Action(name = "Purchase")
     public void checkPurchase(EntityManager em) throws Throwable {
-        if (!isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
+        if (false && !isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
             setSignature(createSignature());
         } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setSignature(createSignature());
@@ -383,7 +414,7 @@ public abstract class Service {
                     if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
                 }
                 for (PurchaseOrder po : getPurchaseOrders()) {
-                    if (!po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
+                    if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
                         try {
                             po.send(em);
                         } catch (Exception e) {
@@ -431,6 +462,31 @@ public abstract class Service {
                 throwable.printStackTrace();
             }
         }
+
+        try {
+            checkPurchase(em);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        double totalCost = 0;
+        boolean purchaseValued = getPurchaseOrders().size() > 0;
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            if (isCancelled() || po.isCancelled()) {
+                po.setValued(true);
+                po.setTotal(0);
+            } else {
+                try {
+                    po.price(em);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+            if (po.isValued()) totalCost += po.getTotal();
+            purchaseValued &= po.isValued();
+        }
+        setTotalCost(Helper.roundOffEuros(totalCost));
+        setPurchaseValued(purchaseValued);
     }
 
     @Action(name = "Print POs")
@@ -571,7 +627,12 @@ public abstract class Service {
     }
 
 
-    public abstract double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable;
+    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
+        return rate(em, sale, null, report);
+    }
+
+    public abstract double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable;
+
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
         if (getPreferredProvider() == null) throw new Throwable("Preferred provider needed for service " + getId());
@@ -644,8 +705,20 @@ public abstract class Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
+        d.put("start", getStart());
+        d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        double base = Helper.roundOffEuros(getTotal() / (1d + 10d / 100d));
+        double iva = Helper.roundOffEuros(getTotal() - base);
+
+
+        d.put("base", base);
+        d.put("iva", iva);
+
         d.put("valued", isValued());
         d.put("total", getTotal());
+        d.put("purchaseValued", isPurchaseValued());
+        d.put("totalCost", getTotalCost());
 
         return d;
     }

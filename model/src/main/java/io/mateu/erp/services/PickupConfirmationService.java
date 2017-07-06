@@ -34,11 +34,10 @@ public class PickupConfirmationService {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
-                List<Booking> l = em.createQuery("select x from " + Booking.class.getName() + " x where x.agencyReference = :r").setParameter("r", p).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where lower(x.booking.agencyReference) like lower(:r)").setParameter("r", p).getResultList();
                 if (l.size() > 0) {
-                    Booking b = l.get(0);
                     boolean found = false;
-                    for (Service s : b.getServices()) {
+                    for (Service s : l) {
                         if (s instanceof TransferService) {
                             TransferService t = (TransferService) s;
                             if (t.getPickupTime() != null) {
@@ -61,5 +60,10 @@ public class PickupConfirmationService {
             }
         });
         return d;
+    }
+
+
+    public static void main(String... args) throws Throwable {
+        System.out.println(new PickupConfirmationService().q("HEqaKP"));
     }
 }

@@ -81,7 +81,12 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     return formMetaData.getString("_rawtitle");
                 }
 
-                @Override
+            @Override
+            public void build() {
+                buildFromMetadata(this, formMetaData, false);
+            }
+
+            @Override
                 public AbstractForm createForm() {
                     ViewForm f = new ViewForm(this) {
                         @Override
@@ -95,7 +100,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                             super.setData(data, only_);
                         }
                     };
-                    buildFromMetadata(this, f, formMetaData, false);
+
                     return f;
                 }
             };
@@ -140,8 +145,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                 }
 
                 @Override
-                public AbstractForm createForm() {
-                    return new ViewForm(this).add(new RadioButtonField("type", "Type", options).setRequired(true));
+                public void build() {
+                    add(new RadioButtonField("type", "Type", options).setRequired(true));
                 }
             });
 
@@ -170,12 +175,12 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         }
     }
 
-    private void buildFromMetadata(AbstractEditorView view, AbstractForm f, Data metadata, boolean buildingSearchForm) {
-        buildFromMetadata(f, metadata.getList("_fields"), buildingSearchForm);
+    private void buildFromMetadata(AbstractView view, Data metadata, boolean buildingSearchForm) {
+        buildFromMetadata(view, metadata.getList("_fields"), buildingSearchForm);
         for (Data da : metadata.getList("_actions")) {
             if (da.getBoolean("_addasbutton")) {
                 AbstractAction a = createAction(view, da);
-                f.add(new Button(da.getString("_name")) {
+                add(new Button(da.getString("_name")) {
 
                     @Override
                     public void run() {
@@ -186,7 +191,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         }
     }
 
-    private void buildFromMetadata(AbstractForm f, List<Data> fieldsMetadata, boolean buildingSearchForm) {
+    private void buildFromMetadata(AbstractView view, List<Data> fieldsMetadata, boolean buildingSearchForm) {
         for (Data d : fieldsMetadata) {
             List<AbstractField> fields = new ArrayList<>();
             if (MetaData.FIELDTYPE_OUTPUT.equals(d.getString("_type"))) {
@@ -260,10 +265,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                                 }
 
                                 @Override
-                                public AbstractForm createForm() {
-                                    ViewForm f = new ViewForm(get());
-                                    buildFromMetadata(f, metadata.getData("_editorform").getList("_fields"), false);
-                                    return f;
+                                public void build() {
+                                    buildFromMetadata(this, metadata.getData("_editorform").getList("_fields"), false);
                                 }
                             };
                             return editor;
@@ -333,7 +336,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                                 return (initialData != null)?initialData:super.initializeData();
                             }
                         };
-                        buildFromMetadata(f, d.getList("_cols"), false);
+                        buildFromMetadata(view, d.getList("_cols"), false);
                         return f;
                     }
                 });
@@ -347,7 +350,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
             if (d.containsKey("_unmodifiable")) {
                 for (AbstractField field : fields) field.setUnmodifiable(true);
             }
-            for (AbstractField field : fields) f.add(field);
+            for (AbstractField field : fields) view.add(field);
         }
     }
 
@@ -388,7 +391,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         // construimos la clausula select
         String jpql = "select ";
         int poscol = 0;
-        List<String> orderFields = new ArrayList<>();
+        List<Data> orderFields = new ArrayList<>();
 
         List<String> leftJoins = new ArrayList<>();
         List<String> innerJoins = new ArrayList<>();
@@ -402,7 +405,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
             if (!d.isEmpty("_leftjoin") && !leftJoins.contains(d.getString("_leftjoin"))) leftJoins.add(d.getString("_leftjoin"));
             if (!d.isEmpty("_innerjoin") && !innerJoins.contains(d.getString("_innerjoin"))) innerJoins.add(d.getString("_innerjoin"));
-            if (!d.isEmpty("_order")) orderFields.add(d.getString("_ordercol"));
+            if (!d.isEmpty("_order")) orderFields.add(d);
         }
         for (Data d : getMetadata().getData("_searchform").getList("_fields")){
             if (!d.isEmpty("_leftjoin") && !leftJoins.contains(d.getString("_leftjoin"))) leftJoins.add(d.getString("_leftjoin"));
@@ -545,11 +548,13 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
 
         if (orderFields.size() > 0) {
             jpql += " order by ";
+            Collections.sort(orderFields, (a, b) -> a.getInt("_order") - b.getInt("_order"));
             boolean primero = true;
-            for (String of : orderFields) {
+            for (Data of : orderFields) {
                 if (primero) primero = false;
                 else jpql += " , ";
-                jpql += " x." + of;
+                jpql += " x." + of.getString("_ordercol");
+                if (of.getBoolean("_orderdesc")) jpql += " desc ";
             }
         }
 
@@ -574,10 +579,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
     }
 
     @Override
-    public AbstractForm createForm() {
-        ViewForm f = new ViewForm(this);
-        buildFromMetadata(f, getMetadata().getData("_searchform").getList("_fields"), true);
-        return f;
+    public void build() {
+        buildFromMetadata(this, getMetadata().getData("_searchform").getList("_fields"), true);
     }
 
     @Override
@@ -609,14 +612,14 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                     }
 
                     @Override
-                    public Data initializeData() {
-
-                        return new Data("_metadata", new Data(getMetadata()));
+                    public void build() {
+                        add(new DataViewerField("_metadata"));
                     }
 
                     @Override
-                    public AbstractForm createForm() {
-                        return new ViewForm(this).setLastFieldMaximized(true).add(new DataViewerField("_metadata"));
+                    public Data initializeData() {
+
+                        return new Data("_metadata", new Data(getMetadata()));
                     }
                 });
             }
@@ -670,10 +673,8 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
                         }
 
                         @Override
-                        public AbstractForm createForm() {
-                            ViewForm f = new ViewForm(this);
-                            buildFromMetadata(f, da.getData("_form").getList("_fields"), false);
-                            return f;
+                        public void build() {
+                            buildFromMetadata(this, da.getData("_form").getList("_fields"), false);
                         }
                     });
                 } else ((ERPServiceAsync)MateuUI.create(ERPService.class)).runInServer(da.getString("_entityClassName"), da.getString("_methodname"), parameters, new Callback<Object>() {
@@ -706,7 +707,7 @@ public class MDDJPACRUDView extends BaseJPACRUDView {
         });
     }
 
-    private AbstractAction createAction(AbstractEditorView v, Data da) {
+    private AbstractAction createAction(AbstractView v, Data da) {
         return createAction(v, da, new MDDActionHelper() {
             @Override
             public void onSuccess(Object result) {
