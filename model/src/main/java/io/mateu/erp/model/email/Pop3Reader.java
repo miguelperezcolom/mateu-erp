@@ -113,7 +113,7 @@ public class Pop3Reader {
                 throwable.printStackTrace();
             }
 
-            if (read[0] == 0) Thread.currentThread().sleep(1000);
+            if (read[0] == 0) Thread.currentThread().sleep(60000);
 
         }
 

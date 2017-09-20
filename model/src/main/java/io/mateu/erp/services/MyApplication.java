@@ -1,6 +1,7 @@
 package io.mateu.erp.services;
 
-import org.glassfish.jersey.jackson.JacksonFeature;
+import io.mateu.ui.core.rest.Converter1;
+import io.mateu.ui.core.rest.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
@@ -9,8 +10,12 @@ import javax.ws.rs.ApplicationPath;
 public class MyApplication extends ResourceConfig {
     public MyApplication() {
         //packages("org.foo.rest;org.bar.rest");
+
+        System.out.println("PASA POR AQUÍxxxx!!!!");
+
         packages("io.mateu.erp.services");
         register(JacksonFeature.class);
+        register(Converter1.class);
         register(new CORSFilter());
     }
 }

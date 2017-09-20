@@ -127,7 +127,7 @@ public class BookingServiceImpl implements BookingService {
                     } else {
                         if (v == 450) css = "rojo";
                         else if (v < 500) css = "naranja";
-                        else if (v >= 500) css = "verde";
+                        else if (v >= 500) css = "verdemarino";
 
                         css += " ";
                         if (w == 0) css += "cell-valid";

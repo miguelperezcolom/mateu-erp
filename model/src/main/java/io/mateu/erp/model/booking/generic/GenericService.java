@@ -91,6 +91,8 @@ public class GenericService extends Service implements WithTriggers {
                 x.put("priceperunit", l.getPricePerUnit());
                 x.put("priceperunitandnight", l.getPricePerUnitAndNight());
             }
+
+            m.put("cancelled", "" + isCancelled());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();

@@ -286,9 +286,12 @@ public abstract class Service {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
-                for (Data d : _selection) {
-                    Service s = em.find(Service.class, d.get("_id"));
-                    s.validate(em);
+
+                if (_selection != null && _selection.size() > 0) {
+
+                    for (Data d : _selection) {
+                        Service s = em.find(Service.class, d.get("_id"));
+                        //s.validate(em);
 
 //                    if (s instanceof TransferService) {
 //                        TransferService t = (TransferService) s;
@@ -298,8 +301,20 @@ public abstract class Service {
 //                        t.setFinish(z);
 //                    }
 
-                    //s.setSignature(s.createSignature());
+                        s.setSignature(s.createSignature());
+                    }
+
+                } else {
+
+
+                    List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x order by x.id").getResultList();
+
+                    for (Service s : l) {
+                        s.setSignature(s.createSignature());
+                    }
+
                 }
+
             }
         });
     }
@@ -598,6 +613,12 @@ public abstract class Service {
         }
         return new URL(baseUrl + "/" + temp.getName());
     }
+
+    @Action(name = "Show signature")
+    public String showSignature(EntityManager em) throws Throwable {
+        return getSignature();
+    }
+
 
 
     @Badges

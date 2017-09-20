@@ -19,27 +19,29 @@ import java.util.List;
  */
 public class TransferOperations extends AbstractServerSideWizard {
 
-    enum Actions {
-        CHECKRETAINED, CHECKFLIGHTTIMES, MAP, SETPICKUPS, SENDTOPROVIDERS
-    }
+    public static final String ACTION_CHECKRETAINED = "CHECKRETAINED";
+    public static final String ACTION_CHECKFLIGHTTIMES = "CHECKFLIGHTTIMES";
+    public static final String ACTION_MAP = "MAP";
+    public static final String ACTION_SETPICKUPS = "SETPICKUPS";
+    public static final String ACTION_SENDTOPROVIDERS = "SENDTOPROVIDERS";
+
 
 
     @Override
-    public WizardPageVO execute(Object action, Data data) throws Throwable {
+    public WizardPageVO execute(String action, Data data) throws Throwable {
         if (action == null) {
             return getInitialPage(data);
         } else {
-            Actions a = (Actions) action;
-            switch (a) {
-                case CHECKRETAINED:
+            switch (action) {
+                case ACTION_CHECKRETAINED:
                     return getRetainedBookings(data);
-                case CHECKFLIGHTTIMES:
+                case ACTION_CHECKFLIGHTTIMES:
                     break;
-                case MAP:
+                case ACTION_MAP:
                     break;
-                case SETPICKUPS:
+                case ACTION_SETPICKUPS:
                     break;
-                case SENDTOPROVIDERS:
+                case ACTION_SENDTOPROVIDERS:
                     break;
 
             }

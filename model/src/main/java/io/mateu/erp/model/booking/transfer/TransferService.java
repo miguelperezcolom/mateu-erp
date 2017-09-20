@@ -39,6 +39,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import sun.util.locale.BaseLocale;
 
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
@@ -586,6 +587,7 @@ public class TransferService extends Service implements WithTriggers {
             //m.put("pickupTime", getPickupTime());
             m.put("comment", "" + getComment());
             m.put("held", "" + isHeld());
+            m.put("cancelled", "" + isCancelled());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();
@@ -774,10 +776,12 @@ public class TransferService extends Service implements WithTriggers {
         d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getCity().getName():""));
         d.put("providers", getProviders());
         d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
+        d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
         d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
         d.put("transferType", "" + getTransferType());
         d.put("flight", getFlightNumber());
         d.put("flightDate", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MMM-dd")));
+        d.put("flightDate_es", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MMM-dd", new Locale("es", "ES"))));
         d.put("flightTime", getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         d.put("flightOriginOrDestination", getFlightOriginOrDestination());
         d.put("preferredVehicle", (getPreferredVehicle() != null)?getPreferredVehicle().getName():"");
@@ -874,6 +878,75 @@ public class TransferService extends Service implements WithTriggers {
         }
     }
 
+    @Action(name = "Send email to hotel")
+    public void sendEmailToHotel(UserData user, EntityManager em) throws Throwable {
+        if (getPickupTime() != null) {
+
+            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
+                TransferPoint p = getEffectivePickup();
+                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                    p = p.getAlternatePointForShuttle();
+                }
+                SendEmailTask t = new SendEmailTask();
+                t.setOffice(getOffice());
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setCc(getOffice().getEmailCC());
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setTo(getEffectivePickup().getEmail());
+                //t.run(em, em.find(User.class, user.getLogin()));
+                getTasks().add(t);
+                em.persist(t);
+                setPickupConfirmedByEmailToHotel(LocalDateTime.now());
+            }
+        }
+    }
+
+    @Action(name = "Send SMS")
+    public void sendSMS(UserData user, EntityManager em) throws Throwable {
+        if (getPickupTime() != null) {
+            long tel = 0;
+            try {
+                tel = Long.parseLong(getBooking().getTelephone().replaceAll("[\\(\\)\\+]", ""));
+            } catch (Exception e) {
+
+            }
+            if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
+                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
+                getTasks().add(t);
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                //t.run(em, em.find(User.class, user.getLogin()));
+                setPickupConfirmedBySMS(LocalDateTime.now());
+                em.persist(t);
+            }
+        }
+    }
+
+    @Action(name = "Test Email")
+    public void testEmail(UserData user, EntityManager em, @Parameter(name = "your email") String email) throws Throwable {
+        if (getPickupTime() != null) {
+
+            AppConfig appconfig = AppConfig.get(em);
+
+            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
+                TransferPoint p = getEffectivePickup();
+                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                    p = p.getAlternatePointForShuttle();
+                }
+                SendEmailTask t = new SendEmailTask();
+                t.setOffice(getOffice());
+                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setCc(getOffice().getEmailCC());
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setTo(email);
+                //t.run(em, em.find(User.class, user.getLogin()));
+                getTasks().add(t);
+                em.persist(t);
+                setPickupConfirmedByEmailToHotel(LocalDateTime.now());
+            }
+        }
+    }
 
     @Action(name = "Test SMS")
     public void testPickupTime(UserData user, EntityManager em, @Parameter(name = "mobile nr. (34628...)") String sms) throws Throwable {
