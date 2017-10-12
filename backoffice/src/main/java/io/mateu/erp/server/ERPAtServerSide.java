@@ -1,11 +1,15 @@
 package io.mateu.erp.server;
 
+import com.rabbitmq.jms.admin.RMQConnectionFactory;
+import com.rabbitmq.jms.admin.RMQDestination;
 import io.mateu.erp.model.authentication.Grant;
 import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.population.Populator;
+import io.mateu.erp.model.util.MiTopic;
+import io.mateu.erp.model.util.MiTopicConnectionFactory;
 import io.mateu.ui.core.server.Utils;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -14,7 +18,14 @@ import io.mateu.ui.core.server.SQLTransaction;
 import io.mateu.ui.core.server.ServerSideApp;
 import io.mateu.ui.core.shared.FileLocator;
 import io.mateu.ui.core.shared.UserData;
+import org.eclipse.jetty.jndi.NamingUtil;
 
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.naming.Reference;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.io.File;
@@ -25,6 +36,7 @@ import java.net.URL;
  * Created by miguel on 3/1/17.
  */
 public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp {
+
 
     private static long fileId;
 
@@ -108,9 +120,28 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
         return new FileLocator(id, temp.getName(), url.toString(), temp.getAbsolutePath());
     }
 
+    private static ConnectionFactory jmsConnectionFactory() {
+        RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
+        connectionFactory.setUsername("tester");
+        connectionFactory.setPassword("tester8912");
+        connectionFactory.setVirtualHost("/");
+        connectionFactory.setHost("quon.mateu.io");
+        return connectionFactory;
+    }
+
+    private static Destination jmsDestination() {
+        RMQDestination jmsDestination = new RMQDestination();
+        jmsDestination.setDestinationName("quo1");
+        jmsDestination.setAmqpExchangeName("jms.durable.topic");
+        jmsDestination.setAmqp(true);
+        //jmsDestination.setAmqpQueueName("quo2");
+        return jmsDestination;
+    }
+
     @Override
     public UserData authenticate(String login, String password)throws Throwable {
         if (login == null || "".equals(login.trim()) || password == null || "".equals(password.trim())) throw new Exception("Username and password are required");
+
 
         UserData d = new UserData();
         Helper.transact(new JPATransaction() {

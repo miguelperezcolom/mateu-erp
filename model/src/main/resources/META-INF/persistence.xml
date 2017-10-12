@@ -16,7 +16,110 @@
     -->
     <!-- Enables auto discovery of persistent classes, -->
     <!-- otherwise they must be listed using <class>  -->
-    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+        <class>io.mateu.erp.model.product.AbstractContract</class>
+        <class>io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer</class>
+        <class>io.mateu.erp.model.invoicing.AbstractInvoiceLine</class>
+        <class>io.mateu.erp.model.workflow.AbstractTask</class>
+        <class>io.mateu.erp.model.financials.Actor</class>
+        <class>io.mateu.erp.model.product.generic.Allotment</class>
+        <class>io.mateu.erp.model.financials.Amount</class>
+        <class>io.mateu.erp.model.config.AppConfig</class>
+        <class>io.mateu.erp.model.cms.Asset</class>
+        <class>io.mateu.erp.model.authentication.Audit</class>
+        <class>io.mateu.erp.model.authentication.AuthToken</class>
+        <class>io.mateu.erp.model.financials.BillingConcept</class>
+        <class>io.mateu.erp.model.product.hotel.Board</class>
+        <class>io.mateu.erp.model.product.hotel.BoardType</class>
+        <class>io.mateu.erp.model.product.hotel.offer.BoardUpgradeOffer</class>
+        <class>io.mateu.erp.model.booking.Booking</class>
+        <class>io.mateu.erp.model.invoicing.BookingInvoiceLine</class>
+        <class>io.mateu.erp.model.world.City</class>
+        <class>io.mateu.erp.model.world.Country</class>
+        <class>io.mateu.erp.model.financials.Currency</class>
+        <class>io.mateu.erp.model.product.DataSheet</class>
+        <class>io.mateu.erp.model.product.hotel.offer.DiscountOffer</class>
+        <class>io.mateu.erp.model.config.DummyDate</class>
+        <class>io.mateu.erp.model.product.hotel.offer.EarlyBookingOffer</class>
+        <class>io.mateu.erp.model.product.generic.Extra</class>
+        <class>io.mateu.erp.model.product.generic.ExtraPrice</class>
+        <class>io.mateu.erp.model.booking.generic.ExtraPriceDetail</class>
+        <class>io.mateu.erp.model.product.Feature</class>
+        <class>io.mateu.erp.model.product.FeatureGroup</class>
+        <class>io.mateu.erp.model.common.File</class>
+        <class>io.mateu.erp.model.financials.FinancialAgent</class>
+        <class>io.mateu.erp.model.product.hotel.offer.FreeChildrenOffer</class>
+        <class>io.mateu.erp.model.product.generic.Contract</class>
+        <class>io.mateu.erp.model.product.generic.Price</class>
+        <class>io.mateu.erp.model.invoicing.GenericInvoiceLine</class>
+        <class>io.mateu.erp.model.booking.generic.GenericService</class>
+        <class>io.mateu.erp.model.authentication.Grant</class>
+        <class>io.mateu.erp.model.invoicing.HeaderInvoiceLine</class>
+        <class>io.mateu.erp.model.product.hotel.Hotel</class>
+        <class>io.mateu.erp.model.product.hotel.HotelCategory</class>
+        <class>io.mateu.erp.model.product.hotel.contracting.HotelContract</class>
+        <class>io.mateu.erp.model.product.hotel.StopSales</class>
+        <class>io.mateu.erp.model.product.FeatureValue</class>
+        <class>io.mateu.erp.model.thirdParties.Integration</class>
+        <class>io.mateu.erp.model.product.hotel.Inventory</class>
+        <class>io.mateu.erp.model.product.hotel.InventoryLine</class>
+        <class>io.mateu.erp.model.product.hotel.InventoryOperation</class>
+        <class>io.mateu.erp.model.invoicing.Invoice</class>
+        <class>io.mateu.erp.model.multilanguage.Language</class>
+        <class>io.mateu.erp.model.multilanguage.Literal</class>
+        <class>io.mateu.erp.model.product.generic.MinimumStay</class>
+        <class>io.mateu.erp.model.organization.Office</class>
+        <class>io.mateu.erp.model.cms.Page</class>
+        <class>io.mateu.erp.model.authentication.Permission</class>
+        <class>io.mateu.erp.model.organization.PointOfSale</class>
+        <class>io.mateu.erp.model.booking.generic.PriceDetail</class>
+        <class>io.mateu.erp.model.booking.generic.PriceLine</class>
+        <class>io.mateu.erp.model.product.hotel.offer.PriceOffer</class>
+        <class>io.mateu.erp.model.product.generic.Product</class>
+        <class>io.mateu.erp.model.booking.PurchaseOrder</class>
+        <class>io.mateu.erp.model.product.generic.Release</class>
+        <class>io.mateu.erp.model.product.hotel.Room</class>
+        <class>io.mateu.erp.model.product.hotel.RoomType</class>
+        <class>io.mateu.erp.model.product.hotel.offer.RoomUpgradeOffer</class>
+        <class>io.mateu.erp.model.workflow.SendEmailTask</class>
+        <class>io.mateu.erp.model.workflow.SendPurchaseOrdersTask</class>
+        <class>io.mateu.erp.model.booking.Service</class>
+        <class>io.mateu.erp.model.product.generic.Shop</class>
+        <class>io.mateu.erp.model.importing.ShuttleDirectAutoImport</class>
+        <class>io.mateu.erp.model.importing.ShuttleDirectImportTask</class>
+        <class>io.mateu.erp.model.workflow.SMSTask</class>
+        <class>io.mateu.erp.model.world.State</class>
+        <class>io.mateu.erp.model.product.hotel.offer.StayAndPayOffer</class>
+        <class>io.mateu.erp.model.product.generic.StopSales</class>
+        <class>io.mateu.erp.model.product.hotel.StopSales</class>
+        <class>io.mateu.erp.model.product.hotel.StopSalesLine</class>
+        <class>io.mateu.erp.model.product.hotel.StopSalesOperation</class>
+        <class>io.mateu.erp.model.invoicing.SummaryInvoiceLine</class>
+        <class>io.mateu.erp.model.config.Template</class>
+        <class>io.mateu.erp.model.invoicing.TextLine</class>
+        <class>io.mateu.erp.model.importing.TransferAutoImport</class>
+        <class>io.mateu.erp.model.importing.TransferBookingRequest</class>
+        <class>io.mateu.erp.model.product.transfer.Contract</class>
+        <class>io.mateu.erp.model.product.transfer.Price</class>
+        <class>io.mateu.erp.model.product.transfer.Zone</class>
+        <class>io.mateu.erp.model.importing.TransferImportTask</class>
+        <class>io.mateu.erp.model.product.transfer.TransferPoint</class>
+        <class>io.mateu.erp.model.booking.transfer.TransferPointMapping</class>
+        <class>io.mateu.erp.model.booking.transfer.TransferService</class>
+        <class>io.mateu.erp.model.authentication.User</class>
+        <class>io.mateu.erp.model.product.transfer.Vehicle</class>
+        <class>io.mateu.erp.model.cms.Website</class>
+        <class>io.mateu.erp.model.world.Zone</class>
+
+        <class>io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter</class>
+        <class>io.mateu.erp.model.product.hotel.contracting.HotelContractPhotoConverter</class>
+        <class>io.mateu.erp.model.product.hotel.offer.EarlyBookingOfferLineConverter</class>
+        <class>io.mateu.erp.model.product.hotel.offer.FarePerRoomConverter</class>
+
+        <class>io.mateu.erp.model.util.LocalDateAttributeConverter</class>
+        <class>io.mateu.erp.model.util.LocalDateTimeAttributeConverter</class>
+
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
 
 
     <!--
@@ -45,7 +148,7 @@
 
 
         <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
-        <property name="javax.persistence.jdbc.url"    value="jdbc:postgresql://localhost:5432/mateuerp" />
+        <property name="xxjavax.persistence.jdbc.url"    value="jdbc:postgresql://localhost:5432/mateuerp" />
         <property name="javax.persistence.jdbc.user" value="postgres" />
         <property name="javax.persistence.jdbc.password" value="aa" />
 
@@ -57,6 +160,14 @@
         <property name="eclipselink.ddl-generation.output-mode" value="database" />
         <property name="eclipselink.jdbc.uppercase-columns" value="true"/>
         <property name="eclipselink.jpa.uppercase-column-names" value="true"/>
+
+
+
+        <property name="eclipselink.cache.coordination.protocol" value="jms"/>
+        <property name="eclipselink.cache.coordination.jms.topic" value="java:comp/env/jms/quo1"/>
+        <property name="eclipselink.cache.coordination.jms.factory" value="java:comp/env/jms/mateu"/>
+
+
 
         <property name="eclipselink.target-database" value="io.mateu.erp.model.util.MiPostgreSQLPlatform"/>
     </properties>

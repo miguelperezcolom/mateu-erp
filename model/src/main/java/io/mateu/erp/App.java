@@ -1,7 +1,7 @@
 package io.mateu.erp;
 
 /**
- * Hello world!
+ * Hello portfolio!
  *
  */
 public class App 

@@ -28,5 +28,4 @@ public class Currency {
     private String name;
 
     private int decimals;
-
 }

@@ -13,6 +13,11 @@ import java.util.List;
  */
 public class ManagementModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "Management";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 

@@ -49,7 +49,7 @@ public class TransferPointMapping implements WithTriggers {
     @Action(name = "Save and next", callOnEnterKeyPressed = true, addAsButton = true)
     public Data saveAndNext(Data _data) throws Throwable {
         ERPServiceImpl s = new ERPServiceImpl();
-        s.set("", TransferPointMapping.class.getName(), _data);
+        s.set(TransferPointMapping.class.getName(), _data);
 
         Data[] data = new Data[1];
 
@@ -60,7 +60,7 @@ public class TransferPointMapping implements WithTriggers {
                 if (l.size() == 0) throw new Exception("No more pending mappings");
                 else {
                     TransferPointMapping m = l.get(0);
-                    data[0] = s.get("", TransferPointMapping.class.getName(), m.getId());
+                    data[0] = s.get(TransferPointMapping.class.getName(), m.getId());
                 }
             }
         });

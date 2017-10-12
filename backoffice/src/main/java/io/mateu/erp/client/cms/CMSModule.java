@@ -16,6 +16,11 @@ import java.util.List;
  */
 public class CMSModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "CMS";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 

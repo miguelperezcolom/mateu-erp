@@ -1,0 +1,1435 @@
+{
+  "_actions" :[]
+, "_editorform" :{
+  "_actions" :[]
+, "_rawtitle" :"Hotel contract"
+, "_fields" :[{
+    "_align" :"left"
+  , "_type" :"object"
+  , "_id" :"audit"
+  , "_qlname" :"audit"
+  , "_metadata" :{
+      "_actions" :[]
+    , "_rawtitle" :"Audit"
+    , "_fields" :[{
+        "_align" :"left"
+      , "_type" :"entity"
+      , "_leftjoinql" :"login"
+      , "_ql" :"select x.login, x.name from io.mateu.erp.model.authentication.User x order by x.name"
+      , "_id" :"createdBy"
+      , "_leftjoin" :"createdBy"
+      , "_qlname" :"createdBy.name"
+      , "_entityClassName" :"io.mateu.erp.model.authentication.User"
+      , "_width" :200
+      , "_label" :"Created by"
+      }, {
+        "_align" :"left"
+      , "_type" :"datetime"
+      , "_id" :"created"
+      , "_qlname" :"created"
+      , "_width" :200
+      , "_label" :"Created"
+      }, {
+        "_align" :"left"
+      , "_type" :"entity"
+      , "_leftjoinql" :"login"
+      , "_ql" :"select x.login, x.name from io.mateu.erp.model.authentication.User x order by x.name"
+      , "_id" :"modifiedBy"
+      , "_leftjoin" :"modifiedBy"
+      , "_qlname" :"modifiedBy.name"
+      , "_entityClassName" :"io.mateu.erp.model.authentication.User"
+      , "_width" :200
+      , "_label" :"Modified by"
+      }, {
+        "_align" :"left"
+      , "_type" :"datetime"
+      , "_id" :"modified"
+      , "_qlname" :"modified"
+      , "_width" :200
+      , "_label" :"Modified"
+      }]
+    }
+  , "_width" :200
+  , "_label" :"Audit"
+  }, {
+    "_starttab" :"General"
+  , "_align" :"left"
+  , "_required" :true
+  , "_type" :"string"
+  , "_id" :"title"
+  , "_qlname" :"title"
+  , "_width" :200
+  , "_label" :"Title"
+  }, {
+    "_align" :"left"
+  , "_values" :[{
+      "text" :"SALE"
+    , "value" :"SALE"
+    }, {
+      "text" :"PURCHASE"
+    , "value" :"PURCHASE"
+    }]
+  , "_required" :true
+  , "_type" :"enum"
+  , "_leftjoinql" :"type"
+  , "_id" :"type"
+  , "_qlname" :"type"
+  , "_enumtype" :"io.mateu.erp.model.product.ContractType"
+  , "_width" :200
+  , "_label" :"Type"
+  }, {
+    "_align" :"left"
+  , "_required" :true
+  , "_type" :"entity"
+  , "_ql" :"select x.code, x.name from BillingConcept x order by x.name"
+  , "_id" :"billingConcept"
+  , "_qlname" :"billingConcept.name"
+  , "_entityClassName" :"io.mateu.erp.model.financials.BillingConcept"
+  , "_width" :200
+  , "_label" :"Billing concept"
+  }, {
+    "_align" :"left"
+  , "_type" :"boolean"
+  , "_id" :"VATIncluded"
+  , "_qlname" :"VATIncluded"
+  , "_width" :60
+  , "_label" :"Vat included"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_required" :true
+  , "_type" :"date"
+  , "_id" :"validFrom"
+  , "_qlname" :"validFrom"
+  , "_width" :122
+  , "_label" :"Valid from"
+  }, {
+    "_align" :"left"
+  , "_required" :true
+  , "_type" :"date"
+  , "_id" :"validTo"
+  , "_qlname" :"validTo"
+  , "_width" :122
+  , "_label" :"Valid to"
+  }, {
+    "_align" :"left"
+  , "_type" :"date"
+  , "_id" :"bookingWindowFrom"
+  , "_qlname" :"bookingWindowFrom"
+  , "_width" :122
+  , "_label" :"Booking window from"
+  }, {
+    "_align" :"left"
+  , "_type" :"date"
+  , "_id" :"bookingWindowTo"
+  , "_qlname" :"bookingWindowTo"
+  , "_width" :122
+  , "_label" :"Booking window to"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_type" :"textarea"
+  , "_id" :"specialTerms"
+  , "_qlname" :"specialTerms"
+  , "_width" :200
+  , "_label" :"Special terms"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_required" :true
+  , "_type" :"entity"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.financials.Actor x order by x.name"
+  , "_id" :"supplier"
+  , "_qlname" :"supplier.name"
+  , "_entityClassName" :"io.mateu.erp.model.financials.Actor"
+  , "_width" :200
+  , "_label" :"Supplier"
+  }, {
+    "_align" :"left"
+  , "_type" :"list"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.financials.Actor x order by x.name"
+  , "_id" :"targets"
+  , "_qlname" :"targets"
+  , "_entityClassName" :"io.mateu.erp.model.financials.Actor"
+  , "_width" :200
+  , "_label" :"Targets"
+  }, {
+    "_align" :"left"
+  , "_type" :"string"
+  , "_id" :"privateComments"
+  , "_qlname" :"privateComments"
+  , "_width" :200
+  , "_label" :"Private comments"
+  }, {
+    "_starttab" :"Related to"
+  , "_align" :"left"
+  , "_type" :"list"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.product.hotel.Hotel x order by x.name"
+  , "_id" :"hotels"
+  , "_qlname" :"hotels"
+  , "_entityClassName" :"io.mateu.erp.model.product.hotel.Hotel"
+  , "_width" :200
+  , "_label" :"Hotels"
+  }, {
+    "_align" :"left"
+  , "_type" :"list"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer x order by x.name"
+  , "_id" :"offers"
+  , "_qlname" :"offers"
+  , "_entityClassName" :"io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer"
+  , "_width" :200
+  , "_label" :"Offers"
+  }, {
+    "_starttab" :"Terms"
+  , "_align" :"left"
+  , "_type" :"object"
+  , "_id" :"terms"
+  , "_qlname" :"terms"
+  , "_metadata" :{
+      "_actions" :[]
+    , "_rawtitle" :"Hotel contract photo"
+    , "_fields" :[{
+        "_align" :"left"
+      , "_type" :"string"
+      , "_id" :"currencyIsoCode"
+      , "_qlname" :"currencyIsoCode"
+      , "_width" :200
+      , "_label" :"Currency iso code"
+      }, {
+        "_align" :"left"
+      , "_values" :[{
+          "text" :"RETAIL"
+        , "value" :"RETAIL"
+        }, {
+          "text" :"NET"
+        , "value" :"NET"
+        }]
+      , "_type" :"enum"
+      , "_leftjoinql" :"ratesType"
+      , "_id" :"ratesType"
+      , "_qlname" :"ratesType"
+      , "_enumtype" :"io.mateu.erp.model.product.hotel.RatesType"
+      , "_width" :200
+      , "_label" :"Rates type"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"value"
+        , "_qlname" :"value"
+        , "_width" :80
+        , "_label" :"Value"
+        }]
+      , "_id" :"commission"
+      , "_qlname" :"commission"
+      , "_width" :200
+      , "_label" :"Commission"
+      }, {
+        "_align" :"left"
+      , "_type" :"boolean"
+      , "_id" :"mandatoryRates"
+      , "_qlname" :"mandatoryRates"
+      , "_width" :60
+      , "_label" :"Mandatory rates"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"maxPaxPerBooking"
+      , "_qlname" :"maxPaxPerBooking"
+      , "_width" :80
+      , "_label" :"Max pax per booking"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"maxRoomsPerBooking"
+      , "_qlname" :"maxRoomsPerBooking"
+      , "_width" :80
+      , "_label" :"Max rooms per booking"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"maxCheckoutRelease"
+      , "_qlname" :"maxCheckoutRelease"
+      , "_width" :80
+      , "_label" :"Max checkout release"
+      }, {
+        "_align" :"left"
+      , "_type" :"boolean"
+      , "_id" :"zeroPricesAllowed"
+      , "_qlname" :"zeroPricesAllowed"
+      , "_width" :60
+      , "_label" :"Zero prices allowed"
+      }, {
+        "_align" :"left"
+      , "_type" :"string"
+      , "_id" :"specialTerms"
+      , "_qlname" :"specialTerms"
+      , "_width" :200
+      , "_label" :"Special terms"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"childStartAge"
+      , "_qlname" :"childStartAge"
+      , "_width" :80
+      , "_label" :"Child start age"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"juniorStartAge"
+      , "_qlname" :"juniorStartAge"
+      , "_width" :80
+      , "_label" :"Junior start age"
+      }, {
+        "_align" :"right"
+      , "_type" :"integer"
+      , "_id" :"adultStartAge"
+      , "_qlname" :"adultStartAge"
+      , "_width" :80
+      , "_label" :"Adult start age"
+      }, {
+        "_align" :"left"
+      , "_type" :"boolean"
+      , "_id" :"youngestFirst"
+      , "_qlname" :"youngestFirst"
+      , "_width" :60
+      , "_label" :"Youngest first"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"string"
+        , "_id" :"name"
+        , "_qlname" :"name"
+        , "_width" :200
+        , "_label" :"Name"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"left"
+          , "_type" :"date"
+          , "_id" :"start"
+          , "_qlname" :"start"
+          , "_width" :122
+          , "_label" :"Start"
+          }, {
+            "_align" :"left"
+          , "_type" :"date"
+          , "_id" :"end"
+          , "_qlname" :"end"
+          , "_width" :122
+          , "_label" :"End"
+          }]
+        , "_id" :"dates"
+        , "_qlname" :"dates"
+        , "_width" :200
+        , "_label" :"Dates"
+        }]
+      , "_id" :"fares"
+      , "_qlname" :"fares"
+      , "_width" :200
+      , "_label" :"Fares"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"nights"
+        , "_qlname" :"nights"
+        , "_width" :80
+        , "_label" :"Nights"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"onRequest"
+        , "_qlname" :"onRequest"
+        , "_width" :60
+        , "_label" :"On request"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"supplementPercent"
+        , "_qlname" :"supplementPercent"
+        , "_width" :80
+        , "_label" :"Supplement percent"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"supplementValue"
+        , "_qlname" :"supplementValue"
+        , "_width" :80
+        , "_label" :"Supplement value"
+        }, {
+          "_align" :"left"
+        , "_values" :[{
+            "text" :"PAX"
+          , "value" :"PAX"
+          }, {
+            "text" :"ROOM"
+          , "value" :"ROOM"
+          }]
+        , "_type" :"enum"
+        , "_leftjoinql" :"per"
+        , "_id" :"per"
+        , "_qlname" :"per"
+        , "_enumtype" :"io.mateu.erp.model.product.hotel.SupplementPer"
+        , "_width" :200
+        , "_label" :"Per"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"rooms"
+        , "_qlname" :"rooms"
+        , "_width" :200
+        , "_label" :"Rooms"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"boards"
+        , "_qlname" :"boards"
+        , "_width" :200
+        , "_label" :"Boards"
+        }]
+      , "_id" :"minimumStayRules"
+      , "_qlname" :"minimumStayRules"
+      , "_width" :200
+      , "_label" :"Minimum stay rules"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"release"
+        , "_qlname" :"release"
+        , "_width" :80
+        , "_label" :"Release"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"rooms"
+        , "_qlname" :"rooms"
+        , "_width" :200
+        , "_label" :"Rooms"
+        }]
+      , "_id" :"releaseRules"
+      , "_qlname" :"releaseRules"
+      , "_width" :200
+      , "_label" :"Release rules"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"onRequest"
+        , "_qlname" :"onRequest"
+        , "_width" :60
+        , "_label" :"On request"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"checkin"
+        , "_qlname" :"checkin"
+        , "_width" :60
+        , "_label" :"Checkin"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"checkout"
+        , "_qlname" :"checkout"
+        , "_width" :60
+        , "_label" :"Checkout"
+        }]
+      , "_id" :"checkinDaysRules"
+      , "_qlname" :"checkinDaysRules"
+      , "_width" :200
+      , "_label" :"Checkin days rules"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"optional"
+        , "_qlname" :"optional"
+        , "_width" :60
+        , "_label" :"Optional"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"affectedByOffers"
+        , "_qlname" :"affectedByOffers"
+        , "_width" :60
+        , "_label" :"Affected by offers"
+        }, {
+          "_align" :"left"
+        , "_type" :"string"
+        , "_id" :"description"
+        , "_qlname" :"description"
+        , "_width" :200
+        , "_label" :"Description"
+        }, {
+          "_align" :"left"
+        , "_values" :[{
+            "text" :"PAX"
+          , "value" :"PAX"
+          }, {
+            "text" :"ROOM"
+          , "value" :"ROOM"
+          }]
+        , "_type" :"enum"
+        , "_leftjoinql" :"per"
+        , "_id" :"per"
+        , "_qlname" :"per"
+        , "_enumtype" :"io.mateu.erp.model.product.hotel.SupplementPer"
+        , "_width" :200
+        , "_label" :"Per"
+        }, {
+          "_align" :"left"
+        , "_values" :[{
+            "text" :"NIGHT"
+          , "value" :"NIGHT"
+          }, {
+            "text" :"BOOKING"
+          , "value" :"BOOKING"
+          }]
+        , "_type" :"enum"
+        , "_leftjoinql" :"scope"
+        , "_id" :"scope"
+        , "_qlname" :"scope"
+        , "_enumtype" :"io.mateu.erp.model.product.hotel.SupplementScope"
+        , "_width" :200
+        , "_label" :"Scope"
+        }, {
+          "_align" :"left"
+        , "_type" :"boolean"
+        , "_id" :"onRequest"
+        , "_qlname" :"onRequest"
+        , "_width" :60
+        , "_label" :"On request"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"percent"
+        , "_qlname" :"percent"
+        , "_width" :80
+        , "_label" :"Percent"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"value"
+        , "_qlname" :"value"
+        , "_width" :80
+        , "_label" :"Value"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"providerId"
+        , "_qlname" :"providerId"
+        , "_width" :80
+        , "_label" :"Provider id"
+        }, {
+          "_align" :"left"
+        , "_type" :"string"
+        , "_id" :"invoicingKey"
+        , "_qlname" :"invoicingKey"
+        , "_width" :200
+        , "_label" :"Invoicing key"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"rooms"
+        , "_qlname" :"rooms"
+        , "_width" :200
+        , "_label" :"Rooms"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"boards"
+        , "_qlname" :"boards"
+        , "_width" :200
+        , "_label" :"Boards"
+        }]
+      , "_id" :"supplements"
+      , "_qlname" :"supplements"
+      , "_width" :200
+      , "_label" :"Supplements"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"date"
+        , "_qlname" :"date"
+        , "_width" :122
+        , "_label" :"Date"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"pricePerPax"
+        , "_qlname" :"pricePerPax"
+        , "_width" :80
+        , "_label" :"Price per pax"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"POSITIVE_INFINITY"
+          , "_qlname" :"POSITIVE_INFINITY"
+          , "_width" :80
+          , "_label" :"Positive _ infinity"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"NEGATIVE_INFINITY"
+          , "_qlname" :"NEGATIVE_INFINITY"
+          , "_width" :80
+          , "_label" :"Negative _ infinity"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"NaN"
+          , "_qlname" :"NaN"
+          , "_width" :80
+          , "_label" :"Na n"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"MIN_NORMAL"
+          , "_qlname" :"MIN_NORMAL"
+          , "_width" :80
+          , "_label" :"Min _ normal"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"MAX_EXPONENT"
+          , "_qlname" :"MAX_EXPONENT"
+          , "_width" :80
+          , "_label" :"Max _ exponent"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"MIN_EXPONENT"
+          , "_qlname" :"MIN_EXPONENT"
+          , "_width" :80
+          , "_label" :"Min _ exponent"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"double"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"childDiscounts"
+        , "_qlname" :"childDiscounts"
+        , "_width" :200
+        , "_label" :"Child discounts"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"boards"
+        , "_qlname" :"boards"
+        , "_width" :200
+        , "_label" :"Boards"
+        }]
+      , "_id" :"galas"
+      , "_qlname" :"galas"
+      , "_width" :200
+      , "_label" :"Galas"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"room"
+        , "_qlname" :"room"
+        , "_width" :80
+        , "_label" :"Room"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"quantity"
+        , "_qlname" :"quantity"
+        , "_width" :80
+        , "_label" :"Quantity"
+        }]
+      , "_id" :"allotment"
+      , "_qlname" :"allotment"
+      , "_width" :200
+      , "_label" :"Allotment"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"start"
+        , "_qlname" :"start"
+        , "_width" :122
+        , "_label" :"Start"
+        }, {
+          "_align" :"left"
+        , "_type" :"date"
+        , "_id" :"end"
+        , "_qlname" :"end"
+        , "_width" :122
+        , "_label" :"End"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"release"
+        , "_qlname" :"release"
+        , "_width" :80
+        , "_label" :"Release"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"amount"
+        , "_qlname" :"amount"
+        , "_width" :80
+        , "_label" :"Amount"
+        }, {
+          "_align" :"right"
+        , "_type" :"double"
+        , "_id" :"percent"
+        , "_qlname" :"percent"
+        , "_width" :80
+        , "_label" :"Percent"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"firstNights"
+        , "_qlname" :"firstNights"
+        , "_width" :80
+        , "_label" :"First nights"
+        }, {
+          "_align" :"left"
+        , "_type" :"grid"
+        , "_cols" :[{
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MIN_VALUE"
+          , "_qlname" :"MIN_VALUE"
+          , "_width" :80
+          , "_label" :"Min _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"MAX_VALUE"
+          , "_qlname" :"MAX_VALUE"
+          , "_width" :80
+          , "_label" :"Max _ value"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"value"
+          , "_qlname" :"value"
+          , "_width" :80
+          , "_label" :"Value"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"SIZE"
+          , "_qlname" :"SIZE"
+          , "_width" :80
+          , "_label" :"Size"
+          }, {
+            "_align" :"right"
+          , "_type" :"integer"
+          , "_id" :"BYTES"
+          , "_qlname" :"BYTES"
+          , "_width" :80
+          , "_label" :"Bytes"
+          }, {
+            "_align" :"right"
+          , "_type" :"long"
+          , "_id" :"serialVersionUID"
+          , "_qlname" :"serialVersionUID"
+          , "_width" :80
+          , "_label" :"Serial version uid"
+          }]
+        , "_id" :"rooms"
+        , "_qlname" :"rooms"
+        , "_width" :200
+        , "_label" :"Rooms"
+        }]
+      , "_id" :"cancellationRules"
+      , "_qlname" :"cancellationRules"
+      , "_width" :200
+      , "_label" :"Cancellation rules"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"hash"
+        , "_qlname" :"hash"
+        , "_width" :80
+        , "_label" :"Hash"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"serialVersionUID"
+        , "_qlname" :"serialVersionUID"
+        , "_width" :80
+        , "_label" :"Serial version uid"
+        }]
+      , "_id" :"clauses"
+      , "_qlname" :"clauses"
+      , "_width" :200
+      , "_label" :"Clauses"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"MIN_VALUE"
+        , "_qlname" :"MIN_VALUE"
+        , "_width" :80
+        , "_label" :"Min _ value"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"MAX_VALUE"
+        , "_qlname" :"MAX_VALUE"
+        , "_width" :80
+        , "_label" :"Max _ value"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"value"
+        , "_qlname" :"value"
+        , "_width" :80
+        , "_label" :"Value"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"SIZE"
+        , "_qlname" :"SIZE"
+        , "_width" :80
+        , "_label" :"Size"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"BYTES"
+        , "_qlname" :"BYTES"
+        , "_width" :80
+        , "_label" :"Bytes"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"serialVersionUID"
+        , "_qlname" :"serialVersionUID"
+        , "_width" :80
+        , "_label" :"Serial version uid"
+        }]
+      , "_id" :"rooms"
+      , "_qlname" :"rooms"
+      , "_width" :200
+      , "_label" :"Rooms"
+      }, {
+        "_align" :"left"
+      , "_type" :"grid"
+      , "_cols" :[{
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"MIN_VALUE"
+        , "_qlname" :"MIN_VALUE"
+        , "_width" :80
+        , "_label" :"Min _ value"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"MAX_VALUE"
+        , "_qlname" :"MAX_VALUE"
+        , "_width" :80
+        , "_label" :"Max _ value"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"value"
+        , "_qlname" :"value"
+        , "_width" :80
+        , "_label" :"Value"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"SIZE"
+        , "_qlname" :"SIZE"
+        , "_width" :80
+        , "_label" :"Size"
+        }, {
+          "_align" :"right"
+        , "_type" :"integer"
+        , "_id" :"BYTES"
+        , "_qlname" :"BYTES"
+        , "_width" :80
+        , "_label" :"Bytes"
+        }, {
+          "_align" :"right"
+        , "_type" :"long"
+        , "_id" :"serialVersionUID"
+        , "_qlname" :"serialVersionUID"
+        , "_width" :80
+        , "_label" :"Serial version uid"
+        }]
+      , "_id" :"boards"
+      , "_qlname" :"boards"
+      , "_width" :200
+      , "_label" :"Boards"
+      }]
+    }
+  , "_width" :200
+  , "_label" :"Terms"
+  }]
+}
+, "_rawtitle" :"Hotel contracts"
+, "_searchform" :{
+  "_columns" :[{
+    "_align" :"right"
+  , "_type" :"id"
+  , "_id" :"id"
+  , "_qlname" :"id"
+  , "_width" :80
+  , "_label" :"Id"
+  }, {
+    "_starttab" :"General"
+  , "_order" :0
+  , "_align" :"left"
+  , "_ordercol" :"title"
+  , "_required" :true
+  , "_type" :"string"
+  , "_id" :"title"
+  , "_qlname" :"title"
+  , "_width" :200
+  , "_label" :"Title"
+  }, {
+    "_align" :"left"
+  , "_values" :[{
+      "text" :"SALE"
+    , "value" :"SALE"
+    }, {
+      "text" :"PURCHASE"
+    , "value" :"PURCHASE"
+    }]
+  , "_required" :true
+  , "_type" :"enum"
+  , "_leftjoinql" :"type"
+  , "_id" :"type"
+  , "_qlname" :"type"
+  , "_enumtype" :"io.mateu.erp.model.product.ContractType"
+  , "_width" :200
+  , "_label" :"Type"
+  }, {
+    "_align" :"left"
+  , "_required" :true
+  , "_type" :"entity"
+  , "_ql" :"select x.code, x.name from BillingConcept x order by x.name"
+  , "_id" :"billingConcept"
+  , "_qlname" :"billingConcept.name"
+  , "_entityClassName" :"io.mateu.erp.model.financials.BillingConcept"
+  , "_width" :200
+  , "_label" :"Billing concept"
+  }, {
+    "_align" :"left"
+  , "_type" :"boolean"
+  , "_id" :"VATIncluded"
+  , "_qlname" :"VATIncluded"
+  , "_width" :60
+  , "_label" :"Vat included"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_required" :true
+  , "_type" :"date"
+  , "_id" :"validFrom"
+  , "_qlname" :"validFrom"
+  , "_width" :122
+  , "_label" :"Valid from"
+  }, {
+    "_align" :"left"
+  , "_required" :true
+  , "_type" :"date"
+  , "_id" :"validTo"
+  , "_qlname" :"validTo"
+  , "_width" :122
+  , "_label" :"Valid to"
+  }, {
+    "_align" :"left"
+  , "_type" :"date"
+  , "_id" :"bookingWindowFrom"
+  , "_qlname" :"bookingWindowFrom"
+  , "_width" :122
+  , "_label" :"Booking window from"
+  }, {
+    "_align" :"left"
+  , "_type" :"date"
+  , "_id" :"bookingWindowTo"
+  , "_qlname" :"bookingWindowTo"
+  , "_width" :122
+  , "_label" :"Booking window to"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_type" :"textarea"
+  , "_id" :"specialTerms"
+  , "_qlname" :"specialTerms"
+  , "_width" :200
+  , "_label" :"Special terms"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_required" :true
+  , "_type" :"entity"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.financials.Actor x order by x.name"
+  , "_id" :"supplier"
+  , "_qlname" :"supplier.name"
+  , "_entityClassName" :"io.mateu.erp.model.financials.Actor"
+  , "_width" :200
+  , "_label" :"Supplier"
+  }, {
+    "_align" :"left"
+  , "_type" :"string"
+  , "_id" :"privateComments"
+  , "_qlname" :"privateComments"
+  , "_width" :200
+  , "_label" :"Private comments"
+  }, {
+    "_align" :"right"
+  , "_type" :"id"
+  , "_id" :"id"
+  , "_qlname" :"id"
+  , "_width" :80
+  , "_label" :"Id"
+  }]
+, "_fields" :[{
+    "_starttab" :"General"
+  , "_align" :"left"
+  , "_required" :true
+  , "_type" :"string"
+  , "_id" :"title"
+  , "_qlname" :"title"
+  , "_width" :200
+  , "_label" :"Title"
+  }, {
+    "_align" :"left"
+  , "_values" :[{
+      "text" :"SALE"
+    , "value" :"SALE"
+    }, {
+      "text" :"PURCHASE"
+    , "value" :"PURCHASE"
+    }]
+  , "_required" :true
+  , "_type" :"enum"
+  , "_leftjoinql" :"type"
+  , "_id" :"type"
+  , "_qlname" :"type"
+  , "_enumtype" :"io.mateu.erp.model.product.ContractType"
+  , "_width" :200
+  , "_label" :"Type"
+  }, {
+    "_align" :"left"
+  , "_startsline" :true
+  , "_required" :true
+  , "_type" :"entity"
+  , "_ql" :"select x.id, x.name from io.mateu.erp.model.financials.Actor x order by x.name"
+  , "_id" :"supplier"
+  , "_qlname" :"supplier.id"
+  , "_entityClassName" :"io.mateu.erp.model.financials.Actor"
+  , "_width" :200
+  , "_label" :"Supplier"
+  }]
+}
+, "_entityClassName" :"io.mateu.erp.model.product.hotel.contracting.HotelContract"
+}

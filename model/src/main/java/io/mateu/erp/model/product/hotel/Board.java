@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-public class Board {
+public class Board implements IBoard {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +25,16 @@ public class Board {
     @ManyToOne
     BoardType type;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal description;
+
+    @Override
+    public String getCode() {
+        return getType().getCode();
+    }
+
+    @Override
+    public String getName() {
+        return getType().getName().getEs();
+    }
 }

@@ -20,6 +20,11 @@ import java.util.List;
  */
 public class FinancialModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "Finnancial";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 

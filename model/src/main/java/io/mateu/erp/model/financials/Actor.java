@@ -1,14 +1,18 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * holder for customers (e.g. a touroperator, a travel agency, ...)
@@ -58,6 +62,10 @@ public class Actor {
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;
 
+
+    @Ignore
+    @ManyToMany
+    private List<Integration> integrations = new ArrayList<>();
 
     @Override
     public String toString() {

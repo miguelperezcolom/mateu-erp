@@ -15,6 +15,11 @@ import java.util.List;
  */
 public class AdminModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "Admin";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
@@ -34,6 +39,13 @@ public class AdminModule extends AbstractModule {
             @Override
             public void run() {
                 ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.authentication.User", new MDDCallback());
+            }
+        });
+
+        m.add(new AbstractAction("Auth tokens") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.authentication.AuthToken", new MDDCallback());
             }
         });
 

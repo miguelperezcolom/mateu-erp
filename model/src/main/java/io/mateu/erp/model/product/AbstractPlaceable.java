@@ -1,6 +1,8 @@
 package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.world.City;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -8,7 +10,10 @@ import javax.persistence.ManyToOne;
 /**
  * Created by miguel on 16/10/16.
  */
-@Entity
+
+
+@Getter
+@Setter
 public class AbstractPlaceable extends AbstractItem {
 
     @ManyToOne

@@ -1,6 +1,7 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Required;
@@ -43,6 +44,10 @@ public class City {
     @OneToMany(mappedBy = "city")
     @Ignored
     private List<TransferPoint> transferPoints = new ArrayList<>();
+
+    @OneToMany(mappedBy = "city")
+    @Ignored
+    private List<Hotel> hotels = new ArrayList<>();
 
     @Override
     public String toString() {

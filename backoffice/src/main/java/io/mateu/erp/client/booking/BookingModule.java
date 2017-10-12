@@ -17,6 +17,11 @@ import java.util.List;
  */
 public class BookingModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "Booking";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 

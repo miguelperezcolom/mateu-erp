@@ -27,6 +27,7 @@ public class AbstractContract {
     @Embedded
     private Audit audit;
 
+    @Tab("General")
     @Required
     @SearchFilter
     private String title;
@@ -65,4 +66,6 @@ public class AbstractContract {
 
     @Ignored
     private double averagePrice;
+
+    private String privateComments;
 }

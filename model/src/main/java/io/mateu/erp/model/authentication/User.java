@@ -1,14 +1,21 @@
 package io.mateu.erp.model.authentication;
 
+import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.common.File;
+import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.persistence.Table;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 /**
  * holder for users of our erp. It can be an internal user or a user created for a customer or a supplier
@@ -60,6 +67,19 @@ public class User implements WithTriggers {
     private File photo;
 
 
+    @Action(name = "Create token")
+    public void createToken(EntityManager em, @Required Actor a) throws IOException {
+        AuthToken t = new AuthToken();
+        em.persist(t);
+        t.setActor(a);
+        t.setUser(this);
+        t.setMaturity(null);
+        t.setActive(true);
+
+        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "user", getLogin())).getBytes()));
+        System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
+    }
+
     @Action(name = "test est. 1")
     public static void testEstatico1(@Required@Caption("a") String a, @Caption("b")String b) {
         System.out.println("testEstatico1(" + a + ", " + b + ")");
@@ -100,5 +120,14 @@ public class User implements WithTriggers {
     @Override
     public void afterDelete(EntityManager em) throws Exception {
 
+    }
+
+    public String createToken(EntityManager em) {
+        AuthToken t = new AuthToken();
+        t.setId(t.createId(this));
+        t.setActive(true);
+        t.setUser(this);
+        em.persist(t);
+        return t.getId();
     }
 }

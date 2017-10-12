@@ -1,8 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
+import org.easytravelapi.hotel.Occupancy;
 
 import javax.persistence.*;
 
@@ -12,7 +14,7 @@ import javax.persistence.*;
 @Entity
 @Getter
 @Setter
-public class Room {
+public class Room implements IRoom {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,7 @@ public class Room {
     @ManyToOne
     private RoomType type;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal description;
 
     private String maxCapacity;
@@ -38,4 +40,21 @@ public class Room {
     private boolean childrenAllowed;
 
     private boolean infantsInBed;
+
+    @Override
+    public boolean fits(Occupancy o) {
+        boolean ok = o.getPaxPerRoom() >= getMinPax();
+        //todo: completar!!!
+        return ok;
+    }
+
+    @Override
+    public String getCode() {
+        return getType().getCode();
+    }
+
+    @Override
+    public String getName() {
+        return getType().getName().getEs();
+    }
 }

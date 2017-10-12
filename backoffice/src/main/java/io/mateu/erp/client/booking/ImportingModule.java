@@ -18,6 +18,11 @@ import java.util.List;
  */
 public class ImportingModule extends AbstractModule {
     @Override
+    public String getName() {
+        return "Importing";
+    }
+
+    @Override
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 

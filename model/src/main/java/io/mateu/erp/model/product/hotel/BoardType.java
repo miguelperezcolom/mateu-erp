@@ -1,9 +1,11 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -19,7 +21,7 @@ public class BoardType {
     @Id
     private String code;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
 
 }
