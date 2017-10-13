@@ -593,10 +593,10 @@ public class TestPopulator {
         p.setAdultStartAge(12);
         p.setYoungestFirst(false);
 
-        for (Room r : h.getRooms()) p.getRooms().add(r.getId());
-        for (Board b : h.getBoards()) p.getBoards().add(b.getId());
+        for (Room r : h.getRooms()) p.getRooms().add(r.getCode());
+        for (Board b : h.getBoards()) p.getBoards().add(b.getCode());
 
-        for (long r : p.getRooms()) {
+        for (String r : p.getRooms()) {
             p.getAllotment().add(new Allotment(r, null, null, 10));
         }
         for (int j = 1; j < 10; j++) {
@@ -619,10 +619,10 @@ public class TestPopulator {
             for (int k = 0; k < 5; k++) {
                 fechas.add(new DatesRange(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1)));
             }
-            Map<Long, RoomFare> porHabitacion = new HashMap<>();
-            for (long r : p.getRooms()) {
+            Map<String, RoomFare> porHabitacion = new HashMap<>();
+            for (String r : p.getRooms()) {
                 RoomFare rf = new RoomFare();
-                for (long b : p.getBoards()) {
+                for (String b : p.getBoards()) {
                     BoardFare bf = new BoardFare();
                     bf.setRoomPrice(new FareValue(false, false, false, 30 + (j * 10)));
                     bf.setPaxPrice(new FareValue(false, false, false, 60.15 + (j * 10)));
@@ -909,7 +909,7 @@ public class TestPopulator {
                     em.persist(s);
                     s.setHotel(h);
 
-                    int maxStopSales = 10 + random.nextInt(200);
+                    int maxStopSales = 10 + random.nextInt(30);
 
                     for (int i = 0; i < maxStopSales; i++) {
 
@@ -920,7 +920,7 @@ public class TestPopulator {
                         l.setOnSecurityInventory(true);
 
                         int desde = random.nextInt(2 * 365);
-                        int hasta = desde + random.nextInt(2 * 365 - desde);
+                        int hasta = desde + random.nextInt(10);
 
                         l.setStart(LocalDate.now().plusDays(desde));
                         l.setEnd(LocalDate.now().plusDays(hasta));

@@ -2,7 +2,6 @@ package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.common.File;
 import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -10,7 +9,10 @@ import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 

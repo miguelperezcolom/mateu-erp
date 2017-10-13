@@ -1,5 +1,6 @@
 package io.mateu.erp.server;
 
+import com.google.common.base.Strings;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
 import io.mateu.erp.model.authentication.Grant;
@@ -167,6 +168,28 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             }
         });
         return d;
+    }
+
+    @Override
+    public void forgotPassword(String login) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em)throws Throwable {
+
+                if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
+                    Populator.populate();
+                }
+
+
+                User u = em.find(User.class, login.toLowerCase().trim());
+                if (u != null) {
+                    if (Strings.isNullOrEmpty(u.getPassword())) throw new Exception("Missing password for user " + login);
+                    if (Strings.isNullOrEmpty(u.getEmail())) throw new Exception("Missing email for user " + login);
+                    if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
+                    io.mateu.erp.model.util.Helper.sendEmail(u.getEmail(), "Your password", u.getPassword(), true);
+                } else throw new Exception("No user with login " + login);
+            }
+        });
     }
 
     @Override

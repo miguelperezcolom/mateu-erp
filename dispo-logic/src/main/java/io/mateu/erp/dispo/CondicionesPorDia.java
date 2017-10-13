@@ -10,5 +10,5 @@ import java.util.Map;
 @Getter@Setter
 public class CondicionesPorDia {
 
-    private Map<Long, RoomFare> farePerRoom = new HashMap<>();
+    private Map<String, RoomFare> farePerRoom = new HashMap<>();
 }

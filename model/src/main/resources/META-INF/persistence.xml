@@ -163,7 +163,7 @@
 
 
 
-        <property name="eclipselink.cache.coordination.protocol" value="jms"/>
+        <property name="xxeclipselink.cache.coordination.protocol" value="jms"/>
         <property name="eclipselink.cache.coordination.jms.topic" value="java:comp/env/jms/quo1"/>
         <property name="eclipselink.cache.coordination.jms.factory" value="java:comp/env/jms/mateu"/>
 

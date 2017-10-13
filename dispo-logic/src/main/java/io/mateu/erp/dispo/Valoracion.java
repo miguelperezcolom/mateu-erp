@@ -53,8 +53,8 @@ public class Valoracion {
             // rellenamos con las condiciones del contrato
 
             for (IBoard board : hotel.getBoards()) {
-                for (Long idReg : terms.getBoards())
-                    if (board.getId() == idReg) {
+                for (String idReg : terms.getBoards())
+                    if (board.getCode().equals(idReg)) {
                         for (Fare f : terms.getFares()) {
                             for (DatesRange dr : f.getDates())
                                 if (Helper.intersects(dr.getStart(), dr.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
@@ -150,15 +150,15 @@ public class Valoracion {
 
                 for (IRoom room : combinacionHabitaciones.getAsignacion().values())
                     for (ValoracionPorDia vpd : vpr.getDias())
-                        if (vpd.getCondiciones().getFarePerRoom().get(room.getId()) == null) {
+                        if (vpd.getCondiciones().getFarePerRoom().get(room.getCode()) == null) {
                             ok = false;
                             break;
                 }
 
                 if (ok) {
                     for (IRoom room : combinacionHabitaciones.getAsignacion().values()) for (ValoracionPorDia vpd : vpr.getDias()) {
-                        RoomFare rf = vpd.getCondiciones().getFarePerRoom().get(room.getId());
-                        BoardFare bf = rf.getFarePerBoard().get(board.getId());
+                        RoomFare rf = vpd.getCondiciones().getFarePerRoom().get(room.getCode());
+                        BoardFare bf = rf.getFarePerBoard().get(board.getCode());
                         ImportePorDia i = vpd.getImportes();
                         i.setHabitacion(bf.getRoomPrice().getValue());
                         i.setAlojamiento(bf.getPaxPrice().getValue());
@@ -175,8 +175,8 @@ public class Valoracion {
                     double totalParaEsteRegimen = 0;
                     for (Occupancy o : combinacionHabitaciones.getAsignacion().keySet()) for (ValoracionPorDia vpd : vpr.getDias()) {
                         IRoom room = combinacionHabitaciones.getAsignacion().get(o);
-                        RoomFare rf = vpd.getCondiciones().getFarePerRoom().get(room.getId());
-                        BoardFare bf = rf.getFarePerBoard().get(board.getId());
+                        RoomFare rf = vpd.getCondiciones().getFarePerRoom().get(room.getCode());
+                        BoardFare bf = rf.getFarePerBoard().get(board.getCode());
                         ImportePorDia i = vpd.getImportes();
                         i.setHabitacion(bf.getRoomPrice().getValue());
                         i.setAlojamiento(bf.getPaxPrice().getValue());
@@ -226,7 +226,7 @@ public class Valoracion {
 
                             for (MinimumStayRule r : rpd.getMinimumStays()) if (r.getNights() > rq.getTotalNights()) {
                                 if (r.getRooms().size() == 0 || r.getRooms().contains(room.getId())) {
-                                    if (r.getBoards().size() == 0 || r.getBoards().contains(board.getId())) {
+                                    if (r.getBoards().size() == 0 || r.getBoards().contains(board.getCode())) {
                                         onRequest = r.isOnRequest();
                                         restriccionesOk &= !r.isOnRequest();
                                         //todo: aplicar suplementos

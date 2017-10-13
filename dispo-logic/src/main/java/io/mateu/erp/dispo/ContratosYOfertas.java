@@ -28,7 +28,7 @@ public class ContratosYOfertas {
 
                     boolean hayPrecioParaTodas = true;
                     for (IRoom r : ch.getAsignacion().values()) {
-                        if (c.getTerms() != null && !c.getTerms().getRooms().contains(r.getId())) {
+                        if (c.getTerms() != null && !c.getTerms().getRooms().contains(r.getCode())) {
                             hayPrecioParaTodas = false;
                             break;
                         }

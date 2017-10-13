@@ -1,24 +1,16 @@
 package io.mateu.erp.model.common;
 
-import io.mateu.erp.model.config.AppConfig;
-import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.server.Utils;
 import io.mateu.ui.core.shared.FileLocator;
 import io.mateu.ui.mdd.server.annotations.Required;
-import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.xml.transform.stream.StreamSource;
-import java.io.*;
 import java.net.URL;
-import java.util.UUID;
 
 /**
  * Created by miguel on 27/3/17.
