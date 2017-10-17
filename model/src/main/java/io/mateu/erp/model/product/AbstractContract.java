@@ -25,9 +25,11 @@ public class AbstractContract {
     private long id;
 
     @Embedded
+    @Output
     private Audit audit;
 
     @Tab("General")
+    @FullWidth
     @Required
     @SearchFilter
     private String title;
@@ -55,6 +57,9 @@ public class AbstractContract {
     @TextArea
     private String specialTerms;
 
+    @TextArea
+    private String privateComments;
+
     @ManyToOne
     @StartsLine
     @Required
@@ -67,5 +72,4 @@ public class AbstractContract {
     @Ignored
     private double averagePrice;
 
-    private String privateComments;
 }

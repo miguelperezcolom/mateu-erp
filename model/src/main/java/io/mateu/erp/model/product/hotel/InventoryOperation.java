@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,9 +19,11 @@ public class InventoryOperation {
     private long id;
 
     @ManyToOne
+    @SearchFilter
     private Inventory inventory;
 
 
+    @SearchFilter
     private LocalDateTime created;
     @ManyToOne
     private User createdBy;
@@ -30,6 +33,7 @@ public class InventoryOperation {
     private LocalDate end;
 
     @ManyToOne
+    @SearchFilter
     private RoomType room;
     private int quantity;
 

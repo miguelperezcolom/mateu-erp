@@ -5,6 +5,7 @@ import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +24,7 @@ public class AbstractHotelOffer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-
+    @SearchFilter
     private String name;
 
     private boolean includedInContractPdf;
@@ -59,21 +60,27 @@ public class AbstractHotelOffer {
     private boolean extras;
     private String extrasDescription;
 
+    @SearchFilter
     @ManyToMany
     private List<Hotel> hotels = new ArrayList<>();
 
+    @SearchFilter
     @ManyToMany
     private List<HotelContract> contracts = new ArrayList<>();
 
+    @SearchFilter
     @OneToMany
     private List<Actor> targets = new ArrayList<>();
 
+    @SearchFilter
     @OneToMany
     private List<RoomType> rooms = new ArrayList<>();
 
+    @SearchFilter
     @OneToMany
     private List<BoardType> boards = new ArrayList<>();
 
+    @SearchFilter
     @ManyToMany
     private List<AbstractHotelOffer> cumulativeTo = new ArrayList<>();
 

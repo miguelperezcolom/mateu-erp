@@ -8,17 +8,31 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="backoffice" />
+        <module name="common" />
+        <module name="consolidador" />
+        <module name="dispo-logic" />
+        <module name="dispo-model" />
+        <module name="dispo-tester" />
         <module name="mddserverside" />
         <module name="model" />
+        <module name="modelodispo" />
+        <module name="traductor-caval-out" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="backoffice" target="1.8" />
+      <module name="common" target="1.8" />
+      <module name="consolidador" target="1.8" />
+      <module name="dispo-logic" target="1.8" />
+      <module name="dispo-model" target="1.8" />
+      <module name="dispo-tester" target="1.8" />
       <module name="mateu-erp" target="1.5" />
       <module name="mdd" target="1.8" />
       <module name="mdd-annotations" target="1.8" />
       <module name="mddserverside" target="1.5" />
       <module name="model" target="1.8" />
+      <module name="modelodispo" target="1.5" />
+      <module name="traductor-caval-out" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

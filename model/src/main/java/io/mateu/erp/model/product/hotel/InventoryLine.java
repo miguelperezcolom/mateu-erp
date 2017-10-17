@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IInventoryLine;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,8 +18,10 @@ public class InventoryLine implements IInventoryLine {
     private long id;
 
     @ManyToOne
+    @SearchFilter
     private Inventory inventory;
 
+    @SearchFilter
     private LocalDate start;
 
     @Column(name = "_end")
@@ -27,6 +30,7 @@ public class InventoryLine implements IInventoryLine {
     private int quantity;
 
     @ManyToOne
+    @SearchFilter
     private RoomType room;
 
     @Override

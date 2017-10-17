@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.Occupancy;
@@ -20,9 +21,11 @@ public class Room implements IRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @SearchFilter
     @ManyToOne
     private Hotel hotel;
 
+    @SearchFilter
     @ManyToOne
     private RoomType type;
 

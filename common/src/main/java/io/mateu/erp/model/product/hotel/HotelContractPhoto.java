@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.ui.mdd.server.annotations.FullWidth;
 import io.mateu.ui.mdd.server.annotations.StartTabs;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.annotations.ValueClass;
@@ -24,6 +25,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
 
     @StartTabs
+    @FullWidth
     @Tab("General")
     private String currencyIsoCode;
 

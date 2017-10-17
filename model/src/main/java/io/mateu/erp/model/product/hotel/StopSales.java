@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,10 +22,12 @@ public class StopSales {
     @ManyToOne
     private Hotel hotel;
 
+    @Ignored
     @OneToMany(mappedBy = "stopSales", cascade = CascadeType.ALL)
     private List<StopSalesLine> lines = new ArrayList<>();
 
 
+    @Ignored
     @OneToMany(mappedBy = "stopSales")
     private List<StopSalesOperation> operations = new ArrayList<>();
 

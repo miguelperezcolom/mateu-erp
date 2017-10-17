@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +20,11 @@ public class Board implements IBoard {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @SearchFilter
     @ManyToOne
     private Hotel hotel;
 
+    @SearchFilter
     @ManyToOne
     BoardType type;
 
