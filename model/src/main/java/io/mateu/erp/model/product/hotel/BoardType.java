@@ -4,11 +4,11 @@ import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.persistence.annotations.CacheIndex;
+import org.eclipse.persistence.annotations.Index;
+import org.eclipse.persistence.config.QueryHints;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 /**
  * Created by miguel on 1/10/16.
@@ -23,5 +23,4 @@ public class BoardType {
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
-
 }

@@ -11,6 +11,7 @@ import io.mateu.erp.model.beroni.P1101;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.*;
@@ -29,7 +30,7 @@ import java.util.*;
  */
 public class FinancialServiceImpl implements FinancialService {
     @Override
-    public void reprice(LocalDate from, LocalDate to) throws Throwable {
+    public void reprice(UserData user, LocalDate from, LocalDate to) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -39,7 +40,7 @@ public class FinancialServiceImpl implements FinancialService {
 
                 for (Service s : l) {
                     try {
-                        s.price(em);
+                        s.price(em, user);
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }

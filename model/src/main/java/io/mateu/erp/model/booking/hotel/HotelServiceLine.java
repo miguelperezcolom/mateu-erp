@@ -17,16 +17,22 @@ public class HotelServiceLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @ManyToOne
+    private HotelService service;
+
     private LocalDate start;
 
     @Column(name = "_end")
     private LocalDate end;
 
+    @ManyToOne
     private RoomType roomType;
 
+    @ManyToOne
     private BoardType boardType;
 
     private int pax;
+
 
     private int[] ages;
 

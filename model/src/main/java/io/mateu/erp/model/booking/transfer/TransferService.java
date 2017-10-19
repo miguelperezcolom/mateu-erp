@@ -180,13 +180,13 @@ public class TransferService extends Service implements WithTriggers {
 
 
     @Action(name = "Price")
-    public static void price(@Selection List<Data> _selection) throws Throwable {
+    public static void price(UserData user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
                 for (Data d : _selection) {
                     TransferService s = em.find(TransferService.class, d.get("_id"));
-                    s.price(em);
+                    s.price(em, user);
                 }
             }
         });
@@ -515,16 +515,7 @@ public class TransferService extends Service implements WithTriggers {
 
         setDirection(d);
 
-        try {
-            price(em);
-            checkPurchase(em);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        updateProcessingStatus(em);
-        validate(em);
-
+        super.afterSet(em, isNew);
     }
 
     @Override

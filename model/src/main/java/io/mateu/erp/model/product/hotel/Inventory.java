@@ -33,4 +33,17 @@ public class Inventory implements IInventory {
     @Ignored
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
     private List<InventoryOperation> operations = new ArrayList<>();
+
+    public void build(EntityManager em) {
+
+        //creamos la estructura
+
+        InventoryCube cube = new InventoryCube(this);
+
+
+        // grabamos la estructura
+
+        cube.save(em);
+
+    }
 }

@@ -913,11 +913,13 @@ public class TestPopulator {
 
                     for (int i = 0; i < maxStopSales; i++) {
 
-                        StopSalesLine l;
-                        s.getLines().add(l = new StopSalesLine());
+                        StopSalesOperation l;
+                        s.getOperations().add(l = new StopSalesOperation());
+                        em.persist(l);
                         l.setStopSales(s);
                         l.setOnNormalInventory(true);
                         l.setOnSecurityInventory(true);
+                        l.setAction(StopSalesAction.CLOSE);
 
                         int desde = random.nextInt(2 * 365);
                         int hasta = desde + random.nextInt(10);
@@ -932,6 +934,8 @@ public class TestPopulator {
                         }
 
                     }
+
+                    s.build(em);
 
                 }
 
@@ -964,9 +968,11 @@ public class TestPopulator {
                     int maxLines = 10 + random.nextInt(1000);
                     for (int j = 0; j < maxLines; j++) {
 
-                        InventoryLine l;
-                        i.getLines().add(l = new InventoryLine());
+                        InventoryOperation l;
+                        i.getOperations().add(l = new InventoryOperation());
+                        em.persist(l);
                         l.setInventory(i);
+                        l.setAction(InventoryAction.SET);
                         l.setQuantity(1 + random.nextInt(10));
                         int desde = random.nextInt(2 * 365);
                         int hasta = desde + random.nextInt(2 * 365 - desde);
@@ -975,6 +981,8 @@ public class TestPopulator {
                         l.setEnd(LocalDate.now().plusDays(hasta));
                         l.setRoom(h.getRooms().get((h.getRooms().size() > 1)?random.nextInt(h.getRooms().size() - 1):0).getType());
                     }
+
+                    i.build(em);
 
                 }
 

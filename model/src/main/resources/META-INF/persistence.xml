@@ -83,6 +83,7 @@
         <class>io.mateu.erp.model.product.hotel.offer.RoomUpgradeOffer</class>
         <class>io.mateu.erp.model.workflow.SendEmailTask</class>
         <class>io.mateu.erp.model.workflow.SendPurchaseOrdersTask</class>
+        <class>io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask</class>
         <class>io.mateu.erp.model.booking.Service</class>
         <class>io.mateu.erp.model.product.generic.Shop</class>
         <class>io.mateu.erp.model.importing.ShuttleDirectAutoImport</class>
@@ -106,6 +107,8 @@
         <class>io.mateu.erp.model.product.transfer.TransferPoint</class>
         <class>io.mateu.erp.model.booking.transfer.TransferPointMapping</class>
         <class>io.mateu.erp.model.booking.transfer.TransferService</class>
+        <class>io.mateu.erp.model.booking.hotel.HotelService</class>
+        <class>io.mateu.erp.model.booking.hotel.HotelServiceLine</class>
         <class>io.mateu.erp.model.authentication.User</class>
         <class>io.mateu.erp.model.product.transfer.Vehicle</class>
         <class>io.mateu.erp.model.cms.Website</class>
@@ -118,6 +121,9 @@
 
         <class>io.mateu.erp.model.util.LocalDateAttributeConverter</class>
         <class>io.mateu.erp.model.util.LocalDateTimeAttributeConverter</class>
+
+        <class>com.quonext.quoon.Agent</class>
+        <class>com.quonext.quoon.SendPurchaseOrdersToAgentTask</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 

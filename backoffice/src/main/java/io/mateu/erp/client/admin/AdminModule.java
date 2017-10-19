@@ -131,6 +131,14 @@ public class AdminModule extends AbstractModule {
             }
         });
 
+
+        m.add(new AbstractAction("Agents") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("com.quonext.quoon.Agent", new MDDCallback());
+            }
+        });
+
         return m;
     }
 }

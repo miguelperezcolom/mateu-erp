@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import com.quonext.quoon.Agent;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.Required;
@@ -54,6 +55,8 @@ public class Actor {
     @StartsLine
     private PurchaseOrderSendingMethod ordersSendingMethod;
     private String sendOrdersTo;
+    @OneToOne
+    private Agent agent;
     private boolean automaticOrderSending;
     private boolean automaticOrderConfirmation;
 

@@ -53,6 +53,13 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Hotels") {
+            @Override
+            public void run() {
+                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.hotel.HotelService", new MDDCallback());
+            }
+        });
+
         m.add(new AbstractAction("Transfers") {
             @Override
             public void run() {

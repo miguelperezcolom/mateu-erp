@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.quonext.quoon.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.generic.GenericService;
@@ -16,6 +17,7 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.AsyncCallback;
@@ -23,6 +25,7 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
@@ -51,7 +54,7 @@ import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 @Entity
 @Getter
 @Setter
-public abstract class Service {
+public abstract class Service implements WithTriggers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -320,7 +323,7 @@ public abstract class Service {
     }
 
     @Action(name = "Repair bookings")
-    public static void repair() throws Throwable {
+    public static void repair(UserData user) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
@@ -348,7 +351,7 @@ public abstract class Service {
                                     System.out.println("***corrigiendo servicio " + s.getId() + "*****");
                                     po.getServices().remove(s);
                                     s.getPurchaseOrders().remove(po);
-                                    s.checkPurchase(em);
+                                    s.checkPurchase(em, user);
                                 }
                             }
                         }
@@ -360,40 +363,51 @@ public abstract class Service {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData _user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
+    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             s.setAlreadyPurchased(false);
             if (provider != null) s.setPreferredProvider(provider);
             try {
-                s.checkPurchase(em);
+                s.checkPurchase(em, user);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         }
         Map<Actor, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        User u = em.find(User.class, _user.getLogin());
+        User u = em.find(User.class, user.getLogin());
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             if (provider != null) s.setPreferredProvider(provider);
             for (PurchaseOrder po : s.getPurchaseOrders()) {
                 SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
                 if (t == null) {
-                    taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersTask());
-                    em.persist(t);
-                    t.setOffice(s.getOffice());
-                    t.setProvider(po.getProvider());
-                    t.setStatus(TaskStatus.PENDING);
-                    t.setAudit(new Audit(u));
-                    if (!Strings.isNullOrEmpty(email)) {
-                        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                        t.setTo(email);
-                    } else {
-                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                        t.setTo(po.getProvider().getSendOrdersTo());
+                    if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
+                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
+                        em.persist(t);
+                        t.setOffice(s.getOffice());
+                        t.setProvider(po.getProvider());
+                        t.setStatus(TaskStatus.PENDING);
+                        t.setAudit(new Audit(u));
+                        ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
+                        t.setPostscript(postscript);
+                    } else { // email
+                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
+                        em.persist(t);
+                        t.setOffice(s.getOffice());
+                        t.setProvider(po.getProvider());
+                        t.setStatus(TaskStatus.PENDING);
+                        t.setAudit(new Audit(u));
+                        if (!Strings.isNullOrEmpty(email)) {
+                            t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                            ((SendPurchaseOrdersByEmailTask)t).setTo(email);
+                        } else {
+                            t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                            ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                        }
+                        ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
+                        t.setPostscript(postscript);
                     }
-                    t.setCc(s.getOffice().getEmailCC());
-                    t.setPostscript(postscript);
                 }
                 t.getPurchaseOrders().add(po);
                 po.getSendingTasks().add(t);
@@ -416,9 +430,7 @@ public abstract class Service {
 
     public abstract String createSignature();
 
-
-    @Action(name = "Purchase")
-    public void checkPurchase(EntityManager em) throws Throwable {
+    public void checkPurchase(EntityManager em, User u) throws Throwable {
         if (false && !isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
             setSignature(createSignature());
         } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
@@ -431,7 +443,7 @@ public abstract class Service {
                 for (PurchaseOrder po : getPurchaseOrders()) {
                     if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
                         try {
-                            po.send(em);
+                            po.send(em, u);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -450,11 +462,17 @@ public abstract class Service {
         } else {
             throw new Throwable("Nothing changed. No need to purchase again");
         }
+
     }
 
 
-    @Action(name = "Price")
-    public void price(EntityManager em) {
+    @Action(name = "Purchase")
+    public void checkPurchase(EntityManager em, UserData user) throws Throwable {
+        checkPurchase(em, em.find(User.class, user.getLogin()));
+    }
+
+
+    public void price(EntityManager em, User u) {
         setValued(false);
         setTotal(0);
         if (isValueOverrided()) {
@@ -479,7 +497,7 @@ public abstract class Service {
         }
 
         try {
-            checkPurchase(em);
+            checkPurchase(em, u);
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -502,6 +520,11 @@ public abstract class Service {
         }
         setTotalCost(Helper.roundOffEuros(totalCost));
         setPurchaseValued(purchaseValued);
+    }
+
+    @Action(name = "Price")
+    public void price(EntityManager em, UserData user) {
+        price(em, em.find(User.class, user.getLogin()));
     }
 
     @Action(name = "Print POs")
@@ -823,4 +846,17 @@ public abstract class Service {
         setChangeLog(l);
     }
 
+
+    @Override
+    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+        try {
+            price(em, getAudit().getModifiedBy());
+            checkPurchase(em, getAudit().getModifiedBy());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        updateProcessingStatus(em);
+        validate(em);
+    }
 }

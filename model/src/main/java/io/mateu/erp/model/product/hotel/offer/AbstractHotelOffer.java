@@ -8,6 +8,8 @@ import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.persistence.annotations.CacheIndex;
+import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -18,11 +20,22 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "hoteloffer")
+@NamedQueries(
+        @NamedQuery( name = "AbstractHotelOffer.getByQuoonId", query = "select h from io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer h where h.quoonId = :qid",
+                hints={
+                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE, value="TRUE"),
+                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
+                })
+)
 public class AbstractHotelOffer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @org.eclipse.persistence.annotations.Index
+    @CacheIndex
+    private String quoonId;
 
     @SearchFilter
     private String name;
@@ -85,5 +98,13 @@ public class AbstractHotelOffer {
     private List<AbstractHotelOffer> cumulativeTo = new ArrayList<>();
 
 
+    public static AbstractHotelOffer getByQuoonId(EntityManager em, String quoonId) {
+        AbstractHotelOffer h = null;
+        try {
+            h = (AbstractHotelOffer) em.createNamedQuery("AbstractHotelOffer.getByQuoonId").setParameter("qid", quoonId).getResultList().get(0);
+        } catch (Exception e) {
+        }
+        return h;
+    }
 
 }

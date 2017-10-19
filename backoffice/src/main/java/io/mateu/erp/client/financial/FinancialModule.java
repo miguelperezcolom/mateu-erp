@@ -48,7 +48,7 @@ public class FinancialModule extends AbstractModule {
                 MateuUI.openView(new AbstractDialog() {
                     @Override
                     public void onOk(Data data) {
-                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).reprice(data.getLocalDate("from"), data.getLocalDate("to"), new Callback<>());
+                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).reprice(MateuUI.getApp().getUserData(), data.getLocalDate("from"), data.getLocalDate("to"), new Callback<>());
                     }
 
                     @Override

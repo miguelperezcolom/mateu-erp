@@ -1,10 +1,11 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.quonext.quoon.Agent;
+import com.quonext.quoon.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
@@ -14,9 +15,11 @@ import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -25,11 +28,7 @@ import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.Email;
-import org.apache.commons.mail.HtmlEmail;
 
-import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -139,13 +138,13 @@ public class PurchaseOrder implements WithTriggers {
 
 
     @Action(name = "Send")
-    public void sendFromEditor(EntityManager em) throws Throwable {
-        send(em);
+    public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
+        send(em, em.find(User.class, user.getLogin()));
     }
 
     @Action(name = "Send")
     public static void sendFromList(EntityManager em, @Selection List<Data> selection, @Parameter(name = "Email") String email) throws Exception {
-        SendPurchaseOrdersTask t = new SendPurchaseOrdersTask();
+        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setStatus(TaskStatus.PENDING);
         t.setMethod(PurchaseOrderSendingMethod.EMAIL);
         t.setAudit(new Audit(em.find(User.class, Constants.SYSTEM_USER_LOGIN)));
@@ -180,40 +179,53 @@ public class PurchaseOrder implements WithTriggers {
         return s;
     }
 
-    public void send(EntityManager em) throws Throwable {
-        send(em, getProvider().getSendOrdersTo());
+    public void send(EntityManager em, User u) throws Throwable {
+
+        setSignature(createSignature());
+
+
+        SendPurchaseOrdersTask t = null;
+
+        if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
+            t = createTask(em, getProvider().getAgent());
+        } else {
+            t = createTask(em, getProvider().getSendOrdersTo(), getOffice().getEmailCC());
+        }
+        em.persist(t);
+
+        t.setOffice(getOffice());
+        t.setProvider(getProvider());
+        t.setStatus(TaskStatus.PENDING);
+        t.setAudit(new Audit(u));
+
+        t.setPostscript("");
+
+
+        t.getPurchaseOrders().add(this);
+        getSendingTasks().add(t);
+
+//        setSent(true);
+//        setSentTime(LocalDateTime.now());
+//
+//        if (getProvider().isAutomaticOrderConfirmation()) {
+//            setStatus(PurchaseOrderStatus.CONFIRMED);
+//        }
+        afterSet(em, false);
     }
 
-    public void send(EntityManager em, String toEmail) throws Throwable {
+    public SendPurchaseOrdersToAgentTask createTask(EntityManager em, Agent agent) throws Throwable {
+        if (agent == null) throw new Exception("Quoon agent is missing");
+        SendPurchaseOrdersToAgentTask t = new SendPurchaseOrdersToAgentTask();
+        t.setAgent(agent);
+        return t;
+    }
+
+    public SendPurchaseOrdersByEmailTask createTask(EntityManager em, String toEmail, String cc) throws Throwable {
         if (Strings.isNullOrEmpty(toEmail)) throw new Exception("Email address is missing");
-        setSignature(createSignature());
-        Email email = new HtmlEmail();
-        email.setHostName(getOffice().getEmailHost());
-        email.setSmtpPort(getOffice().getEmailPort());
-        email.setAuthenticator(new DefaultAuthenticator(getOffice().getEmailUsuario(), getOffice().getEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(getOffice().getEmailFrom());
-        if (!Strings.isNullOrEmpty(getOffice().getEmailCC())) email.getCcAddresses().add(new InternetAddress(getOffice().getEmailCC()));
-
-        String asunto = "Purchase Order";
-        String template = AppConfig.get(em).getPurchaseOrderTemplate();
-
-        if (isCancelled()) asunto += " Cancellation";
-        if (isSent()) asunto += " Resent";
-
-        email.setSubject(asunto);
-        email.setMsg(Helper.freemark(template, getData()));
-        email.addTo(toEmail);
-        email.send();
-
-        setSent(true);
-        setSentTime(LocalDateTime.now());
-
-        if (getProvider().isAutomaticOrderConfirmation()) {
-            setStatus(PurchaseOrderStatus.CONFIRMED);
-        }
-        afterSet(em, false);
-
+        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
+        t.setTo(toEmail);
+        t.setCc(cc);
+        return t;
     }
 
     public Map<String,Object> getData() {

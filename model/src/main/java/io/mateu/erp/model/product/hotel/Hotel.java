@@ -2,13 +2,19 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.persistence.annotations.CacheIndex;
+import org.eclipse.persistence.annotations.Index;
+import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,6 +26,13 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NamedQueries(
+        @NamedQuery( name = "Hotel.getByQuoonId", query = "select h from io.mateu.erp.model.product.hotel.Hotel h where h.quoonId = :qid",
+                hints={
+                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE, value="TRUE"),
+                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
+                })
+)
 public class Hotel implements IHotel {
 
     @Id
@@ -30,6 +43,9 @@ public class Hotel implements IHotel {
     private String name;
 
     @ManyToOne
+    private Office office;
+
+    @ManyToOne
     private City city;
 
     private String lon;
@@ -37,6 +53,10 @@ public class Hotel implements IHotel {
     private String lat;
 
     private boolean active;
+
+    @Index
+    @CacheIndex
+    private String quoonId;
 
     @ManyToOne
     private HotelCategory category;
@@ -82,4 +102,17 @@ public class Hotel implements IHotel {
     public List<? extends IStopSaleLine> getStopSalesLines() {
         return getStopSales().getLines();
     }
+
+
+
+
+    public static Hotel getByQuoonId(EntityManager em, String quoonId) {
+        Hotel h = null;
+        try {
+            h = (Hotel) em.createNamedQuery("Hotel.getByQuoonId").setParameter("qid", quoonId).getSingleResult();
+        } catch (Exception e) {
+        }
+        return h;
+    }
+
 }

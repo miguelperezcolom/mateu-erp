@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking;
 
+import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
@@ -20,6 +21,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**

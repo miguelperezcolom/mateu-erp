@@ -32,4 +32,17 @@ public class StopSales {
     private List<StopSalesOperation> operations = new ArrayList<>();
 
 
+    public void build(EntityManager em) {
+
+        //creamos la estructura
+
+        StopSalesCube cube = new StopSalesCube(this);
+
+
+        // grabamos la estructura
+
+        cube.save(em);
+
+    }
+
 }

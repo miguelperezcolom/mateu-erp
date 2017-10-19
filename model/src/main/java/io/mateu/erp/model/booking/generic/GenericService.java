@@ -48,7 +48,6 @@ public class GenericService extends Service implements WithTriggers {
 
     @Override
     public void afterSet(EntityManager em, boolean isNew) throws Throwable {
-        setProcessingStatus(ProcessingStatus.INITIAL);
 
         LocalDate s = null, f = null;
         for (PriceLine l : getPriceLines()) {
@@ -58,9 +57,7 @@ public class GenericService extends Service implements WithTriggers {
         setStart(s);
         setFinish(f);
 
-        price(em);
-
-        checkPurchase(em);
+        super.afterSet(em, isNew);
 
     }
 
