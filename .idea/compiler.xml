@@ -13,6 +13,7 @@
         <module name="dispo-logic" />
         <module name="dispo-model" />
         <module name="dispo-tester" />
+        <module name="log-model" />
         <module name="mddserverside" />
         <module name="model" />
         <module name="modelodispo" />
@@ -26,6 +27,7 @@
       <module name="dispo-logic" target="1.8" />
       <module name="dispo-model" target="1.8" />
       <module name="dispo-tester" target="1.8" />
+      <module name="log-model" target="1.8" />
       <module name="mateu-erp" target="1.5" />
       <module name="mdd" target="1.8" />
       <module name="mdd-annotations" target="1.8" />

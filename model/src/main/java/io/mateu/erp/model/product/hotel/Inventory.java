@@ -32,6 +32,7 @@ public class Inventory implements IInventory {
 
     @Ignored
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
+    @OrderBy("created")
     private List<InventoryOperation> operations = new ArrayList<>();
 
     public void build(EntityManager em) {

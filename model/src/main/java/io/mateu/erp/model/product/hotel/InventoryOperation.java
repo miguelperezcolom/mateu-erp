@@ -24,7 +24,8 @@ public class InventoryOperation {
 
 
     @SearchFilter
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
+
     @ManyToOne
     private User createdBy;
 

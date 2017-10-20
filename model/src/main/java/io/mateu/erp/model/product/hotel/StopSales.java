@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.ui.mdd.server.annotations.Order;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +30,7 @@ public class StopSales {
 
     @Ignored
     @OneToMany(mappedBy = "stopSales")
+    @OrderBy("created")
     private List<StopSalesOperation> operations = new ArrayList<>();
 
 

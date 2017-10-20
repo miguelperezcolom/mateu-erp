@@ -12,10 +12,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.persistence.Table;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * holder for users of our erp. It can be an internal user or a user created for a customer or a supplier
@@ -76,7 +73,7 @@ public class User implements WithTriggers {
         t.setMaturity(null);
         t.setActive(true);
 
-        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "user", getLogin())).getBytes()));
+        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "user", getLogin(), "datetime", "" + new Date())).getBytes()));
         System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
     }
 

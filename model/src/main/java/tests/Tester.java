@@ -12,7 +12,9 @@ public class Tester {
 
     public static void main(String... args) throws Throwable {
 
-        populate();
+        //populate();
+
+        testSplit();
 
         //tesCacheQuery();
 
@@ -20,6 +22,13 @@ public class Tester {
 
         //testCuboCupo();
 
+    }
+
+    private static void testSplit() {
+
+        for (String s : "a@b.c, b@c.d:x@y.z\nx@y.z1;".split("[,;:\n \t]+")) {
+            System.out.println("-->" + s);
+        }
     }
 
     private static void populate() throws Throwable {

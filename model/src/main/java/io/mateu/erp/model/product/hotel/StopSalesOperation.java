@@ -22,7 +22,7 @@ public class StopSalesOperation {
     private long id;
 
     @SearchFilter
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 
     @SearchFilter
     @ManyToOne

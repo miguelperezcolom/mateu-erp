@@ -16,6 +16,7 @@
         <module>common</module>
         <module>traductor-caval-out</module>
         <module>dispo-tester</module>
+        <module>log-model</module>
     </modules>
 
     <packaging>pom</packaging>
