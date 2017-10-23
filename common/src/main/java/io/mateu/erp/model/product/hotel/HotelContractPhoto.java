@@ -100,7 +100,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     private List<ReleaseRule> releaseRules = new ArrayList<>();
 
     @Tab("Check in/out")
-    private List<CheckinDaysRule> checkinDaysRules = new ArrayList<>();
+    private List<WeekDaysRule> weekDaysRules = new ArrayList<>();
 
     @Tab("Supplements")
     private List<Supplement> supplements = new ArrayList<>();
@@ -258,12 +258,12 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.releaseRules = releaseRules;
     }
 
-    public List<CheckinDaysRule> getCheckinDaysRules() {
-        return checkinDaysRules;
+    public List<WeekDaysRule> getWeekDaysRules() {
+        return weekDaysRules;
     }
 
-    public void setCheckinDaysRules(List<CheckinDaysRule> checkinDaysRules) {
-        this.checkinDaysRules = checkinDaysRules;
+    public void setWeekDaysRules(List<WeekDaysRule> weekDaysRules) {
+        this.weekDaysRules = weekDaysRules;
     }
 
     public List<Supplement> getSupplements() {
@@ -362,8 +362,8 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         }
 
         {
-            Element l = new Element("checkinDaysRules");
-            for (XMLSerializable x : getCheckinDaysRules()) l.addContent(x.toXml());
+            Element l = new Element("weekDaysRules");
+            for (XMLSerializable x : getWeekDaysRules()) l.addContent(x.toXml());
             xml.addContent(l);
         }
 
@@ -432,7 +432,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         if ((x = e.getChild("fares")) != null) for (Element z : x.getChildren()) getFares().add(new Fare(z));
         if ((x = e.getChild("minimumStayRules")) != null) for (Element z : x.getChildren()) getMinimumStayRules().add(new MinimumStayRule(z));
         if ((x = e.getChild("releaseRules")) != null) for (Element z : x.getChildren()) getReleaseRules().add(new ReleaseRule(z));
-        if ((x = e.getChild("checkinDaysRules")) != null) for (Element z : x.getChildren()) getCheckinDaysRules().add(new CheckinDaysRule(z));
+        if ((x = e.getChild("weekDaysRules")) != null) for (Element z : x.getChildren()) getWeekDaysRules().add(new WeekDaysRule(z));
         if ((x = e.getChild("supplements")) != null) for (Element z : x.getChildren()) getSupplements().add(new Supplement(z));
         if ((x = e.getChild("galas")) != null) for (Element z : x.getChildren()) getGalas().add(new Gala(z));
         if ((x = e.getChild("allotment")) != null) for (Element z : x.getChildren()) getAllotment().add(new Allotment(z));

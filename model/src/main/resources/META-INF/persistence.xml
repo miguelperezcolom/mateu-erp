@@ -37,6 +37,10 @@
         <class>io.mateu.erp.model.world.City</class>
         <class>io.mateu.erp.model.world.Country</class>
         <class>io.mateu.erp.model.financials.Currency</class>
+        <class>io.mateu.erp.model.financials.CurrencyExchange</class>
+        <class>io.mateu.erp.model.revenue.Product</class>
+        <class>io.mateu.erp.model.revenue.Markup</class>
+        <class>io.mateu.erp.model.revenue.MarkupLine</class>
         <class>io.mateu.erp.model.product.DataSheet</class>
         <class>io.mateu.erp.model.product.hotel.offer.DiscountOffer</class>
         <class>io.mateu.erp.model.config.DummyDate</class>
@@ -65,6 +69,7 @@
         <class>io.mateu.erp.model.product.hotel.InventoryLine</class>
         <class>io.mateu.erp.model.product.hotel.InventoryOperation</class>
         <class>io.mateu.erp.model.invoicing.Invoice</class>
+        <class>io.mateu.erp.model.payments.Litigation</class>
         <class>io.mateu.erp.model.multilanguage.Language</class>
         <class>io.mateu.erp.model.multilanguage.Literal</class>
         <class>io.mateu.erp.model.product.generic.MinimumStay</class>
@@ -113,6 +118,20 @@
         <class>io.mateu.erp.model.product.transfer.Vehicle</class>
         <class>io.mateu.erp.model.cms.Website</class>
         <class>io.mateu.erp.model.world.Zone</class>
+
+        <class>io.mateu.erp.model.payments.AbstractPaymentAllocation</class>
+        <class>io.mateu.erp.model.payments.Account</class>
+        <class>io.mateu.erp.model.payments.BankAccount</class>
+        <class>io.mateu.erp.model.payments.BookingPaymentAllocation</class>
+        <class>io.mateu.erp.model.payments.Deposit</class>
+        <class>io.mateu.erp.model.payments.InvoicePaymentAllocation</class>
+        <class>io.mateu.erp.model.payments.Payment</class>
+        <class>io.mateu.erp.model.tpv.TPV</class>
+        <class>io.mateu.erp.model.tpv.TPVTransaction</class>
+        <class>io.mateu.erp.model.payments.VCC</class>
+        <class>io.mateu.erp.model.taxes.VAT</class>
+        <class>io.mateu.erp.model.taxes.VATPercent</class>
+        <class>io.mateu.erp.model.taxes.VATSettlement</class>
 
         <class>io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter</class>
         <class>io.mateu.erp.model.product.hotel.contracting.HotelContractPhotoConverter</class>

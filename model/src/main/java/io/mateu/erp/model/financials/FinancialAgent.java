@@ -1,13 +1,13 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.erp.model.payments.Deposit;
 import io.mateu.ui.mdd.server.annotations.UseIdToSelect;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * holder for a admin agent, tipically associated to a VAT ID (e.g. a customer, a supplier, ourselves)
@@ -25,6 +25,9 @@ public class FinancialAgent {
     private long id;
 
     private String name;
+
+    @OneToMany(mappedBy = "agent")
+    private List<Deposit> deposits = new ArrayList<>();
 
     @Override
     public String toString() {

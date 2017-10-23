@@ -65,8 +65,8 @@ public class P1105 extends BeroniRecord {
 
         double baseCompra = Helper.roundOffEuros(po.getTotal() / (1d + 10d / 100d));
         double ivaCompra = Helper.roundOffEuros(po.getTotal() - baseCompra);
-        double baseVenta = Helper.roundOffEuros(s.getTotal() / (1d + 10d / 100d));
-        double ivaVenta = Helper.roundOffEuros(s.getTotal() - baseVenta);
+        double baseVenta = Helper.roundOffEuros(s.getTotalNetValue() / (1d + 10d / 100d));
+        double ivaVenta = Helper.roundOffEuros(s.getTotalNetValue() - baseVenta);
 
 
         setBaseImponibleCosteSiRegimenGeneral(baseCompra);

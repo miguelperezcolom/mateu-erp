@@ -66,6 +66,7 @@ public abstract class Service implements WithTriggers {
     @Ignored
     private Audit audit;
 
+    @Tab("General")
     @ManyToOne
     @Required
     @SearchFilter(value="Booking Id", field = "id")
@@ -94,6 +95,7 @@ public abstract class Service implements WithTriggers {
 
     @ListColumn(width = 60)
     @CellStyleGenerator(ValidCellStyleGenerator.class)
+    @Output
     private ValidationStatus validationStatus = ValidationStatus.VALID;
 
     @Output
@@ -119,6 +121,7 @@ public abstract class Service implements WithTriggers {
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
+    @StartsLine
     private boolean cancelled;
 
     @ListColumn
@@ -156,19 +159,32 @@ public abstract class Service implements WithTriggers {
     private PointOfSale pos;
 
 
+    @Tab("Price")
     @StartsLine
     private boolean valueOverrided;
 
-    private double overridedValue;
+    private double overridedNetValue;
+
+    private double overridedRetailValue;
+
+    private double overridedCommissionValue;
+
 
     @Output
     @ListColumn
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
+    @StartsLine
     private boolean valued;
 
     @Output
     @ListColumn
-    private double total;
+    private double totalNetValue;
+
+    @Output
+    private double totalRetailValue;
+
+    @Output
+    private double totalCommissionValue;
 
     @Output
     private String priceReport;
@@ -182,9 +198,11 @@ public abstract class Service implements WithTriggers {
     @ListColumn
     private double totalCost;
 
+    @Tab("Handling")
     @Ignored
     private int effectiveProcessingStatus;
 
+    @Tab("Purchase")
     @StartsLine
     @ManyToOne
     private Actor preferredProvider;
@@ -199,7 +217,6 @@ public abstract class Service implements WithTriggers {
 
     @Output
     private LocalDateTime sentToProvider;
-
 
 
     @NotInEditor
@@ -277,7 +294,7 @@ public abstract class Service implements WithTriggers {
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", isCancelled());
         m.put("comment", getComment());
-        if (getPreferredProvider() != null) m.put("preferredprovider", getPreferredProvider());
+        if (getPreferredProvider() != null) m.put("preferredprovider", getPreferredProvider().getName());
         m.put("start", getStart());
         m.put("finish", getFinish());
         return m;
@@ -435,22 +452,19 @@ public abstract class Service implements WithTriggers {
             setSignature(createSignature());
         } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setSignature(createSignature());
-            try {
-                generatePurchaseOrders(em);
-                for (PurchaseOrder po : getPurchaseOrders()) {
-                    if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
-                }
-                for (PurchaseOrder po : getPurchaseOrders()) {
-                    if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
-                        try {
-                            po.send(em, u);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+
+            generatePurchaseOrders(em);
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
+            }
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
+                    try {
+                        po.send(em, u);
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (Throwable e) {
-                e.printStackTrace();
             }
             String ps = "";
             for (PurchaseOrder po : getPurchaseOrders()) {
@@ -474,20 +488,20 @@ public abstract class Service implements WithTriggers {
 
     public void price(EntityManager em, User u) {
         setValued(false);
-        setTotal(0);
+        setTotalNetValue(0);
         if (isValueOverrided()) {
-            setTotal(getOverridedValue());
+            setTotalNetValue(getOverridedNetValue());
             setValued(true);
             setPriceReport("Used overrided value");
         } else if (isCancelled()) {
             setValued(true);
-            setTotal(0);
+            setTotalNetValue(0);
             setPriceReport("Value 0 as it is cancelled");
         }
         else {
             try {
                 StringWriter sw = new StringWriter();
-                setTotal(rate(em, true, new PrintWriter(sw)));
+                setTotalNetValue(rate(em, true, new PrintWriter(sw)));
                 setPriceReport(sw.toString());
                 setValued(true);
             } catch (Throwable throwable) {
@@ -647,7 +661,7 @@ public abstract class Service implements WithTriggers {
     @Badges
     public List<Data> getBadges() {
         List<Data> l = new ArrayList<>();
-        l.add(new Data("_css", "brown", "_value", "" + getTotal()));
+        l.add(new Data("_css", "brown", "_value", "" + getTotalNetValue()));
         String s = "";
         ProcessingStatus v = getProcessingStatus();
         if (v != null) switch (v) {
@@ -662,6 +676,7 @@ public abstract class Service implements WithTriggers {
         return l;
     }
 
+    @Links
     public List<MDDLink> getLinks() {
         List<MDDLink> l = new ArrayList<>();
         l.add(new MDDLink("Booking", Booking.class, ActionType.OPENEDITOR, new Data("_id", getBooking().getId())));
@@ -752,15 +767,15 @@ public abstract class Service implements WithTriggers {
         d.put("start", getStart());
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
-        double base = Helper.roundOffEuros(getTotal() / (1d + 10d / 100d));
-        double iva = Helper.roundOffEuros(getTotal() - base);
+        double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
+        double iva = Helper.roundOffEuros(getTotalNetValue() - base);
 
 
         d.put("base", base);
         d.put("iva", iva);
 
         d.put("valued", isValued());
-        d.put("total", getTotal());
+        d.put("total", getTotalNetValue());
         d.put("purchaseValued", isPurchaseValued());
         d.put("totalCost", getTotalCost());
 

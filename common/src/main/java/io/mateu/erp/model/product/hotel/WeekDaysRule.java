@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by miguel on 1/10/16.
  */
-public class CheckinDaysRule implements XMLSerializable {
+public class WeekDaysRule implements XMLSerializable {
 
     private LocalDate start;
     private LocalDate end;
@@ -21,6 +21,7 @@ public class CheckinDaysRule implements XMLSerializable {
 
     private boolean checkin = true;
     private boolean checkout;
+    private boolean stay;
 
 
     public LocalDate getStart() {
@@ -71,7 +72,7 @@ public class CheckinDaysRule implements XMLSerializable {
         this.checkout = checkout;
     }
 
-    public CheckinDaysRule(Element e) {
+    public WeekDaysRule(Element e) {
         if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
         if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
         if (e.getAttribute("weekDays") != null) {
@@ -83,18 +84,20 @@ public class CheckinDaysRule implements XMLSerializable {
         if (e.getAttribute("onRequest") != null) setOnRequest(true);
         if (e.getAttribute("checkin") != null) setCheckin(true);
         if (e.getAttribute("checkout") != null) setCheckout(true);
+        if (e.getAttribute("stay") != null) setStay(true);
     }
 
-    public CheckinDaysRule() {
+    public WeekDaysRule() {
     }
 
-    public CheckinDaysRule(LocalDate start, LocalDate end, boolean onRequest, boolean[] weekDays, boolean checkin, boolean checkout) {
+    public WeekDaysRule(LocalDate start, LocalDate end, boolean onRequest, boolean[] weekDays, boolean checkin, boolean checkout, boolean stay) {
         this.start = start;
         this.end = end;
         this.onRequest = onRequest;
         this.weekDays = weekDays;
         this.checkin = checkin;
         this.checkout = checkout;
+        this.stay = stay;
     }
 
     @Override
@@ -111,7 +114,16 @@ public class CheckinDaysRule implements XMLSerializable {
         if (isOnRequest()) e.setAttribute("onRequest", "");
         if (isCheckin()) e.setAttribute("checkin", "");
         if (isCheckout()) e.setAttribute("checkout", "");
+        if (isStay()) e.setAttribute("stay", "");
 
         return e;
+    }
+
+    public boolean isStay() {
+        return stay;
+    }
+
+    public void setStay(boolean stay) {
+        this.stay = stay;
     }
 }

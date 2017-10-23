@@ -3,6 +3,7 @@ package io.mateu.erp.client;
 import io.mateu.erp.client.admin.AdminArea;
 import io.mateu.erp.client.booking.BookingArea;
 import io.mateu.erp.client.cms.CMSArea;
+import io.mateu.erp.client.crm.CRMArea;
 import io.mateu.erp.client.financial.FinancialArea;
 import io.mateu.erp.client.management.ManagementArea;
 import io.mateu.erp.client.product.ProductArea;
@@ -26,11 +27,12 @@ public class ERPApp extends AbstractApplication {
     public List<AbstractArea> getAreas() {
         return Arrays.asList(
                 new AdminArea()
-        //        , new CMSArea()
+                , new CMSArea()
+                , new CRMArea()
                 , new ProductArea()
                 , new BookingArea()
                 , new FinancialArea()
-        //        , new ManagementArea()
+                , new ManagementArea()
                 , new UtilsArea()
         );
     }

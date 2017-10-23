@@ -603,7 +603,7 @@ public class TestPopulator {
             p.getCancellationRules().add(new CancellationRule(null, null, j * 10, j * 5, 0, 0, p.getRooms()));
         }
 
-        //p.setCheckinDaysRules();
+        //p.setWeekDaysRules();
         for (int j = 1; j < 30; j++) {
             p.getClauses().add("Claúsula contrato nº " + j);
         }

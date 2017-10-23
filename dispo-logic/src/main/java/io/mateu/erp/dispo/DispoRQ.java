@@ -15,14 +15,14 @@ public class DispoRQ {
 
     private int checkIn;
     private int checkOut;
-    private List<Occupancy> occupancies = new ArrayList<>();
+    private List<? extends Occupancy> occupancies = new ArrayList<>();
     private boolean includeStaticInfo;
 
     private LocalDate checkInLocalDate;
     private LocalDate checkOutLocalDate;
     private int totalNights;
 
-    public DispoRQ(int checkIn, int checkOut, List<Occupancy> occupancies, boolean includeStaticInfo) {
+    public DispoRQ(int checkIn, int checkOut, List<? extends Occupancy> occupancies, boolean includeStaticInfo) {
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.occupancies = occupancies;

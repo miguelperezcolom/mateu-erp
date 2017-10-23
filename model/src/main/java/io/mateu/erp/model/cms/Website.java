@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.erp.model.tpv.TPV;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -38,6 +39,9 @@ public class Website {
     @OneToMany
     @Ignored
     private List<Asset> assets = new ArrayList<>();
+
+    @ManyToOne
+    private TPV tpv;
 
     @Override
     public String toString() {

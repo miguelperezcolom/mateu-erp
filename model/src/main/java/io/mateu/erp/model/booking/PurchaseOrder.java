@@ -217,6 +217,7 @@ public class PurchaseOrder implements WithTriggers {
         if (agent == null) throw new Exception("Quoon agent is missing");
         SendPurchaseOrdersToAgentTask t = new SendPurchaseOrdersToAgentTask();
         t.setAgent(agent);
+        t.setMethod(PurchaseOrderSendingMethod.QUOONAGENT);
         return t;
     }
 
@@ -225,6 +226,7 @@ public class PurchaseOrder implements WithTriggers {
         SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setTo(toEmail);
         t.setCc(cc);
+        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
         return t;
     }
 

@@ -4,6 +4,7 @@ import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IOferta;
 import org.easytravelapi.hotel.*;
+import org.easytravelapi.hotel.Occupancy;
 
 import java.util.ArrayList;
 import java.util.HashMap;

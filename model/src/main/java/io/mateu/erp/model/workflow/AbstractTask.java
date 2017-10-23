@@ -25,10 +25,9 @@ import java.util.List;
 /**
  * Created by miguel on 28/4/17.
  */
-@Entity
+@Entity(name = "Task")
 @Getter
 @Setter
-@Table(name = "task")
 public abstract class AbstractTask {
 
     @Id
@@ -36,20 +35,26 @@ public abstract class AbstractTask {
     private long id;
 
     @Embedded
-    @Ignored
+    @NotInList
+    @Output
     private Audit audit;
 
     @ListColumn
+    @Output
     private LocalDateTime started;
     @ListColumn
+    @Output
     private LocalDateTime finished;
     @ListColumn
     @SearchFilter
+    @Output
     private TaskStatus status = TaskStatus.PENDING;
     @ListColumn
     @SearchFilter
+    @Output
     private TaskResult result;
     @ListColumn
+    @Output
     private String log;
     @ManyToMany
     @SearchFilter(value="Service Id", field = "id")

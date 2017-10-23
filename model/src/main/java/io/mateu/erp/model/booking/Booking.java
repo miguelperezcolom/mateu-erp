@@ -5,6 +5,8 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
+import io.mateu.erp.model.payments.AbstractPaymentAllocation;
+import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
@@ -83,7 +85,12 @@ public class Booking implements WithTriggers {
 
 
     @Ignored
-    private double total;
+    private double totalNetValue;
+
+    private double totalRetailValue;
+
+    private double totalCommissionValue;
+
 
     @Ignored
     private double balance;
@@ -101,6 +108,13 @@ public class Booking implements WithTriggers {
     @OrderColumn(name = "orderInBooking")
     @Ignored
     private List<Service> services = new ArrayList<>();
+
+    @OneToMany(mappedBy = "booking")
+    @OrderColumn(name = "id")
+    @Ignored
+    private List<BookingPaymentAllocation> payments = new ArrayList<>();
+
+
 
     @Override
     public String toString() {

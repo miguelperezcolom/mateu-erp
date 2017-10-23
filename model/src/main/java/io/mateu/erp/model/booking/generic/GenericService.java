@@ -5,10 +5,7 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.Badges;
-import io.mateu.ui.mdd.server.annotations.OwnedList;
-import io.mateu.ui.mdd.server.annotations.Required;
-import io.mateu.ui.mdd.server.annotations.Subtitle;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
@@ -33,6 +30,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Setter
 public class GenericService extends Service implements WithTriggers {
 
+    @Tab("Service")
     @Required
     private String description;
 
@@ -141,4 +139,8 @@ public class GenericService extends Service implements WithTriggers {
         return super.toString();
     }
 
+    @Override
+    public String toString() {
+        return getDescription();
+    }
 }

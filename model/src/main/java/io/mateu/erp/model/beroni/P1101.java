@@ -102,7 +102,7 @@ public class P1101 extends BeroniRecord {
         setFechaViaje(s.getStart());
         setDiasViaje((int)DAYS.between(s.getStart(), s.getFinish()));
         setNumeroPersonas((s instanceof TransferService)?((TransferService) s).getPax():0);
-        setTotalFactura(s.getTotal());
+        setTotalFactura(s.getTotalNetValue());
         setPorcentajeIVA(10);
 
     }

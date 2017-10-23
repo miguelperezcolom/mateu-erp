@@ -42,6 +42,11 @@ public class Literal implements Translated {
 
     }
 
+    @Override
+    public String toString() {
+        return getEs();
+    }
+
     public Literal(String en, String es) {
         this.en = en;
         this.es = es;

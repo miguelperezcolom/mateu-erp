@@ -18,6 +18,7 @@ import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.server.Utils;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,13 +49,17 @@ import java.util.*;
 public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
     @ManyToOne
+    @Output
     private Office office;
 
     @ManyToOne
+    @Output
     private Actor provider;
 
+    @Output
     private PurchaseOrderSendingMethod method;
 
+    @Output
     private String postscript;
 
     public SendPurchaseOrdersTask() {

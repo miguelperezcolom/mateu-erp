@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by miguel on 31/1/17.
  */
-@Entity
+@Entity(name = "GenericProduct")
 @Getter
 @Setter
 public class Product {

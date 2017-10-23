@@ -244,6 +244,36 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+
+
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16 -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk16</artifactId>
+            <version>1.46</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.mateu.erp</groupId>
+            <artifactId>apisha256</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.mateu.erp</groupId>
+            <artifactId>bcprov</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.mateu.erp</groupId>
+            <artifactId>codec</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.mateu.erp</groupId>
+            <artifactId>json</artifactId>
+            <version>1.0</version>
+        </dependency>
+
     </dependencies>
 
     <distributionManagement>

@@ -62,6 +62,7 @@ import static org.apache.fop.fonts.type1.AdobeStandardEncoding.c;
 @Setter
 public class TransferService extends Service implements WithTriggers {
 
+    @Tab("Service")
     @StartsLine
     @Required
     @SearchFilter

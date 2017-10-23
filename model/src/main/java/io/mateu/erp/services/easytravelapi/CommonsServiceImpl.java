@@ -231,7 +231,7 @@ public class CommonsServiceImpl implements CommonsService {
                         Amount a;
                         b.setNetValue(a = new Amount());
                         a.setCurrencyIsoCode("EUR");
-                        a.setValue(s.getTotal());
+                        a.setValue(s.getTotalNetValue());
                         String desc = "Service booking";
                         b.setServiceType("GENERIC");
                         if (s instanceof TransferService) {

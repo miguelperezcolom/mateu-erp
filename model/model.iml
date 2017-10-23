@@ -164,5 +164,10 @@
     <orderEntry type="library" name="Maven: io.reactivex.rxjava2:rxjava:2.1.4" level="project" />
     <orderEntry type="library" name="Maven: org.reactivestreams:reactive-streams:1.0.1" level="project" />
     <orderEntry type="module" module-name="log-model" />
+    <orderEntry type="library" name="Maven: org.bouncycastle:bcprov-jdk16:1.46" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.erp:apisha256:1.0" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.erp:bcprov:1.0" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.erp:codec:1.0" level="project" />
+    <orderEntry type="library" name="Maven: io.mateu.erp:json:1.0" level="project" />
   </component>
 </module>

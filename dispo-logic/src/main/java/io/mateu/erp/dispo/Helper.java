@@ -10,6 +10,10 @@ public class Helper {
         return LocalDate.of((n - n % 10000) / 10000, ((n % 10000) - n % 100) / 100, n % 100);
     }
 
+    public static int toInt(LocalDate n) {
+        return n.getDayOfMonth() + n.getMonthValue() * 100 + n.getYear() * 10000;
+    }
+
     public static long noches(LocalDate start, LocalDate end) {
         return DAYS.between(start, end);
     }

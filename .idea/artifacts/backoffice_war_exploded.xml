@@ -89,6 +89,11 @@
           <element id="archive" name="log-model-1.0-SNAPSHOT.jar">
             <element id="module-output" name="log-model" />
           </element>
+          <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk16:1.46" />
+          <element id="library" level="project" name="Maven: io.mateu.erp:apisha256:1.0" />
+          <element id="library" level="project" name="Maven: io.mateu.erp:bcprov:1.0" />
+          <element id="library" level="project" name="Maven: io.mateu.erp:codec:1.0" />
+          <element id="library" level="project" name="Maven: io.mateu.erp:json:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.ui:mdd:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.12-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />

@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Getter@Setter
 public class Valoracion {
 
@@ -106,18 +108,18 @@ public class Valoracion {
                         }
                     }
 
-                    for (CheckinDaysRule r : terms.getCheckinDaysRules()) {
+                    for (WeekDaysRule r : terms.getWeekDaysRules()) {
                         if (Helper.intersects(r.getStart(), r.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
                             Rango rx = new Rango(r.getStart(), r.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getTotalNights());
 
                             for (int i = rx.getDesde(); i <= rx.getHasta(); i++) {
                                 RestriccionesPorDia rpd = rph.getDias().get(i);
-                                rpd.getCheckinDays().add(r);
+                                rpd.getWeekDays().add(r);
                             }
                         }
                     }
 
-                    //todo: añadir resto restricciones
+                    //todo: añadir suplementos
 
 
                 }
@@ -236,11 +238,12 @@ public class Valoracion {
                                 }
                             }
 
+                            int totalNoches = (int) DAYS.between(rq.getCheckInLocalDate(), rq.getCheckOutLocalDate());
 
                             int weekDayIn = rq.getCheckInLocalDate().getDayOfWeek().getValue();
                             int weekDayOut = rq.getCheckOutLocalDate().getDayOfWeek().getValue();
 
-                            for (CheckinDaysRule r : rpd.getCheckinDays()) {
+                            for (WeekDaysRule r : rpd.getWeekDays()) {
                                 if (r.isCheckin() && !r.getWeekDays()[weekDayIn]) {
                                     onRequest = r.isOnRequest();
                                     restriccionesOk &= !r.isOnRequest();
@@ -254,6 +257,25 @@ public class Valoracion {
                                     onRequestText = "Check out day";
                                     break;
                                 }
+
+                                if (r.isStay()) {
+                                    boolean todosPresentes = true;
+                                    if (totalNoches < 7) {
+                                        int numeroObligatorios = 0;
+                                        for (int i = 0; i < r.getWeekDays().length; i++) if (r.getWeekDays()[i]) numeroObligatorios++;
+                                        int numeroPresentes = 0;
+                                        for (int i = 0; i < totalNoches; i++) {
+                                            numeroPresentes += (r.getWeekDays()[rq.getCheckInLocalDate().plusDays(i).getDayOfWeek().getValue()])?1:0;
+                                        }
+                                        todosPresentes = numeroPresentes == numeroObligatorios;
+                                    }
+                                    if (!todosPresentes) {
+                                        onRequest = r.isOnRequest();
+                                        restriccionesOk &= !r.isOnRequest();
+                                        onRequestText = "Stay day";
+                                    }
+                                }
+
                             }
 
                         }

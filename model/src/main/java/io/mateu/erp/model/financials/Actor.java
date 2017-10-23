@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import com.quonext.quoon.Agent;
+import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.Required;
@@ -51,6 +52,8 @@ public class Actor {
     @Required
     private Currency currency;
 
+    @ManyToMany
+    private List<Markup> markups = new ArrayList<>();
 
     @StartsLine
     private PurchaseOrderSendingMethod ordersSendingMethod;
