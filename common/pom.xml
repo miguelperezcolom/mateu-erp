@@ -42,13 +42,27 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>eclipselink</artifactId>
-            <version>2.5.0-RC1</version>
+            <version>2.7.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.eclipse.persistence</groupId>
                     <artifactId>commonj.sdo</artifactId>
                 </exclusion>
+
+                <!-- See https://stackoverflow.com/q/45870753 -->
+                <exclusion>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>javax.persistence</artifactId>
+                </exclusion>
+
             </exclusions>
+        </dependency>
+
+        <!-- See https://stackoverflow.com/q/45870753 -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>2.1.1</version>
         </dependency>
 
         <dependency>

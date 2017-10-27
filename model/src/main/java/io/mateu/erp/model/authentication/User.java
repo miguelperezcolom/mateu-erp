@@ -34,7 +34,6 @@ public class User implements WithTriggers {
      */
     @Id
     @ListColumn("Login")
-    @Unmodifiable
     @Required
     private String login;
 

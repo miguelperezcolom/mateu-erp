@@ -5,7 +5,7 @@
     <groupId>io.mateu.erp</groupId>
     <artifactId>backoffice</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>${empaquetado}</packaging>
 
     <name>backoffice</name>
     <url>http://maven.apache.org</url>
@@ -38,6 +38,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <empaquetado>war</empaquetado>
     </properties>
 
 
@@ -338,6 +339,58 @@
                             </execution>
                         </executions>
                     </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>fatjar</id>
+
+            <properties>
+                <empaquetado>jar</empaquetado>
+            </properties>
+
+            <dependencies>
+                <dependency>
+                    <groupId>io.mateu.ui</groupId>
+                    <artifactId>port-javafx</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <scope>compile</scope>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <!-- Maven Assembly Plugin -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <!-- get all project dependencies -->
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                            <!-- MainClass in mainfest make a executable jar -->
+                            <archive>
+                                <manifest>
+                                    <mainClass>io.mateu.ui.javafx.Main</mainClass>
+                                </manifest>
+                            </archive>
+
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <!-- bind to the packaging phase -->
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                 </plugins>
             </build>
         </profile>

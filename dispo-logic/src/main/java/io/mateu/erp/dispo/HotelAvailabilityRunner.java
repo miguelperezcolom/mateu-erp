@@ -3,9 +3,11 @@ package io.mateu.erp.dispo;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IOferta;
+import io.mateu.erp.model.util.Helper;
 import org.easytravelapi.hotel.*;
 import org.easytravelapi.hotel.Occupancy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.Map;
 public class HotelAvailabilityRunner {
 
 
-    public AvailableHotel check(IHotel hotel, long idAgencia, ModeloDispo modelo, DispoRQ rq) {
+    public AvailableHotel check(IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
 
         // todo: añadir ifs para ahorar proceso
 
@@ -87,6 +89,8 @@ public class HotelAvailabilityRunner {
                             }
 
                             for (BoardPrice x : preciosMasBaratosPorRegimen.values()) {
+                                KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), 0, o.getDistribution(), x);
+                                x.setKey(k.toString());
                                 o.getPrices().add(x);
                             }
                         }

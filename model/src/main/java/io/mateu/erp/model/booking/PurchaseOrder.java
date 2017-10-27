@@ -2,7 +2,7 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import com.quonext.quoon.Agent;
-import com.quonext.quoon.SendPurchaseOrdersToAgentTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;

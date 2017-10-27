@@ -22,4 +22,6 @@ public interface BookingService {
 
     public String importPickupTimeExcel(Data data) throws Throwable;
 
+    public Data getAvailableHotels(Data parameters) throws Throwable;
+
 }

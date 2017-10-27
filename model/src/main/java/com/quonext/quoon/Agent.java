@@ -9,6 +9,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,21 +27,28 @@ public class Agent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Required
     private String name;
 
     private boolean active;
 
     @OneToOne(mappedBy = "agent")
+    @Required
     private Actor provider;
 
+    @Required
     private String MQHost;
 
+    @Required
     private String uploadQueue;
 
+    @Required
     private String downloadQueue;
 
+    @Required
     private String MQUser;
 
+    @Required
     private String MQPassword;
 
     private String errorNotificationEmails;

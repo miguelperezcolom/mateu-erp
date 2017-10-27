@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.hotel;
 
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.util.IntArrayAttributeConverter;
 import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +43,8 @@ public class HotelServiceLine {
     @Required
     private int paxPerRoom;
 
-
+    @Convert(converter = IntArrayAttributeConverter.class)
+    @Column(name = "_ages")
     private int[] ages;
 
     private boolean active;

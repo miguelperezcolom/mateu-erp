@@ -1,5 +1,6 @@
-package com.quonext.quoon;
+package io.mateu.erp.model.workflow;
 
+import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
@@ -36,13 +37,13 @@ public class SendPurchaseOrdersToAgentTask extends SendPurchaseOrdersTask {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Output
-    private Date enqueued;
+    private Date queued;
 
     @Override
     public void runParticular(EntityManager em, User user) throws Throwable {
         setXml(createXml(em));
         setReadyToSend(true);
-        setEnqueued(null);
+        setQueued(null);
     }
 
     private String createXml(EntityManager em) {

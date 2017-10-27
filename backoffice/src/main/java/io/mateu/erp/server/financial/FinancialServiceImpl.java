@@ -605,8 +605,8 @@ public class FinancialServiceImpl implements FinancialService {
 
                         if (s.isValued()) {
                             valoradas++;
-                            total += s.getTotal();
-                            totalventa += s.getTotal();
+                            total += s.getTotalNetValue();
+                            totalventa += s.getTotalNetValue();
                         } else {
                             novaloradas++;
                         }

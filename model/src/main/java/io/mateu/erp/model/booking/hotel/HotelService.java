@@ -1,22 +1,31 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.erp.dispo.DispoRQ;
-import io.mateu.erp.dispo.HotelAvailabilityRunner;
-import io.mateu.erp.dispo.ModeloDispo;
-import io.mateu.erp.dispo.Occupancy;
+import io.mateu.erp.dispo.*;
+import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.generic.PriceLine;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
+import io.mateu.ui.mdd.server.AbstractServerSideWizard;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
+import org.easytravelapi.common.Amount;
+import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
 import org.easytravelapi.hotel.Option;
@@ -41,8 +50,10 @@ public class HotelService extends Service implements WithTriggers {
     @Required
     private Hotel hotel;
 
+
     @OneToMany(mappedBy = "service")
     @OwnedList
+    @StartsLine
     private List<HotelServiceLine> lines = new ArrayList<>();
 
 
@@ -78,7 +89,7 @@ public class HotelService extends Service implements WithTriggers {
 
     @Override
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
-        AvailableHotel ah = new HotelAvailabilityRunner().check(getHotel(), getBooking().getAgency().getId(), new ModeloDispo() {
+        AvailableHotel ah = new HotelAvailabilityRunner().check(getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
         }, createDispoRQ());
 
         double value = 0;
@@ -161,8 +172,82 @@ public class HotelService extends Service implements WithTriggers {
         });
     }
 
+    @Action(name = "Look for available")
+    public static MDDLink book(UserData user, HotelBookingWizard wizard) throws Throwable {
+        Pagina2 p2 = (Pagina2)wizard.getPages().get(1);
+        Pagina3 p3 = (Pagina3)wizard.getPages().get(2);
+        long serviceId = createFromKey(user, new KeyValue(p2.getOption().getKey()), p3.getLeadName(), p3.getComments());
+        return new MDDLink(HotelService.class, ActionType.OPENEDITOR, new Data("_id", serviceId));
+    }
+
+    public static long createFromKey(UserData user, KeyValue k, String leadName, String comments) throws Throwable {
+        long[] id = {-1};
+
+        Helper.transact((JPATransaction) (em) -> {
+
+            User u = em.find(User.class, user.getLogin());
+
+            Actor agencia = em.find(Actor.class, k.getAgencyId());
+            Hotel hotel = em.find(Hotel.class, k.getHotelId());
+            Office oficina = hotel.getOffice();
+            PointOfSale pos = em.find(PointOfSale.class, k.getPointOfSaleId());
+
+            Booking b = new Booking();
+            b.setAgency(agencia);
+            b.setAgencyReference("");
+            b.setAudit(new Audit(u));
+            b.setConfirmed(true);
+            b.setLeadName(leadName);
+            em.persist(b);
+
+            HotelService s = new HotelService();
+            em.persist(s);
+            b.getServices().add(s);
+            s.setBooking(b);
+            s.setHotel(hotel);
+            s.setOffice(oficina);
+            s.setPos(pos);
+            s.setAudit(new Audit(u));
+            s.setComment(comments);
+
+
+            for (Allocation a : k.getAllocation()) {
+                HotelServiceLine l;
+                s.getLines().add(l = new HotelServiceLine());
+                em.persist(l);
+                l.setService(s);
+
+                l.setActive(true);
+                l.setAges(a.getAges());
+                l.setBoardType(em.find(BoardType.class, k.getBoardPrice().getBoardBasisId()));
+                l.setEnd(io.mateu.erp.dispo.Helper.toDate(k.getCheckOut()));
+                l.setStart(io.mateu.erp.dispo.Helper.toDate(k.getCheckIn()));
+                l.setNumberOfRooms(a.getNumberOfRooms());
+                l.setPaxPerRoom(a.getPaxPerRoom());
+                l.setRoomType(em.find(RoomType.class, a.getRoomId()));
+
+            }
+
+
+            s.afterSet(em, true);
+
+            b.afterSet(em, true);
+
+
+            em.flush();
+
+            id[0] = s.getId();
+
+        });
+
+
+        return id[0];
+    }
+
     @Override
     public String toString() {
         return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((getBooking() != null)?getBooking().getLeadName():"no booking");
     }
+
+
 }

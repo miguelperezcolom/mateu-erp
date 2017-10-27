@@ -203,6 +203,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Data getAvailableHotels(Data parameters) throws Throwable {
+        return new Data();
+    }
+
+    @Override
     public void retryImportationTasks(List<Data> selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override

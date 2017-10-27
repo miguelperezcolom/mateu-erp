@@ -6,7 +6,6 @@ import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.client.ServerSideWizardCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;

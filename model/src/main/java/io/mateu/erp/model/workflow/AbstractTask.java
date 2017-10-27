@@ -28,6 +28,8 @@ import java.util.List;
 @Entity(name = "Task")
 @Getter
 @Setter
+@NewNotAllowed
+@Indelible
 public abstract class AbstractTask {
 
     @Id
@@ -87,6 +89,7 @@ public abstract class AbstractTask {
 
             run(em, user);
 
+            setFinished(LocalDateTime.now());
             setStatus(TaskStatus.FINISHED);
             setResult(TaskResult.OK);
             setLog("done " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -97,6 +100,7 @@ public abstract class AbstractTask {
             setLog(sw.toString() + " " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             setStatus(TaskStatus.FINISHED);
             setResult(TaskResult.ERROR);
+            setFinished(LocalDateTime.now());
         }
     }
 

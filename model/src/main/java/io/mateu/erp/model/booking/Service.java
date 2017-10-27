@@ -1,10 +1,9 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import com.quonext.quoon.SendPurchaseOrdersToAgentTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -15,12 +14,10 @@ import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
-import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -67,6 +64,7 @@ public abstract class Service implements WithTriggers {
     private Audit audit;
 
     @Tab("General")
+    @FullWidth
     @ManyToOne
     @Required
     @SearchFilter(value="Booking Id", field = "id")
@@ -137,6 +135,17 @@ public abstract class Service implements WithTriggers {
     private boolean held;
 
 
+    private boolean alreadyInvoiced;
+
+    @Required
+    @ManyToOne
+    @StartsLine
+    private Office office;
+
+    @Required
+    @ManyToOne
+    private PointOfSale pos;
+
     @TextArea
     @StartsLine
     private String comment;
@@ -144,19 +153,9 @@ public abstract class Service implements WithTriggers {
     @TextArea
     private String privateComment;
 
+    @Tab("Change log")
     @Output
     private String changeLog;
-
-    @StartsLine
-    private boolean alreadyInvoiced;
-
-    @Required
-    @ManyToOne
-    private Office office;
-
-    @Required
-    @ManyToOne
-    private PointOfSale pos;
 
 
     @Tab("Price")

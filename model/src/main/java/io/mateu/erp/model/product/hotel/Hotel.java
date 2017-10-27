@@ -10,6 +10,7 @@ import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
+import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.CacheIndex;
@@ -40,12 +41,15 @@ public class Hotel implements IHotel {
     private long id;
 
     @ListColumn
+    @Required
     private String name;
 
     @ManyToOne
+    @Required
     private Office office;
 
     @ManyToOne
+    @Required
     private City city;
 
     private String lon;

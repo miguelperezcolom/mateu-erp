@@ -140,9 +140,10 @@
 
         <class>io.mateu.erp.model.util.LocalDateAttributeConverter</class>
         <class>io.mateu.erp.model.util.LocalDateTimeAttributeConverter</class>
+        <class>io.mateu.erp.model.util.IntArrayAttributeConverter</class>
 
         <class>com.quonext.quoon.Agent</class>
-        <class>com.quonext.quoon.SendPurchaseOrdersToAgentTask</class>
+        <class>io.mateu.erp.model.workflow.SendPurchaseOrdersToAgentTask</class>
 
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
 

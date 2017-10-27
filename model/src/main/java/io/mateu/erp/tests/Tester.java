@@ -1,17 +1,73 @@
 package io.mateu.erp.tests;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import io.mateu.erp.dispo.KeyValue;
+import io.mateu.erp.model.booking.hotel.HotelService;
+import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
+import io.mateu.ui.mdd.server.util.Helper;
+import org.easytravelapi.common.Amount;
+import org.easytravelapi.hotel.Allocation;
+import org.easytravelapi.hotel.BoardPrice;
 import org.javamoney.moneta.CurrencyUnitBuilder;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 
 import javax.money.*;
 import javax.money.format.AmountFormatQueryBuilder;
 import javax.money.format.MonetaryAmountFormat;
 import javax.money.format.MonetaryFormats;
-import java.util.Currency;
-import java.util.Locale;
+import java.util.*;
 
 public class Tester {
 
+    private static Set<Class> getSubtypes(Reflections reflections, Class c) {
+        List<Class> l = new ArrayList<>();
+        Set<Class> s = reflections.getSubTypesOf(c);
+        l.addAll(s);
+        for (Class sc : s) {
+            l.addAll(getSubtypes(reflections, sc));
+        }
+        return new HashSet<>(l);
+    }
+
+
     public static void main(String... args) {
+
+        crearReservaHotel();
+
+        //otros();
+
+
+    }
+
+    private static void otros() {
+
+        {
+            Class c = AbstractTask.class;
+
+            Reflections reflections = new Reflections(new ConfigurationBuilder()
+                    .filterInputsBy(new FilterBuilder().add((s) -> {
+                        System.out.println(s);
+                        return s.endsWith(".class");
+                    }))//include("\\.class"))
+                    .setScanners(new SubTypesScanner()).setUrls(c.getProtectionDomain().getCodeSource().getLocation())); //c.getPackage().getName());
+
+            Set<Class> subTypes = getSubtypes(reflections, c);
+
+            List<String> subclases = new ArrayList<>();
+            for (Class s : subTypes) {
+                if (s.getCanonicalName() != null) subclases.add(s.getSimpleName());
+            }
+
+            System.out.println("subclasses = " + Joiner.on(",").join(subclases));
+        }
+
+
         for (Currency c : Currency.getAvailableCurrencies()) {
             System.out.println(c.getCurrencyCode() + "/" + c.getDisplayName() + "/" + c.getNumericCode());
         }
@@ -100,6 +156,35 @@ public class Tester {
 
 
 
+    }
+
+    private static void crearReservaHotel() {
+
+            UserData ud = new UserData();
+            ud.setLogin("admin");
+
+            KeyValue k = new KeyValue();
+            k.setPointOfSaleId(1);
+            k.setHotelId(1);
+            k.setAgencyId(1);
+            k.setCheckIn(20180115);
+            k.setCheckOut(20180123);
+            Allocation a;
+            k.getAllocation().add(a = new Allocation(1, 2, null, "DBL", ""));
+            BoardPrice bp;
+            k.setBoardPrice(bp = new BoardPrice());
+            bp.setBoardBasisId("HB");
+            bp.setNetPrice(new Amount("EUR", 123.32));
+
+            try {
+
+                long id = HotelService.createFromKey(ud, k, "Mr test", "Local test");
+
+                System.out.println("service id = " + id);
+
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
 
     }
 
