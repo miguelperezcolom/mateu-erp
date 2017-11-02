@@ -1,9 +1,5 @@
 package io.mateu.erp.model.booking;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by miguel on 19/4/17.
  */

@@ -1,7 +1,5 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.swagger.jaxrs.config.BeanConfig;
-
 import java.util.HashSet;
 import java.util.Set;
 

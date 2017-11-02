@@ -1,22 +1,16 @@
 package com.quonext.quoon;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.log.LogEntry;
 import io.mateu.erp.log.Logger;
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
-import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Getter
@@ -27,28 +21,28 @@ public class Agent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     private String name;
 
     private boolean active;
 
     @OneToOne(mappedBy = "agent")
-    @Required
+    @NotNull
     private Actor provider;
 
-    @Required
+    @NotNull
     private String MQHost;
 
-    @Required
+    @NotNull
     private String uploadQueue;
 
-    @Required
+    @NotNull
     private String downloadQueue;
 
-    @Required
+    @NotNull
     private String MQUser;
 
-    @Required
+    @NotNull
     private String MQPassword;
 
     private String errorNotificationEmails;

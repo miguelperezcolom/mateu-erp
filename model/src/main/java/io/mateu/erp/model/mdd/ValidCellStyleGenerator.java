@@ -1,6 +1,5 @@
 package io.mateu.erp.model.mdd;
 
-import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.ui.core.shared.CellStyleGenerator;
 

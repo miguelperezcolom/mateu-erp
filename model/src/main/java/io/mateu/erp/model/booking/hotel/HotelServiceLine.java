@@ -3,11 +3,11 @@ package io.mateu.erp.model.booking.hotel;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.util.IntArrayAttributeConverter;
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -22,25 +22,25 @@ public class HotelServiceLine {
     @ManyToOne
     private HotelService service;
 
-    @Required
+    @NotNull
     private LocalDate start;
 
     @Column(name = "_end")
-    @Required
+    @NotNull
     private LocalDate end;
 
     @ManyToOne
-    @Required
+    @NotNull
     private RoomType roomType;
 
     @ManyToOne
-    @Required
+    @NotNull
     private BoardType boardType;
 
-    @Required
+    @NotNull
     private int numberOfRooms;
 
-    @Required
+    @NotNull
     private int paxPerRoom;
 
     @Convert(converter = IntArrayAttributeConverter.class)

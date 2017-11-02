@@ -1,6 +1,5 @@
 package io.mateu.erp.model.booking.generic;
 
-import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;

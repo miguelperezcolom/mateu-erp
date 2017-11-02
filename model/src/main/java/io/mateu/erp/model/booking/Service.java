@@ -1,7 +1,6 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.generic.PriceDetail;
@@ -14,10 +13,7 @@ import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
-import io.mateu.erp.model.workflow.TaskStatus;
+import io.mateu.erp.model.workflow.*;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -35,6 +31,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.net.URL;
@@ -66,7 +63,7 @@ public abstract class Service implements WithTriggers {
     @Tab("General")
     @FullWidth
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter(value="Booking Id", field = "id")
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
@@ -137,12 +134,12 @@ public abstract class Service implements WithTriggers {
 
     private boolean alreadyInvoiced;
 
-    @Required
+    @NotNull
     @ManyToOne
     @StartsLine
     private Office office;
 
-    @Required
+    @NotNull
     @ManyToOne
     private PointOfSale pos;
 

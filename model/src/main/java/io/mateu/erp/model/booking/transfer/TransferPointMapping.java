@@ -3,7 +3,9 @@ package io.mateu.erp.model.booking.transfer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.SearchFilterIsNull;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -11,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -27,7 +30,7 @@ public class TransferPointMapping implements WithTriggers {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     @SearchFilter
     private String text;
 

@@ -1,12 +1,12 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.ui.mdd.server.annotations.QLForCombo;
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * holder for currencies
@@ -19,13 +19,13 @@ import javax.persistence.Id;
 public class BillingConcept {
 
     @Id
-    @Required
+    @NotNull
     private String code;
 
-    @Required
+    @NotNull
     private String name;
 
-    @Required
+    @NotNull
     private LocalizationRule localizationRule;
 
 

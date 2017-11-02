@@ -11,17 +11,15 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.UseGridToSelect;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
-import org.easytravelapi.hotel.Occupancy;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Getter@Setter
@@ -30,7 +28,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
     @Output
     private String message;
 
-    @Required
+    @NotNull
     @UseGridToSelect
     private Option option;
 

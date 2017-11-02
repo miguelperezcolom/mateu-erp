@@ -1,19 +1,15 @@
 package io.mateu.erp.model.booking;
 
-import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
-import io.mateu.erp.model.payments.AbstractPaymentAllocation;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPAHelper;
-import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
@@ -21,9 +17,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,16 +47,16 @@ public class Booking implements WithTriggers {
     private Audit audit;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private Actor agency;
 
-    @Required
+    @NotNull
     @SearchFilter(exactMatch = true)
     private String agencyReference;
 
     @StartsLine
-    @Required
+    @NotNull
     @SearchFilter
     private String leadName;
 

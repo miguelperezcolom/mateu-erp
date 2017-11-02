@@ -1,6 +1,5 @@
 package io.mateu.erp.model.mdd;
 
-import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.ui.core.shared.CellStyleGenerator;
 

@@ -5,9 +5,10 @@ import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
 import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
 
 @Getter@Setter
 public class Pagina3 extends AbstractServerSideWizardPage {
@@ -18,7 +19,7 @@ public class Pagina3 extends AbstractServerSideWizardPage {
     @Output
     private String selectedOption;
 
-    @Required
+    @NotNull
     private String leadName;
 
 

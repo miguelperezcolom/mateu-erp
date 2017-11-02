@@ -2,12 +2,12 @@ package io.mateu.erp.model.product.transfer;
 
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.QLForCombo;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class Zone {
     @SearchFilter
     private String group;
 
-    @Required
+    @NotNull
     @SearchFilter
     private String name;
 

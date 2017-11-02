@@ -5,12 +5,10 @@ import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.Required;
+import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.CacheIndex;
@@ -18,6 +16,7 @@ import org.eclipse.persistence.annotations.Index;
 import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,29 +40,37 @@ public class Hotel implements IHotel {
     private long id;
 
     @ListColumn
-    @Required
+    @NotNull
+    @SearchFilter
     private String name;
 
     @ManyToOne
-    @Required
+    @NotNull
+    private HotelCategory category;
+
+    @ManyToOne
+    @NotNull
+    @ListColumn
+    @SearchFilter
     private Office office;
 
     @ManyToOne
-    @Required
+    @NotNull
+    @ListColumn
+    @SearchFilter
     private City city;
 
     private String lon;
 
     private String lat;
 
+    @ListColumn
     private boolean active;
 
     @Index
     @CacheIndex
     private String quoonId;
 
-    @ManyToOne
-    private HotelCategory category;
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
     @Ignored

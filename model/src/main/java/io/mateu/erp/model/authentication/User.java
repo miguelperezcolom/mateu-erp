@@ -11,8 +11,11 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * holder for users of our erp. It can be an internal user or a user created for a customer or a supplier
@@ -34,22 +37,22 @@ public class User implements WithTriggers {
      */
     @Id
     @ListColumn("Login")
-    @Required
+    @NotNull
     private String login;
 
     @ListColumn("Name")
-    @Required
+    @NotNull
     private String name;
 
     @ListColumn("Email")
-    @Required
+    @NotNull
     private String email;
 
     @Ignored
     private String password;
 
     @ListColumn("Status")
-    @Required
+    @NotNull
     private USER_STATUS status;
 
 
@@ -64,7 +67,7 @@ public class User implements WithTriggers {
 
 
     @Action(name = "Create token")
-    public void createToken(EntityManager em, @Required Actor a) throws IOException {
+    public void createToken(EntityManager em, @NotNull Actor a) throws IOException {
         AuthToken t = new AuthToken();
         em.persist(t);
         t.setActor(a);
@@ -77,7 +80,7 @@ public class User implements WithTriggers {
     }
 
     @Action(name = "test est. 1")
-    public static void testEstatico1(@Required@Caption("a") String a, @Caption("b")String b) {
+    public static void testEstatico1(@NotNull @Caption("a") String a, @Caption("b")String b) {
         System.out.println("testEstatico1(" + a + ", " + b + ")");
     }
 

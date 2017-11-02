@@ -1,12 +1,7 @@
 package io.mateu.erp.model.workflow;
 
-import org.quartz.Job;
-import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.quartz.impl.StdSchedulerFactory;
-
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 
 /**
  * Created by miguel on 28/4/17.

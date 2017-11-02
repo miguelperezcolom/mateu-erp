@@ -1,7 +1,5 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.transfer.Contract;
 import io.mateu.erp.model.product.transfer.Price;
 import io.mateu.erp.model.product.transfer.PricePer;
@@ -10,8 +8,6 @@ import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.easytravelapi.TransferBookingService;
 import org.easytravelapi.common.Amount;
-import org.easytravelapi.common.CancellationCost;
-import org.easytravelapi.common.Remark;
 import org.easytravelapi.transfer.*;
 
 import javax.persistence.EntityManager;

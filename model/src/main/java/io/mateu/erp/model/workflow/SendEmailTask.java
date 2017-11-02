@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -17,7 +16,6 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import java.net.URL;
-import java.time.LocalDateTime;
 
 /**
  * Created by miguel on 28/4/17.

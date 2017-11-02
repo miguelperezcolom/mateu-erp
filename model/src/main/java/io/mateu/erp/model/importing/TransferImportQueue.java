@@ -5,8 +5,6 @@ import io.mateu.ui.mdd.server.util.JPAHelper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Antonia on 26/03/2017.

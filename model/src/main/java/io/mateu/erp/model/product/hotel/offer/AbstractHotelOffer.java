@@ -5,6 +5,7 @@ import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,15 +39,21 @@ public class AbstractHotelOffer {
     private String quoonId;
 
     @SearchFilter
+    @ListColumn
     private String name;
 
+    @ListColumn
     private boolean includedInContractPdf;
 
+    @ListColumn
     private boolean prepayment;
 
+    @ListColumn
     private boolean active;
 
+    @ListColumn
     private LocalDate bookingWindowFrom;
+    @ListColumn
     private LocalDate bookingWindowTo;
 
 
@@ -59,8 +66,11 @@ public class AbstractHotelOffer {
 
     private LocalDate lastCheckout;
 
+    @ListColumn
     private int applicationMinimumNights;
+    @ListColumn
     private int applicationMaximumStay;
+    @ListColumn
     private int applicationRelease;
 
     private int minimumStayOverride;

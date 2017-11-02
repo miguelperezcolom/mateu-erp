@@ -2,9 +2,6 @@ package io.mateu.erp.model.util;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.Arrays;
 
 /**
  * Created by miguel on 12/10/16.

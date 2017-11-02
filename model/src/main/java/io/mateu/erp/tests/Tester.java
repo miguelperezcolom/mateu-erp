@@ -1,13 +1,10 @@
 package io.mateu.erp.tests;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.util.Helper;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.BoardPrice;
@@ -18,9 +15,6 @@ import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
 import javax.money.*;
-import javax.money.format.AmountFormatQueryBuilder;
-import javax.money.format.MonetaryAmountFormat;
-import javax.money.format.MonetaryFormats;
 import java.util.*;
 
 public class Tester {
@@ -36,12 +30,21 @@ public class Tester {
     }
 
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Throwable {
 
-        crearReservaHotel();
+        //crearReservaHotel();
+
+        poblar();
+
 
         //otros();
 
+
+    }
+
+    private static void poblar() throws Throwable {
+
+        TestPopulator.populateAll();
 
     }
 

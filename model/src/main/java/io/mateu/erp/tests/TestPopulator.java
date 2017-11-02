@@ -6,6 +6,7 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
@@ -16,7 +17,7 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
-import io.mateu.erp.model.product.hotel.contracting.*;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.DiscountOffer;
 import io.mateu.erp.model.product.hotel.offer.Per;
 import io.mateu.erp.model.product.hotel.offer.Scope;
@@ -53,10 +54,24 @@ public class TestPopulator {
 
     public static void populateAll() throws Throwable {
 
-        Populator.populate();
+        Helper.transact((JPATransaction) (em) -> {
 
+            int nomappconfigs = em.createQuery("select x from " + AppConfig.class.getName() + " x").getResultList().size();
+
+            if (nomappconfigs == 0) Populator.populate();
+
+        });
 
         TestPopulator p = new TestPopulator();
+
+        Helper.transact((JPATransaction) (em) -> {
+
+            int numhots = em.createQuery("select x from " + Hotel.class.getName() + " x").getResultList().size();
+
+            if (numhots > 0) throw new Exception("Can not populate with test data if there are already hotels in the database!");
+
+        });
+
 
         p.populateActors();
 
@@ -829,6 +844,7 @@ public class TestPopulator {
 
 
                 City s = (City) em.createQuery("select s from " + City.class.getName() + " s").getResultList().get(0);
+                Office o = (Office) em.createQuery("select s from " + Office.class.getName() + " s").getResultList().get(0);
 
 
                 List<RoomType> rts = em.createQuery("select s from " + RoomType.class.getName() + " s").getResultList();
@@ -847,6 +863,7 @@ public class TestPopulator {
                     h.setName("Hotel "+ i);
                     h.setCity(s);
                     s.getHotels().add(h);
+                    h.setOffice(o);
 
                     h.setLat("39.5877926");
                     h.setLon("2.6484694");

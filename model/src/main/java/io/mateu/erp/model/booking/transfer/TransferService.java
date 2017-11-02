@@ -1,10 +1,12 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
-import freemarker.template.TemplateException;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.*;
+import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.PurchaseOrderStatus;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
@@ -13,19 +15,12 @@ import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
-import io.mateu.erp.model.workflow.TaskStatus;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.views.AbstractListView;
-import io.mateu.ui.core.server.ServerSideHelper;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.JPAController;
-import io.mateu.ui.mdd.server.JPAServerSideEditorViewController;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -41,18 +36,23 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.mail.internet.InternetAddress;
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static io.mateu.ui.core.server.BaseServerSideApp.fop;
-import static org.apache.fop.fonts.type1.AdobeStandardEncoding.c;
 
 /**
  * Created by miguel on 25/2/17.
@@ -64,12 +64,12 @@ public class TransferService extends Service implements WithTriggers {
 
     @Tab("Service")
     @StartsLine
-    @Required
+    @NotNull
     @SearchFilter
     @ListColumn
     private TransferType transferType;
 
-    @Required
+    @NotNull
     @ListColumn
     private int pax;
 
@@ -103,7 +103,7 @@ public class TransferService extends Service implements WithTriggers {
 
     @StartsLine
     private String flightNumber;
-    @Required
+    @NotNull
     @ListColumn(order = true)
     private LocalDateTime flightTime;
     private String flightOriginOrDestination;
@@ -352,7 +352,7 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     @Action(name = "Send pickup times")
-    public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@Required String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
+    public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@NotNull String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
         AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(TransferService.class));
 
         Office office = null;

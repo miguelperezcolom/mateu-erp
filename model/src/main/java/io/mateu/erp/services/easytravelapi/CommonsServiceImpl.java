@@ -8,7 +8,6 @@ import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.easytravelapi.CommonsService;
-import org.easytravelapi.TransferBookingService;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;

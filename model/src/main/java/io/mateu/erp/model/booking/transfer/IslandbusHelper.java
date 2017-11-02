@@ -1,6 +1,5 @@
 package io.mateu.erp.model.booking.transfer;
 
-import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -12,8 +11,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.apache.fop.fonts.type1.AdobeStandardEncoding.b;
 
 /**
  * Created by miguel on 20/5/17.

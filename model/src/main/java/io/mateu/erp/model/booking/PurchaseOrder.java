@@ -2,7 +2,6 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import com.quonext.quoon.Agent;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersToAgentTask;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -14,10 +13,7 @@ import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Constants;
-import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
-import io.mateu.erp.model.workflow.TaskStatus;
+import io.mateu.erp.model.workflow.*;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -30,6 +26,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDate;
@@ -59,12 +56,12 @@ public class PurchaseOrder implements WithTriggers {
     private LocalDate start;
 
     @ManyToOne
-    @Required
+    @NotNull
     @ListColumn
     private Office office;
 
     @ManyToOne
-    @Required
+    @NotNull
     @ListColumn
     @SearchFilter
     private Actor provider;
@@ -84,7 +81,7 @@ public class PurchaseOrder implements WithTriggers {
     @ListColumn
     private LocalDateTime responseTime;
 
-    @Required
+    @NotNull
     @ListColumn
     @SearchFilter
     @CellStyleGenerator(PurchaseOrderStatusCellStyleGenerator.class)
@@ -103,7 +100,7 @@ public class PurchaseOrder implements WithTriggers {
     @ListColumn
     double total;
     @ManyToOne
-    @Required
+    @NotNull
     Currency currency;
 
     @Output

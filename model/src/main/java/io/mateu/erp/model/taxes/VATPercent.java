@@ -1,13 +1,12 @@
 package io.mateu.erp.model.taxes;
 
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -18,13 +17,13 @@ public class VATPercent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     @SearchFilter
     @ManyToOne
     private VAT vat;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private BillingConcept billingConcept;
 

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,27 +31,33 @@ public class AbstractContract {
 
     @Tab("General")
     @FullWidth
-    @Required
+    @NotNull
     @SearchFilter
+    @ListColumn
     private String title;
 
-    @Required
+    @NotNull
     @SearchFilter
+    @ListColumn
     private ContractType type;
 
-    @Required
+    @NotNull
     @ManyToOne
     private BillingConcept billingConcept;
 
     private boolean VATIncluded;
 
     @StartsLine
-    @Required
+    @NotNull
+    @ListColumn
     private LocalDate validFrom;
-    @Required
+    @NotNull
+    @ListColumn
     private LocalDate validTo;
 
+    @ListColumn
     private LocalDate bookingWindowFrom;
+    @ListColumn
     private LocalDate bookingWindowTo;
 
     @StartsLine
@@ -62,8 +69,9 @@ public class AbstractContract {
 
     @ManyToOne
     @StartsLine
-    @Required
+    @NotNull
     @SearchFilter
+    @ListColumn
     private Actor supplier;
 
     @OneToMany

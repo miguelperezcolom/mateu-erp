@@ -5,8 +5,6 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.booking.generic.PriceLine;
-import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -15,7 +13,6 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.AbstractServerSideWizard;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -24,7 +21,6 @@ import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
@@ -34,6 +30,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -47,7 +44,7 @@ public class HotelService extends Service implements WithTriggers {
 
     @Tab("Service")
     @ManyToOne
-    @Required
+    @NotNull
     private Hotel hotel;
 
 

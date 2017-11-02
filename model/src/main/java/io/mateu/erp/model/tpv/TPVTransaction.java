@@ -3,8 +3,6 @@ package io.mateu.erp.model.tpv;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.erp.model.payments.Payment;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.webpay.Digest;

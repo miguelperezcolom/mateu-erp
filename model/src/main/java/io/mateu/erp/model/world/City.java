@@ -1,15 +1,14 @@
 package io.mateu.erp.model.world;
 
-import io.mateu.erp.model.multilanguage.Literal;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,11 +26,11 @@ public class City {
     private long id;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private State state;
 
-    @Required
+    @NotNull
     @SearchFilter
     private String name;
 

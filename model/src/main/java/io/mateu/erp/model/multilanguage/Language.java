@@ -1,11 +1,11 @@
 package io.mateu.erp.model.multilanguage;
 
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * holder for supported languages. Languages are created manually by the dev team
@@ -17,9 +17,9 @@ import javax.persistence.Id;
 public class Language {
 
     @Id
-    @Required
+    @NotNull
     private String isoCode;
 
-    @Required
+    @NotNull
     private String name;
 }

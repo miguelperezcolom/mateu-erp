@@ -1,13 +1,12 @@
 package io.mateu.erp.model.taxes;
 
-import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Entity
@@ -19,7 +18,7 @@ public class VATSettlement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     @SearchFilter
     @ManyToOne
     private VAT vat;

@@ -17,6 +17,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,15 +41,15 @@ public class TransferPoint {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     private TransferPointType type;
 
-    @Required
+    @NotNull
     @SearchFilter
     private String name;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private City city;
 

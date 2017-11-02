@@ -2,12 +2,12 @@ package io.mateu.erp.model.cms;
 
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class Website {
     private long id;
 
     @SearchFilter
-    @Required
+    @NotNull
     private String name;
 
     @SearchFilter

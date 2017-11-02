@@ -31,7 +31,7 @@ public class BookingModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Services") {
+        m.add(new AbstractAction("All services") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Service", new MDDCallback());
@@ -45,21 +45,21 @@ public class BookingModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Generics") {
+        m.add(new AbstractAction("Generics only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.generic.GenericService", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Hotels") {
+        m.add(new AbstractAction("Hotels only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.hotel.HotelService", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Transfers") {
+        m.add(new AbstractAction("Transfers only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback());

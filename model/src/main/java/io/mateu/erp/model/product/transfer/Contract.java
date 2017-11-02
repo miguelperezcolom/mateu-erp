@@ -1,17 +1,12 @@
 package io.mateu.erp.model.product.transfer;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.City;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.server.BaseServerSideApp;
-import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -28,13 +23,13 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
-import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -46,7 +41,7 @@ import java.util.*;
 @QLForCombo(ql = "select x.id, x.title from io.mateu.erp.model.product.transfer.Contract x order by x.title")
 public class Contract extends AbstractContract {
 
-    @Required
+    @NotNull
     @SearchFilter
     private TransferType transferType;
 

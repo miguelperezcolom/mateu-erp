@@ -1,7 +1,6 @@
 package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferImportQueue;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.mdd.server.util.Helper;

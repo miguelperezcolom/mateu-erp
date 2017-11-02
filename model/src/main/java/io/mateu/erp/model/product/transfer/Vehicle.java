@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 25/2/17.
@@ -22,14 +22,14 @@ public class Vehicle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     @SearchFilter
     private String name;
 
-    @Required
+    @NotNull
     private int minPax;
 
-    @Required
+    @NotNull
     private int maxPax;
 
     private boolean onRequest;

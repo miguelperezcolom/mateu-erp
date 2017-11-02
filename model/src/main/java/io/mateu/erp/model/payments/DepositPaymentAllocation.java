@@ -1,6 +1,5 @@
 package io.mateu.erp.model.payments;
 
-import io.mateu.erp.model.invoicing.Invoice;
 import lombok.Getter;
 import lombok.Setter;
 

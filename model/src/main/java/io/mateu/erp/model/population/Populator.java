@@ -2,7 +2,6 @@ package io.mateu.erp.model.population;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import io.mateu.erp.model.authentication.Grant;
 import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;

@@ -1,17 +1,20 @@
 package io.mateu.erp.model.booking.generic;
 
-import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.booking.*;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Actor;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.ui.mdd.server.annotations.Subtitle;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,7 +34,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class GenericService extends Service implements WithTriggers {
 
     @Tab("Service")
-    @Required
+    @NotNull
     private String description;
 
     @OneToMany(mappedBy = "service")

@@ -9,12 +9,11 @@ import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.Element;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;

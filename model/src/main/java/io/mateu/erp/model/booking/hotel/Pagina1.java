@@ -3,12 +3,11 @@ package io.mateu.erp.model.booking.hotel;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.world.State;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
-import io.mateu.ui.mdd.server.annotations.Required;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,19 +15,19 @@ import java.util.List;
 @Setter
 public class Pagina1 extends AbstractServerSideWizardPage {
 
-    @Required
+    @NotNull
     private Actor agency;
 
-    @Required
+    @NotNull
     private State state;
 
-    @Required
+    @NotNull
     private LocalDate checkin = LocalDate.of(2018, 1, 15);
 
-    @Required
+    @NotNull
     private LocalDate checkout = LocalDate.of(2018, 1, 23);
 
-    @Required
+    @NotNull
     private List<Occupation> occupations = Arrays.asList(new Occupation(1, 2, null));
 
     @Override

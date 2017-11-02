@@ -1,11 +1,11 @@
 package io.mateu.erp.model.revenue;
 
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -17,12 +17,12 @@ public class MarkupLine {
     private long id;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private Markup markup;
 
     @ManyToOne
-    @Required
+    @NotNull
     @SearchFilter
     private Product product;
 

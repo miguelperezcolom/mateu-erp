@@ -1,13 +1,15 @@
 package io.mateu.erp.services;
 
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.time.LocalDateTime;
 import java.util.HashMap;

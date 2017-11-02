@@ -4,7 +4,6 @@ import com.quonext.quoon.Agent;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.StartsLine;
 import jdk.nashorn.internal.ir.annotations.Ignore;
@@ -13,6 +12,7 @@ import lombok.Setter;
 import org.jdom2.Element;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class Actor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Required
+    @NotNull
     @SearchFilter
     @ListColumn
     private String name;
@@ -49,7 +49,7 @@ public class Actor {
     private String comments;
 
     @ManyToOne
-    @Required
+    @NotNull
     private Currency currency;
 
     @ManyToMany
