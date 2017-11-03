@@ -55,18 +55,18 @@ public class Booking implements WithTriggers {
     @SearchFilter(exactMatch = true)
     private String agencyReference;
 
-    @StartsLine
     @NotNull
     @SearchFilter
     private String leadName;
 
     private String email;
 
+    @SameLine
     private String telephone;
 
-    @StartsLine
     private boolean confirmed;
 
+    @SameLine
     private boolean cancelled;
 
     @Ignored
@@ -74,21 +74,26 @@ public class Booking implements WithTriggers {
     private LocalDate start;
 
     @Ignored
+    @SameLine
     private LocalDate finish;
 
-    @StartsLine
     private String comments;
 
 
-    @Ignored
+    @Output
     private double totalNetValue;
 
+    @Output
+    @SameLine
     private double totalRetailValue;
 
+    @Output
+    @SameLine
     private double totalCommissionValue;
 
 
-    @Ignored
+    @Output
+    @SameLine
     private double balance;
 
     @Ignored

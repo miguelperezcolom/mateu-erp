@@ -81,11 +81,10 @@ public abstract class Service implements WithTriggers {
     @CellStyleGenerator(IconCellStyleGenerator.class)
     private String icon;
 
-    @StartsLine
     @ListColumn(width = 60)
     @CellStyleGenerator(ConfirmedCellStyleGenerator.class)
     private ServiceConfirmationStatus answer = ServiceConfirmationStatus.CONFIRMED;
-
+    @SameLine
     private String answerText;
 
     @ListColumn(width = 60)
@@ -94,6 +93,7 @@ public abstract class Service implements WithTriggers {
     private ValidationStatus validationStatus = ValidationStatus.VALID;
 
     @Output
+    @SameLine
     private String validationMessage;
 
     @ListColumn
@@ -116,19 +116,21 @@ public abstract class Service implements WithTriggers {
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
-    @StartsLine
     private boolean cancelled;
 
     @ListColumn
     @CellStyleGenerator(NoShowCellStyleGenerator.class)
+    @SameLine
     private boolean noShow;
 
     @ListColumn
     @CellStyleGenerator(LockedCellStyleGenerator.class)
+    @SameLine
     private boolean locked;
 
     @ListColumn
     @CellStyleGenerator(HeldCellStyleGenerator.class)
+    @SameLine
     private boolean held;
 
 
@@ -136,7 +138,6 @@ public abstract class Service implements WithTriggers {
 
     @NotNull
     @ManyToOne
-    @StartsLine
     private Office office;
 
     @NotNull
@@ -144,10 +145,10 @@ public abstract class Service implements WithTriggers {
     private PointOfSale pos;
 
     @TextArea
-    @StartsLine
     private String comment;
 
     @TextArea
+    @SameLine
     private String privateComment;
 
     @Tab("Change log")
@@ -156,20 +157,18 @@ public abstract class Service implements WithTriggers {
 
 
     @Tab("Price")
-    @StartsLine
     private boolean valueOverrided;
-
+    @SameLine
     private double overridedNetValue;
-
+    @SameLine
     private double overridedRetailValue;
-
+    @SameLine
     private double overridedCommissionValue;
 
 
     @Output
     @ListColumn
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
-    @StartsLine
     private boolean valued;
 
     @Output
@@ -177,9 +176,11 @@ public abstract class Service implements WithTriggers {
     private double totalNetValue;
 
     @Output
+    @SameLine
     private double totalRetailValue;
 
     @Output
+    @SameLine
     private double totalCommissionValue;
 
     @Output
@@ -199,7 +200,6 @@ public abstract class Service implements WithTriggers {
     private int effectiveProcessingStatus;
 
     @Tab("Purchase")
-    @StartsLine
     @ManyToOne
     private Actor preferredProvider;
 

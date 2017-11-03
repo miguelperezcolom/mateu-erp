@@ -13,7 +13,10 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.ui.mdd.server.annotations.Selection;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -50,7 +53,6 @@ public class HotelService extends Service implements WithTriggers {
 
     @OneToMany(mappedBy = "service")
     @OwnedList
-    @StartsLine
     private List<HotelServiceLine> lines = new ArrayList<>();
 
 

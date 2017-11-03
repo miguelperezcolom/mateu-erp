@@ -2,7 +2,10 @@ package io.mateu.erp.model.util;
 
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.TopicConnection;
+import javax.jms.TopicConnectionFactory;
 
 public class MiTopicConnectionFactory implements TopicConnectionFactory {
 

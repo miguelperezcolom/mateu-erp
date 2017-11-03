@@ -4,7 +4,6 @@ import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
 import org.eclipse.jetty.jndi.NamingUtil;
 import org.eclipse.persistence.internal.databaseaccess.FieldTypeDefinition;
-import org.eclipse.persistence.internal.helper.DatabaseField;
 import org.eclipse.persistence.platform.database.PostgreSQLPlatform;
 
 import javax.jms.ConnectionFactory;

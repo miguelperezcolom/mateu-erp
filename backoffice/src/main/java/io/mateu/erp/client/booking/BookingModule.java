@@ -24,63 +24,63 @@ public class BookingModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Bookings") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Bookings") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Booking", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("All services") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("All services") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.Service", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Purchase orders") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Purchase orders") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.PurchaseOrder", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Generics only") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Generics only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.generic.GenericService", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Hotels only") {
+        m.add(new AbstractAction((MateuUI.getApp().getName().toLowerCase().contains("quoon"))?"Bookings":"Hotels only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.hotel.HotelService", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Transfers only") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Transfers only") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Transfers summary") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Transfers summary") {
             @Override
             public void run() {
                 MateuUI.openView(new TransfersSummaryView());
             }
         });
 
-        m.add(new AbstractAction("Mapping") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Mapping") {
             @Override
             public void run() {
                 ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferPointMapping", new MDDCallback());
             }
         });
 
-        m.add(new AbstractAction("Import pickup times") {
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) m.add(new AbstractAction("Import pickup times") {
             @Override
             public void run() {
                 MateuUI.openView(new PickupTimeImportingView());

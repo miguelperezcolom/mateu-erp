@@ -31,6 +31,7 @@ public class Helper {
     }
 
     public static <T> T fromJson(String json, Class<T> c) throws IOException {
+        if (json == null || "".equals(json)) json = "{}";
         return mapper.readValue(json, c);
     }
 

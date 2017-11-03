@@ -2,7 +2,6 @@ package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.common.File;
 import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.StartsLine;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -33,7 +32,6 @@ public class AppConfig {
     private File logo;
 
 
-    @StartsLine
     private String adminEmailSmtpHost;
 
     private int adminEmailSmtpPort;
@@ -46,7 +44,6 @@ public class AppConfig {
 
     private String adminEmailCC;
 
-    @StartsLine
     private String pop3Host;
 
     private String pop3User;
@@ -55,12 +52,10 @@ public class AppConfig {
 
     private String pop3ReboundToEmail;
 
-    @StartsLine
     private boolean clickatellEnabled;
     private String clickatellApiKey;
 
 
-    @StartsLine
     @TextArea
     private String xslfoForList;
 
@@ -85,7 +80,6 @@ public class AppConfig {
     @TextArea
     private String xslfoForPurchaseOrder;
 
-    @StartsLine
     @TextArea
     private String purchaseOrderTemplate;
 

@@ -2,7 +2,9 @@ package io.mateu.erp.client.booking;
 
 import io.mateu.ui.core.client.app.AbstractArea;
 import io.mateu.ui.core.client.app.AbstractModule;
+import io.mateu.ui.core.client.app.MateuUI;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -17,6 +19,9 @@ public class BookingArea extends AbstractArea {
 
     @Override
     public List<AbstractModule> getModules() {
-        return Arrays.asList(new BookingModule(), new ImportingModule());
+        List<AbstractModule> l = new ArrayList<>();
+        l.add(new BookingModule());
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new ImportingModule());
+        return l;
     }
 }

@@ -63,7 +63,6 @@ import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 public class TransferService extends Service implements WithTriggers {
 
     @Tab("Service")
-    @StartsLine
     @NotNull
     @SearchFilter
     @ListColumn
@@ -78,7 +77,10 @@ public class TransferService extends Service implements WithTriggers {
     @ListColumn
     private TransferDirection direction;
 
-    @StartsLine
+    @ManyToOne
+    private Vehicle preferredVehicle;
+
+    @Separator("Pickup")
     private String pickupText;
     @ManyToOne
     private TransferPoint pickup;
@@ -88,7 +90,7 @@ public class TransferService extends Service implements WithTriggers {
     private TransferPoint effectivePickup;
 
 
-    @StartsLine
+    @Separator("Dropoff")
     private String dropoffText;
     @ManyToOne
     private TransferPoint dropoff;
@@ -97,28 +99,29 @@ public class TransferService extends Service implements WithTriggers {
     @SearchFilter
     private TransferPoint effectiveDropoff;
 
-    @StartsLine
-    @ManyToOne
-    private Vehicle preferredVehicle;
 
-    @StartsLine
+    @Separator("Flight")
     private String flightNumber;
     @NotNull
     @ListColumn(order = true)
     private LocalDateTime flightTime;
     private String flightOriginOrDestination;
 
-    @StartsLine
-    @Output
-    private LocalDateTime importedPickupTime;
+    @Separator("Pickup info")
     @ListColumn
     private LocalDateTime pickupTime;
+    @Output
+    private LocalDateTime importedPickupTime;
+    @SameLine
     private LocalDateTime pickupConfirmedByTelephone;
     @Output
+    @SameLine
     private LocalDateTime pickupConfirmedByWeb;
     @Output
+    @SameLine
     private LocalDateTime pickupConfirmedByEmailToHotel;
     @Output
+    @SameLine
     private LocalDateTime pickupConfirmedBySMS;
 
     @Ignored

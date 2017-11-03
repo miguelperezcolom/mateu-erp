@@ -2,8 +2,6 @@ package io.mateu.erp.model.util;
 
 import com.rabbitmq.jms.admin.RMQDestination;
 
-import javax.jms.JMSException;
-import javax.jms.Topic;
 import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import javax.naming.Reference;

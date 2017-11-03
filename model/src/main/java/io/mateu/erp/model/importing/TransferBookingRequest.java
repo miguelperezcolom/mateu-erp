@@ -9,10 +9,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.StartsLine;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -99,18 +96,20 @@ public class TransferBookingRequest {
     public enum STATUS {OK, CANCELLED};
 
 
-@StartsLine
+    @Separator("Arrival")
     @ListColumn
     @Output
     private STATUS arrivalStatus;
     @ListColumn
     @Output
+    @SameLine
     private String arrivalAirport;
     @ListColumn
     @Output
     private String arrivalResort;
     @ListColumn
     @Output
+    @SameLine
     private String arrivalAddress;
     @ListColumn
     @Output
@@ -118,6 +117,7 @@ public class TransferBookingRequest {
 
     @Output
     @ListColumn
+    @SameLine
     private String arrivalFlightDate;//formato dd/MM/yyyy
     public void setArrivalFlightDate(String day)
     {
@@ -126,6 +126,8 @@ public class TransferBookingRequest {
 
     @ListColumn
     @Output
+
+    @SameLine
     private String arrivalFlightTime;//formato HH:mm
     public void setArrivalFlightTime(String time)
     {
@@ -133,18 +135,26 @@ public class TransferBookingRequest {
     }
     @ListColumn
     @Output
+
+    @SameLine
     private String arrivalFlightNumber;
     @ListColumn
     @Output
+
+    @SameLine
     private String arrivalFlightCompany;
     @ListColumn
     @Output
+
+    @SameLine
     private String arrivalOriginAirport;
     @ListColumn
     @Output
+    @SameLine
     private String arrivalComments;
     @ListColumn
     @Output
+    @SameLine
     private String arrivalPickupDate;//formato dd/MM/yyyy
     public void setArrivalPickupDate(String day)
     {
@@ -152,30 +162,34 @@ public class TransferBookingRequest {
     }
     @ListColumn
     @Output
+    @SameLine
     private String arrivalPickupTime;//formato HH:mm
     public void setArrivalPickupTime(String time)
     {
         arrivalPickupTime= checkTimeFormat(time);
     }
 
-    @StartsLine
+    @Separator("Departure")
     @ListColumn
     @Output
     private STATUS departureStatus;
     @ListColumn
     @Output
+    @SameLine
     private String departureAirport;
     @ListColumn
     @Output
     private String departureResort;
     @ListColumn
     @Output
+    @SameLine
     private String departureAddress;
     @ListColumn
     @Output
     private boolean departureConfirmed=false;
     @ListColumn
     @Output
+    @SameLine
     private String departureFlightDate;//formato dd/MM/yyyy
     public void setDepartureFlightDate(String day)
     {
@@ -183,6 +197,7 @@ public class TransferBookingRequest {
     }
     @ListColumn
     @Output
+    @SameLine
     private String departureFlightTime;//formato HH:mm
     public void setDepartureFlightTime(String time)
     {
@@ -191,18 +206,23 @@ public class TransferBookingRequest {
 
     @ListColumn
     @Output
+    @SameLine
     private String departureFlightNumber;
     @ListColumn
     @Output
+    @SameLine
     private String departureFlightCompany;
     @ListColumn
     @Output
+    @SameLine
     private String departureDestinationAirport;
     @ListColumn
     @Output
+    @SameLine
     private String departureComments;
     @ListColumn
     @Output
+    @SameLine
     private String departurePickupDate; //formato dd/MM/yyyy
     public void setDeparturePickupDate(String day)
     {
@@ -210,13 +230,14 @@ public class TransferBookingRequest {
     }
     @ListColumn
     @Output
+    @SameLine
     private String departurePickupTime;//formato HH:mm
     public void setDeparturePickupTime(String time)
     {
         departurePickupTime= checkTimeFormat(time);
     }
 
-    @StartsLine
+    @Separator("Others")
     private String source; //xml origen o csv
 
     @Output

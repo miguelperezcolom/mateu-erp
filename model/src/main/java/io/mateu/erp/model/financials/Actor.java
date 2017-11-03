@@ -5,7 +5,7 @@ import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.StartsLine;
+import io.mateu.ui.mdd.server.annotations.Separator;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,7 +55,7 @@ public class Actor {
     @ManyToMany
     private List<Markup> markups = new ArrayList<>();
 
-    @StartsLine
+    @Separator("Orders sending")
     private PurchaseOrderSendingMethod ordersSendingMethod;
     private String sendOrdersTo;
     @OneToOne
@@ -63,7 +63,7 @@ public class Actor {
     private boolean automaticOrderSending;
     private boolean automaticOrderConfirmation;
 
-    @StartsLine
+    @Separator("Invoicing")
     private boolean exportableToinvoicingApp;
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;

@@ -4,10 +4,7 @@ import io.mateu.erp.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.OptionsClass;
 import org.jdom2.Element;
 
-import javax.persistence.OneToMany;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by miguel on 1/10/16.

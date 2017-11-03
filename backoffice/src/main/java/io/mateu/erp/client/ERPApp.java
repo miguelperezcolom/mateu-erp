@@ -10,7 +10,9 @@ import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
 import io.mateu.ui.core.client.app.AbstractApplication;
 import io.mateu.ui.core.client.app.AbstractArea;
+import io.mateu.ui.core.client.app.MateuUI;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,20 +22,20 @@ import java.util.List;
 public class ERPApp extends AbstractApplication {
     @Override
     public String getName() {
-        return "Mateu ERP";
+        return System.getProperty("appname", "Mateu ERP");
     }
 
     @Override
     public List<AbstractArea> getAreas() {
-        return Arrays.asList(
-                new AdminArea()
-                , new CMSArea()
-                , new CRMArea()
-                , new ProductArea()
-                , new BookingArea()
-                , new FinancialArea()
-                , new ManagementArea()
-                , new UtilsArea()
-        );
+        List<AbstractArea> l = new ArrayList<>();
+        l.add(new AdminArea());
+        l.add(new CMSArea());
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new CRMArea());
+        l.add(new ProductArea());
+        l.add(new BookingArea());
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new FinancialArea());
+        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new ManagementArea());
+        l.add(new UtilsArea());
+        return l;
     }
 }

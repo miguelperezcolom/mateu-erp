@@ -47,28 +47,29 @@ public class AbstractContract {
 
     private boolean VATIncluded;
 
-    @StartsLine
     @NotNull
     @ListColumn
     private LocalDate validFrom;
     @NotNull
     @ListColumn
+    @SameLine
     private LocalDate validTo;
 
     @ListColumn
     private LocalDate bookingWindowFrom;
     @ListColumn
+    @SameLine
     private LocalDate bookingWindowTo;
 
-    @StartsLine
+
     @TextArea
     private String specialTerms;
 
     @TextArea
+    @SameLine
     private String privateComments;
 
     @ManyToOne
-    @StartsLine
     @NotNull
     @SearchFilter
     @ListColumn

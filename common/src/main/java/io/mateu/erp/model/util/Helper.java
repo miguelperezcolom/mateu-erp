@@ -1,15 +1,12 @@
 package io.mateu.erp.model.util;
 
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.common.base.Strings;
-import com.rabbitmq.jms.admin.RMQConnectionFactory;
-import com.rabbitmq.jms.admin.RMQDestination;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -24,18 +21,12 @@ import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.eclipse.jetty.jndi.NamingUtil;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -97,6 +88,11 @@ public class Helper {
     public static Map<String, Object> fromJson(String json) throws IOException {
         if (json == null || "".equals(json)) json = "{}";
         return mapper.readValue(json, Map.class);
+    }
+
+    public static <T> T fromJson(String json, Class<T> c) throws IOException {
+        if (json == null || "".equals(json)) json = "{}";
+        return mapper.readValue(json, c);
     }
 
     public static String toJson(Object o) throws IOException {

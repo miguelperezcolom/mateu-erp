@@ -6,11 +6,11 @@ import io.mateu.ui.mdd.server.AbstractServerSideWizard;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.WizardPageVO;
 import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.Required;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.persistence.EntityManager;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -82,7 +82,7 @@ public class TransferOperations extends AbstractServerSideWizard {
         vo.setWizardClassName(this.getClass().getName());
         vo.setFirstPage(true);
         vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
-            @Required
+            @NotNull
             LocalDate workDate;
         }.getClass()));
         return vo;

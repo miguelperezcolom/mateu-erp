@@ -99,7 +99,7 @@ public class DispoTest {
 
 
                     for (int j = 0; j < 100; j++) for (Hotel h : hoteles) {
-                        AvailableHotel ah = new HotelAvailabilityRunner().check(h, 1, modelo, rq);
+                        AvailableHotel ah = new HotelAvailabilityRunner().check(h, 1, 1, modelo, rq);
                         if (ah != null) finalDispo.add(ah);
                     }
 

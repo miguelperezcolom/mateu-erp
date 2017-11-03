@@ -60,12 +60,11 @@ public class TransferPoint {
     @TextArea
     private String instructions;
 
-    @StartsLine
     private String email;
 
+    @SameLine
     private String fax;
 
-    @StartsLine
     @ManyToOne
     private State gatewayOf;
 

@@ -4,8 +4,6 @@ import io.mateu.erp.model.util.XMLSerializable;
 import org.jdom2.Element;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by miguel on 1/10/16.

@@ -2,7 +2,8 @@ package io.mateu.erp.model.organization;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.NotInList;
-import io.mateu.ui.mdd.server.annotations.StartsLine;
+import io.mateu.ui.mdd.server.annotations.SameLine;
+import io.mateu.ui.mdd.server.annotations.Separator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,18 +32,22 @@ public class Office {
     private TransferPoint defaultAirportForTransfers;
 
 
-    @StartsLine
+    @Separator("Email")
     @NotInList
+    @SameLine
     private String emailHost;
     @NotInList
+    @SameLine
     private int emailPort;
     @NotInList
     private String emailUsuario;
     @NotInList
+    @SameLine
     private String emailPassword;
     @NotInList
     private String emailFrom;
     @NotInList
+    @SameLine
     private String emailCC;
 
 
