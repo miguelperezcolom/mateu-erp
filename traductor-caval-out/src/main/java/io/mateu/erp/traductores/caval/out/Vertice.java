@@ -590,18 +590,22 @@ public class Vertice extends AbstractVerticle {
 
         }
 
+        long t0 = System.currentTimeMillis();
 
 
         hotelPort.getAvailableHotelsAsync(parametros, res -> {
 
             try {
 
+
                 CavalHotelAvailabilityRS r = res.get().getReturn();
 
                 GetAvailableHotelsRS rs = new GetAvailableHotelsRS();
 
+                long t = System.currentTimeMillis();
+
                 rs.setStatusCode(r.getResultCode());
-                rs.setMsg(r.getMessage());
+                rs.setMsg(((r.getMessage() != null)?r.getMessage():"") + ". Took " + (t - t0) + " ms.");
 
                 for (AvailableEstablishment e : r.getAvailableEstablishments()) {
                     AvailableHotel h;
@@ -616,6 +620,10 @@ public class Vertice extends AbstractVerticle {
                     for (CombinationPrice cp : e.getPrices()) {
                         Option o;
                         h.getOptions().add(o = new Option());
+
+                        StringBuffer sb = new StringBuffer();
+
+                        int pos = 0;
                         for (RoomOccupation ro : cp.getRooms()) {
                             Allocation a;
                             o.getDistribution().add(a = new Allocation());
@@ -625,26 +633,34 @@ public class Vertice extends AbstractVerticle {
                             a.setPaxPerRoom(ro.getAdultsPerRoom() + ro.getChildrenPerRoom());
                             a.setAges(Ints.toArray(ro.getChildAges()));
 
-                            for (BoardPrice bp : cp.getBoardPrices()) {
-                                org.easytravelapi.hotel.BoardPrice p;
-                                o.getPrices().add(p = new org.easytravelapi.hotel.BoardPrice());
+                            if (pos > 0) sb.append(" and ");
+                            sb.append(a.getNumberOfRooms() * a.getPaxPerRoom());
+                            sb.append(" pax in ");
+                            sb.append(a.getNumberOfRooms());
+                            sb.append(" ");
+                            sb.append(a.getRoomName());
+                        }
+                        o.setDistributionString(sb.toString());
 
-                                p.setKey(BaseEncoding.base64().encode(bp.getKey().getBytes()));
-                                p.setBoardBasisId(bp.getBoardCode());
-                                p.setBoardBasisName(bp.getBoardName());
-                                //p.setOnRequest(bp.);
-                                p.setOnRequestText(null);
-                                p.setOffer(bp.isOffer());
-                                p.setOfferText(bp.getOfferDescription());
-                                p.setNonRefundable(false);
-                                p.setRetailPrice(null);
-                                p.setCommission(null);
-                                Amount n;
-                                p.setNetPrice(n = new Amount());
-                                n.setValue(bp.getNetPrice().getValue());
-                                n.setCurrencyIsoCode(bp.getNetPrice().getCurrencyCode());
+                        for (BoardPrice bp : cp.getBoardPrices()) {
+                            org.easytravelapi.hotel.BoardPrice p;
+                            o.getPrices().add(p = new org.easytravelapi.hotel.BoardPrice());
 
-                            }
+                            p.setKey(BaseEncoding.base64().encode(bp.getKey().getBytes()));
+                            p.setBoardBasisId(bp.getBoardCode());
+                            p.setBoardBasisName(bp.getBoardName());
+                            //p.setOnRequest(bp.);
+                            p.setOnRequestText(null);
+                            p.setOffer(bp.isOffer());
+                            p.setOfferText(bp.getOfferDescription());
+                            p.setNonRefundable(false);
+                            p.setRetailPrice(null);
+                            p.setCommission(null);
+                            Amount n;
+                            p.setNetPrice(n = new Amount());
+                            n.setValue(bp.getNetPrice().getValue());
+                            n.setCurrencyIsoCode(bp.getNetPrice().getCurrencyCode());
+
                         }
 
                     }

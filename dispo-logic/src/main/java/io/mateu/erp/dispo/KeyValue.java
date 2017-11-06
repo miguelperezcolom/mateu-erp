@@ -65,7 +65,7 @@ public class KeyValue {
             }
         }
         sb.append(",r:" + boardPrice.getBoardBasisId().replaceAll(":", "__dospuntos__").replaceAll(",", "__coma__").replaceAll("x", "__equis__"));
-        sb.append(",p:" + boardPrice.getNetPrice().getValue() + " " + boardPrice.getNetPrice().getCurrencyIsoCode().replaceAll(":", "__dospuntos__").replaceAll(",", "__coma__").replaceAll("x", "__equis__"));
+        sb.append(",p:" + Helper.roundEuros(boardPrice.getNetPrice().getValue()) + " " + boardPrice.getNetPrice().getCurrencyIsoCode().replaceAll(":", "__dospuntos__").replaceAll(",", "__coma__").replaceAll("x", "__equis__"));
         return BaseEncoding.base64().encode(sb.toString().getBytes(Charsets.UTF_8));
     }
 

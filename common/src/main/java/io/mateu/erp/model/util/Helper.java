@@ -85,6 +85,12 @@ public class Helper {
     }
 
 
+    public static boolean propertiesLoaded = false;
+
+    {
+        Helper.loadProperties();
+    }
+
     public static Map<String, Object> fromJson(String json) throws IOException {
         if (json == null || "".equals(json)) json = "{}";
         return mapper.readValue(json, Map.class);
@@ -640,5 +646,32 @@ public class Helper {
                 email.send();
             }
         });
+    }
+
+    public static void loadProperties() {
+        if (!propertiesLoaded) {
+            System.out.println("Loading properties...");
+            propertiesLoaded = true;
+            if (System.getProperty("appconf") != null) {
+
+                Properties p = new Properties();
+                try {
+                    p.load(new FileInputStream(System.getProperty("appconf")));
+
+                    for (Map.Entry<Object, Object> e : p.entrySet()) {
+                        System.setProperty("" + e.getKey(), "" + e.getValue());
+                        System.out.println("" + e.getKey() + "=" + e.getValue());
+                    }
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
+            }
+
+        } else {
+            System.out.println("Properties already loaded");
+        }
     }
 }

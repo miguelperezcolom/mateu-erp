@@ -10,12 +10,12 @@ import javax.naming.StringRefAddr;
 public class MiTopic extends RMQDestination {
 
     public MiTopic() {
-        setDestinationName("quo1");
+        setDestinationName(System.getProperty("mqtopicname", "mateutopic"));
         setAmqpExchangeName("jms.durable.topic");
         setAmqp(false);
         setQueue(false);
-        setAmqpRoutingKey("quo1");
-        setAmqpQueueName("quo1");
+        setAmqpRoutingKey(System.getProperty("mqtopicname", "mateutopic"));
+        setAmqpQueueName(System.getProperty("mqtopicname", "mateutopic"));
     }
 
     public Reference getReference() throws NamingException {

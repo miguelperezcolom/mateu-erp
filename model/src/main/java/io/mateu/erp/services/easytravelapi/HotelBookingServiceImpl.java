@@ -4,12 +4,17 @@ import com.google.common.base.Splitter;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
+import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.dispo.ModeloDispo;
+import io.mateu.erp.dispo.interfaces.product.IHotelContract;
+import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.Occupation;
 import io.mateu.erp.model.booking.hotel.Option;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.State;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.easytravelapi.HotelBookingService;
@@ -38,6 +43,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
+
+        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
 
         long idAgencia = 0;
         String login = "";
@@ -87,9 +94,6 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         });
 
 
-        ModeloDispo modelo = new ModeloDispo() {
-        };
-
         long finalIdAgencia = idAgencia;
         Helper.transact(new JPATransaction() {
             @Override
@@ -103,13 +107,17 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
                 ModeloDispo modelo = new ModeloDispo() {
+                    @Override
+                    public IHotelContract getHotelContract(long id) {
+                        return em.find(HotelContract.class, id);
+                    }
                 };
 
                 DispoRQ rq = new DispoRQ(checkIn, checkout, getOccupancies(occupancies), includeStaticInfo);
 
 
                 for (Hotel h : hoteles) {
-                    AvailableHotel ah = new HotelAvailabilityRunner().check(h, finalIdAgencia, 1, modelo, rq);
+                    AvailableHotel ah = new HotelAvailabilityRunner().check(h, finalIdAgencia, idPos, modelo, rq);
                     if (ah != null) rs.getHotels().add(ah);
                 }
 
@@ -174,43 +182,48 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Price details");
 
-        {
-            CancellationCost c;
-            rs.getCancellationCosts().add(c = new CancellationCost());
-            c.setGMTtime(LocalDateTime.of(2018, 06, 05, 12, 00).format(DateTimeFormatter.ISO_DATE_TIME));
-            Amount a;
-            c.setNet(a = new Amount());
-            a.setCurrencyIsoCode("EUR");
-            a.setValue(250.32);
+        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
+
+        long idAgencia = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            idAgencia = Long.parseLong(creds.getAgentId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        {
-            CancellationCost c;
-            rs.getCancellationCosts().add(c = new CancellationCost());
-            c.setGMTtime(LocalDateTime.of(2018, 07, 01, 12, 00).format(DateTimeFormatter.ISO_DATE_TIME));
-            Amount a;
-            c.setNet(a = new Amount());
-            a.setCurrencyIsoCode("EUR");
-            a.setValue(400);
+        long t0 = System.currentTimeMillis();
+
+        long finalIdAgencia = idAgencia;
+        try {
+            Helper.transact((JPATransaction) (em) -> {
+                new HotelAvailabilityRunner().fillHotelPriceDetailsResponse(rs, finalIdAgencia, key, new ModeloDispo() {
+                    @Override
+                    public IHotelContract getHotelContract(long id) {
+                        return em.find(HotelContract.class, id);
+                    }
+                });
+            });
+            long t = System.currentTimeMillis();
+
+            String msg = "Price details. It consumed " + (t - t0) + " ms in the server.";
+
+            System.out.println(msg);
+
+            rs.setMsg(msg);
+
+        } catch (Throwable throwable) {
+            rs.setStatusCode(200);
+            rs.setMsg("" + throwable.getClass().getName() + ":" + throwable.getMessage());
+            throwable.printStackTrace();
         }
 
-        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("IMPORTANT");
-            r.setText("This service must be paid in 24 hors. Otherwise it will be automatically cancelled and you may loose your rooms.");
-        }
-        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("WARNING");
-            r.setText("You will have to pay 3 euros per pax and night for the Ecotasa local tax in any hotel at Illes Balears.");
-        }        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("INFO");
-            r.setText("Reception closed at night hours.");
-        }
+
+
 
         return rs;
     }
@@ -218,15 +231,51 @@ public class HotelBookingServiceImpl implements HotelBookingService {
     @Override
     public BookHotelRS bookHotel(String token, BookHotelRQ rq) {
 
-        System.out.println("rq=" + rq);
-
         BookHotelRS rs = new BookHotelRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("Booking confirmed ok");
+        rs.setMsg("Booking confirmed");
 
-        rs.setBookingId("5643135431");
+        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
+
+        long idAgencia = 0;
+        final UserData u = new UserData();
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            idAgencia = Long.parseLong(creds.getAgentId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            u.setLogin(login);
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long t0 = System.currentTimeMillis();
+
+        long finalIdAgencia = idAgencia;
+        try {
+            Helper.transact((JPATransaction) (em) -> {
+                rs.setBookingId("" + HotelService.createFromKey(u, new KeyValue(rq.getKey()), rq.getLeadName(), rq.getCommentsToProvider()));
+            });
+            long t = System.currentTimeMillis();
+
+            String msg = "Booking confirmed with id " + rs.getBookingId() + ". It consumed " + (t - t0) + " ms in the server.";
+
+            System.out.println(msg);
+
+            rs.setMsg(msg);
+
+        } catch (Throwable throwable) {
+            rs.setStatusCode(200);
+            rs.setMsg("" + throwable.getClass().getName() + ":" + throwable.getMessage());
+            throwable.printStackTrace();
+        }
+
+
+
 
         return rs;
     }

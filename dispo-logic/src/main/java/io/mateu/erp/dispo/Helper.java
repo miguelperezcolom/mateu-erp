@@ -1,6 +1,9 @@
 package io.mateu.erp.dispo;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -24,5 +27,14 @@ public class Helper {
 
     public static boolean cabe(LocalDate validFrom, LocalDate validTo, LocalDate checkIn, LocalDate checkOut) {
         return validFrom.compareTo(checkIn) <= 0 && validTo.compareTo(checkOut) >= -1;
+    }
+
+    public static Date toDate(LocalDateTime localDateTime) {
+        Date out = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        return out;
+    }
+
+    public static double roundEuros(double value) {
+        return Math.round(value * 100d) / 100d;
     }
 }

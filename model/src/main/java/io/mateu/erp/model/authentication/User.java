@@ -5,6 +5,7 @@ import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
@@ -67,7 +68,7 @@ public class User implements WithTriggers {
 
 
     @Action(name = "Create token")
-    public void createToken(EntityManager em, @NotNull Actor a) throws IOException {
+    public void createToken(EntityManager em, @NotNull @Parameter(name = "Agency") Actor a) throws IOException {
         AuthToken t = new AuthToken();
         em.persist(t);
         t.setActor(a);

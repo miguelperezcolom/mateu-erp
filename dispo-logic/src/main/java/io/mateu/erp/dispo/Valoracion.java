@@ -287,7 +287,7 @@ public class Valoracion {
                         resultados.add(p = new BoardPrice());
                         p.setBoardBasisId(board.getCode());
                         p.setBoardBasisName(board.getName());
-                        p.setNetPrice(new Amount("EUR", totalParaEsteRegimen));
+                        p.setNetPrice(new Amount("EUR", Helper.roundEuros(totalParaEsteRegimen)));
 
                         p.setOnRequest(onRequest);
                         p.setOnRequestText(onRequestText);

@@ -8,6 +8,7 @@ import io.mateu.erp.client.financial.FinancialArea;
 import io.mateu.erp.client.management.ManagementArea;
 import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
+import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.core.client.app.AbstractApplication;
 import io.mateu.ui.core.client.app.AbstractArea;
 import io.mateu.ui.core.client.app.MateuUI;
@@ -20,6 +21,12 @@ import java.util.List;
  * Created by miguel on 3/1/17.
  */
 public class ERPApp extends AbstractApplication {
+
+    static {
+        Helper.loadProperties();
+    }
+
+
     @Override
     public String getName() {
         return System.getProperty("appname", "Mateu ERP");

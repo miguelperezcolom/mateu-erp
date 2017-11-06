@@ -3,15 +3,19 @@ package io.mateu.erp.dispo;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IOferta;
-import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.product.hotel.CancellationRule;
+import org.easytravelapi.common.Amount;
+import org.easytravelapi.common.Booking;
+import org.easytravelapi.common.CancellationCost;
+import org.easytravelapi.common.Remark;
 import org.easytravelapi.hotel.*;
 import org.easytravelapi.hotel.Occupancy;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+
 
 public class HotelAvailabilityRunner {
 
@@ -74,6 +78,7 @@ public class HotelAvailabilityRunner {
                         if (opcionesValidas.size() > 0) {
                             Option o;
                             ah.getOptions().add(o = new Option());
+                            StringBuffer sb = new StringBuffer();
                             for (int i = 0; i < rq.getOccupancies().size(); i++) {
 
                                 Occupancy oc = rq.getOccupancies().get(i);
@@ -86,7 +91,16 @@ public class HotelAvailabilityRunner {
                                 a.setPaxPerRoom(oc.getPaxPerRoom());
                                 a.setRoomId(combinacionHabitaciones.getAsignacion().get(oc).getCode());
                                 a.setRoomName(combinacionHabitaciones.getAsignacion().get(oc).getName());
+
+                                if (i > 0) sb.append(" and ");
+                                sb.append(a.getNumberOfRooms() * a.getPaxPerRoom());
+                                sb.append(" pax in ");
+                                sb.append(a.getNumberOfRooms());
+                                sb.append(" ");
+                                sb.append(a.getRoomName());
                             }
+
+                            o.setDistributionString(sb.toString());
 
                             for (BoardPrice x : preciosMasBaratosPorRegimen.values()) {
                                 KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), 0, o.getDistribution(), x);
@@ -119,5 +133,39 @@ public class HotelAvailabilityRunner {
         } else return null;
 
     }
+
+    public void fillHotelPriceDetailsResponse(GetHotelPriceDetailsRS rs, long idAgencia, String key, ModeloDispo modelo) {
+
+        KeyValue k = new KeyValue(key);
+
+        {
+            Remark r;
+            rs.getRemarks().add(r = new Remark());
+            r.setType("info");
+            r.setText("This is the test environment of the quoon platform");
+        }
+
+        IHotelContract contrato = modelo.getHotelContract(k.getSaleContractId());
+
+        LocalDate ci = Helper.toDate(k.getCheckIn());
+
+        for (CancellationRule r : contrato.getTerms().getCancellationRules()) {
+            boolean aplica = false;
+            if (aplica) {
+                CancellationCost c;
+                rs.getCancellationCosts().add(c = new CancellationCost());
+                Date d = Helper.toDate(ci.minusDays(r.getRelease()).atStartOfDay().plusHours(12)); // añadir hora
+                c.setGMTtime("" + d);
+                c.setRetail(null);
+                double coste = k.getBoardPrice().getNetPrice().getValue();
+                coste *= r.getPercent() / 100d;
+                coste = Helper.roundEuros(coste);
+                c.setNet(new Amount(k.getBoardPrice().getNetPrice().getCurrencyIsoCode(), coste));
+                c.setCommission(null);
+            }
+        }
+
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.hotel;
 
 import io.mateu.erp.dispo.*;
+import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
@@ -11,6 +12,7 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.Action;
@@ -89,6 +91,10 @@ public class HotelService extends Service implements WithTriggers {
     @Override
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
         AvailableHotel ah = new HotelAvailabilityRunner().check(getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
+            @Override
+            public IHotelContract getHotelContract(long id) {
+                return em.find(HotelContract.class, id);
+            }
         }, createDispoRQ());
 
         double value = 0;

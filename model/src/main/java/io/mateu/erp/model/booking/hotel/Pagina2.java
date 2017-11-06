@@ -3,7 +3,9 @@ package io.mateu.erp.model.booking.hotel;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
+import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
@@ -57,6 +59,10 @@ public class Pagina2 extends AbstractServerSideWizardPage {
             //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
             ModeloDispo modelo = new ModeloDispo() {
+                @Override
+                public IHotelContract getHotelContract(long id) {
+                    return em.find(HotelContract.class, id);
+                }
             };
 
             List<io.mateu.erp.dispo.Occupancy> os = new ArrayList<>();

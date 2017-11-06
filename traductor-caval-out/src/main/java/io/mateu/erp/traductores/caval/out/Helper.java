@@ -53,7 +53,7 @@ public class Helper {
 
     public static void main(String... args) throws IOException {
         Map<String, Object> d;
-        System.out.println(toJson(d = hashmap("lan", "en", "agentId", "3", "login", "DEMO XML AGENT", "pass", "w38kWp")));
+        System.out.println(toJson(d = hashmap("lan", "en", "agentId", "3", "login", "DEMO", "pass", "1234")));
         System.out.println("Base64.getEncoder().encode()=" + Base64.getEncoder().encode(toJson(d).getBytes()));
         System.out.println("base64=" + BaseEncoding.base64().encode(toJson(d).getBytes()));
         System.out.println("base64url=" + BaseEncoding.base64Url().encode(toJson(d).getBytes()));

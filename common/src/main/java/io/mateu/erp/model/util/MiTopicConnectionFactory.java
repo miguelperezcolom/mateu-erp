@@ -13,10 +13,10 @@ public class MiTopicConnectionFactory implements TopicConnectionFactory {
 
     private static RMQConnectionFactory jmsConnectionFactory() {
         RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
-        connectionFactory.setUsername("tester");
-        connectionFactory.setPassword("tester8912");
+        connectionFactory.setUsername(System.getProperty("mqusername", "mateu"));
+        connectionFactory.setPassword(System.getProperty("mqpassword", "xx"));
         connectionFactory.setVirtualHost("/");
-        connectionFactory.setHost("quon.mateu.io");
+        connectionFactory.setHost(System.getProperty("mqhost", "mq.mateu.io"));
         return connectionFactory;
     }
 
