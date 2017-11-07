@@ -483,6 +483,7 @@ public class TestPopulator {
                     a.setVatIdentificationNumber("A1712386211");
                     a.setAutomaticOrderSending(true);
 
+
                     em.flush();
                 }
 
@@ -503,6 +504,7 @@ public class TestPopulator {
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787777");
+                    a.setAutomaticOrderSending(true);
 
                     em.flush();
                 }
@@ -524,6 +526,7 @@ public class TestPopulator {
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787999");
+                    a.setAutomaticOrderSending(true);
 
                     em.flush();
                 }
