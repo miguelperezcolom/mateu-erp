@@ -698,7 +698,7 @@ public abstract class Service implements WithTriggers {
             PurchaseOrder po = null;
             if (getPurchaseOrders().size() > 0) {
                 po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
-                if (!getPreferredProvider().equals(po.getProvider())) {
+                if (!provider.equals(po.getProvider())) {
                     po.cancel(em);
                     po = null;
                 }
@@ -713,7 +713,8 @@ public abstract class Service implements WithTriggers {
             }
             po.setOffice(getOffice());
             po.setProvider(provider);
-            po.setCurrency(getPreferredProvider().getCurrency());
+            po.setCurrency(provider.getCurrency());
+
         }
     }
 
