@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
 import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -96,7 +97,7 @@ public class TestPopulator {
 
         p.populateAgents();
 
-
+        p.populateAuthTokens();
 
 
         //p.testContract();
@@ -104,6 +105,24 @@ public class TestPopulator {
         //p.testJaxb();
 
         //p.testJson();
+    }
+
+    private void populateAuthTokens() throws Throwable {
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                AuthToken t = new AuthToken();
+                t.setId("ewogICJhZ2VudElkIiA6ICIzIiwKICAicGFzcyIgOiAidzM4a1dwIiwKICAibGFuIiA6ICJlbiIsCiAgImxvZ2luIiA6ICJERU1PIFhNTCBBR0VOVCIKfQ==");
+                t.setActive(true);
+                t.setUser(em.find(User.class, "admin"));
+                t.setActor(em.find(Actor.class, 3l));
+                em.persist(t);
+
+            }
+        });
+
     }
 
     private void populateAgents() throws Throwable {
@@ -443,26 +462,6 @@ public class TestPopulator {
                 }
 
 
-                {
-                    Actor a = new Actor();
-                    em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
-                    a.setAutomaticOrderConfirmation(false);
-                    a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Muchoviajes SA");
-                    a.setComments("For testing only");
-                    a.setCurrency(em.find(Currency.class, "EUR"));
-                    a.setEmail("miguelperezcolom@gmail.com");
-                    a.setExportableToinvoicingApp(false);
-                    a.setIdInInvoicingApp(null);
-                    a.setName("Muchoviaje");
-                    a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
-                    a.setSendOrdersTo("");
-                    a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("A16237816321");
-
-                    em.flush();
-                }
 
                 {
                     Actor a = new Actor();
@@ -486,6 +485,28 @@ public class TestPopulator {
 
                     em.flush();
                 }
+
+                {
+                    Actor a = new Actor();
+                    em.persist(a);
+                    a.setAddress("Gremi fusters, 11");
+                    a.setAutomaticOrderConfirmation(false);
+                    a.setAutomaticOrderSending(false);
+                    a.setBusinessName("Muchoviajes SA");
+                    a.setComments("For testing only");
+                    a.setCurrency(em.find(Currency.class, "EUR"));
+                    a.setEmail("miguelperezcolom@gmail.com");
+                    a.setExportableToinvoicingApp(false);
+                    a.setIdInInvoicingApp(null);
+                    a.setName("Muchoviaje");
+                    a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
+                    a.setSendOrdersTo("");
+                    a.setShuttleTransfersInOwnInvoice(false);
+                    a.setVatIdentificationNumber("A16237816321");
+
+                    em.flush();
+                }
+
 
                 {
                     Actor a = new Actor();
