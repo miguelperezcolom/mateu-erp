@@ -712,7 +712,7 @@ public abstract class Service implements WithTriggers {
                 po.setStatus(PurchaseOrderStatus.PENDING);
             }
             po.setOffice(getOffice());
-            po.setProvider(getPreferredProvider());
+            po.setProvider(provider);
             po.setCurrency(getPreferredProvider().getCurrency());
         }
     }
