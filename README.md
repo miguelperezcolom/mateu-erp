@@ -6,6 +6,7 @@ We will extend it to create vertical solutions for travel agencies, property man
 
 I hope you enjoy it ;)
 
+
 ## Thanks to
 
 Install4j for providing licenses of their great tool. I really appreciate it
