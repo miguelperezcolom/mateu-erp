@@ -87,7 +87,7 @@ public class Helper {
 
     public static boolean propertiesLoaded = false;
 
-    {
+    static {
         Helper.loadProperties();
     }
 

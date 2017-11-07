@@ -3,6 +3,7 @@ package com.quonext.quoon;
 import com.google.common.base.Strings;
 import io.mateu.erp.log.Logger;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
@@ -29,6 +30,10 @@ public class Agent {
     @OneToOne(mappedBy = "agent")
     @NotNull
     private Actor provider;
+
+    @ManyToOne
+    @NotNull
+    private Office office;
 
     @NotNull
     private String MQHost;

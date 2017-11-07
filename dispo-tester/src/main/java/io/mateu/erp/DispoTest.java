@@ -4,9 +4,11 @@ package io.mateu.erp;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
+import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.tests.TestPopulator;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -91,6 +93,10 @@ public class DispoTest {
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
                 ModeloDispo modelo = new ModeloDispo() {
+                    @Override
+                    public IHotelContract getHotelContract(long id) {
+                        return em.find(HotelContract.class, id);
+                    }
                 };
 
                 DispoRQ rq = new DispoRQ(20180601, 20180615, Arrays.asList(new Occupancy(1, 2, null)), false);

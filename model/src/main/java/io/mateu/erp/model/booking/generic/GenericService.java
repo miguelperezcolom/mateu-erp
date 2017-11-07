@@ -112,6 +112,11 @@ public class GenericService extends Service implements WithTriggers {
         return value;
     }
 
+    @Override
+    public Actor findBestProvider(EntityManager em) throws Throwable {
+        return null;
+    }
+
 
     public Map<String,Object> getData() {
         Map<String, Object> d = super.getData();

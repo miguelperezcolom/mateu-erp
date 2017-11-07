@@ -690,7 +690,8 @@ public abstract class Service implements WithTriggers {
 
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
-        if (getPreferredProvider() == null) throw new Throwable("Preferred provider needed for service " + getId());
+        Actor provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
+        if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
         if (isCancelled() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
         if (!ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())) {
@@ -715,6 +716,8 @@ public abstract class Service implements WithTriggers {
             po.setCurrency(getPreferredProvider().getCurrency());
         }
     }
+
+    public abstract Actor findBestProvider(EntityManager em) throws Throwable;
 
 
     @Override

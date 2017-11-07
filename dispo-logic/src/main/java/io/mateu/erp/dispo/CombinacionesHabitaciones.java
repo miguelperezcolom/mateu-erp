@@ -35,7 +35,7 @@ public class CombinacionesHabitaciones {
         Map<Occupancy, IRoom> asignacion = new HashMap<>();
         int pos = 0;
         for (Occupancy o : rq.getOccupancies()) {
-            for (IRoom r : habsQueEncajan.get(o)) {
+            if (habsQueEncajan.containsKey(o)) for (IRoom r : habsQueEncajan.get(o)) {
                 asignacion.put(o, r);
                 if (pos == rq.getOccupancies().size() - 1) {
                     combinaciones.add(new CombinacionHabitaciones(asignacion));

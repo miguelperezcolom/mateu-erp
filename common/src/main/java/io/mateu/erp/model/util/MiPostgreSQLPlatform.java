@@ -30,12 +30,12 @@ public class MiPostgreSQLPlatform extends PostgreSQLPlatform {
 
             NamingUtil.bind(context, "java:comp/env/" + "jms/mateu", new MiTopicConnectionFactory());
 
-            NamingUtil.bind(context, "java:comp/env/" + "jms/quo1", new MiTopic()); //jmsDestination());
+            NamingUtil.bind(context, "java:comp/env/" + "jms/l2cache", new MiTopic()); //jmsDestination());
 
             context.close();
 
 
-            Object o = new InitialContext().lookup("java:comp/env/jms/quo1");
+            Object o = new InitialContext().lookup("java:comp/env/jms/l2cache");
 
             if (o instanceof Reference) {
                 System.out.println("Reference.getFactoryClassName()=" + ((Reference) o).getFactoryClassName());
@@ -59,7 +59,7 @@ public class MiPostgreSQLPlatform extends PostgreSQLPlatform {
 
                     context.rebind("java:comp/env/" + "jms/mateu", jmsConnectionFactory());
 
-                    context.rebind("java:comp/env/" + "jms/quo1", new RMQDestination("quo1", false, false)); //jmsDestination());
+                    context.rebind("java:comp/env/" + "jms/l2cache", new RMQDestination(System.getProperty("mqtopicname", "mateutopic"), false, false)); //jmsDestination());
 
                     context.close();
 

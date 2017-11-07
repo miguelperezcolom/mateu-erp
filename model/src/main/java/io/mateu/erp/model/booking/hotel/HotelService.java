@@ -5,6 +5,8 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;
@@ -15,10 +17,7 @@ import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.OwnedList;
-import io.mateu.ui.mdd.server.annotations.Selection;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -46,12 +45,18 @@ import java.util.*;
 @Setter
 public class HotelService extends Service implements WithTriggers {
 
-
     @Tab("Service")
     @ManyToOne
     @NotNull
     private Hotel hotel;
 
+    @ManyToOne
+    @Output
+    private HotelContract saleContract;
+
+    @ManyToOne
+    @Output
+    private HotelContract purchaseContract;
 
     @OneToMany(mappedBy = "service")
     @OwnedList
@@ -214,6 +219,11 @@ public class HotelService extends Service implements WithTriggers {
             s.setPos(pos);
             s.setAudit(new Audit(u));
             s.setComment(comments);
+            if (k.getSaleContractId() > 0) s.setSaleContract(em.find(HotelContract.class, k.getSaleContractId()));
+            if (s.getSaleContract() != null) {
+                //todo: corregir!!!!
+                s.setPurchaseContract(s.getSaleContract());
+            }
 
 
             for (Allocation a : k.getAllocation()) {
@@ -252,6 +262,14 @@ public class HotelService extends Service implements WithTriggers {
     @Override
     public String toString() {
         return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((getBooking() != null)?getBooking().getLeadName():"no booking");
+    }
+
+
+    @Override
+    public Actor findBestProvider(EntityManager em) throws Throwable {
+        if (getPurchaseContract() != null) return getPurchaseContract().getSupplier();
+        else if (getSaleContract() != null) return getSaleContract().getSupplier();
+        else return null;
     }
 
 

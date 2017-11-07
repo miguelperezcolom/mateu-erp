@@ -649,43 +649,7 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     @Override
-    public void generatePurchaseOrders(EntityManager em) throws Throwable {
-
-        // hay algún contrato directo?
-            //si ya hay purchase orders comprobar que sea el mismo proveedor
-            //si no es el mismo proveedor entonces cancelar existente
-            //crear purchase order si es necesario
-        // si no haycontrato directo pero están en provincias diferentes y es posible llegar a través de los gateways?
-            //cancelar las pos que no tengan bien el proveedor
-            //crear las pos que hagan falta
-
-
-
-        Actor provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
-        if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
-        if (isHeld()) throw new Throwable("Service " + getId() + " is held");
-        PurchaseOrder po = null;
-        if (getPurchaseOrders().size() > 0) {
-            po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
-            if (!provider.equals(po.getProvider())) {
-                po.cancel(em); // todo: controlar si es el único servicio en la purchase order
-                po = null;
-            }
-        }
-        if (po == null) {
-            po = new PurchaseOrder();
-            em.persist(po);
-            po.setAudit(new Audit());
-            po.getServices().add(this);
-            getPurchaseOrders().add(po);
-            po.setStatus(PurchaseOrderStatus.PENDING);
-        }
-        po.setOffice(getOffice());
-        po.setProvider(provider);
-        po.price(em);
-    }
-
-    private Actor findBestProvider(EntityManager em) throws Throwable {
+    public Actor findBestProvider(EntityManager em) throws Throwable {
         // verificamos que tenemos lo que necesitamos para valorar
 
         mapTransferPoints(em);
