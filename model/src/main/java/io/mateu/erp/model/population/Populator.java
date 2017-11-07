@@ -1,10 +1,13 @@
 package io.mateu.erp.model.population;
 
 import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
@@ -67,6 +70,11 @@ public class Populator {
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
+                File f;
+                u.setPhoto(f = new File());
+                f.setName("foto-perfil-ejemplo.png");
+                f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
+                em.persist(f);
                 em.persist(u);
             }
 

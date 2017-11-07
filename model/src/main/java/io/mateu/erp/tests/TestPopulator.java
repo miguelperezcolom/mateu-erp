@@ -2,6 +2,7 @@ package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
@@ -93,6 +94,8 @@ public class TestPopulator {
 
         p.populateBookings();
 
+        p.populateAgents();
+
 
 
 
@@ -101,6 +104,29 @@ public class TestPopulator {
         //p.testJaxb();
 
         //p.testJson();
+    }
+
+    private void populateAgents() throws Throwable {
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                Agent a = new Agent();
+                a.setActive(true);
+                a.setDownloadQueue("toQuoON");
+                a.setMQHost("mq.quoon.net");
+                a.setMQPassword("ramon123");
+                a.setMQUser("ramon");
+                a.setName("Test agent");
+                a.setOffice(em.find(Office.class, 1l));
+                a.setProvider(em.find(Actor.class, 4l));
+                a.getProvider().setAgent(a);
+                a.setUploadQueue("FromQuoOn");
+                em.persist(a);
+            }
+        });
+
     }
 
     private void populateTransferProduct() throws Throwable {
@@ -216,6 +242,8 @@ public class TestPopulator {
                     c.setName((String) dc.get("name"));
                     em.persist(c);
 
+                    em.flush();
+
                     for (Map<String, Object> ds : (List<Map<String, Object>>) dc.get("states")) {
 
                         State s = new State();
@@ -224,6 +252,7 @@ public class TestPopulator {
                         s.setCountry(c);
                         em.persist(s);
 
+                        em.flush();
 
                         for (Map<String, Object> dl : (List<Map<String, Object>>) ds.get("cities")) {
 
@@ -233,6 +262,7 @@ public class TestPopulator {
                             l.setState(s);
                             em.persist(l);
 
+                            em.flush();
 
                             for (Map<String, Object> dtp : (List<Map<String, Object>>) dl.get("transferpoints")) {
 
@@ -243,6 +273,8 @@ public class TestPopulator {
                                 l.getTransferPoints().add(p);
                                 p.setCity(l);
                                 em.persist(p);
+
+                                em.flush();
 
                             }
 
@@ -407,6 +439,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("X16237816321");
 
+                    em.flush();
                 }
 
 
@@ -428,6 +461,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A16237816321");
 
+                    em.flush();
                 }
 
                 {
@@ -447,7 +481,9 @@ public class TestPopulator {
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1712386211");
+                    a.setAutomaticOrderSending(true);
 
+                    em.flush();
                 }
 
                 {
@@ -463,11 +499,12 @@ public class TestPopulator {
                     a.setExportableToinvoicingApp(false);
                     a.setIdInInvoicingApp(null);
                     a.setName("Barceló Hoteles");
-                    a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
+                    a.setOrdersSendingMethod(PurchaseOrderSendingMethod.QUOONAGENT);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787777");
 
+                    em.flush();
                 }
 
                 {
@@ -488,6 +525,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787999");
 
+                    em.flush();
                 }
 
             }
@@ -555,7 +593,7 @@ public class TestPopulator {
 
                 User u = em.find(User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
-                Actor prov = (Actor) em.createQuery("select s from " + Actor.class.getName() + " s").getResultList().get(0);
+                Actor prov = em.find(Actor.class, 4l); // barceló
 
                 for (Hotel h : hoteles) {
 
@@ -576,6 +614,7 @@ public class TestPopulator {
                         c.setValidFrom(LocalDate.parse("2018-01-01"));
                         c.setValidTo(LocalDate.parse("2018-12-31"));
                         c.setVATIncluded(true);
+                        c.setSupplier(prov);
 
                         c.setTerms(crearTerms(c, bc));
 
@@ -843,8 +882,8 @@ public class TestPopulator {
             public void run(EntityManager em) throws Throwable {
 
 
-                City s = (City) em.createQuery("select s from " + City.class.getName() + " s").getResultList().get(0);
-                Office o = (Office) em.createQuery("select s from " + Office.class.getName() + " s").getResultList().get(0);
+                City s = em.find(City.class, 1l);
+                Office o = em.find(Office.class, 1l);
 
 
                 List<RoomType> rts = em.createQuery("select s from " + RoomType.class.getName() + " s").getResultList();
@@ -864,6 +903,7 @@ public class TestPopulator {
                     h.setCity(s);
                     s.getHotels().add(h);
                     h.setOffice(o);
+                    h.setActive(true);
 
                     h.setLat("39.5877926");
                     h.setLon("2.6484694");
@@ -980,7 +1020,7 @@ public class TestPopulator {
                     h.getInventories().add(i = new Inventory());
                     i.getHotels().add(h);
                     em.persist(i);
-                    i.setName("Random inventory");
+                    i.setName(h.getName());
 
                     int maxLines = 10 + random.nextInt(1000);
                     for (int j = 0; j < maxLines; j++) {
