@@ -31,10 +31,6 @@ import java.util.List;
 )
 public class HotelContract extends AbstractContract implements IHotelContract {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
     @org.eclipse.persistence.annotations.Index
     @CacheIndex
     private String quoonId;
