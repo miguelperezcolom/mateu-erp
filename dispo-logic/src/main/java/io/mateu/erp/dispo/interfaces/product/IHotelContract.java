@@ -9,4 +9,6 @@ public interface IHotelContract {
     public LocalDate getValidTo();
 
     public HotelContractPhoto getTerms();
+
+    long getId();
 }

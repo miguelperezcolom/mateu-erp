@@ -103,7 +103,7 @@ public class HotelAvailabilityRunner {
                             o.setDistributionString(sb.toString());
 
                             for (BoardPrice x : preciosMasBaratosPorRegimen.values()) {
-                                KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), 0, o.getDistribution(), x);
+                                KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), combinacionContratosOfertas.getContratos().get(0).getId(), o.getDistribution(), x);
                                 x.setKey(k.toString());
                                 o.getPrices().add(x);
                             }
