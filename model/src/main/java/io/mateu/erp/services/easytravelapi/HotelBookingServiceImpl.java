@@ -1,6 +1,7 @@
 package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
@@ -47,10 +48,12 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         long idPos = Long.parseLong(System.getProperty("idpos", "1"));
 
         long idAgencia = 0;
+        long idHotel = 0;
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
             idAgencia = Long.parseLong(creds.getAgentId());
+            idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
             //rq.setPassword(creds.getPass());
@@ -62,37 +65,42 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         List<Long> idsHoteles = new ArrayList<>();
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
+        if (idHotel > 0) idsHoteles.add(idHotel);
+        else {
 
-                List<State> l = new ArrayList<>();
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
 
-                for (String s : Splitter.on(',')
-                        .trimResults()
-                        .omitEmptyStrings()
-                        .split(resorts)) {
-                    l.add(em.find(State.class, Long.parseLong(s)));
-                };
+                    List<State> l = new ArrayList<>();
+
+                    for (String s : Splitter.on(',')
+                            .trimResults()
+                            .omitEmptyStrings()
+                            .split(resorts)) {
+                        l.add(em.find(State.class, Long.parseLong(s)));
+                    };
 
 
-                List<Hotel> hoteles = new ArrayList<>();
+                    List<Hotel> hoteles = new ArrayList<>();
 
-                for (State s : l) for (City c : s.getCities()) hoteles.addAll(c.getHotels());
+                    for (State s : l) for (City c : s.getCities()) hoteles.addAll(c.getHotels());
 
-                System.out.println("" + hoteles.size() + " hoteles encontrados");
+                    System.out.println("" + hoteles.size() + " hoteles encontrados");
 
-                int numContratos = 0;
-                for (Hotel h : hoteles) {
-                    numContratos += h.getContracts().size();
+                    int numContratos = 0;
+                    for (Hotel h : hoteles) {
+                        numContratos += h.getContracts().size();
+                    }
+
+                    System.out.println("" + numContratos + " contratos encontrados");
+
+                    for (Hotel h : hoteles) idsHoteles.add(h.getId());
                 }
+            });
 
-                System.out.println("" + numContratos + " contratos encontrados");
 
-                for (Hotel h : hoteles) idsHoteles.add(h.getId());
-            }
-        });
-
+        }
 
         long finalIdAgencia = idAgencia;
         Helper.transact(new JPATransaction() {

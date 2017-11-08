@@ -614,6 +614,7 @@ public class TestPopulator {
             public void run(EntityManager em) throws Throwable {
 
                 List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s order by s.name").getResultList();
+                List<Actor> actores = em.createQuery("select s from " + Actor.class.getName() + " s order by s.name").getResultList();
 
                 User u = em.find(User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
@@ -621,7 +622,8 @@ public class TestPopulator {
 
                 for (Hotel h : hoteles) {
 
-                    for (int i = 0; i < 10; i++) {
+                    int i = 1;
+                    for (Actor a : actores) {
 
                         HotelContract c = new HotelContract();
                         h.getContracts().add(c);
@@ -634,14 +636,16 @@ public class TestPopulator {
                         c.setSpecialTerms("Aquí las condiciones particulares de este contrato que no caben en la estructura que hemos montado");
                         c.setType((i % 2 == 0)? ContractType.SALE:ContractType.PURCHASE);
                         if (ContractType.SALE.equals(c.getType())) c.setSupplier(prov);
-                        c.setTitle("CONTRATO " + c.getType() + " TEST " + i);
+                        c.setTitle(h.getName() + " CONTRATO " + c.getType() + " TEST " + i);
                         c.setValidFrom(LocalDate.parse("2018-01-01"));
                         c.setValidTo(LocalDate.parse("2018-12-31"));
                         c.setVATIncluded(true);
                         c.setSupplier(prov);
+                        c.getTargets().add(a);
 
                         c.setTerms(crearTerms(c, bc));
 
+                        i++;
                     }
 
                 }
@@ -919,11 +923,42 @@ public class TestPopulator {
 
                 Random random = new Random();
 
-                for (int i = 0; i < 10; i++) {
+
+                String[] nombresHotel = {
+                        "Hotel Don Juan"
+                        , "Hotel Saratoga"
+                        , "Hotel Amic Horizonte"
+                        , "Hotel Tryp Bellver"
+                        , "Hotel Alumdaina"
+                        , "Hotel Abelux"
+                        , "Hotel Innside by Melia Palma Center"
+                        , "Hotel UR Palacio Avenida"
+                        , "Palau Sa Font"
+                        , "Palacio de Congresos"
+                        , "Hotel Tryp Palma Bellver"
+                        , "Puro Hotel"
+                        , "Hotel Palladium"
+                        , "Sant Frances Hotel Singular"
+                        , "Hotel Continental"
+                        , "Hotel Costa Azul"
+                        , "Hotel Born"
+                        , "Hotel Amic Horizonte"
+                        , "Hotel San Lorenzo - Adults Only"
+                        , "Hotel Melia Palas Atenea"
+                        , "HM Jaime II"
+                        , "Hotel Bonany"
+                        , "Hotel Armadans"
+                        , "Borne Suites"
+                        , "Hotel Dalt Murada"
+                        , "Hotel Cappuccino"
+                };
+
+
+                for (String hn : nombresHotel) {
 
                     Hotel h = new Hotel();
                     em.persist(h);
-                    h.setName("Hotel "+ i);
+                    h.setName(hn);
                     h.setCity(s);
                     s.getHotels().add(h);
                     h.setOffice(o);
@@ -960,6 +995,8 @@ public class TestPopulator {
                         r.setHotel(h);
                         h.getBoards().add(r);
                     }
+
+                    em.flush();
 
                 }
 

@@ -3,6 +3,7 @@ package io.mateu.erp.model.authentication;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
@@ -68,15 +69,16 @@ public class User implements WithTriggers {
 
 
     @Action(name = "Create token")
-    public void createToken(EntityManager em, @NotNull @Parameter(name = "Agency") Actor a) throws IOException {
+    public void createToken(EntityManager em, @NotNull @Parameter(name = "Agency") Actor a, @Parameter(name = "Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
         em.persist(t);
         t.setActor(a);
+        t.setHotel(h);
         t.setUser(this);
         t.setMaturity(null);
         t.setActive(true);
 
-        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "user", getLogin(), "datetime", "" + new Date())).getBytes()));
+        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "hotelId", "" + ((h != null)?h.getId(): ""), "user", getLogin(), "datetime", "" + new Date())).getBytes()));
         System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
     }
 

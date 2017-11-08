@@ -9,6 +9,7 @@ import java.util.Map;
 public class Credenciales {
 
     private String agentId;
+    private String hotelId;
     private String login;
     private String pass;
     private String lan;
@@ -19,6 +20,7 @@ public class Credenciales {
         setLogin((String) d.get("login"));
         setPass((String) d.get("pass"));
         setLan((String) d.get("lan"));
+        setHotelId((String) d.get("hotelId"));
     }
 
     public String getAgentId() {
@@ -51,5 +53,13 @@ public class Credenciales {
 
     public void setLan(String lan) {
         this.lan = lan;
+    }
+
+    public String getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(String hotelId) {
+        this.hotelId = hotelId;
     }
 }
