@@ -78,30 +78,8 @@ public class User implements WithTriggers {
         t.setMaturity(null);
         t.setActive(true);
 
-        t.setId("" + BaseEncoding.base64().encode(Helper.toJson(Helper.hashmap("actorId", "" + a.getId(), "hotelId", "" + ((h != null)?h.getId(): ""), "user", getLogin(), "datetime", "" + new Date())).getBytes()));
+        t.setId(t.createId(this));
         System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
-    }
-
-    @Action(name = "test est. 1")
-    public static void testEstatico1(@NotNull @Caption("a") String a, @Caption("b")String b) {
-        System.out.println("testEstatico1(" + a + ", " + b + ")");
-    }
-
-    @Action(name = "test est. 2")
-    public static String testEstatico2(String a, String b) {
-        System.out.println("testEstatico2(" + a + ", " + b + ")");
-        return "" + a + b;
-    }
-
-    @Action(name = "test 1")
-    public void test1(String a, String b) {
-        System.out.println("test1(" + a + ", " + b + ")");
-    }
-
-    @Action(name = "test 2")
-    public String test2(String a, String b) {
-        System.out.println("test2(" + a + ", " + b + ")");
-        return "" + a + b;
     }
 
     @Override
@@ -124,12 +102,4 @@ public class User implements WithTriggers {
 
     }
 
-    public String createToken(EntityManager em) {
-        AuthToken t = new AuthToken();
-        t.setId(t.createId(this));
-        t.setActive(true);
-        t.setUser(this);
-        em.persist(t);
-        return t.getId();
-    }
 }

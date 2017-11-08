@@ -927,7 +927,6 @@ public class TestPopulator {
                 String[] nombresHotel = {
                         "Hotel Don Juan"
                         , "Hotel Saratoga"
-                        , "Hotel Amic Horizonte"
                         , "Hotel Tryp Bellver"
                         , "Hotel Alumdaina"
                         , "Hotel Abelux"
