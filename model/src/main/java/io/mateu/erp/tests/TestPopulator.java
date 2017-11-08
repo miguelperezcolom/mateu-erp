@@ -113,12 +113,25 @@ public class TestPopulator {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                AuthToken t = new AuthToken();
-                t.setId("ewogICJhZ2VudElkIiA6ICIzIiwKICAicGFzcyIgOiAidzM4a1dwIiwKICAibGFuIiA6ICJlbiIsCiAgImxvZ2luIiA6ICJERU1PIFhNTCBBR0VOVCIKfQ==");
-                t.setActive(true);
-                t.setUser(em.find(User.class, "admin"));
-                t.setActor(em.find(Actor.class, 3l));
-                em.persist(t);
+                {
+                    AuthToken t = new AuthToken();
+                    t.setId("ewogICJhZ2VudElkIiA6ICIzIiwKICAicGFzcyIgOiAidzM4a1dwIiwKICAibGFuIiA6ICJlbiIsCiAgImxvZ2luIiA6ICJERU1PIFhNTCBBR0VOVCIKfQ==");
+                    t.setActive(true);
+                    t.setUser(em.find(User.class, "admin"));
+                    t.setActor(em.find(Actor.class, 3l));
+                    em.persist(t);
+                }
+
+
+                {
+                    AuthToken t = new AuthToken();
+                    t.setId("eyBjcmVhdGVkOiAnV2VkIE5vdiAwOCAxMTo0ODo0OCBDRVQgMjAxNycsIHVzZXJJZDogJ2FkbWluJywgYWN0b3JJZDogMywgaG90ZWxJZDogMTJ9");
+                    t.setActive(true);
+                    t.setUser(em.find(User.class, "admin"));
+                    t.setActor(em.find(Actor.class, 3l));
+                    t.setHotel(em.find(Hotel.class, 12l));
+                    em.persist(t);
+                }
 
             }
         });
