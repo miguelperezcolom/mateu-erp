@@ -125,7 +125,7 @@ public class TestPopulator {
 
                 {
                     AuthToken t = new AuthToken();
-                    t.setId("eyBjcmVhdGVkOiAnV2VkIE5vdiAwOCAxMTo0ODo0OCBDRVQgMjAxNycsIHVzZXJJZDogJ2FkbWluJywgYWN0b3JJZDogMywgaG90ZWxJZDogMTJ9");
+                    t.setId("eyAnY3JlYXRlZCc6ICdXZWQgTm92IDA4IDEyOjA4OjIxIENFVCAyMDE3JywgJ3VzZXJJZCc6ICdhZG1pbicsICdhY3RvcklkJzogMywgJ2hvdGVsSWQnOiAxMn0=");
                     t.setActive(true);
                     t.setUser(em.find(User.class, "admin"));
                     t.setActor(em.find(Actor.class, 3l));
