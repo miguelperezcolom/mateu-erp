@@ -149,7 +149,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         return rs;
     }
 
-    private List<? extends Occupancy> getOccupancies(String occupancies) {
+    public static List<? extends Occupancy> getOccupancies(String occupancies) {
         List<Occupancy> l = new ArrayList<>();
         for (String s : Splitter.on(',')
                 .trimResults()

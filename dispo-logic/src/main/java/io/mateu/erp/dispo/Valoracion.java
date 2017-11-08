@@ -29,17 +29,19 @@ public class Valoracion {
     private final Cupo cupo;
     private final IHotel hotel;
     private Map<IBoard, ValoracionPorRegimen> valoracionesPorRegimen = new HashMap<>();
+    private boolean ignoreMINLOS;
 
     private Map<IBoard, RestriccionesPorRegimen> restriccionesPorRegimen = new HashMap<>();
 
 
-    public Valoracion(DispoRQ rq, IHotel hotel, CombinacionContratosOfertas combinacionContratosOfertas, CombinacionHabitaciones combinacionHabitaciones, Cupo cupo) {
+    public Valoracion(DispoRQ rq, IHotel hotel, CombinacionContratosOfertas combinacionContratosOfertas, CombinacionHabitaciones combinacionHabitaciones, Cupo cupo, boolean ignoreMINLOS) {
 
         this.hotel = hotel;
         this.combinacionContratosOfertas = combinacionContratosOfertas;
         this.cupo = cupo;
         this.combinacionHabitaciones = combinacionHabitaciones;
         this.rq = rq;
+        this.ignoreMINLOS = ignoreMINLOS;
         
         for (IHotelContract contrato : combinacionContratosOfertas.getContratos()) add(rq, hotel, contrato);
         for (IOferta oferta : combinacionContratosOfertas.getOfertas()) add(oferta);

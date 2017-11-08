@@ -20,8 +20,11 @@ import java.util.*;
 
 public class HotelAvailabilityRunner {
 
-
     public AvailableHotel check(IActor agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
+        return check(agency, hotel, idAgencia, idPos, modelo, rq, false);
+    }
+
+    public AvailableHotel check(IActor agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq, boolean ignoreMINLOS) {
 
         // todo: añadir ifs para ahorar proceso
 
@@ -62,7 +65,7 @@ public class HotelAvailabilityRunner {
 
 
                         // calcular y acumular resultado
-                        Valoracion v = new Valoracion(rq, hotel, combinacionContratosOfertas, combinacionHabitaciones, cupo);
+                        Valoracion v = new Valoracion(rq, hotel, combinacionContratosOfertas, combinacionHabitaciones, cupo, ignoreMINLOS);
                         opcionesValidas.addAll(v.toBoardPrices());
 
 
