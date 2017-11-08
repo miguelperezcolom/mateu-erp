@@ -1,5 +1,6 @@
 package io.mateu.erp.services;
 
+import io.mateu.erp.services.easytravelapi.CMSServiceImpl;
 import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl;
 import io.mateu.ui.core.rest.Converter1;
 import io.mateu.ui.core.rest.JacksonFeature;
@@ -20,6 +21,7 @@ public class MyApplication extends ResourceConfig {
         //packages("io.mateu.erp.services"); // no funciona si registramos las clases una a una
         register(PickupConfirmationService.class);
         register(HotelBookingServiceImpl.class);
+        register(CMSServiceImpl.class);
         register(JacksonFeature.class);
         register(Converter1.class);
         register(new CORSFilter());
