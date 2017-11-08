@@ -17,7 +17,7 @@ public class Credenciales {
     public Credenciales(String authToken) throws IOException {
         Map<String, Object> d = Helper.fromJson(authToken, HashMap.class);
         setAgentId((String) d.get("actorId"));
-        setLogin((String) d.get("login"));
+        setLogin((String) d.get("userId"));
         setPass((String) d.get("pass"));
         setLan((String) d.get("lan"));
         setHotelId((String) d.get("hotelId"));

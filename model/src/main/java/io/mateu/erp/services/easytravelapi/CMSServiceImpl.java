@@ -19,9 +19,7 @@ import org.easytravelapi.cms.HotelAvailabilityCalendarDay;
 import org.easytravelapi.cms.HotelAvailabilityCalendarMonth;
 import org.easytravelapi.cms.HotelAvailabilityCalendarWeek;
 import org.easytravelapi.common.CancelBookingRS;
-import org.easytravelapi.hotel.AvailableHotel;
-import org.easytravelapi.hotel.GetAvailableHotelsRS;
-import org.easytravelapi.hotel.Occupancy;
+import org.easytravelapi.hotel.*;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
@@ -135,10 +133,20 @@ public class CMSServiceImpl implements CMSService {
                         LocalDate d = LocalDate.of(checkInLocalDate.getYear(), mesActual, 1);
 
                         HotelAvailabilityCalendarMonth cm;
-                        rs.getMonths().add(cm = new HotelAvailabilityCalendarMonth(d.getYear(), d.getMonthValue()));
+                        rs.getMonths().add(cm = new HotelAvailabilityCalendarMonth(d.getMonth().toString() + " " + d.getYear(), d.getYear(), d.getMonthValue()));
 
                         HotelAvailabilityCalendarWeek cw = null;
-                        int semanaActual = -1;
+
+                        for (int i = 1; i < d.getDayOfWeek().getValue(); i++) { // 1 a 7
+                            if (cw == null || d.getDayOfWeek() == DayOfWeek.MONDAY) {
+                                cm.getWeeks().add(cw = new HotelAvailabilityCalendarWeek());
+                            }
+                            HotelAvailabilityCalendarDay cd;
+                            cw.getDays().add(cd = new HotelAvailabilityCalendarDay());
+                            cd.setBlank(true);
+                        }
+
+
                         while (d.getMonthValue() == mesActual) {
 
                             if (cw == null || d.getDayOfWeek() == DayOfWeek.MONDAY) {
@@ -146,15 +154,28 @@ public class CMSServiceImpl implements CMSService {
                             }
 
                             int nd = io.mateu.erp.dispo.Helper.toInt(d);
+                            int ndx = io.mateu.erp.dispo.Helper.toInt(d.plusDays(1));
 
                             HotelAvailabilityCalendarDay cd;
 
-                            cw.getDays().add(cd = new HotelAvailabilityCalendarDay(nd, d.format(df), "na"));
+                            cw.getDays().add(cd = new HotelAvailabilityCalendarDay(nd, d.getDayOfWeek().getValue(), d.getDayOfMonth(), d.format(df), "na"));
 
-                            DispoRQ rq = new DispoRQ(nd, nd, ocs, false);
+                            DispoRQ rq = new DispoRQ(nd, ndx, ocs, false);
                             AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq, true);
                             if (ah != null) {
-                                cd.setStyleName("av");
+                                cd.setStyleName("or");
+                                boolean or = true;
+                                for (Option o : ah.getOptions()) {
+                                    for (BoardPrice p : o.getPrices()) {
+                                        if (!p.isOnRequest()) {
+                                            or = false;
+                                            break;
+                                        }
+                                        if (!or) break;
+                                    }
+                                    if (!or) break;
+                                }
+                                if (!or) cd.setStyleName("av");
                                 diasConDIsponibilidad[0]++;
                             }
                             d = d.plusDays(1);

@@ -268,6 +268,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         long finalIdAgencia = idAgencia;
         try {
+
             Helper.transact((JPATransaction) (em) -> {
                 rs.setBookingId("" + HotelService.createFromKey(u, new KeyValue(rq.getKey()), rq.getLeadName(), rq.getCommentsToProvider()));
             });
@@ -280,7 +281,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             rs.setMsg(msg);
 
         } catch (Throwable throwable) {
-            rs.setStatusCode(200);
+            rs.setStatusCode(500);
             rs.setMsg("" + throwable.getClass().getName() + ":" + throwable.getMessage());
             throwable.printStackTrace();
         }

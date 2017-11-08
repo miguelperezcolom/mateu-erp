@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.authentication.Audit;
@@ -192,6 +193,8 @@ public class HotelService extends Service implements WithTriggers {
 
     public static long createFromKey(UserData user, KeyValue k, String leadName, String comments) throws Throwable {
         long[] id = {-1};
+
+        if (Strings.isNullOrEmpty(leadName)) throw new Exception("Lead name is mandatory");
 
         Helper.transact((JPATransaction) (em) -> {
 
