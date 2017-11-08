@@ -90,6 +90,8 @@ public class DispoTest {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
+                Actor a = em.find(Actor.class, 1l);
+
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
                 ModeloDispo modelo = new ModeloDispo() {
@@ -105,7 +107,7 @@ public class DispoTest {
 
 
                     for (int j = 0; j < 100; j++) for (Hotel h : hoteles) {
-                        AvailableHotel ah = new HotelAvailabilityRunner().check(h, 1, 1, modelo, rq);
+                        AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, 1, 1, modelo, rq);
                         if (ah != null) finalDispo.add(ah);
                     }
 
