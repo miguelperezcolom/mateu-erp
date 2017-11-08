@@ -11,6 +11,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.Occupation;
 import io.mateu.erp.model.booking.hotel.Option;
+import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.City;
@@ -112,6 +113,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
+                Actor a = em.find(Actor.class, finalIdAgencia);
+
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
                 ModeloDispo modelo = new ModeloDispo() {
@@ -125,7 +128,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
 
                 for (Hotel h : hoteles) {
-                    AvailableHotel ah = new HotelAvailabilityRunner().check(h, finalIdAgencia, idPos, modelo, rq);
+                    AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq);
                     if (ah != null) rs.getHotels().add(ah);
                 }
 

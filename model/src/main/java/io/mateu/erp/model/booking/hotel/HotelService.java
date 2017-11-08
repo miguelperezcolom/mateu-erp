@@ -95,7 +95,7 @@ public class HotelService extends Service implements WithTriggers {
 
     @Override
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
-        AvailableHotel ah = new HotelAvailabilityRunner().check(getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
+        AvailableHotel ah = new HotelAvailabilityRunner().check(getBooking().getAgency(), getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
             @Override
             public IHotelContract getHotelContract(long id) {
                 return em.find(HotelContract.class, id);

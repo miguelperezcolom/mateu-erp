@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import com.quonext.quoon.Agent;
+import io.mateu.erp.dispo.interfaces.common.IActor;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
@@ -24,7 +25,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Actor {
+public class Actor implements IActor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +35,8 @@ public class Actor {
     @SearchFilter
     @ListColumn
     private String name;
+
+    private boolean active = true;
 
     @ListColumn
     private String businessName;

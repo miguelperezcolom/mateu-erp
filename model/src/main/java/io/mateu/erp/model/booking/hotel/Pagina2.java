@@ -4,6 +4,7 @@ import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
+import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.util.Helper;
@@ -56,6 +57,8 @@ public class Pagina2 extends AbstractServerSideWizardPage {
                 hoteles.addAll(c.getHotels());
             }
 
+            Actor agencia = p.getAgency();
+
             //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
             ModeloDispo modelo = new ModeloDispo() {
@@ -75,7 +78,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
 
             List<Option> options = new ArrayList<>();
             for (Hotel h : hoteles) {
-                AvailableHotel ah = new HotelAvailabilityRunner().check(h, p.getAgency().getId(), 1, modelo, rq);
+                AvailableHotel ah = new HotelAvailabilityRunner().check(agencia, h, p.getAgency().getId(), 1, modelo, rq);
                 if (ah != null) for (org.easytravelapi.hotel.Option xo : ah.getOptions()) {
 
                     StringBuffer sb = new StringBuffer();

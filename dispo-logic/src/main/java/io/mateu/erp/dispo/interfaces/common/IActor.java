@@ -12,6 +12,6 @@ public interface IActor {
 
     public boolean isActive();
 
-    public List<IIntegration> getIntegrations();
+    public List<? extends IIntegration> getIntegrations();
 
 }

@@ -1,5 +1,6 @@
 package io.mateu.erp.dispo;
 
+import io.mateu.erp.dispo.interfaces.common.IActor;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IOferta;
@@ -17,25 +18,29 @@ public class ContratosYOfertas {
 
     private List<IOferta> ofertas = new ArrayList<>();
 
-    public ContratosYOfertas(IHotel hotel, DispoRQ rq, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones) {
+    public ContratosYOfertas(IActor agency, IHotel hotel, DispoRQ rq, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones) {
 
         for (IHotelContract c : hotel.getContracts()) {
             if (Helper.cabe(c.getValidFrom(), c.getValidTo(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
 
-                for (CombinacionHabitaciones ch : combinacionesHabitaciones.getCombinaciones()) {
+                if (c.getTargets().size() == 0 || c.getTargets().contains(agency)) {
 
-                    //todo: es posible contratos diferentes para habitaciones diferentes? Y por fechas? lo permitimos?
+                    for (CombinacionHabitaciones ch : combinacionesHabitaciones.getCombinaciones()) {
 
-                    boolean hayPrecioParaTodas = true;
-                    for (IRoom r : ch.getAsignacion().values()) {
-                        if (c.getTerms() != null && !c.getTerms().getRooms().contains(r.getCode())) {
-                            hayPrecioParaTodas = false;
+                        //todo: es posible contratos diferentes para habitaciones diferentes? Y por fechas? lo permitimos?
+
+                        boolean hayPrecioParaTodas = true;
+                        for (IRoom r : ch.getAsignacion().values()) {
+                            if (c.getTerms() != null && !c.getTerms().getRooms().contains(r.getCode())) {
+                                hayPrecioParaTodas = false;
+                                break;
+                            }
+                        }
+                        if (hayPrecioParaTodas) {
+                            contratos.add(c);
                             break;
                         }
-                    }
-                    if (hayPrecioParaTodas) {
-                        contratos.add(c);
-                        break;
+
                     }
 
                 }

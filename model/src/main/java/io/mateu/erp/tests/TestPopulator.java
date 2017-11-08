@@ -115,7 +115,7 @@ public class TestPopulator {
 
                 {
                     AuthToken t = new AuthToken();
-                    t.setId("ewogICJhZ2VudElkIiA6ICIzIiwKICAicGFzcyIgOiAidzM4a1dwIiwKICAibGFuIiA6ICJlbiIsCiAgImxvZ2luIiA6ICJERU1PIFhNTCBBR0VOVCIKfQ==");
+                    t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjM0IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiIn0");
                     t.setActive(true);
                     t.setUser(em.find(User.class, "admin"));
                     t.setActor(em.find(Actor.class, 3l));
@@ -125,7 +125,7 @@ public class TestPopulator {
 
                 {
                     AuthToken t = new AuthToken();
-                    t.setId("eyAnY3JlYXRlZCc6ICdXZWQgTm92IDA4IDEyOjA4OjIxIENFVCAyMDE3JywgJ3VzZXJJZCc6ICdhZG1pbicsICdhY3RvcklkJzogMywgJ2hvdGVsSWQnOiAxMn0=");
+                    t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9");
                     t.setActive(true);
                     t.setUser(em.find(User.class, "admin"));
                     t.setActor(em.find(Actor.class, 3l));

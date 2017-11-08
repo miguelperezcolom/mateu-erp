@@ -1,5 +1,6 @@
 package io.mateu.erp.dispo;
 
+import io.mateu.erp.dispo.interfaces.common.IActor;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IOferta;
@@ -20,7 +21,7 @@ import java.util.*;
 public class HotelAvailabilityRunner {
 
 
-    public AvailableHotel check(IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
+    public AvailableHotel check(IActor agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
 
         // todo: añadir ifs para ahorar proceso
 
@@ -47,7 +48,7 @@ public class HotelAvailabilityRunner {
 
                 // seleccionar contratos y ofertas
 
-                ContratosYOfertas contratosYOfertas = new ContratosYOfertas(hotel, rq, paros, cupo, combinacionesHabitaciones);
+                ContratosYOfertas contratosYOfertas = new ContratosYOfertas(agency, hotel, rq, paros, cupo, combinacionesHabitaciones);
 
                 // combinar contratos y ofertas
 

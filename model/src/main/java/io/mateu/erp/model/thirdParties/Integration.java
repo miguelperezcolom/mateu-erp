@@ -1,5 +1,6 @@
 package io.mateu.erp.model.thirdParties;
 
+import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,7 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @Setter
-public class Integration {
+public class Integration implements IIntegration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,5 +25,7 @@ public class Integration {
     private boolean active;
 
     private boolean providingHotels;
+
+    private int maxResourcesPerRequest;
 
 }
