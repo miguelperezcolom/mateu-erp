@@ -66,7 +66,7 @@
     <orderEntry type="library" name="Maven: org.mortbay.jetty:servlet-api:2.5-20081211" level="project" />
     <orderEntry type="library" name="Maven: com.google.apis:google-api-services-calendar:v3-rev245-1.22.0" level="project" />
     <orderEntry type="library" name="Maven: org.jsoup:jsoup:1.10.2" level="project" />
-    <orderEntry type="library" name="Maven: org.easytravelapi:core:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.easytravelapi:core:0.1.11" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-jersey2-jaxrs:1.5.16" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-jaxrs:1.5.16" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.16" level="project" />
