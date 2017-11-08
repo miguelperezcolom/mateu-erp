@@ -38,7 +38,7 @@ public class AuthToken {
             //todo: relacinar con la agencia
         }
         //todo: utilizar jwt.io para encriptar
-        return Base64.getEncoder().encodeToString(("{ 'created': '" + new Date() + "', 'userId': '" + u.getLogin() + "'" + ((getActor() != null)?", 'actorId': " + getActor().getId():"") + "" + ((getHotel() != null)?", 'hotelId': " + getHotel().getId():"") + "}").getBytes());
+        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getActor() != null)?", \"actorId\": \"" + getActor().getId():"") + "\"" + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId():"") + "\"}").getBytes());
     }
 
     public AuthToken renew(EntityManager em) {
