@@ -148,7 +148,7 @@ var opts2;
     $(".button-collapse").sideNav();
 
     $("#botonstart").click(function() {
-      var u = "http://estresador.quoon.net/recurso/run?url=http%3A%2F%2Fadmin.test.quoon.net%2Fresources%2FeyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9&hilos=10&duracionEnMinutos=10";
+      var u = "http://estresador.quoon.net/recurso/run?url=http%3A%2F%2Fadmin.test.quoon.net%2Fresources%2FeyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9&hilos=10&duracionEnMinutos=120";
       $("#botonstart").addClass('disabled');
 
       var jqxhr = $.ajax( u )
@@ -321,7 +321,7 @@ text-align: center;
                         <div class="card" style="padding: 15px; text-align: center; min-width: 500px;">
 
                           <div class="card-content">
-                            <a class="waves-effect waves-light btn" id="botonstart">Start test</a>
+                            <a class="waves-effect waves-light btn disabled" id="botonstart">Start test</a>
                           </div>
 
 
