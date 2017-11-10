@@ -17,6 +17,7 @@
         <module name="mddserverside" />
         <module name="model" />
         <module name="modelodispo" />
+        <module name="show" />
         <module name="traductor-caval-out" />
       </profile>
     </annotationProcessing>
@@ -29,11 +30,8 @@
       <module name="dispo-tester" target="1.8" />
       <module name="log-model" target="1.8" />
       <module name="mateu-erp" target="1.5" />
-      <module name="mdd" target="1.8" />
-      <module name="mdd-annotations" target="1.8" />
-      <module name="mddserverside" target="1.5" />
       <module name="model" target="1.8" />
-      <module name="modelodispo" target="1.5" />
+      <module name="show" target="1.8" />
       <module name="traductor-caval-out" target="1.8" />
     </bytecodeTargetLevel>
   </component>

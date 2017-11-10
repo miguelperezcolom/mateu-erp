@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+      <!--Import Google Icon Font-->
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <!--Import materialize.css-->
+      <link type="text/css" rel="stylesheet" href="node_modules/materialize-css/dist/css/materialize.min.css"  media="screen,projection"/>
+
+      <!--Let browser know website is optimized for mobile-->
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+
+
+            <!--Import jQuery before materialize.js-->
+            <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+            <script type="text/javascript" src="node_modules/materialize-css/dist/js/materialize.min.js"></script>
+
+
+
+
+      <!--Load the AJAX API-->
+      <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+      <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart', 'gauge', 'line']});
+      google.charts.setOnLoadCallback(drawCharts);
+
+      var data;
+      var chart;
+      var options0;
+
+
+      function drawChart() {
+
+        data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['CPU', 0]
+        ]);
+
+        options0 = {
+          width: 120, height: 120,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+          minorTicks: 5
+        };
+
+        chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+        chart.draw(data, options0);
+
+        // setInterval(function() {
+        //   data.setValue(0, 1, 40 + Math.round(60 * Math.random()));
+        //   chart.draw(data, options);
+        // }, 13000);
+        // setInterval(function() {
+        //   data.setValue(1, 1, 40 + Math.round(60 * Math.random()));
+        //   chart.draw(data, options);
+        // }, 5000);
+        // setInterval(function() {
+        //   data.setValue(2, 1, 60 + Math.round(20 * Math.random()));
+        //   chart.draw(data, options);
+        // }, 26000);
+      }
+
+
+
+var datax2 = [
+  ['1',  0, 0, 0],
+  ['2',  0, 0, 0],
+  ['3',  0, 0, 0],
+  ['4',  0, 0, 0],
+  ['5',  0, 0, 0],
+  ['6',  0, 0, 0]
+];
+
+
+
+var data2;
+
+var chart2;
+var opts2;
+
+
+
+
+    function drawChart2() {
+
+      data2 = new google.visualization.DataTable();
+
+      data2.addColumn('string', 'Time');
+      data2.addColumn('number', 'Min');
+      data2.addColumn('number', 'Avg');
+      data2.addColumn('number', 'Max');
+
+      data2.addRows(datax2);
+
+      var options = {
+          title: '',
+          curveType: 'function',
+          legend: { position: 'bottom' },
+          vAxis: {
+                    title: 'ms',
+                    viewWindowMode: 'explicit',
+                    viewWindow: {
+                        max: 60,
+                        min: 0,
+                        interval: 1,
+                    },
+
+                },
+          height: 600,
+        };
+
+      chart2 = new google.visualization.LineChart(document.getElementById('linechart_material2'));
+
+      opts2 = options;
+
+      chart2.draw(data2, opts2);
+    }
+
+    function drawCharts() {
+      drawChart();
+          //drawChart1();
+          drawChart2();
+    }
+
+
+    function dibujarChart2() {
+
+      data2 = new google.visualization.DataTable();
+
+      data2.addColumn('string', 'Time');
+      data2.addColumn('number', 'Min');
+      data2.addColumn('number', 'Avg');
+      data2.addColumn('number', 'Max');
+
+      data2.addRows(datax2);
+
+          chart2.draw(data2, opts2);
+    }
+
+
+
+
+
+    $( document ).ready(function(){
+
+    $(".button-collapse").sideNav();
+
+    $("#botonstart").click(function() {
+      var u = "http://estresador.quoon.net/recurso/run?url=http%3A%2F%2Fadmin.test.quoon.net%2Fresources%2FeyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9&hilos=10&duracionEnMinutos=10";
+      $("#botonstart").addClass('disabled');
+
+      var jqxhr = $.ajax( u )
+        .done(function(rs) {
+          console.log(rs.running);
+        })
+        .fail(function() {
+          //alert( "error" );
+        })
+        .always(function() {
+          //alert( "complete" );
+        });
+    });
+
+
+
+    var interval = setInterval(function() {
+      execute();
+    }, 1000);
+
+var pos = 0;
+
+    function execute() {
+
+      //dibujarChart1();
+      dibujarChart2();
+
+
+
+// {"running":false,"totalrqs":40432,"totalms":58678,"avgms":1,"minms":1,"maxms":106,"lasttotalrqs":0,"lasttotalms":58678,"lastavgms":0,"lastminms":0,"lastmaxms":0}
+
+
+      // Assign handlers immediately after making the request,
+      // and remember the jqXHR object for this request
+      var jqxhr = $.ajax( "http://estresador.quoon.net/recurso/status" )
+        .done(function(rs) {
+          console.log(rs.running);
+
+          if (rs.running) {
+            $("#botonstart").addClass('disabled');
+            $("#botonstart").html('TEST RUNNING');
+          }
+          else {
+            $("#botonstart").html('START TEST');
+            $("#botonstart").removeClass('disabled');
+          }
+
+
+          $('#time').html(rs.testtime);
+          $('#totalrqs').html(rs.totalrqs);
+          $('#rqspersecond').html(rs.lastrqspersecond);
+
+          data.setValue(0, 1, rs.cpu * 100);
+          chart.draw(data, options0);
+
+
+          datax2.shift();
+          datax2.push(['' + pos++,  rs.lastminms,  rs.lastavgms,  rs.lastmaxms]);
+
+          //alert( "success" );
+        })
+        .fail(function() {
+          //alert( "error" );
+        })
+        .always(function() {
+          //alert( "complete" );
+        });
+
+      // Perform other work here ...
+
+      // Set another completion function for the request above
+      jqxhr.always(function() {
+        //alert( "second complete" );
+      });
+
+
+    }
+
+
+
+    });
+
+
+
+
+</script>
+
+
+
+<style>
+
+.valor {
+  font-size: 30px;
+}
+
+.centrado {
+  position: absolute;
+top: 30px;
+left: 50%;
+transform: translateX(-50%);
+text-align: center;
+}
+
+
+</style>
+
+
+
+
+
+    </head>
+
+    <body>
+
+
+
+
+<!--
+
+      <nav>
+          <div class="nav-wrapper">
+            <a href="#!" class="brand-logo">Logo</a>
+            <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+              <li><a href="sass.html">Sass</a></li>
+              <li><a href="badges.html">Components</a></li>
+              <li><a href="collapsible.html">Javascript</a></li>
+              <li><a href="mobile.html">Mobile</a></li>
+            </ul>
+            <ul class="side-nav" id="mobile-demo">
+              <li><a href="sass.html">Sass</a></li>
+              <li><a href="badges.html">Components</a></li>
+              <li><a href="collapsible.html">Javascript</a></li>
+              <li><a href="mobile.html">Mobile</a></li>
+            </ul>
+          </div>
+        </nav>
+
+-->
+
+
+<div style="max-width: 1200px;" class="centrado">
+
+
+              <div class="row" style="min-width: 1100px;">
+                      <div class="col s12 m6">
+                        <div class="card" style="padding: 15px; text-align: center; min-width: 500px;">
+
+                          <div class="card-content">
+                            <p id="time" class="valor"></p>
+                            <p>Test time</p>
+                          </div>
+
+                          <div class="card-content">
+                            <p id="totalrqs" class="valor"></p>
+                            <p>Total Rqs</p>
+                          </div>
+
+                          <div class="card-content">
+                            <p id="rqspersecond" class="valor"></p>
+                            <p>Rqs / s</p>
+                          </div>
+
+                          <div class="card-content">
+                            <div><div id="chart_div" style="width: 120px; padding-left: 50%; margin-left: -60px;"></div></div>
+                          </div>
+
+                        </div>
+
+                        <div class="card" style="padding: 15px; text-align: center; min-width: 500px;">
+
+                          <div class="card-content">
+                            <a class="waves-effect waves-light btn" id="botonstart">Start test</a>
+                          </div>
+
+
+
+                        </div>
+
+                      </div>
+
+
+                      <div class="col s12 m6">
+                        <div class="card" style="padding: 15px; text-align: center; min-width: 500px;">
+                          <div class="card-image">
+                            <div id="linechart_material2"></div>
+                            <span class="card-title">Card Title</span>
+                          </div>
+                          <div class="card-content">
+                            <p>Tiempos respuesta</p>
+                          </div>
+                        </div>
+                      </div>
+
+
+                    </div>
+
+
+
+
+        <!--Div that will hold the pie chart-->
+
+
+
+</div>
+
+    </body>
+  </html>
