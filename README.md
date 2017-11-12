@@ -13,4 +13,4 @@ Install4j and JProfiler for providing licenses of their great tools. I really ap
 
 <img class="image-margin" width="150" height="42" src="https://www.ej-technologies.com/images/product_banners/install4j_large.png">
 
-<img class="image-margin" width="150" height="42" src="/images/product_banners/jprofiler_large.png">
+<img class="image-margin" width="150" height="42" src="ttps://www.ej-technologies.com/images/product_banners/jprofiler_large.png">
