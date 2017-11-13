@@ -103,12 +103,14 @@ public class Website {
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
                     "rm -rf " + where.getAbsolutePath() + "/*"
+                    , "rm -rf " + where.getAbsolutePath() + "/.*"
                     , "cd " + where.getAbsolutePath()
                     , (Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"hugo new site " + where.getAbsolutePath():""
                     , "git init"
                     , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git remote add origin " + getGitHubRepositoryUrl():""
-                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git fetch origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
-                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git reset --hard origin/master":""
+                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git pull origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
+                    //, (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git fetch origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
+                    //, (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git reset --hard origin/master":""
                     , "cd " + where.getAbsolutePath()
                     //, "git init " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
