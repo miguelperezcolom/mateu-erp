@@ -98,7 +98,7 @@ public class Website {
         else if (!where.isDirectory()) throw new Exception("" + where.getAbsolutePath() + " is not a directory");
 
         java.io.File contentDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "content");
-        if (!contentDir.exists()) {
+        if (true || !contentDir.exists()) {
 
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
