@@ -140,6 +140,16 @@ public class Website {
 
         createContentFiles(em, contentDir);
 
+        {
+            String line = "hugo " + where.getAbsolutePath();
+            System.out.println("executing " + line);
+            CommandLine cmdLine = CommandLine.parse(line);
+            DefaultExecutor executor = new DefaultExecutor();
+            int exitValue = executor.execute(cmdLine);
+
+            if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+        }
+
 
         // crear fichero config nginx
 
@@ -170,13 +180,15 @@ public class Website {
 
         // reload nginx
 
-        String line = AppConfig.get(em).getNginxReloadCommand();
-        System.out.println("executing " + line);
-        CommandLine cmdLine = CommandLine.parse(line);
-        DefaultExecutor executor = new DefaultExecutor();
-        int exitValue = executor.execute(cmdLine);
+        {
+            String line = AppConfig.get(em).getNginxReloadCommand();
+            System.out.println("executing " + line);
+            CommandLine cmdLine = CommandLine.parse(line);
+            DefaultExecutor executor = new DefaultExecutor();
+            int exitValue = executor.execute(cmdLine);
 
-        if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+            if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+        }
 
     }
 
