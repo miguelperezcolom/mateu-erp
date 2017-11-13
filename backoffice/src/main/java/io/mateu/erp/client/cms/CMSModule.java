@@ -31,16 +31,10 @@ public class CMSModule extends AbstractModule {
             }
         });
 
-        m.add(new AbstractAction("Pages") {
+        m.add(new AbstractAction("Themes") {
             @Override
             public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Page", new MDDCallback());
-            }
-        });
-        m.add(new AbstractAction("Assets") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Asset", new MDDCallback());
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Theme", new MDDCallback());
             }
         });
 
