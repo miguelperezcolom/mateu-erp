@@ -98,20 +98,24 @@ public class Website {
         java.io.File contentDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "content");
         if (!contentDir.exists()) {
 
+            DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
                 "cd " + where.getAbsolutePath()
                     , "hugo new site " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
                     , "git init " + where.getAbsolutePath()
-                    , "cd " + where.getAbsolutePath() + " && git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
+                    , "cd " + where.getAbsolutePath()
+                    , "git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
                     //, "git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke"
             }) {
                 System.out.println("executing " + line);
-                CommandLine cmdLine = CommandLine.parse(line);
-                DefaultExecutor executor = new DefaultExecutor();
-                int exitValue = executor.execute(cmdLine);
+                if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
+                else {
+                    CommandLine cmdLine = CommandLine.parse(line);
+                    int exitValue = executor.execute(cmdLine);
 
-                if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+                    if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+                }
             }
 
 
