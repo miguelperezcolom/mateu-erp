@@ -23,25 +23,25 @@ public class HotelWebSite extends Website {
 
     @Tab("Home")
     @Embedded
-    private HotelHomePage home;
+    private HotelHomePage home = new HotelHomePage();
 
     @Tab("Offers")
     @Embedded
-    private HotelOffersPage offers;
+    private HotelOffersPage offers = new HotelOffersPage();
 
     @Tab("Services")
     @Embedded
-    private HotelServicesPage services;
+    private HotelServicesPage services = new HotelServicesPage();
 
 
     @Tab("Contact")
     @Embedded
-    private HotelContactPage contact;
+    private HotelContactPage contact = new HotelContactPage();
 
 
     @Tab("Booking")
     @Embedded
-    private HotelBookingPage booking;
+    private HotelBookingPage booking = new HotelBookingPage();
 
     @Override
     public Data toData() {
