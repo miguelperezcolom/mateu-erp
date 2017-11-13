@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import com.google.common.io.Files;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -10,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.io.File;
 
 @Entity
 @Getter
@@ -50,5 +52,40 @@ public class HotelWebSite extends Website {
     @Override
     public Data toData() {
         return super.toData();
+    }
+
+    @Override
+    public void createContentFiles(EntityManager em, File contentDir) throws Throwable {
+
+        {
+            java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "index.md");
+
+            if (!f.exists()) Files.write(getHome().toMd().toString().getBytes(), f);
+        }
+
+        {
+            java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "offers.md");
+
+            if (!f.exists()) Files.write(getOffers().toMd().toString().getBytes(), f);
+        }
+
+        {
+            java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "services.md");
+
+            if (!f.exists()) Files.write(getServices().toMd().toString().getBytes(), f);
+        }
+
+        {
+            java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "contact.md");
+
+            if (!f.exists()) Files.write(getContact().toMd().toString().getBytes(), f);
+        }
+
+        {
+            java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "booking.md");
+
+            if (!f.exists()) Files.write(getBooking().toMd().toString().getBytes(), f);
+        }
+
     }
 }

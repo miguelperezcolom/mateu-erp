@@ -234,7 +234,9 @@ public class Website {
                 "draft: false\n" +
                 "---");
 
-        Files.write(s.toString().getBytes(), new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "index.md"));
+        java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "index.md");
+
+        if (!f.exists()) Files.write(s.toString().getBytes(), f);
 
 
     }

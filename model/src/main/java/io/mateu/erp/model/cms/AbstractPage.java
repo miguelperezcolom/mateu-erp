@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import com.google.common.io.Files;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,5 +27,16 @@ public class AbstractPage {
     private String author;
 
 
+    public String toMd() {
+        // crear indice
 
+        StringBuffer s = new StringBuffer("");
+        s.append("---\n" +
+                "title: \"" + getTitle() + "\"\n" +
+                "date: 2017-11-10T13:52:59+01:00\n" +
+                "draft: false\n" +
+                "---");
+
+        return s.toString();
+    }
 }
