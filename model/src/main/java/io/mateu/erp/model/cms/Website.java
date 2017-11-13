@@ -94,6 +94,23 @@ public class Website {
 
         System.out.println("createFiles(" + where.getAbsolutePath() + ", " + urlBase + ")");
 
+        {
+            DefaultExecutor executor = new DefaultExecutor();
+            for (String line : new String[] {
+                    "rm -rf " + where.getAbsolutePath()
+            }) {
+                System.out.println("executing " + line);
+                if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
+                else {
+                    CommandLine cmdLine = CommandLine.parse(line);
+                    int exitValue = executor.execute(cmdLine);
+
+                    if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+                }
+            }
+        }
+
+
         if (!where.exists()) where.mkdirs();
         else if (!where.isDirectory()) throw new Exception("" + where.getAbsolutePath() + " is not a directory");
 
@@ -102,9 +119,7 @@ public class Website {
 
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
-                    "rm -rf " + where.getAbsolutePath() + "/*"
-                    , "rm -rf " + where.getAbsolutePath() + "/.*"
-                    , "cd " + where.getAbsolutePath()
+                    "cd " + where.getAbsolutePath()
                     , (Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"hugo new site " + where.getAbsolutePath():""
                     , "git init"
                     , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git remote add origin " + getGitHubRepositoryUrl():""
