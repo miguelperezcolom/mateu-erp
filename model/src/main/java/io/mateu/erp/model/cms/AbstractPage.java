@@ -8,6 +8,7 @@ import javax.persistence.Embeddable;
 
 @Getter
 @Setter
+@Embeddable
 public class AbstractPage {
 
     private String title;
