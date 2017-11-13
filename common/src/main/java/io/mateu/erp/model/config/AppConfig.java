@@ -2,6 +2,7 @@ package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.common.File;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -26,12 +27,14 @@ public class AppConfig {
     @Id
     private long id;
 
+    @Tab("General")
     private String businessName;
 
     @ManyToOne
     private File logo;
 
 
+    @Tab("Email")
     private String adminEmailSmtpHost;
 
     private int adminEmailSmtpPort;
@@ -52,10 +55,12 @@ public class AppConfig {
 
     private String pop3ReboundToEmail;
 
+    @Tab("SMS")
     private boolean clickatellEnabled;
     private String clickatellApiKey;
 
 
+    @Tab("Templates")
     @TextArea
     private String xslfoForList;
 
@@ -91,6 +96,11 @@ public class AppConfig {
 
     @TextArea
     private String pickupSmsTemplateEs;
+
+    @Tab("CMS")
+    private String nginxConfigDirectory = "/etc/nginx/conf.d";
+
+    private String nginxReloadCommand = "service nginx reload";
 
     public static AppConfig get(EntityManager em) {
         return em.find(AppConfig.class, 1l);

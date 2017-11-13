@@ -74,7 +74,15 @@
         <class>io.mateu.erp.model.multilanguage.Literal</class>
         <class>io.mateu.erp.model.product.generic.MinimumStay</class>
         <class>io.mateu.erp.model.organization.Office</class>
-        <class>io.mateu.erp.model.cms.Page</class>
+        <class>io.mateu.erp.model.cms.AbstractPage</class>
+        <class>io.mateu.erp.model.cms.Card</class>
+        <class>io.mateu.erp.model.cms.Theme</class>
+        <class>io.mateu.erp.model.cms.HotelWebSite</class>
+        <class>io.mateu.erp.model.cms.HotelHomePage</class>
+        <class>io.mateu.erp.model.cms.HotelOffersPage</class>
+        <class>io.mateu.erp.model.cms.HotelServicesPage</class>
+        <class>io.mateu.erp.model.cms.HotelContactPage</class>
+        <class>io.mateu.erp.model.cms.HotelBookingPage</class>
         <class>io.mateu.erp.model.authentication.Permission</class>
         <class>io.mateu.erp.model.organization.PointOfSale</class>
         <class>io.mateu.erp.model.booking.generic.PriceDetail</class>

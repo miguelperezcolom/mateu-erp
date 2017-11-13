@@ -30,6 +30,9 @@ public class Cliente implements Runnable {
 
         while (!Estresador.terminar) {
 
+
+            //todo: cambiar fechas y ocupaciones de manera aleatoria
+
             Invocation.Builder invocationBuilder = dispoWebTarget
                     .queryParam("resorts", "1")
                     .queryParam("checkin", "20180123")

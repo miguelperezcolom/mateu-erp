@@ -32,7 +32,7 @@
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpcore:4.0.1" />
           <element id="library" level="project" name="Maven: com.google.http-client:google-http-client-jackson2:1.22.0" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-jndi:9.4.7.v20170914" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd-annotations/1.0-SNAPSHOT/mdd-annotations-1.0-20171107.095238-200.jar" output-file-name="mdd-annotations-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd-annotations/1.0-SNAPSHOT/mdd-annotations-1.0-20171112.211555-201.jar" output-file-name="mdd-annotations-1.0-SNAPSHOT.jar" />
           <element id="archive" name="dispo-model-1.0-SNAPSHOT.jar">
             <element id="module-output" name="dispo-model" />
           </element>
@@ -95,12 +95,13 @@
           <element id="library" level="project" name="Maven: io.mateu.erp:bcprov:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.erp:codec:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.erp:json:1.0" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd/1.0-SNAPSHOT/mdd-1.0-20171107.095240-185.jar" output-file-name="mdd-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: org.apache.commons:commons-exec:1.3" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd/1.0-SNAPSHOT/mdd-1.0-20171112.211557-186.jar" output-file-name="mdd-1.0-SNAPSHOT.jar" />
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/core/1.0-SNAPSHOT/core-1.0-20171107.091309-46.jar" output-file-name="core-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/core/1.0-SNAPSHOT/core-1.0-20171112.211637-47.jar" output-file-name="core-1.0-SNAPSHOT.jar" />
           <element id="library" level="project" name="Maven: org.hsqldb:hsqldb:2.3.4" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/code-generation/1.0-SNAPSHOT/code-generation-1.0-20171107.091307-82.jar" output-file-name="code-generation-1.0-SNAPSHOT.jar" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/code-generation/1.0-SNAPSHOT/code-generation-1.0-20171112.211634-83.jar" output-file-name="code-generation-1.0-SNAPSHOT.jar" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-jetty-http:2.26" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-server:9.4.3.v20170317" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-http:9.4.3.v20170317" />
