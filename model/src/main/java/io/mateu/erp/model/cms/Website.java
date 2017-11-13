@@ -141,13 +141,20 @@ public class Website {
         createContentFiles(em, contentDir);
 
         {
-            String line = "hugo " + where.getAbsolutePath();
-            System.out.println("executing " + line);
-            CommandLine cmdLine = CommandLine.parse(line);
             DefaultExecutor executor = new DefaultExecutor();
-            int exitValue = executor.execute(cmdLine);
+            for (String line : new String[] {
+                    "cd " + where.getAbsolutePath()
+                    , "hugo"
+            }) {
+                System.out.println("executing " + line);
+                if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
+                else {
+                    CommandLine cmdLine = CommandLine.parse(line);
+                    int exitValue = executor.execute(cmdLine);
 
-            if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+                    if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
+                }
+            }
         }
 
 
