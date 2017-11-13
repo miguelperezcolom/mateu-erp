@@ -100,10 +100,10 @@ public class Website {
 
             for (String line : new String[] {
                 "cd " + where.getAbsolutePath()
-                    , "hugo new site ."
+                    , "hugo new site " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
-                    , "git init"
-                    , "git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
+                    , "git init " + where.getAbsolutePath()
+                    , "git submodule add " + getTheme().getGitHubRepositoryUrl() + " " +  where.getAbsolutePath() + "/themes/" + getTheme().getName()
                     //, "git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke"
             }) {
                 System.out.println("executing " + line);
