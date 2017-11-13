@@ -100,7 +100,8 @@ public class Website {
 
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
-                "cd " + where.getAbsolutePath()
+                    "rm -rf " + where.getAbsolutePath() + "/*"
+                    , "cd " + where.getAbsolutePath()
                     , "hugo new site " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
                     , "git init " + where.getAbsolutePath()
