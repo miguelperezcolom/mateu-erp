@@ -28,8 +28,8 @@ public class Theme {
     private boolean active;
 
 
-    private String GitHubRepositoryUrl;
+    private String gitHubRepositoryUrl;
 
 
-    private String GitHubAPIToken;
+    private String gitHubAPIToken;
 }

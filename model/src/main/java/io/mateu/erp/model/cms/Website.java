@@ -49,10 +49,10 @@ public class Website {
     private String urls;
 
 
-    private String GitHubRepositoryUrl;
+    private String gitHubRepositoryUrl;
 
 
-    private String GitHubAPIToken;
+    private String gitHubAPIToken;
 
     @NotNull
     @ManyToOne
