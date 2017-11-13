@@ -5,15 +5,13 @@ import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Embeddable;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Embeddable
+@Entity
 @Getter@Setter
 public class HotelOffersPage extends AbstractPage {
-
 
     @OneToMany
     @OwnedList

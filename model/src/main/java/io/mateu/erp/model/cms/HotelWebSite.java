@@ -4,14 +4,12 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.annotations.Owned;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Entity
 @Getter
@@ -23,26 +21,31 @@ public class HotelWebSite extends Website {
     private AuthToken authToken;
 
     @Tab("Home")
-    @Embedded
-    private HotelHomePage home = new HotelHomePage();
+    @OneToOne
+    @Owned
+    private HotelHomePage home;
 
     @Tab("Offers")
-    @Embedded
-    private HotelOffersPage offers = new HotelOffersPage();
+    @OneToOne
+    @Owned
+    private HotelOffersPage offers;
 
     @Tab("Services")
-    @Embedded
-    private HotelServicesPage services = new HotelServicesPage();
+    @OneToOne
+    @Owned
+    private HotelServicesPage services;
 
 
     @Tab("Contact")
-    @Embedded
-    private HotelContactPage contact = new HotelContactPage();
+    @OneToOne
+    @Owned
+    private HotelContactPage contact;
 
 
     @Tab("Booking")
-    @Embedded
-    private HotelBookingPage booking = new HotelBookingPage();
+    @OneToOne
+    @Owned
+    private HotelBookingPage booking;
 
     @Override
     public Data toData() {
