@@ -51,6 +51,8 @@ public class Website {
 
     private String gitHubRepositoryUrl;
 
+    private String gitHubRepositoryBranch = "master";
+
 
     private String gitHubAPIToken;
 
@@ -102,13 +104,16 @@ public class Website {
             for (String line : new String[] {
                     "rm -rf " + where.getAbsolutePath() + "/*"
                     , "cd " + where.getAbsolutePath()
-                    , "hugo new site " + where.getAbsolutePath()
+                    , (Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"hugo new site " + where.getAbsolutePath():""
+                    , "git init"
+                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git remote add origin " + getGitHubRepositoryUrl():""
+                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git pull origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
                     , "cd " + where.getAbsolutePath()
-                    , "git init " + where.getAbsolutePath()
+                    //, "git init " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
                     , "git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
                     //, "git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke"
-            }) {
+            }) if (!Strings.isNullOrEmpty(line)) {
                 System.out.println("executing " + line);
                 if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
                 else {
