@@ -103,7 +103,7 @@ public class Website {
                     , "hugo new site " + where.getAbsolutePath()
                     , "cd " + where.getAbsolutePath()
                     , "git init " + where.getAbsolutePath()
-                    , "cd " + where.getAbsolutePath() + ";git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
+                    , "cd " + where.getAbsolutePath() + " && git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
                     //, "git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke"
             }) {
                 System.out.println("executing " + line);
