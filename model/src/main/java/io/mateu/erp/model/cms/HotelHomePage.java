@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class HotelHomePage extends AbstractPage {
     private String subMessage;
 
     @OneToMany
+    @OwnedList
     private List<Card> messages = new ArrayList<>();
 
 }
