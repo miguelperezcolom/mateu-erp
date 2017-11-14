@@ -198,6 +198,14 @@ public class HotelWebSite extends Website {
                 m.put("contacto", mensajes);
             }
 
+            {
+                List mensajes = new ArrayList();
+                for (Card c : getBooking().getMessages()) {
+                    mensajes.add(Helper.hashmap("titulo", c.getHeader(), "texto", c.getText()));
+                }
+                m.put("reserva", Helper.hashmap("mensajes", mensajes));
+            }
+
 
             if (!f.exists()) Files.write(Helper.toJson(m), f, Charsets.UTF_8);
         }
