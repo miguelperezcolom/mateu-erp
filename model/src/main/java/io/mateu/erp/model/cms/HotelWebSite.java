@@ -169,6 +169,27 @@ public class HotelWebSite extends Website {
             }
 
             {
+                String[][] servicios = new String[][] {
+                        {"Recepción 24 horas", "Habitación con 2 camas individuales.", "clock-o"}
+                        , {"Teléfono", "Para aquellos que viajan solos.", "phone"}
+                        , {"Ducha", "Lujosa habitación con todas las comodidades.", "shower"}
+                        , {"Solarium", "", "sun-o"}
+                        , {"Taxi", "", "taxi"}
+                        , {"Accesibilidad", "", "wheelchair"}
+                        , {"Ciclismo", "", "bicycle"}
+                        , {"Aceptamos VISA", "", "cc-visa"}
+                        , {"WIFI", "", "wifi"}
+                };
+
+                List mensajes = new ArrayList();
+                for (String[] x : servicios) {
+                    mensajes.add(Helper.hashmap("titulo", x[0], "texto", x[1], "icono", x[2]));
+                }
+                m.put("servicios", mensajes);
+            }
+
+
+            {
                 List mensajes = new ArrayList();
                 mensajes.add(Helper.hashmap("titulo", "Dirección", "texto", getContact().getAddress()));
                 mensajes.add(Helper.hashmap("titulo", "Teléfono", "texto", getContact().getTelephone()));
