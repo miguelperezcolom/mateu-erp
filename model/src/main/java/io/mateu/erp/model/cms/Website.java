@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import io.mateu.erp.model.common.File;
@@ -168,7 +169,7 @@ public class Website {
                     "theme = \"" + getTheme().getName() + "\"");
 
             java.io.File c = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "config.toml");
-            if (true || !c.exists()) Files.write(s.toString().getBytes(), c);
+            if (true || !c.exists()) Files.write(s.toString(), c, Charsets.UTF_8);
         }
 
         // crear directorio content y ficheros
@@ -217,7 +218,7 @@ public class Website {
                     "\n" +
                     "}");
 
-            Files.write(s.toString().getBytes(), new java.io.File(nginxConfDir.getAbsolutePath() + java.io.File.separator + "cms_" + getId() + ".conf"));
+            Files.write(s.toString(), new java.io.File(nginxConfDir.getAbsolutePath() + java.io.File.separator + "cms_" + getId() + ".conf"), Charsets.UTF_8);
         }
 
         // reload nginx
@@ -247,7 +248,7 @@ public class Website {
 
         java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "index.md");
 
-        if (!f.exists()) Files.write(s.toString().getBytes(), f);
+        if (!f.exists()) Files.write(s.toString(), f, Charsets.UTF_8);
 
 
     }

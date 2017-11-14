@@ -1,5 +1,6 @@
 package io.mateu.erp.model.cms;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
@@ -16,6 +17,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -82,49 +84,49 @@ public class HotelWebSite extends Website {
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "_index.md");
 
-            if (!f.exists()) Files.write(getHome().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getHome().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "ofertas.md");
 
-            if (!f.exists()) Files.write(getOffers().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getOffers().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "habitaciones.md");
 
-            if (!f.exists()) Files.write(getRooms().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getRooms().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "servicios.md");
 
-            if (!f.exists()) Files.write(getServices().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getServices().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "contacto.md");
 
-            if (!f.exists()) Files.write(getContact().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getContact().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "reserva.md");
 
-            if (!f.exists()) Files.write(getBooking().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getBooking().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "mapa.md");
 
-            if (!f.exists()) Files.write(getMap().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getMap().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
             java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "fotos.md");
 
-            if (!f.exists()) Files.write(getFotos().toMd().toString().getBytes(), f);
+            if (!f.exists()) Files.write(getFotos().toMd().toString(), f, Charsets.UTF_8);
         }
 
         {
@@ -138,126 +140,6 @@ public class HotelWebSite extends Website {
 
         {
             java.io.File f = new java.io.File(dataDir.getAbsolutePath() + java.io.File.separator + "todo.json");
-
-            /*
-            {
-  "home" : {
-    "mensajes" : [
-      {
-        "titulo" : "Mejor precio garantizado"
-        , "texto" : "No encontrará un precio mejor."
-      }
-      , {
-            "titulo" : "Ventajas reserva online"
-            , "texto" : "Late checkout, cocktail de bienvenida, las mejores habitaciones disponibles y otras ventajas si reserva en nuestra web."
-          }
-    ]
-  }
-  , "ofertas" : [
-    {
-      "titulo" : "Venta anticipada"
-      , "texto" : "15% de descuento si hace su reserva antes del 15 de Abril."
-      , "imagen" : "/images/fondohotel1_1920.jpg"
-    }
-    , {
-      "titulo" : "7 x 6"
-      , "texto" : "Una noche gratis al reservar una suite para estancias en el mes de Mayo."
-      , "imagen" : "/images/fondohotel2_1920.jpg"
-    }
-    , {
-      "titulo" : "Primer niño gratis"
-      , "texto" : "Para todas las familias que reserven una habitación con vista mar."
-      , "imagen" : "/images/fondohotel3_1920.jpg"
-    }
-  ], "habitaciones" : [
-    {
-      "titulo" : "Habitación doble"
-      , "texto" : "Habitación con 2 camas individuales."
-      , "imagen" : "/images/habitacion1.jpg"
-    }
-    , {
-      "titulo" : "Habitación individual"
-      , "texto" : "Para aquellos que viajan solos."
-      , "imagen" : "/images/habitacion4.jpg"
-    }
-    , {
-      "titulo" : "Suite"
-      , "texto" : "Lujosa habitación con todas las comodidades."
-      , "imagen" : "/images/habitacion3.jpg"
-    }
-  ]
-  , "servicios" : [
-      {
-        "titulo" : "Recepción 24 horas"
-        , "texto" : "Habitación con 2 camas individuales."
-        , "icono" : "clock-o"
-      }
-      , {
-        "titulo" : "Teléfono"
-        , "texto" : "Para aquellos que viajan solos."
-        , "icono" : "phone"
-      }
-      , {
-        "titulo" : "Ducha"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "shower"
-      }
-      , {
-        "titulo" : "Solarium"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "sun-o"
-      }
-      , {
-        "titulo" : "Taxi"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "taxi"
-      }
-      , {
-        "titulo" : "Accesibilidad"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "wheelchair"
-      }
-      , {
-        "titulo" : "Ciclismo"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "bicycle"
-      }
-      , {
-        "titulo" : "Aceptamos VISA"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "cc-visa"
-      }
-      , {
-        "titulo" : "WIFI"
-        , "texto" : "Lujosa habitación con todas las comodidades."
-        , "icono" : "wifi"
-      }
-    ]
-    , "contacto" : [
-      {
-        "titulo" : "Dirección"
-        , "texto" : "Gremi fusters, 11"
-      }
-      , {
-        "titulo" : "CP"
-        , "texto" : "07009"
-      }
-      , {
-        "titulo" : "Población"
-        , "texto" : "Palma de Mallorca"
-      }
-      , {
-        "titulo" : "Tel."
-        , "texto" : "971 12 34 56"
-      }
-      , {
-        "titulo" : "Email"
-        , "texto" : "demo@quoon.net"
-      }
-    ]
-}
-
-             */
 
             Map<String, Object> m = new HashMap<>();
 
@@ -286,7 +168,17 @@ public class HotelWebSite extends Website {
                 m.put("habitaciones", mensajes);
             }
 
-            if (!f.exists()) Files.write(Helper.toJson(m).getBytes(), f);
+            {
+                List mensajes = new ArrayList();
+                mensajes.add(Helper.hashmap("titulo", "Dirección", "texto", getContact().getAddress()));
+                mensajes.add(Helper.hashmap("titulo", "Teléfono", "texto", getContact().getTelephone()));
+                mensajes.add(Helper.hashmap("titulo", "Email", "texto", getContact().getEmail()));
+
+                m.put("contacto", mensajes);
+            }
+
+
+            if (!f.exists()) Files.write(Helper.toJson(m), f, Charsets.UTF_8);
         }
 
     }
