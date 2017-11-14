@@ -39,6 +39,9 @@ public class AbstractPage {
                 "date: 2017-11-10T13:52:59+01:00\n" +
                 "draft: false\n" +
                 ((!Strings.isNullOrEmpty(getLayout()))?"layout: \"" + getLayout() + "\"\n":"") +
+                ((!Strings.isNullOrEmpty(getKeywords()))?"keywords: \"" + getKeywords() + "\"\n":"") +
+                ((!Strings.isNullOrEmpty(getDescription()))?"description: \"" + getDescription() + "\"\n":"") +
+                ((!Strings.isNullOrEmpty(getAuthor()))?"author: \"" + getAuthor() + "\"\n":"") +
                 "---");
 
         return s.toString();
