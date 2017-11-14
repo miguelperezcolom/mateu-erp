@@ -22,4 +22,12 @@ public class Card {
     @ManyToOne
     private File image;
 
+
+    public Card() {}
+
+    public Card(String header, String text, File image) {
+        this.header = header;
+        this.text = text;
+        this.image = image;
+    }
 }

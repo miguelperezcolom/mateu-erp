@@ -114,9 +114,7 @@ public class Website {
         if (!where.exists()) where.mkdirs();
         else if (!where.isDirectory()) throw new Exception("" + where.getAbsolutePath() + " is not a directory");
 
-        java.io.File contentDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "content");
-        if (true || !contentDir.exists()) {
-
+        {
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
                     "cd " + where.getAbsolutePath()
@@ -141,12 +139,24 @@ public class Website {
                     if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
                 }
             }
+        }
 
 
-            //contentDir.mkdirs();
 
+
+        java.io.File contentDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "content");
+        if (!contentDir.exists()) {
+            contentDir.mkdirs();
         }
         else if (!contentDir.isDirectory()) throw new Exception("" + contentDir.getAbsolutePath() + " is not a directory");
+
+
+
+        java.io.File dataDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+        else if (!dataDir.isDirectory()) throw new Exception("" + dataDir.getAbsolutePath() + " is not a directory");
 
         // crear fichero configuración
 
@@ -157,12 +167,13 @@ public class Website {
                     "title = \"" + getTitle() + "\"\n" +
                     "theme = \"" + getTheme().getName() + "\"");
 
-            Files.write(s.toString().getBytes(), new java.io.File(where.getAbsolutePath() + java.io.File.separator + "config.toml"));
+            java.io.File c = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "config.toml");
+            if (true || !c.exists()) Files.write(s.toString().getBytes(), c);
         }
 
         // crear directorio content y ficheros
 
-        createContentFiles(em, contentDir);
+        createContentFiles(em, contentDir, dataDir);
 
         {
             DefaultExecutor executor = new DefaultExecutor();
@@ -223,7 +234,7 @@ public class Website {
 
     }
 
-    public void createContentFiles(EntityManager em, java.io.File contentDir) throws Throwable {
+    public void createContentFiles(EntityManager em, java.io.File contentDir, java.io.File dataDir) throws Throwable {
 
         // crear indice
 
