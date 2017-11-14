@@ -14,6 +14,7 @@ public class HotelBookingPage extends AbstractPage {
 
     @OneToMany
     @OwnedList
+    @JoinColumn(name = "page_id")
     private List<Card> messages = new ArrayList<>();
 
 }
