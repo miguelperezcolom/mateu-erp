@@ -273,7 +273,7 @@ public class HotelWebSite extends Website {
             {
                 List mensajes = new ArrayList();
                 for (Card c : getOffers().getOffers()) {
-                    mensajes.add(Helper.hashmap("titulo", c.getHeader(), "texto", c.getText()));
+                    mensajes.add(Helper.hashmap("titulo", c.getHeader(), "texto", c.getText(), "imagen", "/images/habitacion1.jpg"));
                 }
                 m.put("ofertas", mensajes);
             }
@@ -281,7 +281,7 @@ public class HotelWebSite extends Website {
             if (getAuthToken() != null && getAuthToken().getHotel() != null) {
                 List mensajes = new ArrayList();
                 for (Room c : getAuthToken().getHotel().getRooms()) {
-                    mensajes.add(Helper.hashmap("titulo", c.getType().getName().getEs(), "texto", c.getDescription().getEs()));
+                    mensajes.add(Helper.hashmap("titulo", c.getType().getName().getEs(), "texto", c.getDescription().getEs(), "imagen", "/images/habitacion1.jpg"));
                 }
                 m.put("habitaciones", mensajes);
             }
