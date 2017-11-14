@@ -15,6 +15,7 @@ public class HotelOffersPage extends AbstractPage {
 
     @OneToMany
     @OwnedList
+    @JoinColumn(name = "page_id")
     private List<Card> offers = new ArrayList<>();
 
 }
