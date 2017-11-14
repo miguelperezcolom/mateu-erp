@@ -37,7 +37,7 @@ public class AbstractPage {
         s.append("---\n" +
                 "title: \"" + getTitle() + "\"\n" +
                 "date: 2017-11-10T13:52:59+01:00\n" +
-                "draft: false\n\" +\n" +
+                "draft: false\n" +
                 ((!Strings.isNullOrEmpty(getLayout()))?"layout: \"" + getLayout() + "\"\n":"") +
                 "---");
 
