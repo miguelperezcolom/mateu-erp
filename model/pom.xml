@@ -182,7 +182,7 @@
         <dependency>
             <groupId>org.easytravelapi</groupId>
             <artifactId>core</artifactId>
-            <version>0.1.12</version>
+            <version>0.1.13</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.glassfish.jersey.containers</groupId>

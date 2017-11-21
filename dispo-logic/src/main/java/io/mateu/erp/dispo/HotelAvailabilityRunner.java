@@ -30,6 +30,8 @@ public class HotelAvailabilityRunner {
 
         AvailableHotel ah = new AvailableHotel();
 
+        ah.setBestDeal("NOTAVAILABLE");
+
         // comprobar paros de ventas
 
         ParosVentas paros = new ParosVentas(hotel, rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getTotalNights());
@@ -39,6 +41,8 @@ public class HotelAvailabilityRunner {
         // comprobar cupo
 
         Cupos cupos = new Cupos(hotel, paros.getResumen(), rq);
+
+        Amount bestDeal = null;
 
 
         for (Cupo cupo : cupos.getCupos()) {
@@ -110,6 +114,7 @@ public class HotelAvailabilityRunner {
                                 KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), combinacionContratosOfertas.getContratos().get(0).getId(), o.getDistribution(), x);
                                 x.setKey(k.toString());
                                 o.getPrices().add(x);
+                                if (bestDeal == null || bestDeal.getValue() < x.getNetPrice().getValue()) bestDeal = x.getNetPrice();
                             }
                         }
 
@@ -126,13 +131,16 @@ public class HotelAvailabilityRunner {
 
         // si hay resultados completar el hotel. Si no, devolver null
 
-        if (ah.getOptions().size() > 0) {
+        if (true || ah.getOptions().size() > 0) {
             ah.setHotelId("" + hotel.getId());
             ah.setHotelName(hotel.getName());
             ah.setLatitude(hotel.getLat());
             ah.setLongitude(hotel.getLon());
             ah.setHotelCategoryId(hotel.getCategoryId());
             ah.setHotelCategoryName(hotel.getCategoryName());
+
+            if (bestDeal != null) ah.setBestDeal("" + bestDeal.getValue() + " " + bestDeal.getCurrencyIsoCode());
+
             return ah;
         } else return null;
 
