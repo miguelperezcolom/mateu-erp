@@ -19,6 +19,7 @@ public class Cliente implements Runnable {
     @Override
     public void run() {
 
+
         //http://admin.test.quoon.net/resources/eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9
         // /hotel/available?
         // resorts=1&checkin=20180101&checkout=20180115&occupancies=1x2&incudestaticinfo=false
