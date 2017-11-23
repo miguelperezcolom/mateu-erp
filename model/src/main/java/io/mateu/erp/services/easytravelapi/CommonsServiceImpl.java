@@ -252,6 +252,56 @@ public class CommonsServiceImpl implements CommonsService {
     }
 
     @Override
+    public GetBookingRS getBooking(String token, String bookingId) throws Throwable {
+        final GetBookingRS rs = new GetBookingRS();
+
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                io.mateu.erp.model.booking.Service s = em.find(Service.class, Long.parseLong(bookingId));
+                {
+
+                    Booking b;
+                    rs.setBooking(b = new Booking());
+
+                    b.setBookingId("" + s.getId());
+                    b.setCreated(s.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
+                    b.setCreatedBy(s.getAudit().getCreatedBy().getLogin());
+                    b.setModified(s.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
+                    b.setLeadName(s.getBooking().getLeadName());
+                    b.setStart(s.getStart().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                    b.setEnd(s.getFinish().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                    Amount a;
+                    b.setNetValue(a = new Amount());
+                    a.setCurrencyIsoCode("EUR");
+                    a.setValue(s.getTotalNetValue());
+                    String desc = "Service booking";
+                    b.setServiceType("GENERIC");
+                    if (s instanceof TransferService) {
+                        desc = "Transfer service";
+                        b.setServiceType("TRANSFER");
+                    }
+                    b.setServiceDescription(desc);
+                    b.setStatus((s.isCancelled())?"CANCELLED":"OK");
+
+
+                }
+
+                rs.setMsg("Booking found.");
+            }
+        });
+
+
+        return rs;
+
+    }
+
+    @Override
     public CancelBookingRS cancelBooking(String token, String bookingId) throws Throwable {
 
         final CancelBookingRS rs = new CancelBookingRS();

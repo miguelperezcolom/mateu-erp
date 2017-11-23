@@ -39,9 +39,6 @@ public class Cliente implements Runnable {
 
         while (!Estresador.terminar) {
 
-
-            //todo: cambiar fechas y ocupaciones de manera aleatoria
-
             int noches = 1 + random.nextInt(14);
             int release = 1 + random.nextInt(180);
 
