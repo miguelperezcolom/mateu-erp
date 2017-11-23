@@ -50,7 +50,7 @@ public class Cliente implements Runnable {
             Invocation.Builder invocationBuilder = dispoWebTarget
                     .queryParam("resorts", "1")
                     .queryParam("checkin", entrada.format(f))
-                    .queryParam("checkout", "20180130")
+                    .queryParam("checkout", salida.format(f))
                     .queryParam("occupancies", "1x2")
                     .queryParam("incudestaticinfo", "false")
                     .request(MediaType.APPLICATION_JSON);
