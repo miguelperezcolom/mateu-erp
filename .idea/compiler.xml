@@ -18,7 +18,9 @@
         <module name="model" />
         <module name="modelodispo" />
         <module name="show" />
+        <module name="traductor-caval-in" />
         <module name="traductor-caval-out" />
+        <module name="traductor-ota-in" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -32,7 +34,9 @@
       <module name="mateu-erp" target="1.5" />
       <module name="model" target="1.8" />
       <module name="show" target="1.8" />
+      <module name="traductor-caval-in" target="1.8" />
       <module name="traductor-caval-out" target="1.8" />
+      <module name="traductor-ota-in" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -1,0 +1,884 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="HotelSecure" targetNamespace="http://schemas.xmltravelgate.com/hub/2012/06"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+                  xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+                  xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy"
+                  xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:i0="http://tempuri.org/"
+                  xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                  xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+                  xmlns:tns="http://schemas.xmltravelgate.com/hub/2012/06"
+                  xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+                  xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+                  xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+    <wsp:Policy wsu:Id="secureBasicHttpPort_policy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken RequireClientCertificate="false"/>
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256/>
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Lax/>
+                            </wsp:Policy>
+                        </sp:Layout>
+                        <sp:IncludeTimestamp/>
+                    </wsp:Policy>
+                </sp:TransportBinding>
+                <sp:SignedSupportingTokens xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:UsernameToken
+                                sp:IncludeToken="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SignedSupportingTokens>
+                <sp:Wss10 xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy/>
+                </sp:Wss10>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsdl:types>
+        <xs:schema elementFormDefault="qualified" targetNamespace="http://schemas.xmltravelgate.com/hub/2012/06"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/">
+            <xs:import namespace="http://schemas.microsoft.com/2003/10/Serialization/"/>
+            <xs:element name="Avail">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="availRQ" nillable="true" type="q1:AvailRQ"
+                                    xmlns:q1="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="AvailRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q2:DisponibilidadRQ" xmlns:q2="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="AvailRQ" nillable="true" type="q3:AvailRQ"
+                        xmlns:q3="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="DisponibilidadRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q4:MessageTravelHotelBaseRQ"
+                                  xmlns:q4="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQs" nillable="true" type="q4:ArrayOfProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="DisponibilidadRQ" nillable="true" type="q5:DisponibilidadRQ"
+                        xmlns:q5="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageTravelHotelBaseRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q6:MessageTravelBaseRQ" xmlns:q6="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="MessageTravelHotelBaseRQ" nillable="true" type="q7:MessageTravelHotelBaseRQ"
+                        xmlns:q7="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageTravelBaseRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q8:MessageBaseRQ" xmlns:q8="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="MessageTravelBaseRQ" nillable="true" type="q9:MessageTravelBaseRQ"
+                        xmlns:q9="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageBaseRQ">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="Session" nillable="true" type="q10:Session"
+                                xmlns:q10="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element minOccurs="0" name="parameters" nillable="true" type="q11:ArrayOfparameter"
+                                xmlns:q11="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element name="timeoutMilliseconds" type="xs:int"/>
+                    <xs:element name="version" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="MessageBaseRQ" nillable="true" type="q12:MessageBaseRQ"
+                        xmlns:q12="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="Session">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="Id" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="Session" nillable="true" type="q13:Session"
+                        xmlns:q13="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ArrayOfparameter">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="parameter" nillable="true"
+                                type="q14:parameter" xmlns:q14="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ArrayOfparameter" nillable="true" type="q15:ArrayOfparameter"
+                        xmlns:q15="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="parameter">
+                <xs:sequence>
+                    <xs:element name="key" nillable="true" type="xs:string"/>
+                    <xs:element name="value" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="parameter" nillable="true" type="q16:parameter"
+                        xmlns:q16="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ArrayOfProviderRQ">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="ProviderRQ" nillable="true"
+                                type="q17:ProviderRQ" xmlns:q17="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ArrayOfProviderRQ" nillable="true" type="q18:ArrayOfProviderRQ"
+                        xmlns:q18="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ProviderRQ">
+                <xs:sequence>
+                    <xs:element name="code" nillable="true" type="xs:string"/>
+                    <xs:element name="id" nillable="true" type="xs:string"/>
+                    <xs:element name="rqXML" nillable="true">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:any minOccurs="0" processContents="lax"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ProviderRQ" nillable="true" type="q19:ProviderRQ"
+                        xmlns:q19="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="AvailResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="AvailResult" nillable="true" type="q20:AvailRS"
+                                    xmlns:q20="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="AvailRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q21:MessageTravelHotelBaseRS"
+                                  xmlns:q21="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element minOccurs="0" name="providerRSs" nillable="true" type="q21:ArrayOfProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="AvailRS" nillable="true" type="q22:AvailRS"
+                        xmlns:q22="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageTravelHotelBaseRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q23:MessageTravelBaseRS"
+                                  xmlns:q23="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="MessageTravelHotelBaseRS" nillable="true" type="q24:MessageTravelHotelBaseRS"
+                        xmlns:q24="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageTravelBaseRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q25:MessageBaseRS" xmlns:q25="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="MessageTravelBaseRS" nillable="true" type="q26:MessageTravelBaseRS"
+                        xmlns:q26="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageBaseRS">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="hubStatus" nillable="true" type="q27:HubStatus"
+                                xmlns:q27="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="MessageBaseRS" nillable="true" type="q28:MessageBaseRS"
+                        xmlns:q28="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="HubStatus">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="code" type="xs:int"/>
+                    <xs:element minOccurs="0" name="warnings" nillable="true" type="q29:ArrayOfWarning"
+                                xmlns:q29="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element minOccurs="0" name="exceptionString" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="roleInstanceId" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="messageWebRoleStats" nillable="true" type="q30:MessageWebRoleStats"
+                                xmlns:q30="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="HubStatus" nillable="true" type="q31:HubStatus"
+                        xmlns:q31="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ArrayOfWarning">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="Warning" nillable="true" type="q32:Warning"
+                                xmlns:q32="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ArrayOfWarning" nillable="true" type="q33:ArrayOfWarning"
+                        xmlns:q33="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="Warning">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="warning" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="Warning" nillable="true" type="q34:Warning"
+                        xmlns:q34="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="MessageWebRoleStats">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="startAtUtc" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="endAtUtc" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="execution" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="messageExpiresAtUtc" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="getValidationConfiguration" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="buildHubMessageRQ" type="ser:duration"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="MessageWebRoleStats" nillable="true" type="q35:MessageWebRoleStats"
+                        xmlns:q35="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ArrayOfProviderRS">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" name="ProviderRS" nillable="true"
+                                type="q36:ProviderRS" xmlns:q36="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ArrayOfProviderRS" nillable="true" type="q37:ArrayOfProviderRS"
+                        xmlns:q37="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ProviderRS">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="hubProviderStatus" nillable="true" type="q38:HubProviderStatus"
+                                xmlns:q38="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element name="refId" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="rs" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="rsXML" nillable="true">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:any minOccurs="0" processContents="lax"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="ProviderRS" nillable="true" type="q39:ProviderRS"
+                        xmlns:q39="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="HubProviderStatus">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="code" type="xs:int"/>
+                    <xs:element minOccurs="0" name="exceptionString" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="hubProviderError" nillable="true" type="q40:HubProviderError"
+                                xmlns:q40="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element minOccurs="0" name="invocationWorkerRoleStats" nillable="true"
+                                type="q41:InvocationWorkerRoleStats"
+                                xmlns:q41="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    <xs:element minOccurs="0" name="roleInstanceId" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="HubProviderStatus" nillable="true" type="q42:HubProviderStatus"
+                        xmlns:q42="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="HubProviderError">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="errorExceptionString" nillable="true" type="xs:string"/>
+                    <xs:element minOccurs="0" name="message" nillable="true" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="HubProviderError" nillable="true" type="q43:HubProviderError"
+                        xmlns:q43="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="InvocationWorkerRoleStats">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="startAtUtc" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="receiveBrokeredMessageRQ" type="xs:dateTime"/>
+                    <xs:element minOccurs="0" name="buildAssembly" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="buildInvokeRQ" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="invoke" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="invokeProvider" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="buildInvokeRS" type="ser:duration"/>
+                    <xs:element minOccurs="0" name="buildBrokeredMessageRS" type="ser:duration"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="InvocationWorkerRoleStats" nillable="true" type="q44:InvocationWorkerRoleStats"
+                        xmlns:q44="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="Reservation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="reservationRQ" nillable="true" type="q45:ReservationRQ"
+                                    xmlns:q45="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q46:ConfirmarReservaRQ"
+                                  xmlns:q46="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationRQ" nillable="true" type="q47:ReservationRQ"
+                        xmlns:q47="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ConfirmarReservaRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q48:MessageTravelHotelBaseRQ"
+                                  xmlns:q48="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q48:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ConfirmarReservaRQ" nillable="true" type="q49:ConfirmarReservaRQ"
+                        xmlns:q49="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ReservationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ReservationResult" nillable="true" type="q50:ReservationRS"
+                                    xmlns:q50="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q51:MessageTravelHotelBaseRS"
+                                  xmlns:q51="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q51:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationRS" nillable="true" type="q52:ReservationRS"
+                        xmlns:q52="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="Valuation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="valuationRQ" nillable="true" type="q53:ValuationRQ"
+                                    xmlns:q53="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ValuationRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q54:ListadoPoliticasCancelacionRQ"
+                                  xmlns:q54="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ValuationRQ" nillable="true" type="q55:ValuationRQ"
+                        xmlns:q55="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ListadoPoliticasCancelacionRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q56:MessageTravelHotelBaseRQ"
+                                  xmlns:q56="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q56:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ListadoPoliticasCancelacionRQ" nillable="true" type="q57:ListadoPoliticasCancelacionRQ"
+                        xmlns:q57="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ValuationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ValuationResult" nillable="true" type="q58:ValuationRS"
+                                    xmlns:q58="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ValuationRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q59:MessageTravelHotelBaseRS"
+                                  xmlns:q59="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q59:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ValuationRS" nillable="true" type="q60:ValuationRS"
+                        xmlns:q60="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ReservationRead">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="reservationReadRQ" nillable="true" type="q61:ReservationReadRQ"
+                                    xmlns:q61="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationReadRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q62:ConsultarReservaRQ"
+                                  xmlns:q62="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationReadRQ" nillable="true" type="q63:ReservationReadRQ"
+                        xmlns:q63="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ConsultarReservaRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q64:MessageTravelHotelBaseRQ"
+                                  xmlns:q64="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q64:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ConsultarReservaRQ" nillable="true" type="q65:ConsultarReservaRQ"
+                        xmlns:q65="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ReservationReadResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ReservationReadResult" nillable="true"
+                                    type="q66:ReservationReadRS"
+                                    xmlns:q66="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationReadRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q67:MessageTravelHotelBaseRS"
+                                  xmlns:q67="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q67:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationReadRS" nillable="true" type="q68:ReservationReadRS"
+                        xmlns:q68="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="Cancel">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="cancelRQ" nillable="true" type="q69:CancelRQ"
+                                    xmlns:q69="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="CancelRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q70:CancelarReservaRQ" xmlns:q70="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="CancelRQ" nillable="true" type="q71:CancelRQ"
+                        xmlns:q71="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="CancelarReservaRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q72:MessageTravelHotelBaseRQ"
+                                  xmlns:q72="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q72:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="CancelarReservaRQ" nillable="true" type="q73:CancelarReservaRQ"
+                        xmlns:q73="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="CancelResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="CancelResult" nillable="true" type="q74:CancelRS"
+                                    xmlns:q74="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="CancelRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q75:MessageTravelHotelBaseRS"
+                                  xmlns:q75="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q75:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="CancelRS" nillable="true" type="q76:CancelRS"
+                        xmlns:q76="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ReservationList">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="reservationListRQ" nillable="true" type="q77:ReservationListRQ"
+                                    xmlns:q77="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationListRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q78:ListadoReservasRQ" xmlns:q78="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence/>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationListRQ" nillable="true" type="q79:ReservationListRQ"
+                        xmlns:q79="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:complexType name="ListadoReservasRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q80:MessageTravelHotelBaseRQ"
+                                  xmlns:q80="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q80:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ListadoReservasRQ" nillable="true" type="q81:ListadoReservasRQ"
+                        xmlns:q81="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ReservationListResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ReservationListResult" nillable="true"
+                                    type="q82:ReservationListRS"
+                                    xmlns:q82="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ReservationListRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q83:MessageTravelHotelBaseRS"
+                                  xmlns:q83="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q83:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ReservationListRS" nillable="true" type="q84:ReservationListRS"
+                        xmlns:q84="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ModifyValuation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="modifyValuationRQ" nillable="true" type="q85:ModifyValuationRQ"
+                                    xmlns:q85="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ModifyValuationRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q86:MessageTravelHotelBaseRQ"
+                                  xmlns:q86="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q86:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ModifyValuationRQ" nillable="true" type="q87:ModifyValuationRQ"
+                        xmlns:q87="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ModifyValuationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ModifyValuationResult" nillable="true"
+                                    type="q88:ModifyValuationRS"
+                                    xmlns:q88="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ModifyValuationRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q89:MessageTravelHotelBaseRS"
+                                  xmlns:q89="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q89:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ModifyValuationRS" nillable="true" type="q90:ModifyValuationRS"
+                        xmlns:q90="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ModifyReservation">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="modifyReservationRQ" nillable="true"
+                                    type="q91:ModifyReservationRQ"
+                                    xmlns:q91="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ModifyReservationRQ">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q92:MessageTravelHotelBaseRQ"
+                                  xmlns:q92="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRQ" nillable="true" type="q92:ProviderRQ"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ModifyReservationRQ" nillable="true" type="q93:ModifyReservationRQ"
+                        xmlns:q93="http://schemas.xmltravelgate.com/hub/2012/06"/>
+            <xs:element name="ModifyReservationResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" name="ModifyReservationResult" nillable="true"
+                                    type="q94:ModifyReservationRS"
+                                    xmlns:q94="http://schemas.xmltravelgate.com/hub/2012/06"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="ModifyReservationRS">
+                <xs:complexContent mixed="false">
+                    <xs:extension base="q95:MessageTravelHotelBaseRS"
+                                  xmlns:q95="http://schemas.xmltravelgate.com/hub/2012/06">
+                        <xs:sequence>
+                            <xs:element name="providerRS" nillable="true" type="q95:ProviderRS"/>
+                        </xs:sequence>
+                    </xs:extension>
+                </xs:complexContent>
+            </xs:complexType>
+            <xs:element name="ModifyReservationRS" nillable="true" type="q96:ModifyReservationRS"
+                        xmlns:q96="http://schemas.xmltravelgate.com/hub/2012/06"/>
+        </xs:schema>
+        <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified"
+                   targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/"
+                   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/">
+            <xs:element name="anyType" nillable="true" type="xs:anyType"/>
+            <xs:element name="anyURI" nillable="true" type="xs:anyURI"/>
+            <xs:element name="base64Binary" nillable="true" type="xs:base64Binary"/>
+            <xs:element name="boolean" nillable="true" type="xs:boolean"/>
+            <xs:element name="byte" nillable="true" type="xs:byte"/>
+            <xs:element name="dateTime" nillable="true" type="xs:dateTime"/>
+            <xs:element name="decimal" nillable="true" type="xs:decimal"/>
+            <xs:element name="double" nillable="true" type="xs:double"/>
+            <xs:element name="float" nillable="true" type="xs:float"/>
+            <xs:element name="int" nillable="true" type="xs:int"/>
+            <xs:element name="long" nillable="true" type="xs:long"/>
+            <xs:element name="QName" nillable="true" type="xs:QName"/>
+            <xs:element name="short" nillable="true" type="xs:short"/>
+            <xs:element name="string" nillable="true" type="xs:string"/>
+            <xs:element name="unsignedByte" nillable="true" type="xs:unsignedByte"/>
+            <xs:element name="unsignedInt" nillable="true" type="xs:unsignedInt"/>
+            <xs:element name="unsignedLong" nillable="true" type="xs:unsignedLong"/>
+            <xs:element name="unsignedShort" nillable="true" type="xs:unsignedShort"/>
+            <xs:element name="char" nillable="true" type="tns:char"/>
+            <xs:simpleType name="char">
+                <xs:restriction base="xs:int"/>
+            </xs:simpleType>
+            <xs:element name="duration" nillable="true" type="tns:duration"/>
+            <xs:simpleType name="duration">
+                <xs:restriction base="xs:duration">
+                    <xs:pattern value="\-?P(\d*D)?(T(\d*H)?(\d*M)?(\d*(\.\d*)?S)?)?"/>
+                    <xs:minInclusive value="-P10675199DT2H48M5.4775808S"/>
+                    <xs:maxInclusive value="P10675199DT2H48M5.4775807S"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:element name="guid" nillable="true" type="tns:guid"/>
+            <xs:simpleType name="guid">
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="[\da-fA-F]{8}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{4}-[\da-fA-F]{12}"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:attribute name="FactoryType" type="xs:QName"/>
+            <xs:attribute name="Id" type="xs:ID"/>
+            <xs:attribute name="Ref" type="xs:IDREF"/>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="IServiceHotel_Avail_InputMessage">
+        <wsdl:part name="parameters" element="tns:Avail"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Avail_OutputMessage">
+        <wsdl:part name="parameters" element="tns:AvailResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Reservation_InputMessage">
+        <wsdl:part name="parameters" element="tns:Reservation"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Reservation_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ReservationResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Valuation_InputMessage">
+        <wsdl:part name="parameters" element="tns:Valuation"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Valuation_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ValuationResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ReservationRead_InputMessage">
+        <wsdl:part name="parameters" element="tns:ReservationRead"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ReservationRead_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ReservationReadResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Cancel_InputMessage">
+        <wsdl:part name="parameters" element="tns:Cancel"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_Cancel_OutputMessage">
+        <wsdl:part name="parameters" element="tns:CancelResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ReservationList_InputMessage">
+        <wsdl:part name="parameters" element="tns:ReservationList"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ReservationList_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ReservationListResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ModifyValuation_InputMessage">
+        <wsdl:part name="parameters" element="tns:ModifyValuation"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ModifyValuation_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ModifyValuationResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ModifyReservation_InputMessage">
+        <wsdl:part name="parameters" element="tns:ModifyReservation"/>
+    </wsdl:message>
+    <wsdl:message name="IServiceHotel_ModifyReservation_OutputMessage">
+        <wsdl:part name="parameters" element="tns:ModifyReservationResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="IServiceHotel">
+        <wsdl:operation name="Avail">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Avail"
+                        message="tns:IServiceHotel_Avail_InputMessage"/>
+            <wsdl:output wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/AvailResponse"
+                         message="tns:IServiceHotel_Avail_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="Reservation">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Reservation"
+                        message="tns:IServiceHotel_Reservation_InputMessage"/>
+            <wsdl:output wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationResponse"
+                         message="tns:IServiceHotel_Reservation_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="Valuation">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Valuation"
+                        message="tns:IServiceHotel_Valuation_InputMessage"/>
+            <wsdl:output wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ValuationResponse"
+                         message="tns:IServiceHotel_Valuation_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ReservationRead">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationRead"
+                        message="tns:IServiceHotel_ReservationRead_InputMessage"/>
+            <wsdl:output
+                    wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationReadResponse"
+                    message="tns:IServiceHotel_ReservationRead_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="Cancel">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Cancel"
+                        message="tns:IServiceHotel_Cancel_InputMessage"/>
+            <wsdl:output wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/CancelResponse"
+                         message="tns:IServiceHotel_Cancel_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ReservationList">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationList"
+                        message="tns:IServiceHotel_ReservationList_InputMessage"/>
+            <wsdl:output
+                    wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationListResponse"
+                    message="tns:IServiceHotel_ReservationList_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ModifyValuation">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyValuation"
+                        message="tns:IServiceHotel_ModifyValuation_InputMessage"/>
+            <wsdl:output
+                    wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyValuationResponse"
+                    message="tns:IServiceHotel_ModifyValuation_OutputMessage"/>
+        </wsdl:operation>
+        <wsdl:operation name="ModifyReservation">
+            <wsdl:input wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyReservation"
+                        message="tns:IServiceHotel_ModifyReservation_InputMessage"/>
+            <wsdl:output
+                    wsaw:Action="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyReservationResponse"
+                    message="tns:IServiceHotel_ModifyReservation_OutputMessage"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="secureBasicHttpPort" type="tns:IServiceHotel">
+        <wsp:PolicyReference URI="#secureBasicHttpPort_policy"/>
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="Avail">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Avail"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="Reservation">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Reservation"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="Valuation">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Valuation"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ReservationRead">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationRead"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="Cancel">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/Cancel"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ReservationList">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ReservationList"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ModifyValuation">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyValuation"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ModifyReservation">
+            <soap:operation soapAction="http://schemas.xmltravelgate.com/hub/2012/06/IServiceHotel/ModifyReservation"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="HotelSecure">
+        <wsdl:port name="secureBasicHttpPort" binding="tns:secureBasicHttpPort">
+            <soap:address location="https://hubpublic.xmltravelgate.com/Service/Travel/v2/HotelSecure.svc"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

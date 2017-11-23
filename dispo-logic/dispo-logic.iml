@@ -11,7 +11,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
-    <orderEntry type="library" name="Maven: org.easytravelapi:core:0.1.13" level="project" />
+    <orderEntry type="library" name="Maven: org.easytravelapi:core:0.1.14" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-jersey2-jaxrs:1.5.16" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-jaxrs:1.5.16" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.16" level="project" />

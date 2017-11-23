@@ -10,6 +10,8 @@
     <file url="file://$PROJECT_DIR$/log-model" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/model" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/show" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/traductor-caval-in" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/traductor-caval-out" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/traductor-ota-in" charset="UTF-8" />
   </component>
 </project>

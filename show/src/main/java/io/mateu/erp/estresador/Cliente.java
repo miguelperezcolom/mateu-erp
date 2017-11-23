@@ -6,6 +6,10 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Random;
 
 public class Cliente implements Runnable {
     private final String url;
@@ -29,14 +33,26 @@ public class Cliente implements Runnable {
         WebTarget resourceWebTarget = webTarget.path("hotel");
         WebTarget dispoWebTarget = resourceWebTarget.path("available");
 
+        Random random = new Random();
+
+        LocalDate entrada0 = LocalDate.of(2018, 01, 01);
+
         while (!Estresador.terminar) {
 
 
             //todo: cambiar fechas y ocupaciones de manera aleatoria
 
+            int noches = 1 + random.nextInt(14);
+            int release = 1 + random.nextInt(180);
+
+            LocalDate entrada = entrada0.plusDays(release);
+            LocalDate salida = entrada.plusDays(noches);
+
+            DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyyMMdd");
+
             Invocation.Builder invocationBuilder = dispoWebTarget
                     .queryParam("resorts", "1")
-                    .queryParam("checkin", "20180123")
+                    .queryParam("checkin", entrada.format(f))
                     .queryParam("checkout", "20180130")
                     .queryParam("occupancies", "1x2")
                     .queryParam("incudestaticinfo", "false")
