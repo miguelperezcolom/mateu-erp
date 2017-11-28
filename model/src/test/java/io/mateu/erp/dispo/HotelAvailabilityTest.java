@@ -670,15 +670,15 @@ public class HotelAvailabilityTest
     }
 
 
-    public void testPrecioOferta01() {
-
-
-        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
-        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
-
-        assertEquals("260.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
-
-    }
+//    public void testPrecioOferta01() {
+//
+//
+//        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+//        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+//
+//        assertEquals("260.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
+//
+//    }
 
 
 
