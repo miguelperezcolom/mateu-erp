@@ -70,4 +70,12 @@ public class FareValue implements XMLSerializable {
         e.setAttribute("value","" + getValue());
         return e;
     }
+
+    public double applicarA(double base) {
+        double v = getValue();
+        if (isPercent()) v = base * v / 100d;
+        if (isSupplement()) v = base + v;
+        else if (isDiscount()) v = base - v;
+        return v;
+    }
 }

@@ -1,8 +1,12 @@
 package io.mateu.erp.dispo;
 
+import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.Occupancy;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter@Setter
 public class ImportePorDia {
@@ -21,13 +25,22 @@ public class ImportePorDia {
 
     private double extrasAlojamiento;
 
-    public double getTotal(Occupancy o) {
+    private double descuentoPax;
+
+
+
+    public double getTotal() {
 
         double total = 0;
 
-        total += o.getNumberOfRooms() * habitacion;
-
-        total += o.getNumberOfRooms() * o.getPaxPerRoom() * alojamiento;
+        total += habitacion;
+        total += alojamiento;
+        total += desayuno;
+        total += almuerzo;
+        total += cena;
+        total += extrasAlojamiento;
+        total += extrasRegimen;
+        total += descuentoPax;
 
         return total;
 

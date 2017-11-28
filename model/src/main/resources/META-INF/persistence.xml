@@ -25,7 +25,6 @@
         <class>io.mateu.erp.model.product.generic.Allotment</class>
         <class>io.mateu.erp.model.financials.Amount</class>
         <class>io.mateu.erp.model.config.AppConfig</class>
-        <class>io.mateu.erp.model.cms.Asset</class>
         <class>io.mateu.erp.model.authentication.Audit</class>
         <class>io.mateu.erp.model.authentication.AuthToken</class>
         <class>io.mateu.erp.model.financials.BillingConcept</class>
@@ -141,10 +140,12 @@
         <class>io.mateu.erp.model.taxes.VATPercent</class>
         <class>io.mateu.erp.model.taxes.VATSettlement</class>
 
+        <class>io.mateu.erp.model.product.hotel.MaxCapacitiesConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter</class>
         <class>io.mateu.erp.model.product.hotel.contracting.HotelContractPhotoConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.EarlyBookingOfferLineConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.FarePerRoomConverter</class>
+
 
         <class>io.mateu.erp.model.util.LocalDateAttributeConverter</class>
         <class>io.mateu.erp.model.util.LocalDateTimeAttributeConverter</class>

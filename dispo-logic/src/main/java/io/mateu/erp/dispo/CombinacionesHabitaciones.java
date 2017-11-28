@@ -16,31 +16,34 @@ public class CombinacionesHabitaciones {
 
     private List<CombinacionHabitaciones> combinaciones = new ArrayList<>();
 
-    public CombinacionesHabitaciones(IHotel hotel, DispoRQ rq, Cupo cupo) {
+    public CombinacionesHabitaciones(IHotel hotel, List<LineaReserva> ocupaciones, Cupo cupo) {
 
-        Map<Occupancy, List<IRoom>> habsQueEncajan = new HashMap<>();
+        Map<String, List<IRoom>> habsQueEncajan = new HashMap<>();
+        Map<IRoom, IRoom> propietariosCupo = new HashMap<>();
 
         for (IRoom r : hotel.getRooms()) {
 
-            for (Occupancy o : rq.getOccupancies()) {
-                if (r.fits(o)) {
-                    List<IRoom> l = habsQueEncajan.get(o);
-                    if (l == null) habsQueEncajan.put(o, l = new ArrayList<>());
+            for (LineaReserva o : ocupaciones) {
+                if (r.fits(o.getAdultos(), o.getNinos(), o.getBebes())) {
+                    List<IRoom> l = habsQueEncajan.get(o.getFirmaOcupacion());
+                    if (l == null) habsQueEncajan.put(o.getFirmaOcupacion(), l = new ArrayList<>());
                     l.add(r);
                 }
             }
 
+
         }
 
-        Map<Occupancy, IRoom> asignacion = new HashMap<>();
+
+        Map<String, IRoom> asignacion = new HashMap<>();
         int pos = 0;
-        for (Occupancy o : rq.getOccupancies()) {
-            if (habsQueEncajan.containsKey(o)) for (IRoom r : habsQueEncajan.get(o)) {
-                asignacion.put(o, r);
-                if (pos == rq.getOccupancies().size() - 1) {
+        for (LineaReserva o : ocupaciones) {
+            if (habsQueEncajan.containsKey(o.getFirmaOcupacion())) for (IRoom r : habsQueEncajan.get(o.getFirmaOcupacion())) {
+                asignacion.put(o.getFirmaOcupacion(), r);
+                if (pos == ocupaciones.size() - 1) {
                     combinaciones.add(new CombinacionHabitaciones(asignacion));
                 }
-                asignacion.remove(o);
+                asignacion.remove(o.getFirmaOcupacion());
             }
             pos++;
         }

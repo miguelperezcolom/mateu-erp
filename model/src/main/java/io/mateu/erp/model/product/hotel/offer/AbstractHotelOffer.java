@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.hotel.offer;
 
+import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.DatesRanges;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -28,7 +30,7 @@ import java.util.List;
                         @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
                 })
 )
-public class AbstractHotelOffer {
+public class AbstractHotelOffer implements IHotelOffer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,7 +61,6 @@ public class AbstractHotelOffer {
 
     @Convert(converter = DatesRangeListConverter.class)
     private DatesRanges checkinDates = new DatesRanges();
-
 
     @Convert(converter = DatesRangeListConverter.class)
     private DatesRanges stayDates = new DatesRanges();

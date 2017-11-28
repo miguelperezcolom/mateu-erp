@@ -80,15 +80,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     private boolean youngestFirst;
 
 
-
-    @Tab("Rooms")
-    @ValueClass(RoomType.class)
-    private List<String> rooms = new ArrayList<>();
-
-    @Tab("Boards")
-    @ValueClass(BoardType.class)
-    private List<String> boards = new ArrayList<>();
-
     @Tab("Fares")
     private List<Fare> fares = new ArrayList<>();
 
@@ -306,22 +297,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.clauses = clauses;
     }
 
-    public List<String> getRooms() {
-        return rooms;
-    }
-
-    public void setRooms(List<String> rooms) {
-        this.rooms = rooms;
-    }
-
-    public List<String> getBoards() {
-        return boards;
-    }
-
-    public void setBoards(List<String> boards) {
-        this.boards = boards;
-    }
-
     @Override
     public String toString() {
         Element xml = new Element("terms");
@@ -401,18 +376,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
             xml.addContent(l);
         }
 
-        {
-            Element l = new Element("rooms");
-            for (String x : getRooms()) l.addContent(new Element("room").setAttribute("id", "" + x));
-            xml.addContent(l);
-        }
-
-        {
-            Element l = new Element("boards");
-            for (String x : getBoards()) l.addContent(new Element("board").setAttribute("id", "" + x));
-            xml.addContent(l);
-        }
-
 
         return new XMLOutputter().outputString(xml);
     }
@@ -434,12 +397,12 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         if ((x = e.getChild("releaseRules")) != null) for (Element z : x.getChildren()) getReleaseRules().add(new ReleaseRule(z));
         if ((x = e.getChild("weekDaysRules")) != null) for (Element z : x.getChildren()) getWeekDaysRules().add(new WeekDaysRule(z));
         if ((x = e.getChild("supplements")) != null) for (Element z : x.getChildren()) getSupplements().add(new Supplement(z));
+        // ordenamos los suplementos por orden de aplicación
+        getSupplements().sort((s1, s2) -> s1.getApplicationOrder() - s2.getApplicationOrder());
         if ((x = e.getChild("galas")) != null) for (Element z : x.getChildren()) getGalas().add(new Gala(z));
         if ((x = e.getChild("allotment")) != null) for (Element z : x.getChildren()) getAllotment().add(new Allotment(z));
         if ((x = e.getChild("canellationRules")) != null) for (Element z : x.getChildren()) getCancellationRules().add(new CancellationRule(z));
         if ((x = e.getChild("clauses")) != null) for (Element z : x.getChildren()) getClauses().add(z.getText());
-        if ((x = e.getChild("rooms")) != null) for (Element z : x.getChildren()) getRooms().add(z.getAttributeValue("id"));
-        if ((x = e.getChild("boards")) != null) for (Element z : x.getChildren()) getBoards().add(z.getAttributeValue("id"));
     }
 
     public HotelContractPhoto() {

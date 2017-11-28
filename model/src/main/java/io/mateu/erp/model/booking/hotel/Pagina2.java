@@ -22,6 +22,7 @@ import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,7 +74,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
                 os.add(new io.mateu.erp.dispo.Occupancy(o.getNumberOfRooms(), o.getPaxPerRoom(), o.getAges()));
             }
 
-            DispoRQ rq = new DispoRQ(io.mateu.erp.dispo.Helper.toInt(p.getCheckin()), io.mateu.erp.dispo.Helper.toInt(p.getCheckout()), os, false);
+            DispoRQ rq = new DispoRQ(p.getFormalizationDate(), io.mateu.erp.dispo.Helper.toInt(p.getCheckin()), io.mateu.erp.dispo.Helper.toInt(p.getCheckout()), os, false);
 
 
             List<Option> options = new ArrayList<>();

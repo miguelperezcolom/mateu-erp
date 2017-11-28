@@ -133,7 +133,7 @@ public class HotelService extends Service implements WithTriggers {
         for (HotelServiceLine l : getLines()) {
             ocs.add(new Occupancy(l.getNumberOfRooms(), l.getPaxPerRoom(), l.getAges(), l.getBoardType().getCode()));
         }
-        DispoRQ rq = new DispoRQ(io.mateu.erp.dispo.Helper.toInt(getStart()), io.mateu.erp.dispo.Helper.toInt(getFinish()), ocs, false);
+        DispoRQ rq = new DispoRQ(LocalDate.now(), io.mateu.erp.dispo.Helper.toInt(getStart()), io.mateu.erp.dispo.Helper.toInt(getFinish()), ocs, false);
         return rq;
     }
 

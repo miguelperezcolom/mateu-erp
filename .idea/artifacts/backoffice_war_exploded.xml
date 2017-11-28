@@ -31,6 +31,8 @@
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpclient:4.0.1" />
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpcore:4.0.1" />
           <element id="library" level="project" name="Maven: com.google.http-client:google-http-client-jackson2:1.22.0" />
+          <element id="library" level="project" name="Maven: ch.qos.logback:logback-classic:1.2.3" />
+          <element id="library" level="project" name="Maven: ch.qos.logback:logback-core:1.2.3" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-jndi:9.4.7.v20170914" />
           <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd-annotations/1.0-SNAPSHOT/mdd-annotations-1.0-20171116.091740-204.jar" output-file-name="mdd-annotations-1.0-SNAPSHOT.jar" />
           <element id="archive" name="dispo-model-1.0-SNAPSHOT.jar">

@@ -568,7 +568,7 @@ public class Vertice extends AbstractVerticle {
 
             //1x4-4-8
 
-            System.out.println("occ=" + s);
+            //System.out.println("occ=" + s);
 
             AvailRQOccupation o;
             rq.getOccupations().add(o = new AvailRQOccupation());

@@ -343,4 +343,9 @@ public class CommonsServiceImpl implements CommonsService {
 
         return s[0];
     }
+
+    @Override
+    public MealPlansListRS getMealPlans(String token) throws Throwable {
+        return null;
+    }
 }

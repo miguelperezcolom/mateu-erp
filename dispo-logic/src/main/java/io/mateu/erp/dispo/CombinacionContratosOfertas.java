@@ -1,7 +1,7 @@
 package io.mateu.erp.dispo;
 
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.dispo.interfaces.product.IOferta;
+import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +13,6 @@ public class CombinacionContratosOfertas {
 
     private List<IHotelContract> contratos = new ArrayList<>();
 
-    private List<IOferta> ofertas = new ArrayList<>();
+    private List<IHotelOffer> ofertas = new ArrayList<>();
 
 }

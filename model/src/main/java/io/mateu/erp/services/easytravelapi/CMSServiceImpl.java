@@ -126,6 +126,7 @@ public class CMSServiceImpl implements CMSService {
 
                 DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+                LocalDate hoy = LocalDate.now();
 
                 for (Hotel h : hoteles) { // solo hay 1 hotel
                     for (int posmes = 0; posmes < 2; posmes++) {
@@ -160,8 +161,8 @@ public class CMSServiceImpl implements CMSService {
 
                             cw.getDays().add(cd = new HotelAvailabilityCalendarDay(nd, d.getDayOfWeek().getValue(), d.getDayOfMonth(), d.format(df), "na"));
 
-                            DispoRQ rq = new DispoRQ(nd, ndx, ocs, false);
-                            AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq, true);
+                            DispoRQ rq = new DispoRQ(hoy, nd, ndx, ocs, false);
+                            AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq, true, hoy);
                             if (ah != null) {
                                 cd.setStyleName("or");
                                 boolean or = true;

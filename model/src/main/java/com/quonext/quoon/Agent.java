@@ -61,6 +61,9 @@ public class Agent {
     private Date lastReceivedMessage;
 
     @Output
+    private String version;
+
+    @Output
     private QueueStatus downloadQueueStatus = QueueStatus.UNUSED;
 
     @Output

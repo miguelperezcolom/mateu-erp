@@ -17,6 +17,7 @@ import org.easytravelapi.hotel.Occupancy;
 import org.easytravelapi.hotel.Option;
 
 import javax.persistence.EntityManager;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -101,7 +102,7 @@ public class DispoTest {
                     }
                 };
 
-                DispoRQ rq = new DispoRQ(20180601, 20180615, Arrays.asList(new Occupancy(1, 2, null)), false);
+                DispoRQ rq = new DispoRQ(LocalDate.now(), 20180601, 20180615, Arrays.asList(new Occupancy(1, 2, null)), false);
 
 
 

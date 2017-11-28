@@ -25,5 +25,15 @@ public interface IHotel {
 
     List<? extends IHotelContract> getContracts();
 
+    List<? extends IHotelOffer> getOffers();
+
     List<? extends IBoard> getBoards();
+
+    public int getChildStartAge();
+
+    public int getJuniorStartAge();
+
+    public int getAdultStartAge();
+
+    public boolean isActive();
 }

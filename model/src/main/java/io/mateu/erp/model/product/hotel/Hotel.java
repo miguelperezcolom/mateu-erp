@@ -9,6 +9,7 @@ import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.CacheIndex;
@@ -39,6 +40,7 @@ public class Hotel implements IHotel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("General")
     @ListColumn
     @NotNull
     @SearchFilter
@@ -54,6 +56,7 @@ public class Hotel implements IHotel {
     @SearchFilter
     private Office office;
 
+    @Tab("Location")
     @ManyToOne
     @NotNull
     @ListColumn
@@ -67,9 +70,27 @@ public class Hotel implements IHotel {
     @ListColumn
     private boolean active;
 
+    @Tab("QuoOn")
     @Index
     @CacheIndex
     private String quoonId;
+
+    @Tab("Ages")
+    /**
+     * inclusive
+     */
+    private int childStartAge;
+
+    /**
+     * inclusive
+     */
+    private int juniorStartAge;
+
+    /**
+     * inclusive
+     */
+    private int adultStartAge;
+
 
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)

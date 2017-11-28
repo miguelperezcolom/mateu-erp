@@ -17,9 +17,10 @@ public class Rango {
 
     public Rango(LocalDate start, LocalDate end, LocalDate checkIn, LocalDate checkOut, int totalNights) {
 
-        desde = (int) DAYS.between(checkIn, start);
+        if (start != null) desde = (int) DAYS.between(checkIn, start);
         if (desde < 0) desde = 0;
-        hasta = (int) DAYS.between(checkIn, end);
+        hasta = totalNights;
+        if (end != null) hasta = (int) DAYS.between(checkIn, end);
         if (hasta > totalNights) hasta = totalNights;
     }
 }

@@ -28,6 +28,7 @@ import travel.caval._20091127.hotelbooking.AvailRQOccupation;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setStatusCode(200);
 
         long idPos = Long.parseLong(System.getProperty("idpos", "1"));
+
+        LocalDate formalizationDate = LocalDate.now();
 
         long idAgencia = 0;
         long idHotel = 0;
@@ -124,7 +127,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     }
                 };
 
-                DispoRQ rq = new DispoRQ(checkIn, checkout, getOccupancies(occupancies), includeStaticInfo);
+                DispoRQ rq = new DispoRQ(formalizationDate, checkIn, checkout, getOccupancies(occupancies), includeStaticInfo);
 
 
                 for (Hotel h : hoteles) {
@@ -158,7 +161,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
             //1x4-4-8
 
-            System.out.println("occ=" + s);
+            //System.out.println("occ=" + s);
 
             Occupancy o;
             l.add(o = new Occupancy());

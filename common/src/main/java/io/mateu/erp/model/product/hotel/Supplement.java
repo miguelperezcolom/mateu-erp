@@ -27,6 +27,14 @@ public class Supplement implements XMLSerializable {
 
     private double percent;
 
+    private boolean onStay;
+
+    private boolean onMealplan;
+
+    private boolean onAccumulated;
+
+    private int applicationOrder;
+
     private double value;
 
     private long providerId;
@@ -162,6 +170,13 @@ public class Supplement implements XMLSerializable {
         if (e.getAttribute("scope") != null) setScope(SupplementScope.valueOf(e.getAttributeValue("scope")));
         if (e.getAttribute("onRequest") != null) setOnRequest(true);
         if (e.getAttribute("percent") != null) setPercent(Double.parseDouble(e.getAttributeValue("percent")));
+
+
+        if (e.getAttribute("onStay") != null) setOnStay(true);
+        if (e.getAttribute("onMealplan") != null) setOnMealplan(true);
+        if (e.getAttribute("onAccumulated") != null) setOnAccumulated(true);
+        if (e.getAttribute("applicationOrder") != null) setApplicationOrder(Integer.parseInt(e.getAttributeValue("applicationOrder")));
+
         if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
         if (e.getAttribute("providerId") != null) setProviderId(Integer.parseInt(e.getAttributeValue("providerId")));
         if (e.getAttribute("invoicingKey") != null) setInvoicingKey(e.getAttributeValue("invoicingKey"));
@@ -203,6 +218,10 @@ public class Supplement implements XMLSerializable {
         e.setAttribute("scope", "" + getScope());
         if (isOnRequest()) e.setAttribute("onRequest", "");
         e.setAttribute("percent", "" + getPercent());
+        if (isOnStay()) e.setAttribute("onStay", "");
+        if (isOnMealplan()) e.setAttribute("onMealplan", "");
+        if (isOnAccumulated()) e.setAttribute("onAccumulated", "");
+        e.setAttribute("applicationOrder", "" + getApplicationOrder());
         e.setAttribute("value", "" + getValue());
         e.setAttribute("providerId", "" + getProviderId());
         if (getInvoicingKey() != null) e.setAttribute("invoicingKey", "" + getScope());
@@ -210,5 +229,37 @@ public class Supplement implements XMLSerializable {
         for (String k : getBoards()) e.addContent(new Element("board").setAttribute("id", "" + k));
 
         return e;
+    }
+
+    public boolean isOnStay() {
+        return onStay;
+    }
+
+    public void setOnStay(boolean onStay) {
+        this.onStay = onStay;
+    }
+
+    public boolean isOnMealplan() {
+        return onMealplan;
+    }
+
+    public void setOnMealplan(boolean onMealplan) {
+        this.onMealplan = onMealplan;
+    }
+
+    public boolean isOnAccumulated() {
+        return onAccumulated;
+    }
+
+    public void setOnAccumulated(boolean onAccumulated) {
+        this.onAccumulated = onAccumulated;
+    }
+
+    public int getApplicationOrder() {
+        return applicationOrder;
+    }
+
+    public void setApplicationOrder(int applicationOrder) {
+        this.applicationOrder = applicationOrder;
     }
 }

@@ -11,10 +11,10 @@ import java.util.Map;
 @Getter@Setter
 public class CombinacionHabitaciones {
 
-    private Map<Occupancy, IRoom> asignacion = new HashMap<>();
+    private Map<String, IRoom> asignacion = new HashMap<>();
 
 
-    public CombinacionHabitaciones(Map<Occupancy, IRoom> asignacion) {
+    public CombinacionHabitaciones(Map<String, IRoom> asignacion) {
         this.asignacion = new HashMap<>(asignacion);
     }
 }

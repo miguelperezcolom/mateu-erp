@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel.offer;
 
 import io.mateu.erp.model.product.hotel.DatesRange;
+import io.mateu.erp.model.product.hotel.DatesRanges;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;

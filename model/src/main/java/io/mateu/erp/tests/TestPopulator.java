@@ -1,6 +1,8 @@
 package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 import com.google.common.io.CharStreams;
 import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
@@ -42,6 +44,7 @@ import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class TestPopulator {
 
@@ -688,14 +691,10 @@ public class TestPopulator {
         p.setAdultStartAge(12);
         p.setYoungestFirst(false);
 
-        for (Room r : h.getRooms()) p.getRooms().add(r.getCode());
-        for (Board b : h.getBoards()) p.getBoards().add(b.getCode());
+        h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> p.getAllotment().add(new Allotment(r, null, null, 10)));
 
-        for (String r : p.getRooms()) {
-            p.getAllotment().add(new Allotment(r, null, null, 10));
-        }
         for (int j = 1; j < 10; j++) {
-            p.getCancellationRules().add(new CancellationRule(null, null, j * 10, j * 5, 0, 0, p.getRooms()));
+            p.getCancellationRules().add(new CancellationRule(null, null, j * 10, j * 5, 0, 0, null));
         }
 
         //p.setWeekDaysRules();
@@ -705,8 +704,8 @@ public class TestPopulator {
 
 
         {
-            p.getGalas().add(new Gala(LocalDate.parse("2018-12-25"), 120, Arrays.asList(50.0, 20.0), p.getBoards()));
-            p.getGalas().add(new Gala(LocalDate.parse("2018-12-31"), 180, Arrays.asList(50.0, 20.0), p.getBoards()));
+            p.getGalas().add(new Gala(LocalDate.parse("2018-12-25"), 120, Arrays.asList(50.0, 20.0), null));
+            p.getGalas().add(new Gala(LocalDate.parse("2018-12-31"), 180, Arrays.asList(50.0, 20.0), null));
         }
 
         for (int j = 1; j < 20; j++) {
@@ -715,12 +714,14 @@ public class TestPopulator {
                 fechas.add(new DatesRange(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1)));
             }
             Map<String, RoomFare> porHabitacion = new HashMap<>();
-            for (String r : p.getRooms()) {
+
+            int finalJ = j;
+            h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> {
                 RoomFare rf = new RoomFare();
-                for (String b : p.getBoards()) {
+                h.getBoards().stream().map((b) -> b.getCode()).forEach((b) -> {
                     BoardFare bf = new BoardFare();
-                    bf.setRoomPrice(new FareValue(false, false, false, 30 + (j * 10)));
-                    bf.setPaxPrice(new FareValue(false, false, false, 60.15 + (j * 10)));
+                    bf.setRoomPrice(new FareValue(false, false, false, 30 + (finalJ * 10)));
+                    bf.setPaxPrice(new FareValue(false, false, false, 60.15 + (finalJ * 10)));
                     for (int q = 0; q < 2; q++) {
                         bf.getPaxDiscounts().put(3 + q, new FareValue(false, true, true, q + 10));
                     }
@@ -730,25 +731,25 @@ public class TestPopulator {
                         }
                     }
                     rf.getFarePerBoard().put(b, bf);
-                }
+                });
                 porHabitacion.put(r, rf);
-            }
+            });
             p.getFares().add(new Fare("Fare " + j, fechas, porHabitacion));
         }
 
         for (int j = 1; j < 20; j++) {
             p.getSupplements().add(new Supplement(null, null, false, true, "Suplemento " + j, (j % 2 == 0)?SupplementPer.PAX:SupplementPer.ROOM,
-                    (j % 2 == 0)?SupplementScope.NIGHT:SupplementScope.BOOKING, false, 0, j, 0, bc.getCode(), p.getRooms(), p.getBoards()
+                    (j % 2 == 0)?SupplementScope.NIGHT:SupplementScope.BOOKING, false, 0, j, 0, bc.getCode(), null, null
                     ));
         }
 
         for (int j = 0; j < 50; j++) {
-            p.getReleaseRules().add(new ReleaseRule(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1), j % 14, p.getRooms()));
+            p.getReleaseRules().add(new ReleaseRule(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1), j % 14, null));
         }
 
 
         for (int j = 0; j < 50; j++) {
-            p.getMinimumStayRules().add(new MinimumStayRule(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1), j % 7, j % 2 == 0, 10, 0, SupplementPer.PAX, p.getRooms(), p.getBoards()));
+            p.getMinimumStayRules().add(new MinimumStayRule(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1), j % 7, j % 2 == 0, 10, 0, SupplementPer.PAX, null, null));
         }
 
 
@@ -983,6 +984,16 @@ public class TestPopulator {
 
                     h.setCategory(cats.get(random.nextInt(cats.size() - 1)));
 
+                    /*
+                    String[][] habs = {
+                        {"DBL", "Double room", "Habitación doble"}
+                        , {"DSV", "Double sea view", "Habitación doble vista mar"}
+                        , {"DUI", "Double single use room", "Habitación doble uso individual"}
+                        , {"SUI", "Suite", "Suite"}
+                        , {"JSUI", "Junior suite", "Junior suite"}
+                };
+                     */
+
 
                     int maxhabs = 2 + random.nextInt(rts.size() - 1);
                     for (int j = 0; j < maxhabs; j++) {
@@ -992,7 +1003,19 @@ public class TestPopulator {
                         r.setDescription(new Literal("Beatiful room with all services included", "Bonita habitación con todos los servicios incluidos"));
                         r.setHotel(h);
                         r.setInfantsAllowed(true);
-                        r.setMaxCapacity("3");
+                        if ("dui".equalsIgnoreCase(r.getType().getCode())) {
+                            MaxCapacities mc;
+                            r.setMaxCapacities(mc = new MaxCapacities());
+                            mc.getCapacities().add(new MaxCapacity(1, 0, 0));
+                        } else if ("sui".equalsIgnoreCase(r.getType().getCode())) {
+                            MaxCapacities mc;
+                            r.setMaxCapacities(mc = new MaxCapacities());
+                            mc.getCapacities().add(new MaxCapacity(4, 0, 0));
+                        } else {
+                            MaxCapacities mc;
+                            r.setMaxCapacities(mc = new MaxCapacities());
+                            mc.getCapacities().add(new MaxCapacity(2, 0, 0));
+                        }
                         r.setMinPax(1);
                         h.getRooms().add(r);
                     }

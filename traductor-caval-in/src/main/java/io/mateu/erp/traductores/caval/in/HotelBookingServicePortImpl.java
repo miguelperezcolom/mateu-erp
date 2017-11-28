@@ -6,13 +6,11 @@
 
 package io.mateu.erp.traductores.caval.in;
 
+import com.google.common.base.Strings;
 import jdk.nashorn.internal.runtime.regexp.joni.constants.CCSTATE;
 import org.easytravelapi.common.GetBookingRS;
-import org.easytravelapi.hotel.Allocation;
-import org.easytravelapi.hotel.AvailableHotel;
+import org.easytravelapi.hotel.*;
 import org.easytravelapi.hotel.BoardPrice;
-import org.easytravelapi.hotel.GetAvailableHotelsRS;
-import org.easytravelapi.hotel.Option;
 import travel.caval._20091127.hotelbooking.*;
 
 import javax.jws.WebService;
@@ -21,6 +19,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.xml.ws.AsyncHandler;
 import javax.xml.ws.Response;
+import java.util.Date;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
@@ -80,6 +79,8 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
                 AvailableEstablishment e;
                 v.getAvailableEstablishments().add(e = new AvailableEstablishment());
 
+                numhoteles++;
+
                 e.setEstablishmentId(h.getHotelId());
                 e.setEstablishmentName(h.getHotelName());
                 e.setCityId("");
@@ -113,7 +114,7 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
                         r.setStatus("");
                     }
 
-                    for (BoardPrice p : o.getPrices()) {
+                    for (org.easytravelapi.hotel.BoardPrice p : o.getPrices()) {
                         travel.caval._20091127.hotelbooking.BoardPrice xp;
                         cp.getBoardPrices().add(xp = new travel.caval._20091127.hotelbooking.BoardPrice());
 
@@ -176,7 +177,55 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
         LOG.info("Executing operation getDetailedValuation");
         System.out.println(parameters);
         try {
-            travel.caval._20091127.hotelbooking.GetDetailedValuationResponse _return = null;
+
+            String key = parameters.getRq().getKey();
+            if (Strings.isNullOrEmpty(key)) {
+                //todo: crear key a aprtir del rq de caval
+            }
+
+            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/hotel/pricedetails/" + key);
+
+            GetHotelPriceDetailsRS rs = t.request("application/json")
+                    .get(GetHotelPriceDetailsRS.class);
+
+
+            travel.caval._20091127.hotelbooking.GetDetailedValuationResponse _return = new GetDetailedValuationResponse();
+            CavalHotelBookingValuationRS v = new CavalHotelBookingValuationRS();
+            _return.setReturn(v);
+            v.setCpuTime("");
+            v.setDateAtServer(rs.getSystemTime());
+            v.setMessage(rs.getMsg());
+            v.setResultCode(rs.getStatusCode());
+
+            /*
+            v.setBoardCode();
+            v.setBoardName();
+            v.setCheckin();
+            v.setCheckout();
+            v.setEstablishmentAddress();
+            v.setEstablishmentCategory();
+            v.setEstablishmentCity();
+            v.setEstablishmentCountry();
+            v.setEstablishmentDescription();
+            v.setEstablishmentId();
+            v.setEstablishmentImageUrl();
+            v.setEstablishmentName();
+            v.setEstablishmentZip();
+            v.setGrossPrice();
+            v.setKey();
+            v.setNetPrice();
+            v.setOffer();
+            v.setOfferDescription();
+            v.setStatsKey();
+            v.setStatus();
+            */
+
+            v.getRemarks();
+
+            v.getCancellationCosts();
+
+            v.getAvailableSupplements();
+
             return _return;
         } catch (java.lang.Exception ex) {
             ex.printStackTrace();
@@ -191,7 +240,17 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
         LOG.info("Executing operation getOffersList");
         System.out.println(parameters);
         try {
-            travel.caval._20091127.hotelbooking.GetOffersListResponse _return = null;
+            travel.caval._20091127.hotelbooking.GetOffersListResponse _return = new GetOffersListResponse();
+
+            //este método no lo implementamos
+
+            CavalGetOffersListRS v = new CavalGetOffersListRS();
+            _return.setReturn(v);
+            v.setCpuTime("");
+            v.setDateAtServer("" + new Date());
+            v.setMessage("Sorry. This method is not implemented");
+            v.setResultCode(404);
+
             return _return;
         } catch (java.lang.Exception ex) {
             ex.printStackTrace();
@@ -221,7 +280,14 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
         LOG.info("Executing operation getListOfBoardTypes");
         System.out.println(parameters);
         try {
-            travel.caval._20091127.hotelbooking.GetListOfBoardTypesResponse _return = null;
+            travel.caval._20091127.hotelbooking.GetListOfBoardTypesResponse _return = new GetListOfBoardTypesResponse();
+            CavalGetListOfBoardTypesRS v = new CavalGetListOfBoardTypesRS();
+            _return.setReturn(v);
+            v.setCpuTime("");
+            v.setDateAtServer("" + new Date());
+            v.setMessage("");
+            v.setResultCode(200);
+
             return _return;
         } catch (java.lang.Exception ex) {
             ex.printStackTrace();
@@ -236,7 +302,14 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
         LOG.info("Executing operation getEstablishmentDataSheets");
         System.out.println(parameters);
         try {
-            travel.caval._20091127.hotelbooking.GetEstablishmentDataSheetsResponse _return = null;
+            travel.caval._20091127.hotelbooking.GetEstablishmentDataSheetsResponse _return = new GetEstablishmentDataSheetsResponse();
+            CavalGetEstablishmentDataSheetsRS v = new CavalGetEstablishmentDataSheetsRS();
+            _return.setReturn(v);
+            v.setCpuTime("");
+            v.setDateAtServer("" + new Date());
+            v.setMessage("");
+            v.setResultCode(200);
+
             return _return;
         } catch (java.lang.Exception ex) {
             ex.printStackTrace();
@@ -251,7 +324,13 @@ public class HotelBookingServicePortImpl implements HotelBookingService {
         LOG.info("Executing operation notifyHotelBookings");
         System.out.println(parameters);
         try {
-            travel.caval._20091127.hotelbooking.NotifyHotelBookingsResponse _return = null;
+            travel.caval._20091127.hotelbooking.NotifyHotelBookingsResponse _return = new NotifyHotelBookingsResponse();
+            CavalHotelBookingNotificationRS v = new CavalHotelBookingNotificationRS();
+            _return.setReturn(v);
+            v.setCpuTime("");
+            v.setDateAtServer("" + new Date());
+            v.setMessage("Sorry. This method is not implemented");
+            v.setResultCode(404);
             return _return;
         } catch (java.lang.Exception ex) {
             ex.printStackTrace();

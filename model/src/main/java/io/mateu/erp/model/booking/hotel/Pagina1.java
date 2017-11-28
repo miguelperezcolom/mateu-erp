@@ -22,6 +22,9 @@ public class Pagina1 extends AbstractServerSideWizardPage {
     private State state;
 
     @NotNull
+    private LocalDate formalizationDate = LocalDate.now();
+
+    @NotNull
     private LocalDate checkin = LocalDate.of(2018, 1, 15);
 
     @NotNull

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -22,11 +23,11 @@ public class Helper {
     }
 
     public static boolean intersects(LocalDate start, LocalDate end, LocalDate checkIn, LocalDate checkOut) {
-        return start.isBefore(checkOut) && end.compareTo(checkIn) >= 0;
+        return (start == null || start.isBefore(checkOut)) && (end == null || end.compareTo(checkIn) >= 0);
     }
 
     public static boolean cabe(LocalDate validFrom, LocalDate validTo, LocalDate checkIn, LocalDate checkOut) {
-        return validFrom.compareTo(checkIn) <= 0 && validTo.compareTo(checkOut) >= -1;
+        return validFrom.compareTo(checkIn) <= 0 && validTo.compareTo(checkOut) >= 0;
     }
 
     public static Date toDate(LocalDateTime localDateTime) {
@@ -36,5 +37,14 @@ public class Helper {
 
     public static double roundEuros(double value) {
         return Math.round(value * 100d) / 100d;
+    }
+
+    public static int[] toIntArray(List<Integer> l) {
+        int[] a = null;
+        if (l != null) {
+            a = new int[l.size()];
+            for (int pos = 0; pos < l.size(); pos++) a[pos] = l.get(pos);
+        }
+        return a;
     }
 }
