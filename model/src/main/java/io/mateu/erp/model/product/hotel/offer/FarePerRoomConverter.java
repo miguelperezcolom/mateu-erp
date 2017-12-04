@@ -22,7 +22,7 @@ public class FarePerRoomConverter implements AttributeConverter<FarePerRoom, Str
         if (list == null) return null;
         else {
             Element e = new Element("fares");
-            for (long k : list.getFares().keySet()) {
+            for (String k : list.getFares().keySet()) {
                 e.addContent(list.getFares().get(k).toXml().setAttribute("room", "" + k));
             }
             return new XMLOutputter().outputString(e);
@@ -46,10 +46,10 @@ public class FarePerRoomConverter implements AttributeConverter<FarePerRoom, Str
             Element e = null;
             try {
 
-                Map<Long, RoomFare> l = new HashMap<>();
+                Map<String, RoomFare> l = new HashMap<>();
 
                 e = new SAXBuilder().build(new StringReader(joined)).getRootElement();
-                for (Element z : e.getChildren("roomFare")) l.put(Long.parseLong(z.getAttributeValue("room")), new RoomFare(z));
+                for (Element z : e.getChildren("roomFare")) l.put(z.getAttributeValue("room"), new RoomFare(z));
 
 
                 return new FarePerRoom(l);

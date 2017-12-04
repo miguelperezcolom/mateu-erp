@@ -1,11 +1,11 @@
 package io.mateu.erp.model.product.hotel.offer;
 
+import io.mateu.erp.dispo.*;
+import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
+import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.financials.Actor;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.DatesRanges;
-import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -118,4 +118,13 @@ public class AbstractHotelOffer implements IHotelOffer {
         return h;
     }
 
+
+
+    @Override
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+
+
+
+        return 0;
+    }
 }

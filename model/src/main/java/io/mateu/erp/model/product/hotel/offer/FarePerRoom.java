@@ -10,11 +10,11 @@ import java.util.Map;
 @Getter@Setter
 public class FarePerRoom {
 
-    private Map<Long, RoomFare> fares = new HashMap<>();
+    private Map<String, RoomFare> fares = new HashMap<>();
 
     public FarePerRoom() {}
 
-    public FarePerRoom(Map<Long, RoomFare> l) {
+    public FarePerRoom(Map<String, RoomFare> l) {
         setFares(l);
     }
 }

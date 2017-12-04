@@ -20,7 +20,7 @@ public class CombinacionesContratosOfertas {
 
             List<IHotelOffer> ofertasValidasParaEsteContrato = new ArrayList<>();
             for (IHotelOffer o : contratosYOfertas.getOfertas()) {
-                if (o.getContracts().contains(c)) ofertasValidasParaEsteContrato.add(o);
+                if (o.getContracts().size() == 0 || o.getContracts().contains(c)) ofertasValidasParaEsteContrato.add(o);
             }
 
             List<List<IHotelOffer>> combinacionesDeOfertasValidasParaEsteContrato = new ArrayList<>();

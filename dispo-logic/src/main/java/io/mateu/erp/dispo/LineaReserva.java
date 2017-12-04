@@ -4,8 +4,18 @@ import io.mateu.erp.dispo.interfaces.product.IRoom;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter@Setter
 public class LineaReserva {
+
+    private LocalDate entrada;
+
+    private LocalDate salida;
+
+    private int release;
+
+    private int numeroNoches;
 
     private int adultos;
 
@@ -22,7 +32,11 @@ public class LineaReserva {
     private String firmaOcupacion;
 
 
-    public LineaReserva(int adultos, int juniors, int ninos, int bebes, int[] edades) {
+    public LineaReserva(LocalDate entrada, LocalDate salida, int release, int numeroNoches, int adultos, int juniors, int ninos, int bebes, int[] edades) {
+        this.entrada = entrada;
+        this.salida = salida;
+        this.release = release;
+        this.numeroNoches = numeroNoches;
         this.adultos = adultos;
         this.juniors = juniors;
         this.ninos = ninos;

@@ -118,4 +118,30 @@ public class BoardFare implements XMLSerializable {
     public void setInfantDiscounts(Map<Integer, FareValue> infantDiscounts) {
         this.infantDiscounts = infantDiscounts;
     }
+
+    public BoardFare combineWith(BoardFare f) {
+        // clone
+        BoardFare x = clone();
+
+        x.fill(f);
+
+        return x;
+    }
+
+    public BoardFare clone() {
+        return new BoardFare().fill(this);
+    }
+    
+    public BoardFare fill(BoardFare f) {
+
+        if (f.getRoomPrice() != null) setRoomPrice(new FareValue(f.getRoomPrice()));
+        if (f.getPaxPrice() != null) setPaxPrice(new FareValue(f.getPaxPrice()));
+        for (int k : f.getPaxDiscounts().keySet()) getPaxDiscounts().put(k, f.getPaxDiscounts().get(k));
+        for (int k : f.getJuniorDiscounts().keySet()) getJuniorDiscounts().put(k, f.getJuniorDiscounts().get(k));
+        for (int k : f.getChildDiscounts().keySet()) getChildDiscounts().put(k, f.getChildDiscounts().get(k));
+        for (int k : f.getInfantDiscounts().keySet()) getInfantDiscounts().put(k, f.getInfantDiscounts().get(k));
+        
+        return this;
+    }
+    
 }

@@ -61,6 +61,7 @@
         <class>io.mateu.erp.model.product.hotel.Hotel</class>
         <class>io.mateu.erp.model.product.hotel.HotelCategory</class>
         <class>io.mateu.erp.model.product.hotel.contracting.HotelContract</class>
+        <class>io.mateu.erp.model.product.hotel.contracting.DynamicHotelContract</class>
         <class>io.mateu.erp.model.product.hotel.StopSales</class>
         <class>io.mateu.erp.model.product.FeatureValue</class>
         <class>io.mateu.erp.model.thirdParties.Integration</class>
@@ -143,6 +144,7 @@
         <class>io.mateu.erp.model.product.hotel.MaxCapacitiesConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter</class>
         <class>io.mateu.erp.model.product.hotel.contracting.HotelContractPhotoConverter</class>
+        <class>io.mateu.erp.model.product.hotel.contracting.DynamicFaresConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.EarlyBookingOfferLineConverter</class>
         <class>io.mateu.erp.model.product.hotel.offer.FarePerRoomConverter</class>
 

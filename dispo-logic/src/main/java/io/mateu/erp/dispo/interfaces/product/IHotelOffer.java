@@ -1,7 +1,9 @@
 package io.mateu.erp.dispo.interfaces.product;
 
+import io.mateu.erp.dispo.CondicionesPorRegimen;
+import io.mateu.erp.dispo.LineaReserva;
+import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.common.IActor;
-import io.mateu.erp.model.product.hotel.DatesRange;
 import io.mateu.erp.model.product.hotel.DatesRanges;
 
 import java.time.LocalDate;
@@ -31,4 +33,6 @@ public interface IHotelOffer {
     DatesRanges getStayDates();
 
     public String getName();
+
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr);
 }

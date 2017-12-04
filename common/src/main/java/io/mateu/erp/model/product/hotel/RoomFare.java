@@ -37,4 +37,8 @@ public class RoomFare implements XMLSerializable {
         }
         return e;
     }
+
+    public RoomFare combineWith(RoomFare rf) {
+        return this;
+    }
 }

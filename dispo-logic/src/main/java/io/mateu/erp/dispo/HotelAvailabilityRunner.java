@@ -74,10 +74,11 @@ public class HotelAvailabilityRunner {
 
                         CombinacionesContratosOfertas combinacionesContratosOfertas = new CombinacionesContratosOfertas(contratosYOfertas);
 
-                        List<BoardPrice> opcionesValidas = new ArrayList<>();
                         for (CombinacionContratosOfertas combinacionContratosOfertas : combinacionesContratosOfertas.getCombinaciones()) {
 
                             for (CombinacionHabitaciones combinacionHabitaciones : combinacionesHabitaciones.getCombinaciones()) {
+
+                                List<BoardPrice> opcionesValidas = new ArrayList<>();
 
                                 // calcular y acumular resultado
                                 Valoracion v = new Valoracion(rq, hotel, combinacionContratosOfertas, lineasReserva, combinacionHabitaciones, cupo, ignoreMINLOS);
@@ -192,7 +193,7 @@ public class HotelAvailabilityRunner {
                 }
                 int ad = o.getPaxPerRoom() - ju - ni - bb;
 
-                l.add(new LineaReserva(ad, ju, ni, bb, Helper.toIntArray(edades[h])));
+                l.add(new LineaReserva(rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getRelease(), rq.getTotalNights(), ad, ju, ni, bb, Helper.toIntArray(edades[h])));
             }
         }
         return l;

@@ -10,4 +10,12 @@ public class EarlyBookingOfferLine {
 
     private double discountPercent;
 
+    public EarlyBookingOfferLine() {
+
+    }
+
+    public EarlyBookingOfferLine(int release, double discountPercent) {
+        this.release = release;
+        this.discountPercent = discountPercent;
+    }
 }

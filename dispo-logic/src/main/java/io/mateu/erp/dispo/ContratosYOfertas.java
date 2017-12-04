@@ -72,7 +72,7 @@ public class ContratosYOfertas {
 
             ok = ok && o.getApplicationMinimumNights() <= noches;
 
-            ok = ok && o.getApplicationRelease() > release;
+            ok = ok && o.getApplicationRelease() <= release;
 
             ok = ok && o.getApplicationMinimumNights() <= noches;
 

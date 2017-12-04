@@ -15,13 +15,13 @@ import io.mateu.erp.model.multilanguage.Literal;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.erp.model.product.hotel.offer.DiscountOffer;
-import io.mateu.erp.model.product.hotel.offer.Per;
-import io.mateu.erp.model.product.hotel.offer.Scope;
+import io.mateu.erp.model.product.hotel.offer.*;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.easytravelapi.hotel.AvailableHotel;
+import org.easytravelapi.hotel.BoardPrice;
+import org.easytravelapi.hotel.Option;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
@@ -52,6 +52,8 @@ public class HotelAvailabilityTest
     private HotelContractPhoto condicionesContrato;
     private Map<Long, HotelContract> contratos;
     private Fare tarifaEnero;
+    private RoomFare rfDobleEnAbril;
+    private Fare fareAbril;
 
     @Override
     protected void setUp() throws Exception {
@@ -160,6 +162,22 @@ public class HotelAvailabilityTest
             r.setHotel(hotel);
             rooms.put("dbl", r);
         }
+        {
+            Room r;
+            hotel.getRooms().add(r = new Room());
+            r.setId(1);
+            r.setType(roomTypes.get("sui"));
+            r.setMinPax(1);
+            r.setChildrenAllowed(true);
+            r.setInfantsAllowed(true);
+            r.setInfantsInBed(false);
+            r.setInventoryPropietary(null);
+            r.setMinAdultsForChildDiscount(2);
+            r.setMaxCapacities(new MaxCapacities());
+            r.setDescription(new Literal("Beautiful suite", "Bonita suite"));
+            r.setHotel(hotel);
+            rooms.put("sui", r);
+        }
 
         // regímenes del hotel
         boards = new HashMap<>();
@@ -171,6 +189,15 @@ public class HotelAvailabilityTest
             b.setHotel(hotel);
             b.setDescription(new Literal("Sleep only, no meals included", "Solo la habitación, sin comindas"));
             boards.put("sa", b);
+        }
+        {
+            Board b;
+            hotel.getBoards().add(b = new Board());
+            b.setId(1);
+            b.setType(boardTypes.get("mp"));
+            b.setHotel(hotel);
+            b.setDescription(new Literal("Breadkast and lunch included", "Desayuno y almuerzo incluidos"));
+            boards.put("mp", b);
         }
 
 
@@ -344,34 +371,18 @@ public class HotelAvailabilityTest
         {
             Fare f;
             condicionesContrato.getFares().add(f = new Fare());
+            fareAbril = f;
             f.setName("Tarifa Febrero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
             RoomFare rf;
             f.getFarePerRoom().put("DBL", rf = new RoomFare());
+            rfDobleEnAbril = rf;
             BoardFare bf;
             rf.getFarePerBoard().put("SA", bf = new BoardFare());
             FareValue fv;
             bf.setPaxPrice(fv = new FareValue(false, false, false, 30));
 
 
-            {
-                DiscountOffer o;
-                hotel.getOffers().add(o = new DiscountOffer());
-                o.getHotels().add(hotel);
-
-                o.setName("Oferta descuento 30%");
-                o.setId(1);
-                o.setActive(true);
-                o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
-                o.setOnBoardBasis(true);
-                o.setOnDiscounts(true);
-                o.setOnRoom(true);
-                o.setPercent(true);
-                o.setValue(30);
-                o.setScope(Scope.BOOKING);
-                o.setPer(Per.BOOKING);
-                o.setPrepayment(false);
-            }
         }
 
 
@@ -670,16 +681,286 @@ public class HotelAvailabilityTest
     }
 
 
-//    public void testPrecioOferta01() {
-//
-//
-//        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
-//        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
-//
-//        assertEquals("260.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
-//
-//    }
+    public void testPrecioOferta01() {
+
+        {
+            DiscountOffer o;
+            hotel.getOffers().add(o = new DiscountOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta descuento 30%");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+            o.setPercent(true);
+            o.setValue(30);
+            o.setScope(Scope.BOOKING);
+            o.setPer(Per.BOOKING);
+            o.setPrepayment(false);
+        }
 
 
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        assertEquals("210.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
+
+    }
+
+    public void testPrecioOferta02() {
+
+        {
+            EarlyBookingOffer o;
+            hotel.getOffers().add(o = new EarlyBookingOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta early booking");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            o.getLines().getLines().add(new EarlyBookingOfferLine(120, 25));
+            o.getLines().getLines().add(new EarlyBookingOfferLine(60, 15));
+
+            o.setPrepayment(false);
+        }
+
+
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        assertEquals("225.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
+
+    }
+
+    public void testPrecioOferta03() {
+
+        {
+            StayAndPayOffer o;
+            hotel.getOffers().add(o = new StayAndPayOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta 4 x 3");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            o.setStayNights(4);
+            o.setPayNights(3);
+            o.setWhichNights(WhichNights.FIRST);
+
+            o.setPrepayment(false);
+        }
+
+
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        assertEquals("240.0 EUR", rs.getBestDeal()); // por defecto el bebé es gratis, solo 2 adultos a 15 eur/noche
+
+    }
+
+
+    public void testPrecioOferta04() {
+
+        {
+            FreeChildrenOffer o;
+            hotel.getOffers().add(o = new FreeChildrenOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta niños gratis");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            o.setPrepayment(false);
+        }
+
+
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 3, new int[] {5})), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        assertEquals("300.0 EUR", rs.getBestDeal());
+
+    }
+
+    public void testPrecioOferta05() {
+
+        {
+
+
+            BoardFare bf;
+            rfDobleEnAbril.getFarePerBoard().put("MP", bf = new BoardFare());
+            FareValue fv;
+            bf.setPaxPrice(fv = new FareValue(false, false, false, 50));
+
+
+            BoardUpgradeOffer o;
+            hotel.getOffers().add(o = new BoardUpgradeOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta mejor régimen");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            o.setGet(boardTypes.get("mp"));
+            o.setPay(boardTypes.get("sa"));
+
+            o.setPrepayment(false);
+        }
+
+
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        double precio = 0;
+        for (Option o : rs.getOptions()) {
+            for (BoardPrice bp : o.getPrices()) {
+                System.out.println("" + bp.getBoardBasisId() + "=" + bp.getNetPrice().getValue());
+                if ("mp".equalsIgnoreCase(bp.getBoardBasisId())) precio = bp.getNetPrice().getValue();
+            }
+        }
+
+        assertEquals(300.0, precio);
+
+    }
+
+
+    public void testPrecioOferta06() {
+
+        {
+            Fare f = fareAbril;
+            RoomFare rf;
+            f.getFarePerRoom().put("SUI", rf = new RoomFare());
+            BoardFare bf;
+            rf.getFarePerBoard().put("SA", bf = new BoardFare());
+            FareValue fv;
+            bf.setPaxPrice(fv = new FareValue(false, false, false, 100));
+        }
+
+        {
+
+            DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+            AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+            double precio = 0;
+            for (Option o : rs.getOptions()) {
+                if ("sui".equalsIgnoreCase(o.getDistribution().get(0).getRoomId())) {
+                    for (BoardPrice bp : o.getPrices()) {
+                        System.out.println("" + o.getDistribution().get(0).getRoomId() + " en " + bp.getBoardBasisId() + "=" + bp.getNetPrice().getValue());
+                        if ("sa".equalsIgnoreCase(bp.getBoardBasisId())) precio = bp.getNetPrice().getValue();
+                    }
+                }
+            }
+
+            assertEquals(1000.0, precio);
+
+        }
+
+
+
+        {
+
+            RoomUpgradeOffer o;
+            hotel.getOffers().add(o = new RoomUpgradeOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta mejor habitación");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            o.setGet(rooms.get("sui"));
+            o.setPay(rooms.get("dbl"));
+
+            o.setPrepayment(false);
+        }
+
+
+        {
+            DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+            AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+            double precio = 0;
+            for (Option o : rs.getOptions()) {
+                if ("sui".equalsIgnoreCase(o.getDistribution().get(0).getRoomId())) {
+                    for (BoardPrice bp : o.getPrices()) {
+                        System.out.println("" + o.getDistribution().get(0).getRoomId() + " en " + bp.getBoardBasisId() + "=" + bp.getNetPrice().getValue());
+                        if ("sa".equalsIgnoreCase(bp.getBoardBasisId())) precio = bp.getNetPrice().getValue();
+                    }
+                }
+            }
+
+            assertEquals(300.0, precio);
+        }
+
+
+    }
+
+
+    public void testPrecioOferta07() {
+
+        {
+
+            PriceOffer o;
+            hotel.getOffers().add(o = new PriceOffer());
+            o.getHotels().add(hotel);
+
+            o.setName("Oferta mejor habitación");
+            o.setId(1);
+            o.setActive(true);
+            o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
+            o.setOnBoardBasis(true);
+            o.setOnDiscounts(true);
+            o.setOnRoom(true);
+
+            RoomFare rf;
+            o.getFarePerRoom().getFares().put("DBL", rf = new RoomFare());
+            rfDobleEnAbril = rf;
+            BoardFare bf;
+            rf.getFarePerBoard().put("SA", bf = new BoardFare());
+            FareValue fv;
+            bf.setPaxPrice(fv = new FareValue(false, false, false, 10));
+
+            o.setPrepayment(false);
+        }
+
+
+
+        DispoRQ rq = new DispoRQ(LocalDate.now(), 21010401, 21010406, Lists.newArrayList(new Occupancy(1, 2, null)), false);
+        AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
+
+        double precio = 0;
+        for (Option o : rs.getOptions()) {
+            if ("dbl".equalsIgnoreCase(o.getDistribution().get(0).getRoomId())) {
+                for (BoardPrice bp : o.getPrices()) {
+                    System.out.println("" + o.getDistribution().get(0).getRoomId() + " en " + bp.getBoardBasisId() + "=" + bp.getNetPrice().getValue());
+                    if ("sa".equalsIgnoreCase(bp.getBoardBasisId())) precio = bp.getNetPrice().getValue();
+                }
+            }
+        }
+
+        assertEquals(100.0, precio);
+
+    }
 
 }

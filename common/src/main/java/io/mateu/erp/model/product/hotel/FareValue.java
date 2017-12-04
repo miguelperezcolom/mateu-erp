@@ -10,6 +10,12 @@ public class FareValue implements XMLSerializable {
     private boolean percent;
     private double value;
 
+    public FareValue(FareValue v) {
+        this.supplement = v.isSupplement();
+        this.discount = v.isDiscount();
+        this.percent = v.isPercent();
+        this.value = v.getValue();
+    }
 
 
     public boolean isSupplement() {

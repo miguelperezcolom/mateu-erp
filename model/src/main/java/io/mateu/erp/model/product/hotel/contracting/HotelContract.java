@@ -36,9 +36,11 @@ public class HotelContract extends AbstractContract implements IHotelContract {
     private String quoonId;
 
     @SearchFilter
-    @Tab("Related to")
-    @ManyToMany
-    private List<Hotel> hotels = new ArrayList<>();
+    @ManyToOne
+    private Hotel hotel;
+
+    @ManyToOne
+    private HotelContract parent;
 
     @SearchFilter
     @ManyToMany(mappedBy = "contracts")

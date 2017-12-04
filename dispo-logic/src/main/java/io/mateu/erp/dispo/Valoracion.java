@@ -8,7 +8,6 @@ import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.BoardPrice;
 
 import java.io.IOException;
@@ -177,6 +176,9 @@ public class Valoracion {
      * @param oferta
      */
     private void add(DispoRQ rq, IHotelOffer oferta) {
+
+        //todo: revisar, especialmente si podemos ahorrar cálculo
+
         for (IBoard board : hotel.getBoards()) {
 
             OfertasPorRegimen rpr = ofertasPorRegimen.get(board);
@@ -185,18 +187,9 @@ public class Valoracion {
             for (IRoom room : combinacionHabitaciones.getAsignacion().values()) {
 
                 OfertasPorHabitacion rph = rpr.getOfertasPorHabitacion().get(room);
-                if (rph == null) rpr.getOfertasPorHabitacion().put(room, rph = new OfertasPorHabitacion(rq.getTotalNights()));
+                if (rph == null) rpr.getOfertasPorHabitacion().put(room, rph = new OfertasPorHabitacion());
 
-                for (DatesRange r : oferta.getStayDates().getRanges()) {
-                    if (Helper.intersects(r.getStart(), r.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
-                        Rango rx = new Rango(r.getStart(), r.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getTotalNights());
-
-                        for (int i = rx.getDesde(); i <= rx.getHasta(); i++) {
-                            OfertasPorDia rpd = rph.getDias().get(i);
-                            rpd.getOfertas().add(oferta);
-                        }
-                    }
-                }
+                rph.getOfertas().add(oferta);
 
             }
         }
@@ -249,6 +242,11 @@ public class Valoracion {
                         if (vpd.getFarePerRoom().get(room.getCode()) == null) {
                             ok = false;
                             break;
+                        } else {
+                            if (vpd.getFarePerRoom().get(room.getCode()).getFarePerBoard().get(board.getCode()) == null) {
+                                ok = false;
+                                break;
+                            }
                         }
 
                 //todo: guardar las valoraciones por firma de ocupación para reutilizarlas
@@ -256,6 +254,8 @@ public class Valoracion {
                 if (ok) { // hay precio para todos los días
 
                     boolean restriccionesOk = true;
+
+                    boolean tarifaOk = true;
 
                     DesglosePrecios desglose = new DesglosePrecios(board);
                     
@@ -278,55 +278,7 @@ public class Valoracion {
 
                                 ValoracionPorDia vpd = vlr.getDias().get(noche);
 
-                                if (bf.getRoomPrice() != null) vpd.setImporteHabitacion(bf.getRoomPrice().getValue());
-
-                                int posjunior = 0;
-                                int posnino = 0;
-                                int posbebe = 0;
-
-                                double totalAlojamiento = 0;
-                                double totalRegimen = 0;
-
-                                for (int i = 0; i < lineaReserva.getPax(); i++) {
-                                    ImportePorDia ipd = vpd.getImportesPax().get(i);
-                                    ipd.setAlojamiento(bf.getPaxPrice().getValue());
-                                    double precioEstanciaYRegimen = bf.getPaxPrice().applicarA(ipd.getAlojamiento());
-                                    ipd.setDesayuno(precioEstanciaYRegimen - ipd.getAlojamiento());
-
-                                    totalAlojamiento += ipd.getAlojamiento();
-                                    totalRegimen += precioEstanciaYRegimen - ipd.getAlojamiento();
-
-                                    FareValue tarifaPax = null;
-                                    if ((i == 0 && lineaReserva.getPax() == 1) || (i > 1)) tarifaPax = bf.getPaxDiscounts().get(i);
-                                    if (i >= lineaReserva.getAdultos() && i >= room.getMinAdultsForChildDiscount()) {
-                                        // es un junior
-                                        if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors())) {
-                                           // es un niño
-                                            if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors() + lineaReserva.getNinos())) {
-                                                // es un bebe
-                                                tarifaPax = new FareValue(false, false, false, 0); // de momento todos gratis
-                                                if (bf.getInfantDiscounts().containsKey(posbebe)) tarifaPax = bf.getInfantDiscounts().get(posbebe);
-                                                posbebe++;
-                                            } else {
-                                                if (bf.getChildDiscounts().containsKey(posnino)) tarifaPax = bf.getChildDiscounts().get(posnino);
-                                                posnino++;
-                                            }
-
-                                        } else {
-                                            if (bf.getJuniorDiscounts().containsKey(posjunior)) tarifaPax = bf.getJuniorDiscounts().get(posjunior);
-                                            posjunior++;
-                                        }
-                                    }
-                                    if (tarifaPax != null) {
-                                        double precioPax = tarifaPax.applicarA(precioEstanciaYRegimen);
-                                        ipd.setDescuentoPax(precioPax - (ipd.getAlojamiento() + ipd.getDesayuno()));
-                                        totalRegimen -= ipd.getDescuentoPax();
-                                    }
-                                }
-
-                                vpd.setTotalAlojamiento(totalAlojamiento);
-                                vpd.setTotalRegimen(totalRegimen);
-                                vpd.setTotalAcumulado(totalAlojamiento + totalRegimen);
+                                aplicarTarifa(vpd, rf, bf, lineaReserva, room);
 
                         /*
                         i.setDesayuno(bf.getPaxPrice().getValue());
@@ -358,7 +310,7 @@ public class Valoracion {
                                             if (r.getBoards().size() == 0 || r.getBoards().contains(board.getCode())) {
                                                 onRequest = r.isOnRequest();
                                                 restriccionesOk &= !r.isOnRequest();
-                                                //todo: aplicar suplementos
+                                                //todo: aplicarOferta suplementos
                                                 onRequestText = "Minimum stay";
                                                 break;
                                             }
@@ -409,7 +361,7 @@ public class Valoracion {
                             }
                         }
 
-                        // aplicar suplementos
+                        // aplicarOferta suplementos
                         SuplementosPorRegimen spr = suplementosPorRegimen.get(board);
                         if (spr != null)  {
 
@@ -437,17 +389,14 @@ public class Valoracion {
 
                         }
 
-                        // aplicar ofertas
+                        // aplicarOferta ofertas
                         OfertasPorRegimen opr = ofertasPorRegimen.get(board);
                         if (opr != null) {
 
-                            int noche = 0;
-                            for (OfertasPorDia opd : opr.getOfertasPorHabitacion().get(room).getDias()) {
-                                for (IHotelOffer s : opd.getOfertas()) {
-                                    double importeOferta = aplicar(s);
-                                    vlr.getDias().get(noche).getOfertas().put(s, importeOferta);
-                                }
-                                noche++;
+                            for (IHotelOffer o : opr.getOfertasPorHabitacion().get(room).getOfertas()) {
+
+                                double importeOferta = aplicarOferta(board, room, lineaReserva, vlr, o, cpr);
+
                             }
                         }
 
@@ -472,6 +421,60 @@ public class Valoracion {
         return resultados;
     }
 
+    public static void aplicarTarifa(ValoracionPorDia vpd, RoomFare rf, BoardFare bf, LineaReserva lineaReserva, IRoom room) {
+
+        if (bf.getRoomPrice() != null) vpd.setImporteHabitacion(bf.getRoomPrice().getValue());
+
+        int posjunior = 0;
+        int posnino = 0;
+        int posbebe = 0;
+
+        double totalAlojamiento = 0;
+        double totalRegimen = 0;
+
+        for (int i = 0; i < lineaReserva.getPax(); i++) {
+            ImportePorDia ipd = vpd.getImportesPax().get(i);
+            ipd.setAlojamiento(bf.getPaxPrice().getValue());
+            double precioEstanciaYRegimen = bf.getPaxPrice().applicarA(ipd.getAlojamiento());
+            ipd.setDesayuno(precioEstanciaYRegimen - ipd.getAlojamiento());
+
+            totalAlojamiento += ipd.getAlojamiento();
+            totalRegimen += precioEstanciaYRegimen - ipd.getAlojamiento();
+
+            FareValue tarifaPax = null;
+            if ((i == 0 && lineaReserva.getPax() == 1) || (i > 1)) tarifaPax = bf.getPaxDiscounts().get(i);
+            if (i >= lineaReserva.getAdultos() && i >= room.getMinAdultsForChildDiscount()) {
+                // es un junior
+                if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors())) {
+                    // es un niño
+                    if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors() + lineaReserva.getNinos())) {
+                        // es un bebe
+                        tarifaPax = new FareValue(false, false, false, 0); // de momento todos gratis
+                        if (bf.getInfantDiscounts().containsKey(posbebe)) tarifaPax = bf.getInfantDiscounts().get(posbebe);
+                        posbebe++;
+                    } else {
+                        if (bf.getChildDiscounts().containsKey(posnino)) tarifaPax = bf.getChildDiscounts().get(posnino);
+                        posnino++;
+                    }
+
+                } else {
+                    if (bf.getJuniorDiscounts().containsKey(posjunior)) tarifaPax = bf.getJuniorDiscounts().get(posjunior);
+                    posjunior++;
+                }
+            }
+            if (tarifaPax != null) {
+                double precioPax = tarifaPax.applicarA(precioEstanciaYRegimen);
+                ipd.setDescuentoPax(precioPax - (ipd.getAlojamiento() + ipd.getDesayuno()));
+                totalRegimen -= ipd.getDescuentoPax();
+            }
+        }
+
+        vpd.setTotalAlojamiento(totalAlojamiento);
+        vpd.setTotalRegimen(totalRegimen);
+        vpd.setTotalAcumulado(totalAlojamiento + totalRegimen);
+
+    }
+
     /**
      * aplicamos condiciones y devolvemos una lista de board prices.
      * @return
@@ -491,11 +494,11 @@ public class Valoracion {
         return resultados;
     }
 
-    private double aplicar(IHotelOffer s) {
+    private double aplicarOferta(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
 
-        
+        double importeOferta = o.aplicar(board, room, lineaReserva, vlr, o, cpr);
 
-        return 0;
+        return importeOferta;
     }
 
     @Override
