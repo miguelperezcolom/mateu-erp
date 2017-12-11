@@ -1,6 +1,5 @@
 package io.mateu.erp.server.booking;
 
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -18,10 +17,8 @@ import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;

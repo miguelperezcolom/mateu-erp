@@ -233,7 +233,7 @@ public class HotelAvailabilityTest
         contratoVenta.setVATIncluded(true);
         contratoVenta.setValidFrom(LocalDate.of(2101, 1, 1));
         contratoVenta.setValidTo(LocalDate.of(2101, 4, 30));
-        contratoVenta.getHotels().add(hotel);
+        contratoVenta.setHotel(hotel);
         contratoVenta.setBillingConcept(centroProduccion);
         contratoVenta.setAudit(new Audit(u));
 

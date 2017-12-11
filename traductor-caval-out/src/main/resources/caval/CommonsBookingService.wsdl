@@ -10,7 +10,9 @@ Previous updates:
 -->
 <wsdl:definitions xmlns:tns="http://caval.travel/20091127/commons" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="CommonsBookingService" targetNamespace="http://caval.travel/20091127/commons" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
     <wsdl:types>
-        <xsd:schema xmlns:ns0="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="unqualified" targetNamespace="http://caval.travel/20091127/commons" version="1.0">
+        <xsd:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                    elementFormDefault="unqualified" targetNamespace="http://caval.travel/20091127/commons"
+                    version="1.0">
             <xs:element name="cancelBooking" type="tns:cancelBooking" />
             <xs:element name="cancelBookingResponse" type="tns:cancelBookingResponse" />
             <xs:element name="getBooking" type="tns:getBooking" />

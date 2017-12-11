@@ -9,8 +9,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
 @Getter@Setter
 public class ParosVentas {
 

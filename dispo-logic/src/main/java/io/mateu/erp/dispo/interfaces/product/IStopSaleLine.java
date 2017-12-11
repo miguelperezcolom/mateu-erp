@@ -1,7 +1,6 @@
 package io.mateu.erp.dispo.interfaces.product;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IStopSaleLine {

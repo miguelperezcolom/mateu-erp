@@ -22,7 +22,6 @@ import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
 
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -22,5 +22,4 @@ public class RoomType {
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
-
 }

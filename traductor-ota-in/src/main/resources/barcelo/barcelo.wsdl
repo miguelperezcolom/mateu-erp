@@ -1,5 +1,9 @@
 
-<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://webservices.barceloviajes.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:ns2="http://schemas.xmlsoap.org/soap/http" xmlns:ns1="http://www.opentravel.org/OTA/2003/05" name="ServiceSoap" targetNamespace="http://webservices.barceloviajes.com/">
+<?xml version='1.0' encoding='UTF-8'?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="http://webservices.barceloviajes.com/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:ns1="http://www.opentravel.org/OTA/2003/05" name="ServiceSoap"
+                  targetNamespace="http://webservices.barceloviajes.com/">
     <wsdl:types>
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.opentravel.org/OTA/2003/05" elementFormDefault="qualified" targetNamespace="http://www.opentravel.org/OTA/2003/05" version="1.0">
 

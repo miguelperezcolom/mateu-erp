@@ -1,7 +1,6 @@
 package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
@@ -9,8 +8,6 @@ import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.hotel.HotelService;
-import io.mateu.erp.model.booking.hotel.Occupation;
-import io.mateu.erp.model.booking.hotel.Option;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -20,11 +17,7 @@ import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.easytravelapi.HotelBookingService;
-import org.easytravelapi.common.Amount;
-import org.easytravelapi.common.CancellationCost;
-import org.easytravelapi.common.Remark;
 import org.easytravelapi.hotel.*;
-import travel.caval._20091127.hotelbooking.AvailRQOccupation;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
@@ -32,7 +25,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

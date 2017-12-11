@@ -4,7 +4,6 @@ import io.mateu.erp.dispo.interfaces.common.IActor;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
-import io.mateu.erp.dispo.interfaces.product.IRoom;
 import lombok.Getter;
 import lombok.Setter;
 

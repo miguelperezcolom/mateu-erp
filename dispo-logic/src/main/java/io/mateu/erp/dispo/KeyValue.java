@@ -8,9 +8,7 @@ import lombok.Setter;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.BoardPrice;
-import org.easytravelapi.hotel.Option;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -1,12 +1,8 @@
 package io.mateu.erp.model.test;
 
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import javax.persistence.EntityManager;
 
 /**
  * Unit test for simple App.

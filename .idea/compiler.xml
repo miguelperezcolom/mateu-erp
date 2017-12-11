@@ -13,7 +13,6 @@
         <module name="dispo-logic" />
         <module name="dispo-model" />
         <module name="dispo-tester" />
-        <module name="log-model" />
         <module name="mddserverside" />
         <module name="model" />
         <module name="modelodispo" />

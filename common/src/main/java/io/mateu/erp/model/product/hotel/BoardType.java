@@ -22,5 +22,4 @@ public class BoardType {
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
-
 }

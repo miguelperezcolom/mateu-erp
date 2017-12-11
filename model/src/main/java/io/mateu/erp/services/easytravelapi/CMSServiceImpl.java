@@ -18,8 +18,10 @@ import org.easytravelapi.cms.GetHotelAvailabilityCalendarRS;
 import org.easytravelapi.cms.HotelAvailabilityCalendarDay;
 import org.easytravelapi.cms.HotelAvailabilityCalendarMonth;
 import org.easytravelapi.cms.HotelAvailabilityCalendarWeek;
-import org.easytravelapi.common.CancelBookingRS;
-import org.easytravelapi.hotel.*;
+import org.easytravelapi.hotel.AvailableHotel;
+import org.easytravelapi.hotel.BoardPrice;
+import org.easytravelapi.hotel.Occupancy;
+import org.easytravelapi.hotel.Option;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;

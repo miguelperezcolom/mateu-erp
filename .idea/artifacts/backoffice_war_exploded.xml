@@ -89,9 +89,6 @@
           </element>
           <element id="library" level="project" name="Maven: io.reactivex.rxjava2:rxjava:2.1.4" />
           <element id="library" level="project" name="Maven: org.reactivestreams:reactive-streams:1.0.1" />
-          <element id="archive" name="log-model-1.0-SNAPSHOT.jar">
-            <element id="module-output" name="log-model" />
-          </element>
           <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk16:1.46" />
           <element id="library" level="project" name="Maven: io.mateu.erp:apisha256:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.erp:bcprov:1.0" />

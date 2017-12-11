@@ -1,7 +1,6 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -183,11 +182,8 @@ public class PurchaseOrder implements WithTriggers {
 
         SendPurchaseOrdersTask t = null;
 
-        if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
-            t = createTask(em, getProvider().getAgent());
-        } else {
-            t = createTask(em, getProvider().getSendOrdersTo(), getOffice().getEmailCC());
-        }
+        getProvider().createTask(em, this);
+
         em.persist(t);
 
         t.setOffice(getOffice());
@@ -208,23 +204,6 @@ public class PurchaseOrder implements WithTriggers {
 //            setStatus(PurchaseOrderStatus.CONFIRMED);
 //        }
         afterSet(em, false);
-    }
-
-    public SendPurchaseOrdersToAgentTask createTask(EntityManager em, Agent agent) throws Throwable {
-        if (agent == null) throw new Exception("Quoon agent is missing");
-        SendPurchaseOrdersToAgentTask t = new SendPurchaseOrdersToAgentTask();
-        t.setAgent(agent);
-        t.setMethod(PurchaseOrderSendingMethod.QUOONAGENT);
-        return t;
-    }
-
-    public SendPurchaseOrdersByEmailTask createTask(EntityManager em, String toEmail, String cc) throws Throwable {
-        if (Strings.isNullOrEmpty(toEmail)) throw new Exception("Email address is missing");
-        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
-        t.setTo(toEmail);
-        t.setCc(cc);
-        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        return t;
     }
 
     public Map<String,Object> getData() {

@@ -9,7 +9,7 @@ import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
 import io.mateu.ui.core.client.components.fields.grids.columns.DataColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.OutputColumn;
-import io.mateu.ui.core.client.views.*;
+import io.mateu.ui.core.client.views.AbstractListView;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.CellStyleGenerator;
 import io.mateu.ui.core.shared.Data;

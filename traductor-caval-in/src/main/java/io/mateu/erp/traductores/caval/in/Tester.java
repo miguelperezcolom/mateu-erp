@@ -2,7 +2,6 @@ package io.mateu.erp.traductores.caval.in;
 
 
 import org.easytravelapi.common.GetPortfolioRS;
-import org.glassfish.jersey.client.ClientResponse;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;

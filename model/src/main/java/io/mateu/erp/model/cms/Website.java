@@ -3,14 +3,11 @@ package io.mateu.erp.model.cms;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
-import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
@@ -22,7 +19,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by miguel on 21/1/17.
@@ -49,23 +45,8 @@ public class Website {
     @SearchFilter
     private String urls;
 
-
-    private String gitHubRepositoryUrl;
-
-    private String gitHubRepositoryBranch = "master";
-
-
-    private String gitHubAPIToken;
-
-    @NotNull
-    @ManyToOne
-    private Theme theme;
-
-
-    @ManyToOne
-    private TPV tpv;
-
-
+    @OneToMany(mappedBy = "website")
+    private List<GithubRepository> GitHubRepositories = new ArrayList<>();
 
 
     @Override
@@ -79,8 +60,10 @@ public class Website {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
+                String basePath = System.getProperty("cmsdir", "/home/cms/");
+                if (!basePath.endsWith("/")) basePath += "/";
                 for (String u : getUrls().split("[ ,;]")) {
-                    createFiles(em, new java.io.File(System.getProperty("cmsdir", "/home/cms/") + getId() + "/" + u), u);
+                    createSite(em, new java.io.File(basePath + getId() + "/" + u), u);
                 }
             }
         });
@@ -91,11 +74,8 @@ public class Website {
         return new Data();
     }
 
-    public void createFiles(EntityManager em, java.io.File where, String urlBase) throws Throwable {
 
-        System.out.println("createFiles(" + where.getAbsolutePath() + ", " + urlBase + ")");
-
-        {
+    public void resetDirectory(java.io.File where) throws Exception {
             DefaultExecutor executor = new DefaultExecutor();
             for (String line : new String[] {
                     "rm -rf " + where.getAbsolutePath()
@@ -109,28 +89,56 @@ public class Website {
                     if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
                 }
             }
+    }
+
+
+
+    public void createSite(EntityManager em, java.io.File where, String urlBase) throws Throwable {
+
+        System.out.println("createFiles(" + where.getAbsolutePath() + ", " + urlBase + ")");
+
+
+        boolean emptyDirectoy = false;
+
+        if (!where.exists()) {
+            where.mkdirs();
+            emptyDirectoy = true;
         }
-
-
-        if (!where.exists()) where.mkdirs();
         else if (!where.isDirectory()) throw new Exception("" + where.getAbsolutePath() + " is not a directory");
 
         {
+
+            if (needsReset()) {
+                resetDirectory(where);
+                emptyDirectoy = true;
+            }
+
+
             DefaultExecutor executor = new DefaultExecutor();
-            for (String line : new String[] {
-                    "cd " + where.getAbsolutePath()
-                    , (Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"hugo new site " + where.getAbsolutePath():""
-                    , "git init"
-                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git remote add origin " + getGitHubRepositoryUrl():""
-                    , (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git pull origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
-                    //, (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git fetch origin " + ((Strings.isNullOrEmpty(getGitHubRepositoryBranch()))?"master":getGitHubRepositoryBranch()):""
-                    //, (!Strings.isNullOrEmpty(getGitHubRepositoryUrl()))?"git reset --hard origin/master":""
-                    , "cd " + where.getAbsolutePath()
-                    //, "git init " + where.getAbsolutePath()
-                    , "cd " + where.getAbsolutePath()
-                    , "git submodule add " + getTheme().getGitHubRepositoryUrl() + " themes/" + getTheme().getName()
-                    //, "git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke"
-            }) if (!Strings.isNullOrEmpty(line)) {
+
+            List<String> lines = new ArrayList<>();
+
+            lines.add("cd " + where.getAbsolutePath());
+
+            if (emptyDirectoy) {
+                addLinesBeforeGitInit(lines, where);
+
+
+                lines.add("git init");
+
+                for (GithubRepository r : getGitHubRepositories()) {
+                    if (Strings.isNullOrEmpty(r.getSubModule())) lines.add("git remote add origin " + r.getUrl());
+                    else lines.add("git submodule add " + r.getUrl() + " " + r.getSubModule());
+                    lines.add("git pull origin " + ((Strings.isNullOrEmpty(r.getBranch()))?"master":r.getBranch()));
+                }
+
+                addLinesAfterGit(lines, where);
+            } else {
+                lines.add("git pull");
+            }
+
+
+            for (String line : lines) if (!Strings.isNullOrEmpty(line)) {
                 System.out.println("executing " + line);
                 if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
                 else {
@@ -143,55 +151,7 @@ public class Website {
         }
 
 
-
-
-        java.io.File contentDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "content");
-        if (!contentDir.exists()) {
-            contentDir.mkdirs();
-        }
-        else if (!contentDir.isDirectory()) throw new Exception("" + contentDir.getAbsolutePath() + " is not a directory");
-
-
-
-        java.io.File dataDir = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-        else if (!dataDir.isDirectory()) throw new Exception("" + dataDir.getAbsolutePath() + " is not a directory");
-
-        // crear fichero configuración
-
-        {
-            StringBuffer s = new StringBuffer("");
-            s.append("baseURL = \"http://" + urlBase + "/\"\n" +
-                    "languageCode = \"en-us\"\n" +
-                    "title = \"" + getTitle() + "\"\n" +
-                    "theme = \"" + getTheme().getName() + "\"");
-
-            java.io.File c = new java.io.File(where.getAbsolutePath() + java.io.File.separator + "config.toml");
-            if (true || !c.exists()) Files.write(s.toString(), c, Charsets.UTF_8);
-        }
-
-        // crear directorio content y ficheros
-
-        createContentFiles(em, contentDir, dataDir);
-
-        {
-            DefaultExecutor executor = new DefaultExecutor();
-            for (String line : new String[] {
-                    "cd " + where.getAbsolutePath()
-                    , "hugo"
-            }) {
-                System.out.println("executing " + line);
-                if (line.startsWith("cd ")) executor.setWorkingDirectory(new java.io.File(line.substring("cd ".length())));
-                else {
-                    CommandLine cmdLine = CommandLine.parse(line);
-                    int exitValue = executor.execute(cmdLine);
-
-                    if (exitValue != 0) throw new Exception(line + " exited with code " + exitValue);
-                }
-            }
-        }
+        createFiles(em, where, urlBase);
 
 
         // crear fichero config nginx
@@ -235,21 +195,17 @@ public class Website {
 
     }
 
-    public void createContentFiles(EntityManager em, java.io.File contentDir, java.io.File dataDir) throws Throwable {
-
-        // crear indice
-
-        StringBuffer s = new StringBuffer("");
-        s.append("---\n" +
-                "title: \"My First Post\"\n" +
-                "date: 2017-11-10T13:52:59+01:00\n" +
-                "draft: false\n" +
-                "---");
-
-        java.io.File f = new java.io.File(contentDir.getAbsolutePath() + java.io.File.separator + "index.md");
-
-        if (!f.exists()) Files.write(s.toString(), f, Charsets.UTF_8);
-
-
+    public boolean needsReset() {
+        return false;
     }
+
+    public void createFiles(EntityManager em, java.io.File where, String urlBase) throws Throwable {
+    }
+
+    public void addLinesAfterGit(List<String> lines, java.io.File where) {
+    }
+
+    public void addLinesBeforeGitInit(List<String> lines, java.io.File where) {
+    }
+
 }

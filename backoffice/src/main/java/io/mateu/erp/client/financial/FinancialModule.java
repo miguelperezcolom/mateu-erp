@@ -4,8 +4,6 @@ import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.core.client.components.fields.DateField;
 import io.mateu.ui.core.client.views.AbstractDialog;
-import io.mateu.ui.core.client.views.AbstractForm;
-import io.mateu.ui.core.client.views.ViewForm;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;

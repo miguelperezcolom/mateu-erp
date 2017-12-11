@@ -5,9 +5,7 @@ import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.Callback;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.components.fields.FileField;
-import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.client.views.AbstractView;
-import io.mateu.ui.core.client.views.ViewForm;
 
 import java.util.List;
 

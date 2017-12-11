@@ -396,6 +396,7 @@ public abstract class Service implements WithTriggers {
                 SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
                 if (t == null) {
                     if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
+                        /*
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
                         em.persist(t);
                         t.setOffice(s.getOffice());
@@ -404,6 +405,7 @@ public abstract class Service implements WithTriggers {
                         t.setAudit(new Audit(u));
                         ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
                         t.setPostscript(postscript);
+                        */
                     } else { // email
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
                         em.persist(t);

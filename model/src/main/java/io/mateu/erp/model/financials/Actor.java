@@ -1,10 +1,14 @@
 package io.mateu.erp.model.financials;
 
-import com.quonext.quoon.Agent;
+import com.google.common.base.Strings;
 import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
+import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
+import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.Separator;
 import jdk.nashorn.internal.ir.annotations.Ignore;
@@ -38,6 +42,12 @@ public class Actor implements IActor {
 
     private boolean active = true;
 
+    @SameLine
+    private boolean agency;
+
+    @SameLine
+    private boolean provider;
+
     @ListColumn
     private String businessName;
 
@@ -61,8 +71,7 @@ public class Actor implements IActor {
     @Separator("Orders sending")
     private PurchaseOrderSendingMethod ordersSendingMethod;
     private String sendOrdersTo;
-    @OneToOne
-    private Agent agent;
+
     private boolean automaticOrderSending;
     private boolean automaticOrderConfirmation;
 
@@ -94,4 +103,16 @@ public class Actor implements IActor {
         return xml;
     }
 
+    public AbstractTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
+        return createTask(em, getSendOrdersTo(), purchaseOrder.getOffice().getEmailCC());
+    }
+
+    public SendPurchaseOrdersByEmailTask createTask(EntityManager em, String toEmail, String cc) throws Throwable {
+        if (Strings.isNullOrEmpty(toEmail)) throw new Exception("Email address is missing");
+        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
+        t.setTo(toEmail);
+        t.setCc(cc);
+        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+        return t;
+    }
 }

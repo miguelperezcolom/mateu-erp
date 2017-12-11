@@ -1,8 +1,6 @@
 package io.mateu.erp.model.cms;
 
 import com.google.common.base.Strings;
-import com.google.common.io.Files;
-import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

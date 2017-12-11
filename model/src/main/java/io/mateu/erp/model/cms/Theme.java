@@ -1,7 +1,6 @@
 package io.mateu.erp.model.cms;
 
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,5 +30,8 @@ public class Theme {
     private String gitHubRepositoryUrl;
 
 
-    private String gitHubAPIToken;
+    private String branch = "master";
+
+
+    private String subModule;
 }

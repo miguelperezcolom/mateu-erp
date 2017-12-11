@@ -3,9 +3,6 @@ package io.mateu.erp.caval;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import travel.caval._20091127.hotelbooking.CavalHotelAvailabilityRQ;
-import travel.caval._20091127.hotelbooking.CavalHotelAvailabilityRS;
-import travel.caval._20091127.hotelbooking.HotelBookingServicePortImpl;
 
 /**
  * Created by miguel on 1/10/16.

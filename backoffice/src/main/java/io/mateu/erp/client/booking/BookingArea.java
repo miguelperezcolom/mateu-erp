@@ -5,7 +5,6 @@ import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

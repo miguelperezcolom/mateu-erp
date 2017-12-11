@@ -1,9 +1,7 @@
 package io.mateu.erp.servlets;
 
-import io.mateu.erp.model.util.Helper;
 import org.glassfish.jersey.servlet.ServletContainer;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 

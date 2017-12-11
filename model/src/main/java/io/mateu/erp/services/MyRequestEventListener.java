@@ -1,7 +1,6 @@
 package io.mateu.erp.services;
 
 import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl;
-import org.easytravelapi.HotelBookingService;
 import org.glassfish.jersey.server.monitoring.RequestEvent;
 import org.glassfish.jersey.server.monitoring.RequestEventListener;
 

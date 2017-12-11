@@ -1,7 +1,5 @@
 package io.mateu.erp.dispo.interfaces.product;
 
-import org.easytravelapi.hotel.Occupancy;
-
 public interface IRoom {
     public boolean fits(int adults, int children, int babies);
 

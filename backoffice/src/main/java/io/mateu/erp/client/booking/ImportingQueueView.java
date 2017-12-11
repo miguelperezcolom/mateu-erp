@@ -3,13 +3,8 @@ package io.mateu.erp.client.booking;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.components.fields.ComboBoxField;
 import io.mateu.ui.core.client.components.fields.DateTimeField;
-import io.mateu.ui.core.client.components.fields.TextField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
-import io.mateu.ui.core.client.views.AbstractForm;
-import io.mateu.ui.core.client.views.AbstractSqlListView;
-import io.mateu.ui.core.client.views.AbstractView;
-import io.mateu.ui.core.client.views.ViewForm;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.client.AbstractJPAListView;
 

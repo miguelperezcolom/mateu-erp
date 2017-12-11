@@ -1,9 +1,10 @@
 package io.mateu.erp.services;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

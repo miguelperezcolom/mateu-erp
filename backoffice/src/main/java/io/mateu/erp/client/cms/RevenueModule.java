@@ -9,7 +9,6 @@ import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RevenueModule extends AbstractModule {

@@ -3,13 +3,10 @@ package io.mateu.erp.traductores.caval.out;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import org.easytravelapi.hotel.GetAvailableHotelsRS;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;

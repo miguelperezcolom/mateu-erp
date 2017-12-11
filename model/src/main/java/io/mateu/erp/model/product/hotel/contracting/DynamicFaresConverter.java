@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.hotel.contracting;
 
-import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 import org.jdom2.JDOMException;
 
 import javax.persistence.AttributeConverter;

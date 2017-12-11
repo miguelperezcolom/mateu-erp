@@ -1,16 +1,12 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.QLForCombo;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * holder for currencies
@@ -32,8 +28,4 @@ public class Currency {
     private String name;
 
     private int decimals;
-
-    @OneToMany(mappedBy = "from")
-    @Ignored
-    private List<CurrencyExchange> exchanges = new ArrayList<>();
 }

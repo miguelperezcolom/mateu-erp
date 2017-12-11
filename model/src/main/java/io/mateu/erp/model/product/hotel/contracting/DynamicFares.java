@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.hotel.contracting;
 
-import io.mateu.erp.model.product.hotel.RatesType;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;

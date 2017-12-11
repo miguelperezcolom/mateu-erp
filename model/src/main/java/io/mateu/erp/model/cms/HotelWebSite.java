@@ -1,13 +1,10 @@
 package io.mateu.erp.model.cms;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.financials.Actor;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Room;
+import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.server.annotations.Owned;
@@ -15,9 +12,11 @@ import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +25,12 @@ import java.util.Map;
 @Entity
 @Getter
 @Setter
-public class HotelWebSite extends Website {
+public class HotelWebSite extends HugoWebSite {
+
+
+    @Tab("Payments")
+    @ManyToOne
+    private TPV tpv;
 
     @Tab("Hotel")
     @ManyToOne

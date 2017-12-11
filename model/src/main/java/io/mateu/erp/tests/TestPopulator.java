@@ -1,10 +1,7 @@
 package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Streams;
 import com.google.common.io.CharStreams;
-import com.quonext.quoon.Agent;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.authentication.User;
@@ -44,7 +41,6 @@ import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class TestPopulator {
 
@@ -98,8 +94,6 @@ public class TestPopulator {
 
         p.populateBookings();
 
-        p.populateAgents();
-
         p.populateAuthTokens();
 
 
@@ -136,29 +130,6 @@ public class TestPopulator {
                     em.persist(t);
                 }
 
-            }
-        });
-
-    }
-
-    private void populateAgents() throws Throwable {
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                Agent a = new Agent();
-                a.setActive(true);
-                a.setDownloadQueue("toQuoON");
-                a.setMQHost("mq.quoon.net");
-                a.setMQPassword("ramon123");
-                a.setMQUser("ramon");
-                a.setName("Test agent");
-                a.setOffice(em.find(Office.class, 1l));
-                a.setProvider(em.find(Actor.class, 4l));
-                a.getProvider().setAgent(a);
-                a.setUploadQueue("FromQuoOn");
-                em.persist(a);
             }
         });
 
@@ -643,7 +614,7 @@ public class TestPopulator {
 
                         HotelContract c = new HotelContract();
                         h.getContracts().add(c);
-                        c.getHotels().add(h);
+                        c.setHotel(h);
                         em.persist(c);
 
                         c.setAudit(new Audit(u));
@@ -673,7 +644,7 @@ public class TestPopulator {
 
     private HotelContractPhoto crearTerms(HotelContract c, BillingConcept bc) {
 
-        Hotel h = c.getHotels().get(0);
+        Hotel h = c.getHotel();
 
         HotelContractPhoto p = new HotelContractPhoto();
 
@@ -824,7 +795,7 @@ public class TestPopulator {
 
                     HotelContract c;
                     h.getContracts().add(c = new HotelContract());
-                    c.getHotels().add(h);
+                    c.setHotel(h);
                     h.getContracts().add(c);
                     em.persist(c);
 

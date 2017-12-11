@@ -3,9 +3,7 @@ package io.mateu.erp.client.utils;
 import io.mateu.ui.core.client.components.fields.TextField;
 import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
-import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.client.views.AbstractSqlListView;
-import io.mateu.ui.core.client.views.ViewForm;
 
 import java.util.ArrayList;
 import java.util.List;

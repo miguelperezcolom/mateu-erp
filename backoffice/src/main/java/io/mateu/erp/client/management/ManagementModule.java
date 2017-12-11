@@ -2,7 +2,6 @@ package io.mateu.erp.client.management;
 
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 
 import java.util.ArrayList;

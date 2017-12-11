@@ -6,8 +6,6 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.organization.Office;

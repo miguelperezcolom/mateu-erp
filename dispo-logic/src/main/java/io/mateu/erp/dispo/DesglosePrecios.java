@@ -6,9 +6,7 @@ import lombok.Setter;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.BoardPrice;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Getter@Setter

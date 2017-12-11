@@ -1,6 +1,5 @@
 package io.mateu.erp.dispo;
 
-import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IInventory;
 import io.mateu.erp.dispo.interfaces.product.IInventoryLine;
 import lombok.Getter;

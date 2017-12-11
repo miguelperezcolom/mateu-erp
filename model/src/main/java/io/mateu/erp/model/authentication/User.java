@@ -1,10 +1,8 @@
 package io.mateu.erp.model.authentication;
 
-import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -16,7 +14,6 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,6 +53,9 @@ public class User implements WithTriggers {
     @ListColumn("Status")
     @NotNull
     private USER_STATUS status;
+
+    @ManyToOne
+    private Actor actor;
 
 
     @OneToMany

@@ -1,12 +1,7 @@
 package io.mateu.erp.dispo;
 
-import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.hotel.Occupancy;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter@Setter
 public class ImportePorDia {

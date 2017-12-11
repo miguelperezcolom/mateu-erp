@@ -16,7 +16,6 @@
         <module>common</module>
         <module>traductor-caval-out</module>
         <module>dispo-tester</module>
-        <module>log-model</module>
         <module>show</module>
         <module>traductor-caval-in</module>
         <module>traductor-ota-in</module>

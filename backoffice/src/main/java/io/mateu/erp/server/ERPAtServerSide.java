@@ -3,34 +3,24 @@ package io.mateu.erp.server;
 import com.google.common.base.Strings;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
-import io.mateu.erp.model.authentication.Grant;
 import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.population.Populator;
-import io.mateu.erp.model.util.MiTopic;
-import io.mateu.erp.model.util.MiTopicConnectionFactory;
-import io.mateu.ui.core.server.Utils;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.server.SQLTransaction;
 import io.mateu.ui.core.server.ServerSideApp;
+import io.mateu.ui.core.server.Utils;
 import io.mateu.ui.core.shared.FileLocator;
 import io.mateu.ui.core.shared.UserData;
-import org.eclipse.jetty.jndi.NamingUtil;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.Reference;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 /**

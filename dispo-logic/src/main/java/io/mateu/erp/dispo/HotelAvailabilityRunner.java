@@ -1,23 +1,17 @@
 package io.mateu.erp.dispo;
 
-import com.google.common.collect.Lists;
 import io.mateu.erp.dispo.interfaces.common.IActor;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.CancellationRule;
 import org.easytravelapi.common.Amount;
-import org.easytravelapi.common.Booking;
 import org.easytravelapi.common.CancellationCost;
 import org.easytravelapi.common.Remark;
 import org.easytravelapi.hotel.*;
 import org.easytravelapi.hotel.Occupancy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 

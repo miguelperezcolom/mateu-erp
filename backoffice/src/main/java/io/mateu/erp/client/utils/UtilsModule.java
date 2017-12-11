@@ -1,8 +1,9 @@
 package io.mateu.erp.client.utils;
 
-import io.mateu.erp.client.financial.FinancialServiceAsync;
-import io.mateu.erp.shared.financial.FinancialService;
-import io.mateu.ui.core.client.app.*;
+import io.mateu.ui.core.client.app.AbstractAction;
+import io.mateu.ui.core.client.app.AbstractModule;
+import io.mateu.ui.core.client.app.MateuUI;
+import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDCallback;

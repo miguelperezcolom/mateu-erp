@@ -617,7 +617,7 @@ public class Valoracion {
 
 
 
-            json = io.mateu.erp.model.util.Helper.toJson(data);
+            json = Helper.toJson(data);
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -4,7 +4,6 @@ import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.hotel.Occupancy;
 
 import java.util.ArrayList;
 import java.util.HashMap;

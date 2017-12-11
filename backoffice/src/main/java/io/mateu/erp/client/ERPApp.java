@@ -14,7 +14,6 @@ import io.mateu.ui.core.client.app.AbstractArea;
 import io.mateu.ui.core.client.app.MateuUI;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
