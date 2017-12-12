@@ -119,7 +119,6 @@ public class Helper {
 
     }
 
-
     public static void transact(String persistenceUnit, JPATransaction t) throws Throwable {
         EntityManager em = getEMF(persistenceUnit).createEntityManager();
 
