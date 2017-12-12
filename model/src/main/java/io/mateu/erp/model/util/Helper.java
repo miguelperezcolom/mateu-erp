@@ -145,11 +145,11 @@ public class Helper {
     }
 
     public static void transact(JPATransaction t) throws Throwable {
-        transact("default", t);
+        transact(System.getProperty("defaultpuname", "default"), t);
     }
 
     private static EntityManagerFactory getEMF() {
-        return getEMF("default");
+        return getEMF(System.getProperty("defaultpuname", "default"));
     }
 
     private static EntityManagerFactory getEMF(String persistenceUnit) {

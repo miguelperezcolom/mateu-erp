@@ -28,6 +28,10 @@
                 <artifactId>pujoiner-plugin</artifactId>
                 <version>1.0-SNAPSHOT</version>
 
+                <configuration>
+                    <puname>mateu-erp</puname>
+                </configuration>
+
                 <executions>
                     <execution>
                         <phase>compile</phase>

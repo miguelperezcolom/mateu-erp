@@ -26,13 +26,6 @@ public class FinancialModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Agents") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.FinancialAgent", new MDDCallback());
-            }
-        });
-
         m.add(new AbstractAction("Currency exchanges") {
             @Override
             public void run() {
