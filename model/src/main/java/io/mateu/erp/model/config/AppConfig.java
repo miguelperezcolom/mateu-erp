@@ -101,9 +101,9 @@ public class AppConfig {
 
     private String nginxReloadCommand = "service nginx reload";
 
-    @Tab("Currency exchange")
-    @Convert(converter = CurrencyExchangeConverter.class)
-    private CurrencyExchange currencyExchange = new CurrencyExchange();
+    //@Tab("Currency exchange")
+    //@Convert(converter = CurrencyExchangeConverter.class)
+    //private CurrencyExchange currencyExchange = new CurrencyExchange();
 
     public static AppConfig get(EntityManager em) {
         return em.find(AppConfig.class, 1l);
