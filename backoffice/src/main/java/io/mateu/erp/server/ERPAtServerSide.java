@@ -140,7 +140,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             public void run(EntityManager em)throws Throwable {
 
                 if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
-                    Populator.populate();
+                    Populator.populate(AppConfig.class);
                 }
 
 
@@ -167,7 +167,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             public void run(EntityManager em)throws Throwable {
 
                 if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
-                    Populator.populate();
+                    Populator.populate(AppConfig.class);
                 }
 
 
