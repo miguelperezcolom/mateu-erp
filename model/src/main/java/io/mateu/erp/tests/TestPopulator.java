@@ -54,6 +54,10 @@ public class TestPopulator {
 
     }
 
+    public static void populateAll() throws Throwable {
+        populateAll(AppConfig.class);
+    }
+
     public static void populateAll(Class appConfigClass) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {

@@ -8,12 +8,13 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter@Setter
-public class MaxCapacities {
+public class MaxCapacities implements Serializable {
 
     private List<MaxCapacity> capacities = new ArrayList<>();
 
