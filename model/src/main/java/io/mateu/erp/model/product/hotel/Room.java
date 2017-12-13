@@ -32,7 +32,7 @@ public class Room implements IRoom {
     private Literal description;
 
     @Convert(converter = MaxCapacitiesConverter.class)
-    private MaxCapacities maxCapacities;
+    private MaxCapacities maxCapacities = new MaxCapacities();
 
     private int minPax;
 
