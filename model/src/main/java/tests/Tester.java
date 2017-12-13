@@ -34,7 +34,7 @@ public class Tester {
 
     private static void populate() throws Throwable {
 
-        TestPopulator.populateAll(AppConfig.class);
+        TestPopulator.populateEverything();
     }
 
     private static void testCuboCupo() throws Throwable {

@@ -45,7 +45,7 @@ public class Tester {
 
     private static void poblar() throws Throwable {
 
-        TestPopulator.populateAll(AppConfig.class);
+        TestPopulator.populateEverything();
 
     }
 

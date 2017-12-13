@@ -48,7 +48,7 @@ public class DispoTest {
         });
 
         if (!hayDatos[0]) {
-            TestPopulator.populateAll(AppConfig.class);
+            TestPopulator.populateEverything();
         }
 
 

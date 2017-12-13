@@ -50,15 +50,15 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll(AppConfig.class);
+        populateAll(AppConfig.class, Actor.class);
 
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class);
+        populateAll(AppConfig.class, Actor.class);
     }
 
-    public static void populateAll(Class appConfigClass) throws Throwable {
+    public static void populateAll(Class appConfigClass, Class actorClass) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
@@ -79,7 +79,7 @@ public class TestPopulator {
         });
 
 
-        p.populateActors(Actor.class);
+        p.populateActors(actorClass);
 
         p.populatePortfolio();
 
