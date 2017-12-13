@@ -54,7 +54,7 @@ public class TestPopulator {
 
     }
 
-    public static void populateAll() throws Throwable {
+    public static void populateEverything() throws Throwable {
         populateAll(AppConfig.class);
     }
 
@@ -984,17 +984,11 @@ public class TestPopulator {
                         r.setHotel(h);
                         r.setInfantsAllowed(true);
                         if ("dui".equalsIgnoreCase(r.getType().getCode())) {
-                            MaxCapacities mc;
-                            r.setMaxCapacities(mc = new MaxCapacities());
-                            mc.getCapacities().add(new MaxCapacity(1, 0, 0));
+                            r.getMaxCapacities().getCapacities().add(new MaxCapacity(1, 0, 0));
                         } else if ("sui".equalsIgnoreCase(r.getType().getCode())) {
-                            MaxCapacities mc;
-                            r.setMaxCapacities(mc = new MaxCapacities());
-                            mc.getCapacities().add(new MaxCapacity(4, 0, 0));
+                            r.getMaxCapacities().getCapacities().add(new MaxCapacity(4, 0, 0));
                         } else {
-                            MaxCapacities mc;
-                            r.setMaxCapacities(mc = new MaxCapacities());
-                            mc.getCapacities().add(new MaxCapacity(2, 0, 0));
+                            r.getMaxCapacities().getCapacities().add(new MaxCapacity(2, 0, 0));
                         }
                         r.setMinPax(1);
                         h.getRooms().add(r);

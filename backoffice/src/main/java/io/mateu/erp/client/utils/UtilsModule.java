@@ -51,7 +51,7 @@ public class UtilsModule extends AbstractModule {
         m.add(new AbstractAction("Populate with test data") {
             @Override
             public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).runInServer("io.mateu.erp.tests.TestPopulator", "populateAll", null, new AsyncCallback<Object>() {
+                ((ERPServiceAsync)MateuUI.create(ERPService.class)).runInServer("io.mateu.erp.tests.TestPopulator", "populateEverything", null, new AsyncCallback<Object>() {
                     @Override
                     public void onFailure(Throwable throwable) {
                         MateuUI.alert("" + throwable.getClass().getName() + ": " + throwable.getMessage());

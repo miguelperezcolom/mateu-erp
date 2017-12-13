@@ -4,10 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
+import java.io.Serializable;
+
 
 @Getter
 @Setter
-public class MaxCapacity {
+public class MaxCapacity implements Serializable {
 
     private int adults;
     private int children;
