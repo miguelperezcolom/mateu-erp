@@ -68,6 +68,7 @@ public class ReleaseRule implements XMLSerializable {
         this.end = end;
         this.release = release;
         this.rooms = rooms;
+        if (this.rooms == null) this.rooms = new ArrayList<>();
     }
 
     @Override

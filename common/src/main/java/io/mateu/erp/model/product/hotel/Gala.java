@@ -68,6 +68,7 @@ public class Gala implements XMLSerializable {
         this.pricePerPax = pricePerPax;
         this.childDiscounts = childDiscounts;
         this.boards = boards;
+        if (this.boards == null) this.boards = new ArrayList<>();
     }
 
     @Override

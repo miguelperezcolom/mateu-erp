@@ -28,6 +28,7 @@ public class DispoTest {
     public static void main(String... args) throws Throwable {
 
         System.setProperty("javax.persistence.jdbc.url", "jdbc:postgresql://localhost:5432/quotest");
+        System.setProperty("defaultpuname", "mateu-erp");
 
         System.out.println("comprobamos que exiten datos...");
 

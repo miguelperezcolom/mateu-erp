@@ -202,6 +202,8 @@ public class Supplement implements XMLSerializable {
         this.invoicingKey = invoicingKey;
         this.rooms = rooms;
         this.boards = boards;
+        if (this.rooms == null) this.rooms = new ArrayList<>();
+        if (this.boards == null) this.boards = new ArrayList<>();
     }
 
     @Override

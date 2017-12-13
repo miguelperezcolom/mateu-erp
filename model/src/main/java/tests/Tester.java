@@ -1,5 +1,6 @@
 package tests;
 
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.util.Helper;
@@ -33,7 +34,7 @@ public class Tester {
 
     private static void populate() throws Throwable {
 
-        TestPopulator.populateAll();
+        TestPopulator.populateAll(AppConfig.class);
     }
 
     private static void testCuboCupo() throws Throwable {

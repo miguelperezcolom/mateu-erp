@@ -98,6 +98,7 @@ public class CancellationRule implements XMLSerializable {
         this.percent = percent;
         this.firstNights = firstNights;
         this.rooms = rooms;
+        if (this.rooms == null) this.rooms = new ArrayList<>();
     }
 
     @Override

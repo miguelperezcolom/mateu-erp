@@ -30,11 +30,11 @@ public class Populator {
 
     public static void main(String... args) throws Throwable {
 
-        populate();
+        populate(AppConfig.class);
 
     }
 
-    public static void populate() throws Throwable {
+    public static void populate(Class appConfigClass) throws Throwable {
 
         System.out.println("Populating database...");
 
@@ -42,7 +42,7 @@ public class Populator {
         //authentication
         Helper.transact((JPATransaction) (em)->{
 
-            AppConfig c = new AppConfig();
+            AppConfig c = (AppConfig) appConfigClass.newInstance();
             c.setId(1);
             c.setXslfoForContract(Resources.toString(Resources.getResource(Contract.class, "contract.xsl"), Charsets.UTF_8));
             c.setXslfoForWorld(Resources.toString(Resources.getResource(Contract.class, "portfolio.xsl"), Charsets.UTF_8));

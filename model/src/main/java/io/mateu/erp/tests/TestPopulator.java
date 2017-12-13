@@ -47,19 +47,20 @@ public class TestPopulator {
     public static void main(String... args) throws Throwable {
 
         System.setProperty("javax.persistence.jdbc.url", "jdbc:postgresql://localhost:5432/quotest");
+        System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll();
+        populateAll(AppConfig.class);
 
     }
 
-    public static void populateAll() throws Throwable {
+    public static void populateAll(Class appConfigClass) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
             int nomappconfigs = em.createQuery("select x from " + AppConfig.class.getName() + " x").getResultList().size();
 
-            if (nomappconfigs == 0) Populator.populate();
+            if (nomappconfigs == 0) Populator.populate(appConfigClass);
 
         });
 
@@ -74,7 +75,7 @@ public class TestPopulator {
         });
 
 
-        p.populateActors();
+        p.populateActors(Actor.class);
 
         p.populatePortfolio();
 
@@ -104,7 +105,7 @@ public class TestPopulator {
         //p.testJson();
     }
 
-    private void populateAuthTokens() throws Throwable {
+    public void populateAuthTokens() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -135,7 +136,7 @@ public class TestPopulator {
 
     }
 
-    private void populateTransferProduct() throws Throwable {
+    public void populateTransferProduct() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -228,7 +229,7 @@ public class TestPopulator {
 
     }
 
-    private void populatePortfolio() throws Throwable {
+    public void populatePortfolio() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -298,7 +299,7 @@ public class TestPopulator {
 
     }
 
-    private void testJson() throws IOException {
+    public void testJson() throws IOException {
 
         String json = CharStreams.toString(new InputStreamReader(
                 this.getClass().getResourceAsStream("portfolio.json"), Charsets.UTF_8));
@@ -309,7 +310,7 @@ public class TestPopulator {
         System.out.println("hecho!");
     }
 
-    private void populateBookings() throws Throwable {
+    public void populateBookings() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -420,7 +421,7 @@ public class TestPopulator {
 
     }
 
-    private void populateActors() throws Throwable {
+    public void populateActors(Class actorClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -444,6 +445,7 @@ public class TestPopulator {
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("X16237816321");
+                    a.setProvider(true);
 
                     em.flush();
                 }
@@ -468,7 +470,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1712386211");
                     a.setAutomaticOrderSending(true);
-
+                    a.setProvider(true);
 
                     em.flush();
                 }
@@ -490,13 +492,14 @@ public class TestPopulator {
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A16237816321");
+                    a.setAgency(true);
 
                     em.flush();
                 }
 
 
                 {
-                    Actor a = new Actor();
+                    Actor a = (Actor) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -513,6 +516,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787777");
                     a.setAutomaticOrderSending(true);
+                    a.setProvider(true);
 
                     em.flush();
                 }
@@ -535,6 +539,7 @@ public class TestPopulator {
                     a.setShuttleTransfersInOwnInvoice(false);
                     a.setVatIdentificationNumber("A1623787999");
                     a.setAutomaticOrderSending(true);
+                    a.setProvider(true);
 
                     em.flush();
                 }
@@ -544,7 +549,7 @@ public class TestPopulator {
 
     }
 
-    private void populateOffers() throws Throwable {
+    public void populateOffers() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -594,7 +599,7 @@ public class TestPopulator {
 
     }
 
-    private void populateContracts() throws Throwable {
+    public void populateContracts() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -642,7 +647,7 @@ public class TestPopulator {
 
     }
 
-    private HotelContractPhoto crearTerms(HotelContract c, BillingConcept bc) {
+    public HotelContractPhoto crearTerms(HotelContract c, BillingConcept bc) {
 
         Hotel h = c.getHotel();
 
@@ -730,7 +735,7 @@ public class TestPopulator {
     }
 
 
-    private void testJaxb() throws JAXBException {
+    public void testJaxb() throws JAXBException {
 
         HotelContractPhoto p = new HotelContractPhoto();
 
@@ -780,7 +785,7 @@ public class TestPopulator {
 
     }
 
-    private void testContract() throws Throwable {
+    public void testContract() throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -1014,7 +1019,7 @@ public class TestPopulator {
     }
 
 
-    private void populateStopSales() throws Throwable {
+    public void populateStopSales() throws Throwable {
 
         Random random = new Random();
 

@@ -34,7 +34,7 @@
           <element id="library" level="project" name="Maven: ch.qos.logback:logback-classic:1.2.3" />
           <element id="library" level="project" name="Maven: ch.qos.logback:logback-core:1.2.3" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-jndi:9.4.7.v20170914" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd-annotations/1.0-SNAPSHOT/mdd-annotations-1.0-20171116.091740-204.jar" output-file-name="mdd-annotations-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: io.mateu.ui:mdd-annotations:1.0-SNAPSHOT" />
           <element id="archive" name="dispo-model-1.0-SNAPSHOT.jar">
             <element id="module-output" name="dispo-model" />
           </element>
@@ -95,7 +95,7 @@
           <element id="library" level="project" name="Maven: io.mateu.erp:codec:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.erp:json:1.0" />
           <element id="library" level="project" name="Maven: org.apache.commons:commons-exec:1.3" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/mdd/1.0-SNAPSHOT/mdd-1.0-20171116.091742-189.jar" output-file-name="mdd-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: io.mateu.ui:mdd:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />
           <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/core/1.0-SNAPSHOT/core-1.0-20171116.150757-53.jar" output-file-name="core-1.0-SNAPSHOT.jar" />
