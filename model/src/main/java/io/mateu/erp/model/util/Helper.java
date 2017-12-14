@@ -651,22 +651,34 @@ public class Helper {
         if (!propertiesLoaded) {
             System.out.println("Loading properties...");
             propertiesLoaded = true;
-            if (System.getProperty("appconf") != null) {
+            InputStream s = null;
+            try {
+                if (System.getProperty("appconf") != null) {
+                    System.out.println("Loading properties from file " + System.getProperty("appconf"));
+                    s = new FileInputStream(System.getProperty("appconf"));
+                } else {
+                    s = Helper.class.getResourceAsStream("/appconf.properties");
+                    System.out.println("Loading properties classpath /appconf.properties");
+                }
 
-                Properties p = new Properties();
-                try {
-                    p.load(new FileInputStream(System.getProperty("appconf")));
+                if (s != null) {
+
+                    Properties p = new Properties();
+                    p.load(s);
 
                     for (Map.Entry<Object, Object> e : p.entrySet()) {
                         System.setProperty("" + e.getKey(), "" + e.getValue());
                         System.out.println("" + e.getKey() + "=" + e.getValue());
                     }
-                } catch (FileNotFoundException e1) {
-                    e1.printStackTrace();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+
+                } else {
+                    System.out.println("No appconf. Either set -Dappconf=xxxxxx.properties or place an appconf.properties file in your classpath.");
                 }
 
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
 
         } else {
