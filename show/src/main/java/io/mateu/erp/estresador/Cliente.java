@@ -65,7 +65,7 @@ public class Cliente implements Runnable {
 
             try {
                 System.out.println("hilo " + id + ":" + response.getLocation().toURL().toString());
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
                 System.out.println("error al intentar capturar la url");
             }
             System.out.println("hilo " + id + ": respuesta " + response.getStatus() + "/" + response.getLength() + " en " + t + " ms.");
