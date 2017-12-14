@@ -8,7 +8,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.ApplicationPath;
 
-@ApplicationPath("/resources")
+@ApplicationPath("/xresources")
 public class MyApplication extends ResourceConfig {
     public MyApplication() {
 
@@ -21,6 +21,7 @@ public class MyApplication extends ResourceConfig {
         //packages("io.mateu.erp.services"); // no funciona si registramos las clases una a una
         register(PickupConfirmationService.class);
         register(HotelBookingServiceImpl.class);
+        register(StatsResource.class);
         register(CMSServiceImpl.class);
         register(JacksonFeature.class);
         register(Converter1.class);
