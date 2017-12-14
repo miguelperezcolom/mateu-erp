@@ -141,7 +141,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         long t1 = System.currentTimeMillis();
 
-        String msg = "" + rs.getHotels().size() + " hotels returned. It consumed " + (t - t0) + " ms in the server. Stats took " + (t1 - t0) + " ms.";
+        String msg = "" + rs.getHotels().size() + " hotels returned. It consumed " + (t - t0) + " ms in the server. Stats took " + (t1 - t) + " ms.";
 
         System.out.println(msg);
 

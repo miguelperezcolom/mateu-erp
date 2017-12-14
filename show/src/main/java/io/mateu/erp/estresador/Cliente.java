@@ -68,6 +68,7 @@ public class Cliente implements Runnable {
             } catch (Exception e) {
                 System.out.println("error al intentar capturar la url");
             }
+
             System.out.println("hilo " + id + ": respuesta " + response.getStatus() + "/" + response.getLength() + " en " + t + " ms.");
 
 //            System.out.println(response.getStatus());
