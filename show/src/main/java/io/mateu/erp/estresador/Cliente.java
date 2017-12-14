@@ -6,6 +6,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.MalformedURLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
@@ -62,7 +63,13 @@ public class Cliente implements Runnable {
 
             acumular(t);
 
+            try {
+                System.out.println("hilo " + id + ":" + response.getLocation().toURL().toString());
+            } catch (MalformedURLException e) {
+                System.out.println("error al intentar capturar la url");
+            }
             System.out.println("hilo " + id + ": respuesta " + response.getStatus() + "/" + response.getLength() + " en " + t + " ms.");
+
 //            System.out.println(response.getStatus());
 //            System.out.println(response.readEntity(String.class));
         }
