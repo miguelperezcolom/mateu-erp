@@ -13,6 +13,7 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.State;
+import io.mateu.erp.services.HotelAvailabilityStats;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -135,6 +137,10 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         long t = System.currentTimeMillis();
 
+        recorStats(rs, io.mateu.erp.dispo.Helper.toDate(checkIn).toEpochDay(), io.mateu.erp.dispo.Helper.toDate(checkout).toEpochDay());
+
+        long t1 = System.currentTimeMillis();
+
         String msg = "" + rs.getHotels().size() + " hotels returned. It consumed " + (t - t0) + " ms in the server.";
 
         System.out.println(msg);
@@ -142,6 +148,30 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setMsg(msg);
 
         return rs;
+    }
+
+    private void recorStats(GetAvailableHotelsRS rs, long checkin, long checkout) {
+
+        double totalPrice = 0;
+        double avgPrice = 0;
+        double minPrice = 0;
+        double maxPrice = 0;
+        long pricesNo = 0;
+        long hotelsNo = rs.getHotels().size();
+
+
+        for (AvailableHotel h : rs.getHotels()) for (Option o : h.getOptions()) for (BoardPrice p : o.getPrices()) {
+
+            double price = p.getNetPrice().getValue();
+
+            avgPrice = (avgPrice * pricesNo + price) / (pricesNo + 1);
+            if (minPrice > price) minPrice = price;
+            if (maxPrice < price) maxPrice = price;
+
+            pricesNo++;
+        }
+
+        HotelAvailabilityStats.add(avgPrice, minPrice, maxPrice, pricesNo, hotelsNo, checkin, checkout, checkout - checkin);
     }
 
     public static List<? extends Occupancy> getOccupancies(String occupancies) {
