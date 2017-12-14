@@ -57,6 +57,8 @@ public class HotelAvailabilityStats {
             data.stayAvg = (data.stayAvg * data.totalRqs + stay) / (data.totalRqs + 1);
             if (data.stayMin > stay) data.stayMin = stay;
             if (data.stayMax < stay) data.stayMax = stay;
+
+            data.totalRqs++;
         }
     }
 
