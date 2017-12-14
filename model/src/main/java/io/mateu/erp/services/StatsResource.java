@@ -88,25 +88,31 @@ public class StatsResource {
 
         HotelAvailabilityStatsData s = HotelAvailabilityStats.get(true);
 
-        d.put("checkinAvg", s.checkinAvg);
-        d.put("checkinMax", s.checkinMax);
-        d.put("checkinMin", s.checkinMin);
-        d.put("checkoutAvg", s.checkoutAvg);
-        d.put("checkoutMax", s.checkoutMax);
-        d.put("checkoutMin", s.checkoutMin);
-        d.put("priceAvg", s.priceAvg);
-        d.put("priceMax", s.priceMax);
-        d.put("priceMin", s.priceMin);
-        d.put("returnedHotelsNoAvg", s.returnedHotelsNoAvg);
-        d.put("returnedHotelsNoMax", s.returnedHotelsNoMax);
-        d.put("returnedHotelsNoMin", s.returnedHotelsNoMin);
-        d.put("returnedPricesNoAvg", s.returnedPricesNoAvg);
-        d.put("returnedPricesNoMax", s.returnedPricesNoMax);
-        d.put("returnedPricesNoMin", s.returnedPricesNoMin);
-        d.put("stayAvg", s.stayAvg);
-        d.put("stayMax", s.stayMax);
-        d.put("stayMin", s.stayMin);
-        d.put("totalRqs", s.totalRqs);
+        if (s != null) {
+
+            d.put("checkinAvg", s.checkinAvg);
+            d.put("checkinMax", s.checkinMax);
+            d.put("checkinMin", s.checkinMin);
+            d.put("checkoutAvg", s.checkoutAvg);
+            d.put("checkoutMax", s.checkoutMax);
+            d.put("checkoutMin", s.checkoutMin);
+            d.put("priceAvg", s.priceAvg);
+            d.put("priceMax", s.priceMax);
+            d.put("priceMin", s.priceMin);
+            d.put("returnedHotelsNoAvg", s.returnedHotelsNoAvg);
+            d.put("returnedHotelsNoMax", s.returnedHotelsNoMax);
+            d.put("returnedHotelsNoMin", s.returnedHotelsNoMin);
+            d.put("returnedPricesNoAvg", s.returnedPricesNoAvg);
+            d.put("returnedPricesNoMax", s.returnedPricesNoMax);
+            d.put("returnedPricesNoMin", s.returnedPricesNoMin);
+            d.put("stayAvg", s.stayAvg);
+            d.put("stayMax", s.stayMax);
+            d.put("stayMin", s.stayMin);
+            d.put("totalRqs", s.totalRqs);
+
+        }
+
+
 
         return d;
     }

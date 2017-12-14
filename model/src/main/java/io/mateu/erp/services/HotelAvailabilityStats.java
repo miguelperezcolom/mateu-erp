@@ -39,7 +39,7 @@ public class HotelAvailabilityStats {
         );
         else {
             data.priceAvg = (data.priceAvg * data.totalRqs + priceAvg) / (data.totalRqs + 1);
-            if (data.priceMin > priceMin) data.priceMin = priceMin;
+            if (returnedPrices > 0 && data.priceMin > priceMin) data.priceMin = priceMin;
             if (data.priceMax < priceMax) data.priceMax = priceMax;
 
             data.returnedPricesNoAvg = (data.returnedPricesNoAvg * data.totalRqs + returnedPrices) / (data.totalRqs + 1);
