@@ -667,8 +667,13 @@ public class Helper {
                     p.load(s);
 
                     for (Map.Entry<Object, Object> e : p.entrySet()) {
-                        System.setProperty("" + e.getKey(), "" + e.getValue());
                         System.out.println("" + e.getKey() + "=" + e.getValue());
+                        if (System.getProperty("" + e.getKey()) == null) {
+                            System.setProperty("" + e.getKey(), "" + e.getValue());
+                            System.out.println("property fixed");
+                        } else {
+                            System.out.println("property " + e.getKey() + " is already set with value " + System.getProperty("" + e.getKey()));
+                        }
                     }
 
                 } else {
