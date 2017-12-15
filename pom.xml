@@ -19,6 +19,7 @@
         <module>show</module>
         <module>traductor-caval-in</module>
         <module>traductor-ota-in</module>
+        <module>nodo-dispo</module>
     </modules>
 
     <packaging>pom</packaging>

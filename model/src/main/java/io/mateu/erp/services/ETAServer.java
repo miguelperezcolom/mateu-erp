@@ -42,7 +42,7 @@ public class ETAServer {
     public static HttpServer startServer() {
         // create a resource config that scans for JAX-RS resources and providers
         // in com.underdog.jersey.grizzly package
-        final ResourceConfig rc = new ResourceConfig(CommonsServiceImpl.class, ActivityBookingServiceImpl.class, TransferBookingServiceImpl.class, HotelBookingServiceImpl.class, ChannelManagerServiceImpl.class);
+        final ResourceConfig rc = new ResourceConfig(CommonsServiceImpl.class, ActivityBookingServiceImpl.class, TransferBookingServiceImpl.class, HotelBookingServiceImpl.class, ChannelManagerServiceImpl.class, StatsResource.class);
         //final ResourceConfig rc = new ResourceConfig().packages("io.mateu.erp.services.easytravelapi");
 
         // create and start a new instance of grizzly http server

@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/dispo-tester/dispo-tester.iml" filepath="$PROJECT_DIR$/dispo-tester/dispo-tester.iml" />
       <module fileurl="file://$PROJECT_DIR$/mateu-erp.iml" filepath="$PROJECT_DIR$/mateu-erp.iml" />
       <module fileurl="file://$PROJECT_DIR$/model/model.iml" filepath="$PROJECT_DIR$/model/model.iml" />
+      <module fileurl="file://$PROJECT_DIR$/nodo-dispo/nodo-dispo.iml" filepath="$PROJECT_DIR$/nodo-dispo/nodo-dispo.iml" />
       <module fileurl="file://$PROJECT_DIR$/show/show.iml" filepath="$PROJECT_DIR$/show/show.iml" />
       <module fileurl="file://$PROJECT_DIR$/traductor-caval-in/traductor-caval-in.iml" filepath="$PROJECT_DIR$/traductor-caval-in/traductor-caval-in.iml" />
       <module fileurl="file://$PROJECT_DIR$/traductor-caval-out/traductor-caval-out.iml" filepath="$PROJECT_DIR$/traductor-caval-out/traductor-caval-out.iml" />

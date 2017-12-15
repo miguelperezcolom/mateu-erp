@@ -16,6 +16,7 @@
         <module name="mddserverside" />
         <module name="model" />
         <module name="modelodispo" />
+        <module name="nodo-dispo" />
         <module name="show" />
         <module name="traductor-caval-in" />
         <module name="traductor-caval-out" />
@@ -32,6 +33,7 @@
       <module name="log-model" target="1.8" />
       <module name="mateu-erp" target="1.5" />
       <module name="model" target="1.8" />
+      <module name="nodo-dispo" target="1.5" />
       <module name="show" target="1.8" />
       <module name="traductor-caval-in" target="1.8" />
       <module name="traductor-caval-out" target="1.8" />
