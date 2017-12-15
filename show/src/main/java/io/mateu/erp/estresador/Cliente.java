@@ -64,7 +64,7 @@ public class Cliente implements Runnable {
             acumular(t);
 
             try {
-                System.out.println("hilo " + id + ":" + response.getLocation().toURL().toString());
+                System.out.println("hilo " + id + ":" + dispoWebTarget.getUri().toString());
             } catch (Exception e) {
                 System.out.println("error al intentar capturar la url");
             }
