@@ -1,5 +1,6 @@
 package io.mateu.erp.services;
 
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -11,6 +12,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
@@ -25,6 +29,33 @@ import java.util.Map;
  */
 @Path("/stats")
 public class StatsResource {
+
+    @Path("/ping")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String ping() {
+
+        try {
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
+
+                    User u = em.find(User.class, "admin");
+
+                    System.out.println("user admin exists");
+
+                }
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            StringWriter sw = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(sw));
+            return sw.toString();
+        }
+
+        return "pong";
+    }
+
 
     /**
      * Method handling HTTP GET requests. The returned object will be sent
