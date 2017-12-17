@@ -1,6 +1,5 @@
 package io.mateu.erp.client.crm;
 
-import io.mateu.erp.client.cms.RevenueModule;
 import io.mateu.ui.core.client.app.AbstractArea;
 import io.mateu.ui.core.client.app.AbstractModule;
 

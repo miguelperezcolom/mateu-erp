@@ -1,10 +1,16 @@
 package io.mateu.erp.client.product;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.product.generic.Contract;
+import io.mateu.erp.model.product.generic.Product;
+import io.mateu.erp.model.product.generic.Shop;
+import io.mateu.erp.model.product.generic.StopSales;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
@@ -24,33 +30,13 @@ public class GenericModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Products") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.generic.Product", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Products", Product.class));
 
-        m.add(new AbstractAction("Contracts") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.generic.Contract", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Contracts", Contract.class));
 
-        m.add(new AbstractAction("Shop") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.generic.Shop", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Shops", Shop.class));
 
-        m.add(new AbstractAction("Stop sales") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.generic.StopSales", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Stop sales", StopSales.class));
 
 
         return m;

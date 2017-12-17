@@ -8,6 +8,7 @@ import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.population.Populator;
+import io.mateu.erp.model.util.EmailHelper;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.server.SQLTransaction;
 import io.mateu.ui.core.server.ServerSideApp;
@@ -176,7 +177,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     if (Strings.isNullOrEmpty(u.getPassword())) throw new Exception("Missing password for user " + login);
                     if (Strings.isNullOrEmpty(u.getEmail())) throw new Exception("Missing email for user " + login);
                     if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
-                    io.mateu.erp.model.util.Helper.sendEmail(u.getEmail(), "Your password", u.getPassword(), true);
+                    EmailHelper.sendEmail(u.getEmail(), "Your password", u.getPassword(), true);
                 } else throw new Exception("No user with login " + login);
             }
         });

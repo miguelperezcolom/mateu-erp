@@ -1,10 +1,13 @@
 package io.mateu.erp.client.financial;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
@@ -24,20 +27,9 @@ public class InvoicingModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
+        m.add(new MDDAction("Issued invoices", Invoice.class));
 
-        m.add(new AbstractAction("Isued invoices") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
-
-        m.add(new AbstractAction("Received invoices") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Received invoices", Invoice.class));
 
         return m;
     }

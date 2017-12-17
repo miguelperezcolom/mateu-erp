@@ -60,12 +60,12 @@ public class TransferOperations extends AbstractServerSideWizard {
             public void run(EntityManager em) throws Throwable {
                 List<Service> l = em.createQuery("select x from TransferService x where x.start = ? and x.retained order by x.flighttime").setParameter(0, data.getDate("workDate")).getResultList();
                 if (l.size() == 0) {
-                    vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
                         @Output
                         String date;
                     }.getClass()));
                 } else {
-                    vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
                         @Output
                         String date;
                     }.getClass()));
@@ -81,7 +81,7 @@ public class TransferOperations extends AbstractServerSideWizard {
         vo.setData(data);
         vo.setWizardClassName(this.getClass().getName());
         vo.setFirstPage(true);
-        vo.setMetaData(new ERPServiceImpl().getMetadaData(new Object() {
+        vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
             @NotNull
             LocalDate workDate;
         }.getClass()));

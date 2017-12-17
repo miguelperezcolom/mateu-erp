@@ -11,7 +11,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.ui.core.server.SQLTransaction;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
@@ -622,30 +621,6 @@ public class Helper {
         return v;
     }
 
-    public static void sendEmail(String toEmail, String subject, String text, boolean noCC) throws Throwable {
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                AppConfig c = AppConfig.get(em);
-
-                Email email = new HtmlEmail();
-                email.setHostName(c.getAdminEmailSmtpHost());
-                email.setSmtpPort(c.getAdminEmailSmtpPort());
-                email.setAuthenticator(new DefaultAuthenticator(c.getAdminEmailUser(), c.getAdminEmailPassword()));
-                //email.setSSLOnConnect(true);
-                email.setFrom(c.getAdminEmailFrom());
-                if (!noCC && !Strings.isNullOrEmpty(c.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(c.getAdminEmailCC()));
-
-                email.setSubject(subject);
-                //email.setMsg(io.mateu.ui.mdd.server.util.Helper.freemark(template, getData()));
-                email.setMsg(text);
-                email.addTo(toEmail);
-                email.send();
-            }
-        });
-    }
 
     public static void loadProperties() {
         if (!propertiesLoaded) {

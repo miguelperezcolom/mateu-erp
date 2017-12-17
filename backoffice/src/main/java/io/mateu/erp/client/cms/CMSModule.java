@@ -1,10 +1,14 @@
 package io.mateu.erp.client.cms;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.cms.Theme;
+import io.mateu.erp.model.cms.Website;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
@@ -24,19 +28,9 @@ public class CMSModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Websites") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Website", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Websites", Website.class));
 
-        m.add(new AbstractAction("Themes") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.cms.Theme", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Themes", Theme.class));
 
         return m;
     }

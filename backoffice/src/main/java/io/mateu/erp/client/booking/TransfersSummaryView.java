@@ -160,7 +160,7 @@ public class TransfersSummaryView extends AbstractListView {
                 d.set("transferType", new Pair("INCOMING", "INCOMING"));
                 d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
                 break;        }
-        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback(d));
+        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.booking.transfer.TransferService", new MDDCallback(d));
     }
 
     @Override

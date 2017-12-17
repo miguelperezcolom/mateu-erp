@@ -1,11 +1,15 @@
 package io.mateu.erp.client.financial;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.CurrencyExchange;
 import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.core.client.components.fields.DateField;
 import io.mateu.ui.core.client.views.AbstractDialog;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
@@ -26,19 +30,9 @@ public class FinancialModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Currency exchanges") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.CurrencyExchange", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Currency exchanges", CurrencyExchange.class));
 
-        m.add(new AbstractAction("Billing concepts") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.BillingConcept", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Billing concepts", BillingConcept.class));
 
         m.add(new AbstractAction("Reprice") {
             @Override

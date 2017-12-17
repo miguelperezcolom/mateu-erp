@@ -1,8 +1,14 @@
 package io.mateu.erp.client.product;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.product.hotel.*;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.client.MDDMenu;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
@@ -21,143 +27,21 @@ public class HotelModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Hotels") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.Hotel", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Hotels", Hotel.class));
 
-        m.add(new AbstractMenu("Coding") {
+        m.add(new MDDMenu("Coding", "Categories", HotelCategory.class, "Board codes", BoardType.class, "Room codes", RoomType.class));
 
-            @Override
-            public List<MenuEntry> getEntries() {
+        m.add(new MDDAction("Rooms", Room.class));
 
-                List<MenuEntry> m = new ArrayList<>();
+        m.add(new MDDAction("Boards", Board.class));
 
-                m.add(new AbstractAction("Categories") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.HotelCategory", new MDDCallback());
-                    }
-                });
+        m.add(new MDDMenu("Stop sales", "Stop sales", StopSales.class, "Lines", StopSalesLine.class, "Log", StopSalesOperation.class));
 
+        m.add(new MDDMenu("Inventory", "Inventories", Inventory.class, "Lines", InventoryLine.class, "Log", InventoryOperation.class));
 
-                m.add(new AbstractAction("Board codes") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.BoardType", new MDDCallback());
-                    }
-                });
+        m.add(new MDDAction("Contracts", HotelContract.class));
 
-
-                m.add(new AbstractAction("Room codes") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.RoomType", new MDDCallback());
-                    }
-                });
-
-                return m;
-            }
-        });
-
-
-        m.add(new AbstractAction("Rooms") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.Room", new MDDCallback());
-            }
-        });
-
-        m.add(new AbstractAction("Boards") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.Board", new MDDCallback());
-            }
-        });
-
-        m.add(new AbstractMenu("Stop sales") {
-
-            @Override
-            public List<MenuEntry> getEntries() {
-
-                List<MenuEntry> m = new ArrayList<>();
-
-                m.add(new AbstractAction("Stop sales") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.StopSales", new MDDCallback());
-                    }
-                });
-
-                m.add(new AbstractAction("Lines") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.StopSalesLine", new MDDCallback());
-                    }
-                });
-
-                m.add(new AbstractAction("Log") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.StopSalesOperation", new MDDCallback());
-                    }
-                });
-
-                return m;
-            }
-        });
-
-        m.add(new AbstractMenu("Inventory") {
-
-            @Override
-            public List<MenuEntry> getEntries() {
-
-                List<MenuEntry> m = new ArrayList<>();
-
-                m.add(new AbstractAction("Inventories") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.Inventory", new MDDCallback());
-                    }
-                });
-
-
-                m.add(new AbstractAction("Lines") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.InventoryLine", new MDDCallback());
-                    }
-                });
-
-
-                m.add(new AbstractAction("Log") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.InventoryOperation", new MDDCallback());
-                    }
-                });
-
-
-                return m;
-            }
-        });
-
-
-        m.add(new AbstractAction("Contracts") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.contracting.HotelContract", new MDDCallback());
-            }
-        });
-
-        m.add(new AbstractAction("Offers") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Offers", AbstractHotelOffer.class));
 
         return m;
     }

@@ -1,10 +1,14 @@
 package io.mateu.erp.client.financial;
 
+import io.mateu.erp.model.invoicing.Invoice;
+import io.mateu.erp.model.payments.*;
+import io.mateu.erp.model.tpv.TPV;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.shared.ERPService;
 
@@ -38,104 +42,34 @@ public class PaymentsModule extends AbstractModule {
          */
 
 
-        m.add(new AbstractAction("Accounts") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.Account", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Accounts", Account.class));
 
-        m.add(new AbstractAction("Payment gateways") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.tpv.TPV", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Payment gateways", TPV.class));
 
-        m.add(new AbstractAction("VCC") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.VCC", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("VCC", VCC.class));
 
 
-        m.add(new AbstractAction("Commissions") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Commissions", Invoice.class));
 
-        m.add(new AbstractAction("Abseiling") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Abseiling", Invoice.class));
 
-        m.add(new AbstractAction("Prepayment") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.Deposit", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Prepayment", Deposit.class));
 
-        m.add(new AbstractAction("Portfolios") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Portfolios", Invoice.class));
 
-        m.add(new AbstractAction("Payments") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.Payment", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Payments", Payment.class));
 
-        m.add(new AbstractAction("Collections") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.Payment", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Collections", Payment.class));
 
-        m.add(new AbstractAction("Litigations") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.payments.Litigation", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Litigations", Litigation.class));
 
-        m.add(new AbstractAction("Bank remittances") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Bank remittances", Invoice.class));
 
-        m.add(new AbstractAction("Direct payments") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Direct payments", Payment.class));
 
-        m.add(new AbstractAction("Bank reconciliation") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Bank reconciliation", Invoice.class));
 
-        m.add(new AbstractAction("Accounting") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.invoicing.Invoice", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Accounting", Invoice.class));
 
         return m;
     }

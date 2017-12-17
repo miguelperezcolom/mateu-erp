@@ -1,10 +1,21 @@
 package io.mateu.erp.client.admin;
 
+import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.config.Template;
+import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.multilanguage.Language;
+import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.State;
 import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
-import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.client.MDDJPACRUDView;
+import io.mateu.ui.mdd.client.*;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
@@ -23,121 +34,27 @@ public class AdminModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("AppConfig") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.config.AppConfig", new Callback<Data>() {
-                    @Override
-                    public void onSuccess(Data result) {
-                        MateuUI.openView(new MDDJPACRUDView(result).getNewEditorView().setInitialId(1l));
-                    }
-                });
-            }
-        });
+        m.add(new MDDAction("AppConfig", AppConfig.class, 1l));
 
-        m.add(new AbstractAction("Users") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.authentication.User", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Users", User.class));
 
-        m.add(new AbstractAction("Auth tokens") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.authentication.AuthToken", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Auth tokens", AuthToken.class));
 
-        m.add(new AbstractAction("Offices") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.organization.Office", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Offices", Office.class));
 
-        m.add(new AbstractAction("POS") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.organization.PointOfSale", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("POS", PointOfSale.class));
 
-        m.add(new AbstractAction("Actors") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Actor", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Actors", Actor.class));
 
-        m.add(new AbstractAction("Currencies") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.financials.Currency", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Currencies", Currency.class));
 
+        m.add(new MDDAction("Languages", Language.class));
 
+        m.add(new MDDAction("Translations", Literal.class));
 
-        if (false) m.add(new AbstractAction("Languages") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.multilanguage.Language", new MDDCallback());
-            }
-        });
+        m.add(new MDDAction("Templates", Template.class));
 
-        if (false) m.add(new AbstractAction("Translations") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.multilanguage.Literal", new MDDCallback());
-            }
-        });
-
-        if (false) m.add(new AbstractAction("Templates") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.config.Template", new MDDCallback());
-            }
-        });
-
-
-        m.add(new AbstractMenu("World") {
-            @Override
-            public List<MenuEntry> getEntries() {
-                List<MenuEntry> m = new ArrayList<>();
-
-                m.add(new AbstractAction("Countries") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.Country", new MDDCallback());
-                    }
-                });
-
-                m.add(new AbstractAction("States") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.State", new MDDCallback());
-                    }
-                });
-
-                m.add(new AbstractAction("Cities") {
-                    @Override
-                    public void run() {
-                        ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("io.mateu.erp.model.world.City", new MDDCallback());
-                    }
-                });
-
-                return m;
-            }
-        });
-
-
-        m.add(new AbstractAction("Agents") {
-            @Override
-            public void run() {
-                ((ERPServiceAsync)MateuUI.create(ERPService.class)).getMetaData("com.quonext.quoon.Agent", new MDDCallback());
-            }
-        });
+        m.add(new MDDMenu("World", "Countries", Country.class, "States", State.class, "City", City.class));
 
         return m;
     }
