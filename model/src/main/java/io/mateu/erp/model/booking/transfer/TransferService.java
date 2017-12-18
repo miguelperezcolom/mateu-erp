@@ -146,7 +146,7 @@ public class TransferService extends Service implements WithTriggers {
     @Action(name = "Save and return")
     public Data saveAndReturn(Data _data) throws Throwable {
         ERPServiceImpl s = new ERPServiceImpl();
-        Data data = (Data) s.set(TransferService.class.getName(), _data);
+        Data data = (Data) s.set(TransferService.class.getName(), TransferService.class.getName(), _data);
         Data aux = _data.get("pickupText");
         _data.set("pickupText", _data.get("dropoffText"));
         _data.set("dropoffText", aux);
