@@ -1,5 +1,7 @@
 package io.mateu.erp.model.monitoring;
 
+import com.google.common.base.Strings;
+import io.mateu.erp.model.util.EmailHelper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,4 +26,18 @@ public class Watcher {
 
     private boolean active;
 
+    public void notify(Alarm alarm) {
+
+        if (!Strings.isNullOrEmpty(getEmails())) {
+            for (String email : getEmails().split("[,; ]")) {
+                email = emails.trim();
+                try {
+                    EmailHelper.sendEmail(email, "ALARM: " + getName(), "", false);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        }
+
+    }
 }

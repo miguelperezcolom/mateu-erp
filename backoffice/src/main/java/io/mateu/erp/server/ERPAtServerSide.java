@@ -7,6 +7,7 @@ import io.mateu.erp.model.authentication.Permission;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.monitoring.Monitor;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.util.EmailHelper;
 import io.mateu.ui.core.server.BaseServerSideApp;
@@ -28,6 +29,15 @@ import java.net.URL;
  * Created by miguel on 3/1/17.
  */
 public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp {
+
+    static {
+        if ("yes".equalsIgnoreCase(System.getProperty("monitor"))) {
+            System.out.println("Starting monitor...");
+            Monitor.monitor();
+        } else {
+            System.out.println("Monitor not needed.");
+        }
+    }
 
 
     private static long fileId;

@@ -22,8 +22,16 @@ public class Alarm {
     private String text;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date when;
+    @Column(name = "_when")
+    private Date when = new Date();
 
     private boolean notified;
 
+    public void notifyWatchers(EntityManager em) {
+
+        for (Watcher w : watchdog.getNotifyTo()) if (w.isActive()) {
+            w.notify(this);
+        }
+
+    }
 }
