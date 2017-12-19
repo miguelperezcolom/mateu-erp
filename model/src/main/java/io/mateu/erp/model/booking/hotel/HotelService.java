@@ -62,7 +62,6 @@ public class HotelService extends Service implements WithTriggers {
     private List<HotelServiceLine> lines = new ArrayList<>();
 
 
-
     @Override
     public String createSignature() {
         String s = "error when serializing";
