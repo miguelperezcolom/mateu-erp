@@ -312,7 +312,7 @@ public class CommonsServiceImpl implements CommonsService {
 
                 io.mateu.erp.model.booking.Booking b = em.find(io.mateu.erp.model.booking.Booking.class, Long.parseLong(bookingId));
 
-                b.cancel(em);
+                b.cancel(em, b.getAudit().getModifiedBy());
 
                 rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
                 rs.setStatusCode(200);

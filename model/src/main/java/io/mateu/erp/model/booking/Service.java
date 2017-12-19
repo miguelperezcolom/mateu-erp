@@ -787,8 +787,20 @@ public abstract class Service implements WithTriggers {
         return d;
     }
 
-    public void cancel(EntityManager em) {
-        setCancelled(true);
+    public void cancel(EntityManager em, User u) {
+        if (!isCancelled()) {
+            setCancelled(true);
+            setTotalNetValue(getCurrentCancellationCost());
+            setTotalCost(0);
+            setTotalCommissionValue(0);
+            setTotalRetailValue(0);
+            price(em, u);
+            try {
+                checkPurchase(em, u);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
     }
 
     @PostLoad

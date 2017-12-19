@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import io.mateu.erp.model.authentication.Audit;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
@@ -168,13 +169,13 @@ public class Booking implements WithTriggers {
     @Override
     public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable {
         if (isCancelled() && isCancelled() != isWasCancelled()) {
-            cancel(em);
+            cancel(em, getAudit().getModifiedBy());
         }
     }
 
-    public void cancel(EntityManager em) {
+    public void cancel(EntityManager em, User u) {
         for (Service s : getServices()) {
-            s.cancel(em);
+            s.cancel(em, u);
         }
     }
 
