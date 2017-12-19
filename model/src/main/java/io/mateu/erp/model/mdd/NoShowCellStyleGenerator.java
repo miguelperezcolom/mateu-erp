@@ -10,4 +10,9 @@ public class NoShowCellStyleGenerator implements CellStyleGenerator {
     public String getStyle(Object o) {
         return (o != null && o instanceof Boolean && ((Boolean)o))?"warning":"success";
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }

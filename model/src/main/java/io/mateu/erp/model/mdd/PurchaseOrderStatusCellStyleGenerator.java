@@ -20,4 +20,9 @@ public class PurchaseOrderStatusCellStyleGenerator implements CellStyleGenerator
         }
         return s;
     }
+
+    @Override
+    public boolean isContentShown() {
+        return true;
+    }
 }

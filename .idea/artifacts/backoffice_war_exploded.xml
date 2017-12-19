@@ -100,9 +100,9 @@
           <element id="library" level="project" name="Maven: io.mateu.ui:mdd:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/core/1.0-SNAPSHOT/core-1.0-20171116.150757-53.jar" output-file-name="core-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: io.mateu.ui:core:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.hsqldb:hsqldb:2.3.4" />
-          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/ui/code-generation/1.0-SNAPSHOT/code-generation-1.0-20171116.150755-89.jar" output-file-name="code-generation-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: io.mateu.ui:code-generation:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-jetty-http:2.26" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-server:9.4.3.v20170317" />
           <element id="library" level="project" name="Maven: org.eclipse.jetty:jetty-http:9.4.3.v20170317" />

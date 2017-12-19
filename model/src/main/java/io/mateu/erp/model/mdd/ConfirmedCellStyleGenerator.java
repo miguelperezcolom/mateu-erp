@@ -20,4 +20,9 @@ public class ConfirmedCellStyleGenerator implements CellStyleGenerator {
         }
         return s;
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }

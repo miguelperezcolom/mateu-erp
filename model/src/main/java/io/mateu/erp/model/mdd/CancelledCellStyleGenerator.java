@@ -10,4 +10,9 @@ public class CancelledCellStyleGenerator implements CellStyleGenerator {
     public String getStyle(Object o) {
         return (o != null && o instanceof Boolean && ((Boolean)o))?"danger":"success";
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }

@@ -23,4 +23,9 @@ public class ProcessingStatusCellStyleGenerator implements CellStyleGenerator {
         }
         return s;
     }
+
+    @Override
+    public boolean isContentShown() {
+        return true;
+    }
 }

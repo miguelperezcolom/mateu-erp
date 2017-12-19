@@ -10,4 +10,9 @@ public class SentCellStyleGenerator implements CellStyleGenerator {
     public String getStyle(Object o) {
         return (o != null && o instanceof Boolean && ((Boolean)o))?"success":"info";
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }

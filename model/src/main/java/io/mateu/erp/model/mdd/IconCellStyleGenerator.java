@@ -10,4 +10,9 @@ public class IconCellStyleGenerator implements CellStyleGenerator {
     public String getStyle(Object o) {
         return (o != null && o instanceof String)? (String) o :null;
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }

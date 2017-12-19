@@ -187,6 +187,9 @@ public abstract class Service implements WithTriggers {
     private String priceReport;
 
     @Output
+    private double currentCancellationCost;
+
+    @Output
     @ListColumn
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean purchaseValued;

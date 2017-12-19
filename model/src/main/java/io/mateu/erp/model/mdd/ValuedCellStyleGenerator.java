@@ -10,4 +10,9 @@ public class ValuedCellStyleGenerator implements CellStyleGenerator {
     public String getStyle(Object o) {
         return (o != null && o instanceof Boolean && ((Boolean)o))?"success":"danger";
     }
+
+    @Override
+    public boolean isContentShown() {
+        return false;
+    }
 }
