@@ -114,7 +114,7 @@ public abstract class Service implements WithTriggers {
         }
     }
 
-    @ListColumn
+    @ListColumn(value = "Active")
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     private boolean cancelled;
 

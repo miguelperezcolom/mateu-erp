@@ -28,14 +28,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter@Setter
-public class Pagina2 extends AbstractServerSideWizardPage {
+public class Pagina2b extends AbstractServerSideWizardPage {
 
     @Output
     private String message;
 
+    @Output
+    private String selectedOption;
+
     @NotNull
     @UseGridToSelect
-    private HotelOption hotel;
+    private PriceOption option;
 
     @Override
     public String getTitle() {
@@ -46,16 +49,19 @@ public class Pagina2 extends AbstractServerSideWizardPage {
     public Data getData(UserData user, EntityManager em, Data in) throws Throwable {
         Data out = new Data();
 
+
         Pagina1 p = new Pagina1();
         p.fill(em, in);
 
+        Pagina2 p2 = new Pagina2();
+        p2.fill(em, in);
+
+        out.set("selectedOption", "" + p2.getHotel().getHotelName() + " " + p2.getHotel().getCategory()
+                + "\n" + p2.getHotel().getCity()
+        );
+
 
         long t0 = System.currentTimeMillis();
-
-        List<Hotel> hoteles = new ArrayList<>();
-        for (City c : p.getState().getCities()) {
-            hoteles.addAll(c.getHotels());
-        }
 
         Actor agencia = p.getAgency();
 
@@ -68,6 +74,9 @@ public class Pagina2 extends AbstractServerSideWizardPage {
             }
         };
 
+        List<Hotel> hoteles = new ArrayList<>();
+        hoteles.add(em.find(Hotel.class, Long.parseLong(in.getData("hotel").getString("id"))));
+
         List<io.mateu.erp.dispo.Occupancy> os = new ArrayList<>();
         for (Occupation o : p.getOccupations()) {
             os.add(new io.mateu.erp.dispo.Occupancy(o.getNumberOfRooms(), o.getPaxPerRoom(), o.getAges()));
@@ -76,21 +85,33 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         DispoRQ rq = new DispoRQ(p.getFormalizationDate(), io.mateu.erp.dispo.Helper.toInt(p.getCheckin()), io.mateu.erp.dispo.Helper.toInt(p.getCheckout()), os, false);
 
 
-        List<HotelOption> options = new ArrayList<>();
+        List<PriceOption> options = new ArrayList<>();
         for (Hotel h : hoteles) {
             AvailableHotel ah = new HotelAvailabilityRunner().check(agencia, h, p.getAgency().getId(), 1, modelo, rq);
-            if (ah != null) {
+            if (ah != null) for (org.easytravelapi.hotel.Option xo : ah.getOptions()) {
 
-                HotelOption o = new HotelOption();
+                StringBuffer sb = new StringBuffer();
+                for (Allocation a : xo.getDistribution()) {
+                    sb.append(a.getNumberOfRooms() * a.getPaxPerRoom());
+                    sb.append(" pax in ");
+                    sb.append(a.getNumberOfRooms());
+                    sb.append(" ");
+                    sb.append(a.getRoomName());
+                }
 
-                o.setId(ah.getHotelId());
-                o.setCategory(ah.getHotelCategoryName());
-                o.setCity(ah.getHotelCategoryId());
-                o.setHotelName(ah.getHotelName());
-                o.setBestDeal(ah.getBestDeal());
+                String dist = sb.toString();
 
-                options.add(o);
+                for (BoardPrice bp : xo.getPrices()) {
+                    PriceOption o = new PriceOption();
 
+                    o.setBoard(bp.getBoardBasisName());
+                    o.setCurrency(bp.getNetPrice().getCurrencyIsoCode());
+                    o.setKey(bp.getKey());
+                    o.setPrice(bp.getNetPrice().getValue());
+                    o.setRooms(dist);
+
+                    options.add(o);
+                }
             }
         }
 
@@ -99,12 +120,12 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         out.set("message", "" + options.size() + " prices found in " + (t - t0) + " ms.");
 
         List<Data> l = new ArrayList<>();
-        for (HotelOption o : options) {
+        for (PriceOption o : options) {
             Data d = new Data();
             ERPServiceImpl.fillData(user, em, d, o);
             l.add(d);
         }
-        out.set("hotel_data", l);
+        out.set("option_data", l);
 
         return out;
     }

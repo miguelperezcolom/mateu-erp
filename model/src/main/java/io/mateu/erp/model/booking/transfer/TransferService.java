@@ -144,9 +144,9 @@ public class TransferService extends Service implements WithTriggers {
     */
 
     @Action(name = "Save and return")
-    public Data saveAndReturn(Data _data) throws Throwable {
+    public Data saveAndReturn(UserData user, Data _data) throws Throwable {
         ERPServiceImpl s = new ERPServiceImpl();
-        Data data = (Data) s.set(TransferService.class.getName(), TransferService.class.getName(), _data);
+        Data data = (Data) s.set(user, TransferService.class.getName(), TransferService.class.getName(), _data);
         Data aux = _data.get("pickupText");
         _data.set("pickupText", _data.get("dropoffText"));
         _data.set("dropoffText", aux);
@@ -196,8 +196,8 @@ public class TransferService extends Service implements WithTriggers {
 
 
     @Action(name = "Work list")
-    public static URL workList(Data parameters) throws Throwable {
-        AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, TransferService.class));
+    public static URL workList(UserData user, EntityManager em, Data parameters) throws Throwable {
+        AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(user, em, TransferService.class));
 
         return listToPdf(parameters, lv);
     }
@@ -354,7 +354,7 @@ public class TransferService extends Service implements WithTriggers {
 
     @Action(name = "Send pickup times")
     public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@NotNull String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
-        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, TransferService.class));
+        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, em, TransferService.class));
 
         Office office = null;
         

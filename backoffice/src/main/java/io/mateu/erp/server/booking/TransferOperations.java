@@ -2,6 +2,7 @@ package io.mateu.erp.server.booking;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.AbstractServerSideWizard;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.WizardPageVO;
@@ -28,13 +29,13 @@ public class TransferOperations extends AbstractServerSideWizard {
 
 
     @Override
-    public WizardPageVO execute(String action, Data data) throws Throwable {
+    public WizardPageVO execute(UserData user, EntityManager em, String action, Data data) throws Throwable {
         if (action == null) {
-            return getInitialPage(data);
+            return getInitialPage(user, em, data);
         } else {
             switch (action) {
                 case ACTION_CHECKRETAINED:
-                    return getRetainedBookings(data);
+                    return getRetainedBookings(user, em, data);
                 case ACTION_CHECKFLIGHTTIMES:
                     break;
                 case ACTION_MAP:
@@ -49,7 +50,7 @@ public class TransferOperations extends AbstractServerSideWizard {
         }
     }
 
-    private WizardPageVO getRetainedBookings(Data data) throws Throwable {
+    private WizardPageVO getRetainedBookings(UserData user, EntityManager em, Data data) throws Throwable {
         WizardPageVO vo = new WizardPageVO();
         vo.setData(data);
         vo.setWizardClassName(this.getClass().getName());
@@ -60,12 +61,12 @@ public class TransferOperations extends AbstractServerSideWizard {
             public void run(EntityManager em) throws Throwable {
                 List<Service> l = em.createQuery("select x from TransferService x where x.start = ? and x.retained order by x.flighttime").setParameter(0, data.getDate("workDate")).getResultList();
                 if (l.size() == 0) {
-                    vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
                         @Output
                         String date;
                     }.getClass()));
                 } else {
-                    vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
+                    vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
                         @Output
                         String date;
                     }.getClass()));
@@ -76,12 +77,12 @@ public class TransferOperations extends AbstractServerSideWizard {
         return vo;
     }
 
-    private WizardPageVO getInitialPage(Data data) throws Throwable {
+    private WizardPageVO getInitialPage(UserData user, EntityManager em, Data data) throws Throwable {
         WizardPageVO vo = new WizardPageVO();
         vo.setData(data);
         vo.setWizardClassName(this.getClass().getName());
         vo.setFirstPage(true);
-        vo.setMetaData(new ERPServiceImpl().getMetadaData(null, new Object() {
+        vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
             @NotNull
             LocalDate workDate;
         }.getClass()));

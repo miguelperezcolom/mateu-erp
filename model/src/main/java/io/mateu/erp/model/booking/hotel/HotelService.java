@@ -184,8 +184,9 @@ public class HotelService extends Service implements WithTriggers {
     @Action(name = "Look for available")
     public static MDDLink book(UserData user, HotelBookingWizard wizard) throws Throwable {
         Pagina2 p2 = (Pagina2)wizard.getPages().get(1);
-        Pagina3 p3 = (Pagina3)wizard.getPages().get(2);
-        long serviceId = createFromKey(user, new KeyValue(p2.getOption().getKey()), p3.getLeadName(), p3.getComments());
+        Pagina2b p2b = (Pagina2b)wizard.getPages().get(2);
+        Pagina3 p3 = (Pagina3)wizard.getPages().get(3);
+        long serviceId = createFromKey(user, new KeyValue(p2b.getOption().getKey()), p3.getLeadName(), p3.getComments());
         return new MDDLink(HotelService.class, ActionType.OPENEDITOR, new Data("_id", serviceId));
     }
 

@@ -7,6 +7,7 @@ import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -103,7 +104,7 @@ public class Actor implements IActor {
         return xml;
     }
 
-    public AbstractTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
+    public SendPurchaseOrdersTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
         return createTask(em, getSendOrdersTo(), purchaseOrder.getOffice().getEmailCC());
     }
 

@@ -182,7 +182,7 @@ public class PurchaseOrder implements WithTriggers {
 
         SendPurchaseOrdersTask t = null;
 
-        getProvider().createTask(em, this);
+        t = getProvider().createTask(em, this);
 
         em.persist(t);
 

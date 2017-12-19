@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.transfer;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -50,23 +51,19 @@ public class TransferPointMapping implements WithTriggers {
 
 
     @Action(name = "Save and next", callOnEnterKeyPressed = true, addAsButton = true)
-    public Data saveAndNext(Data _data) throws Throwable {
+    public Data saveAndNext(UserData user, EntityManager em, Data _data) throws Throwable {
         ERPServiceImpl s = new ERPServiceImpl();
-        s.set(TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), _data);
+        s.set(user, TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), _data);
 
         Data[] data = new Data[1];
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-                List<TransferPointMapping> l = em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.point is null order by x.text").getResultList();
-                if (l.size() == 0) throw new Exception("No more pending mappings");
-                else {
-                    TransferPointMapping m = l.get(0);
-                    data[0] = s.get(TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), m.getId());
-                }
-            }
-        });
+
+        List<TransferPointMapping> l = em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.point is null order by x.text").getResultList();
+        if (l.size() == 0) throw new Exception("No more pending mappings");
+        else {
+            TransferPointMapping m = l.get(0);
+            data[0] = s.get(user, TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), m.getId());
+        }
 
         return data[0];
     }

@@ -5,13 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Option {
-
-    private String city;
-
-    private String hotelName;
-
-    private String category;
+public class PriceOption {
 
     private String rooms;
 

@@ -3,11 +3,13 @@ package io.mateu.erp.model.booking.hotel;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 
 @Getter@Setter
@@ -32,24 +34,24 @@ public class Pagina3 extends AbstractServerSideWizardPage {
     }
 
     @Override
-    public Data getData(Data in) throws Throwable {
+    public Data getData(UserData user, EntityManager em, Data in) throws Throwable {
         Data out = new Data();
 
-        Helper.transact((JPATransaction) (em) -> {
+        Pagina2 p2 = new Pagina2();
+        p2.fill(em, in);
 
-            Pagina2 p = new Pagina2();
-            p.fill(em, in);
+        Pagina2b p2b = new Pagina2b();
+        p2b.fill(em, in);
 
-            out.set("selectedOption", "" + p.getOption().getHotelName() + " " + p.getOption().getCategory()
-                            + "\n" + p.getOption().getCity()
-                            + "\n" + p.getOption().getRooms()
-                            + "\n" + p.getOption().getBoard()
-                            + "\n" + p.getOption().getPrice() + " " + p.getOption().getCurrency()
-            );
+        out.set("selectedOption", "" + p2.getHotel().getHotelName() + " " + p2.getHotel().getCategory()
+                        + "\n" + p2.getHotel().getCity()
+                        + "\n" + p2b.getOption().getRooms()
+                        + "\n" + p2b.getOption().getBoard()
+                        + "\n" + p2b.getOption().getPrice() + " " + p2b.getOption().getCurrency()
+        );
 
-            out.set("key", p.getOption().getKey());
+        out.set("key", p2b.getOption().getKey());
 
-        });
 
         return out;
     }
