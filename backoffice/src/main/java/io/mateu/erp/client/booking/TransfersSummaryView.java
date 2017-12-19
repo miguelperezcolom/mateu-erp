@@ -68,6 +68,11 @@ public class TransfersSummaryView extends AbstractListView {
                 if (s.endsWith("SAT") || s.endsWith("SUN")) css = "warning";
                 return css;
             }
+
+            @Override
+            public boolean isContentShown() {
+                return true;
+            }
         }));
         l.add(new OutputColumn("col2", "Airport", 120));
         l.add(new DataColumn("col3", "SHUTTLE In", 90) {

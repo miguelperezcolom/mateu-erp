@@ -56,7 +56,6 @@
           <element id="library" level="project" name="Maven: io.swagger:swagger-jersey2-jaxrs:1.5.16" />
           <element id="library" level="project" name="Maven: io.swagger:swagger-jaxrs:1.5.16" />
           <element id="library" level="project" name="Maven: io.swagger:swagger-core:1.5.16" />
-          <element id="library" level="project" name="Maven: org.apache.commons:commons-lang3:3.2.1" />
           <element id="library" level="project" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.9" />
           <element id="library" level="project" name="Maven: org.yaml:snakeyaml:1.17" />
           <element id="library" level="project" name="Maven: io.swagger:swagger-models:1.5.16" />
@@ -97,6 +96,34 @@
           <element id="library" level="project" name="Maven: io.mateu.erp:codec:1.0" />
           <element id="library" level="project" name="Maven: io.mateu.erp:json:1.0" />
           <element id="library" level="project" name="Maven: org.apache.commons:commons-exec:1.3" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/io/mateu/jpa-utils/pujoiner-plugin/1.0-SNAPSHOT/pujoiner-plugin-1.0-20171214.162236-11.jar" output-file-name="pujoiner-plugin-1.0-SNAPSHOT.jar" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-plugin-api:3.5.2" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-model:3.5.2" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-artifact:3.5.2" />
+          <element id="library" level="project" name="Maven: org.eclipse.sisu:org.eclipse.sisu.plexus:0.3.3" />
+          <element id="library" level="project" name="Maven: javax.enterprise:cdi-api:1.0" />
+          <element id="library" level="project" name="Maven: javax.annotation:jsr250-api:1.0" />
+          <element id="library" level="project" name="Maven: org.eclipse.sisu:org.eclipse.sisu.inject:0.3.3" />
+          <element id="library" level="project" name="Maven: org.codehaus.plexus:plexus-utils:3.1.0" />
+          <element id="library" level="project" name="Maven: org.codehaus.plexus:plexus-classworlds:2.5.2" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-core:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-settings:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-settings-builder:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-builder-support:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-repository-metadata:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-model-builder:3.3.9" />
+          <element id="library" level="project" name="Maven: org.apache.maven:maven-aether-provider:3.3.9" />
+          <element id="library" level="project" name="Maven: org.eclipse.aether:aether-spi:1.0.2.v20150114" />
+          <element id="library" level="project" name="Maven: org.eclipse.aether:aether-impl:1.0.2.v20150114" />
+          <element id="library" level="project" name="Maven: org.eclipse.aether:aether-api:1.0.2.v20150114" />
+          <element id="library" level="project" name="Maven: org.eclipse.aether:aether-util:1.0.2.v20150114" />
+          <element id="library" level="project" name="Maven: com.google.inject:guice:no_aop:4.0" />
+          <element id="library" level="project" name="Maven: aopalliance:aopalliance:1.0" />
+          <element id="library" level="project" name="Maven: org.codehaus.plexus:plexus-interpolation:1.21" />
+          <element id="library" level="project" name="Maven: org.codehaus.plexus:plexus-component-annotations:1.6" />
+          <element id="library" level="project" name="Maven: org.sonatype.plexus:plexus-sec-dispatcher:1.3" />
+          <element id="library" level="project" name="Maven: org.sonatype.plexus:plexus-cipher:1.4" />
+          <element id="library" level="project" name="Maven: org.apache.commons:commons-lang3:3.4" />
           <element id="library" level="project" name="Maven: io.mateu.ui:mdd:1.0-SNAPSHOT" />
           <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
           <element id="library" level="project" name="Maven: org.javassist:javassist:3.21.0-GA" />
