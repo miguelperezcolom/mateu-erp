@@ -206,6 +206,7 @@ public class HotelService extends Service implements WithTriggers {
 
             Booking b = new Booking();
             b.setAgency(agencia);
+            b.setCurrency(agencia.getCurrency());
             b.setAgencyReference("");
             b.setAudit(new Audit(u));
             b.setConfirmed(true);
