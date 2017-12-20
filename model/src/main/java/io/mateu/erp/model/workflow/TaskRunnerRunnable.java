@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by miguel on 28/4/17.
  */
-public class TaskRunner implements Runnable {
+public class TaskRunnerRunnable implements Runnable {
     @Override
     public void run() {
         while (true) {
@@ -54,6 +54,6 @@ public class TaskRunner implements Runnable {
 
 
     public static void main(String... args) {
-        new TaskRunner().iterate();
+        new TaskRunnerRunnable().iterate();
     }
 }

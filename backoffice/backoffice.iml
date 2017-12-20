@@ -8,7 +8,7 @@
         </descriptors>
         <webroots>
           <root url="file://$MODULE_DIR$/src/main/webapp" relative="/" />
-          <root url="file://$MODULE_DIR$/overlays/io.mateu.ui.port-vaadin-1.0-SNAPSHOT" relative="/" />
+          <root url="file://$MODULE_DIR$/overlays/io.mateu.ui.port-vaadin-1.0-20171219.195447-58" relative="/" />
         </webroots>
         <sourceRoots>
           <root url="file://$MODULE_DIR$/src/main/java" />

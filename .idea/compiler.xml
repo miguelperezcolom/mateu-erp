@@ -35,6 +35,7 @@
       <module name="model" target="1.8" />
       <module name="nodo-dispo" target="1.5" />
       <module name="show" target="1.8" />
+      <module name="taskrunner" target="1.5" />
       <module name="traductor-caval-in" target="1.8" />
       <module name="traductor-caval-out" target="1.8" />
       <module name="traductor-ota-in" target="1.8" />

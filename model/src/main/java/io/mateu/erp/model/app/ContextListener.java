@@ -1,7 +1,7 @@
 package io.mateu.erp.model.app;
 
 import io.mateu.erp.model.email.Pop3Reader;
-import io.mateu.erp.model.workflow.TaskRunner;
+import io.mateu.erp.model.workflow.TaskRunnerRunnable;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.annotation.WebListener;
@@ -19,7 +19,7 @@ public class ContextListener implements javax.servlet.ServletContextListener {
         if ("yes".equalsIgnoreCase(System.getProperty("taskrunner")) || "true".equalsIgnoreCase(System.getProperty("taskrunner"))) {
             if (hiloTaskRunner == null) {
                 System.out.println("****ARRANCANDO TASKRUNNER****");
-                hiloTaskRunner = new Thread(new TaskRunner());
+                hiloTaskRunner = new Thread(new TaskRunnerRunnable());
                 hiloTaskRunner.start();
                 System.out.println("****TASKRUNNER ARRANCADO****");
             }
