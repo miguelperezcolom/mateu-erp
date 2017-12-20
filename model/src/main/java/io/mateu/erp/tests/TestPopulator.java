@@ -433,7 +433,7 @@ public class TestPopulator {
 
 
                 {
-                    Actor a = new Actor();
+                    Actor a = (Actor) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -457,7 +457,7 @@ public class TestPopulator {
 
 
                 {
-                    Actor a = new Actor();
+                    Actor a = (Actor) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -480,7 +480,7 @@ public class TestPopulator {
                 }
 
                 {
-                    Actor a = new Actor();
+                    Actor a = (Actor) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -526,7 +526,7 @@ public class TestPopulator {
                 }
 
                 {
-                    Actor a = new Actor();
+                    Actor a = (Actor) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
