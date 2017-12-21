@@ -11,10 +11,16 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.LocalizationRule;
+import io.mateu.erp.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.transfer.Contract;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.State;
 import io.mateu.ui.core.server.BaseServiceImpl;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -142,6 +148,37 @@ public class Populator {
                 bc.setCode("ANY");
                 bc.setLocalizationRule(LocalizationRule.ISSUING_COMPANY);
                 em.persist(bc);
+            }
+
+            {
+                Country co = new Country();
+                em.persist(co);
+                co.setIsoCode("UNMAPPED");
+                co.setName("UNMAPPED");
+
+                State s;
+                co.getStates().add(s = new State());
+                em.persist(s);
+                s.setCountry(co);
+                s.setName("UNMAPPED");
+
+                City ct;
+                s.getCities().add(ct = new City());
+                em.persist(ct);
+                ct.setState(s);
+                ct.setName("UNMAPPED");
+
+
+                RoomType r = new RoomType();
+                em.persist(r);
+                r.setCode("UNMAPPED");
+                r.setName(new Literal("UNMAPPED", "UNMAPPED"));
+
+                BoardType b = new BoardType();
+                em.persist(b);
+                b.setCode("UNMAPPED");
+                b.setName(new Literal("UNMAPPED", "UNMAPPED"));
+
             }
 
         });
