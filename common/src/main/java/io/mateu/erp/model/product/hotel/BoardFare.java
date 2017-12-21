@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.ui.mdd.server.annotations.FullWidth;
 import io.mateu.ui.mdd.server.annotations.Owned;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.annotations.Tab;
@@ -19,6 +20,7 @@ public class BoardFare implements XMLSerializable {
     private FareValue paxPrice;
 
     @Tab("Pax disc.")
+    @FullWidth
     @OwnedList
     private Map<Integer, FareValue> paxDiscounts = new HashMap<>();
 
