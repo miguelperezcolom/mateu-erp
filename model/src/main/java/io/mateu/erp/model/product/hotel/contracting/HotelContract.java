@@ -31,6 +31,7 @@ import java.util.List;
 )
 public class HotelContract extends AbstractContract implements IHotelContract {
 
+    @Tab("Others")
     @org.eclipse.persistence.annotations.Index
     @CacheIndex
     private String quoonId;

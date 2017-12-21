@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.hotel;
 import io.mateu.erp.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.Owned;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import org.jdom2.Element;
 
 import java.util.HashMap;
@@ -10,21 +11,26 @@ import java.util.Map;
 
 public class BoardFare implements XMLSerializable {
 
+
     @Owned
     private FareValue roomPrice;
 
     @Owned
     private FareValue paxPrice;
 
+    @Tab("Pax disc.")
     @OwnedList
     private Map<Integer, FareValue> paxDiscounts = new HashMap<>();
 
+    @Tab("Jr. disc.")
     @OwnedList
     private Map<Integer, FareValue> juniorDiscounts = new HashMap<>();
 
+    @Tab("Ch. disc.")
     @OwnedList
     private Map<Integer, FareValue> childDiscounts = new HashMap<>();
 
+    @Tab("Inf. disc.")
     @OwnedList
     private Map<Integer, FareValue> infantDiscounts = new HashMap<>();
 

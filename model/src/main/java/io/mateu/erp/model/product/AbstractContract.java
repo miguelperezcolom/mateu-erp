@@ -72,6 +72,7 @@ public class AbstractContract {
     @SameLine
     private String privateComments;
 
+    @Tab("Relations")
     @ManyToOne
     @NotNull
     @SearchFilter
