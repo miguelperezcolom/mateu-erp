@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -26,9 +27,10 @@ public class Inventory implements IInventory {
     private long id;
 
     @SearchFilter
-    @ManyToMany
+    @ManyToOne
     @Ignored
-    private List<Hotel> hotels = new ArrayList<>();
+    @NotNull
+    private Hotel hotel;
 
     @SearchFilter
     private String name;

@@ -213,7 +213,7 @@ public class HotelAvailabilityTest
         // creamos cupo
         Inventory i;
         hotel.getInventories().add(i = new Inventory());
-        i.getHotels().add(hotel);
+        i.setHotel(hotel);
         i.setId(1);
         InventoryLine il;
         i.getLines().add(il = new InventoryLine());

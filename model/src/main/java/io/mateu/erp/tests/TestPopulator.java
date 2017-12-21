@@ -1088,7 +1088,7 @@ public class TestPopulator {
 
                     Inventory i;
                     h.getInventories().add(i = new Inventory());
-                    i.getHotels().add(h);
+                    i.setHotel(h);
                     em.persist(i);
                     i.setName(h.getName());
 
