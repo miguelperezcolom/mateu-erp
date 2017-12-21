@@ -163,6 +163,8 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     d.setName(u.getName());
                     d.setEmail(u.getEmail());
                     d.setLogin(login);
+                    if (u.getActor() != null) d.set("agencyId", u.getActor().getId());
+                    if (u.getOffice() != null) d.set("officeId", u.getOffice().getId());
                     if (u.getPhoto() != null) d.setPhoto(u.getPhoto().toFileLocator().getUrl());
                     for (Permission p : u.getPermissions()) d.getPermissions().add(Math.toIntExact(p.getId()));
                 } else throw new Exception("No user with login " + login);

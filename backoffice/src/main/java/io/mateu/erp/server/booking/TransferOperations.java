@@ -64,12 +64,12 @@ public class TransferOperations extends AbstractServerSideWizard {
                     vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
                         @Output
                         String date;
-                    }.getClass()));
+                    }.getClass(), null));
                 } else {
                     vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
                         @Output
                         String date;
-                    }.getClass()));
+                    }.getClass(), null));
                 }
             }
         });
@@ -85,7 +85,7 @@ public class TransferOperations extends AbstractServerSideWizard {
         vo.setMetaData(new ERPServiceImpl().getMetadaData(user, em, new Object() {
             @NotNull
             LocalDate workDate;
-        }.getClass()));
+        }.getClass(), null));
         return vo;
     }
 }

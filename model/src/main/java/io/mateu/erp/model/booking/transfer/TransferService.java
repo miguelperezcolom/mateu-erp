@@ -197,7 +197,7 @@ public class TransferService extends Service implements WithTriggers {
 
     @Action(name = "Work list")
     public static URL workList(UserData user, EntityManager em, Data parameters) throws Throwable {
-        AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(user, em, TransferService.class));
+        AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(user, em, TransferService.class, null));
 
         return listToPdf(parameters, lv);
     }
@@ -354,7 +354,7 @@ public class TransferService extends Service implements WithTriggers {
 
     @Action(name = "Send pickup times")
     public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@NotNull String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
-        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, em, TransferService.class));
+        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, em, TransferService.class, null));
 
         Office office = null;
         

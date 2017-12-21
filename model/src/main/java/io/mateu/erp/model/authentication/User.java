@@ -2,6 +2,7 @@ package io.mateu.erp.model.authentication;
 
 import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
@@ -57,6 +58,8 @@ public class User implements WithTriggers {
     @ManyToOne
     private Actor actor;
 
+    @ManyToOne
+    private Office office;
 
     @OneToMany
     @Ignored

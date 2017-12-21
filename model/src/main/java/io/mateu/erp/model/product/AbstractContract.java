@@ -3,6 +3,7 @@ package io.mateu.erp.model.product;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -76,6 +77,12 @@ public class AbstractContract {
     @SearchFilter
     @ListColumn
     private Actor supplier;
+
+    @ManyToOne
+    @NotInEditor
+    @SearchFilter
+    @ListColumn
+    private Office office;
 
     @OneToMany
     private List<Actor> targets = new ArrayList<>();
