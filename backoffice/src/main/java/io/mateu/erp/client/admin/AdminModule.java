@@ -37,7 +37,7 @@ public class AdminModule extends AbstractModule {
     public List<MenuEntry> getMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("AppConfig", AppConfig.class, 1l));
+        m.add(new MDDOpenEditorAction("AppConfig", AppConfig.class, 1l));
 
         m.add(new MDDAction("Users", User.class));
 

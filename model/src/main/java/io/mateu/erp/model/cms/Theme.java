@@ -1,13 +1,11 @@
 package io.mateu.erp.model.cms;
 
+import io.mateu.erp.model.organization.Office;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -26,6 +24,8 @@ public class Theme {
     @SearchFilter
     private boolean active;
 
+    @ManyToOne
+    private Office office;
 
     private String gitHubRepositoryUrl;
 

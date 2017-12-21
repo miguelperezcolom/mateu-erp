@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.shared.Data;
@@ -41,6 +42,9 @@ public class Website {
 
     @SearchFilter
     private boolean active;
+
+    @ManyToOne
+    private Office office;
 
     @SearchFilter
     private String urls;
