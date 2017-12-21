@@ -40,10 +40,10 @@ public class Pagina3 extends AbstractServerSideWizardPage {
         Data out = new Data();
 
         Pagina2 p2 = new Pagina2();
-        p2.fill(em, in);
+        p2.fill(em, user, in);
 
         Pagina2b p2b = new Pagina2b();
-        p2b.fill(em, in);
+        p2b.fill(em, user, in);
 
         out.set("selectedOption", "" + p2.getHotel().getHotelName() + " " + p2.getHotel().getCategory()
                         + "\n" + p2.getHotel().getCity()

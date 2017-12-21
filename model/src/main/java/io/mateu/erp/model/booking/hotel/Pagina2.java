@@ -47,7 +47,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         Data out = new Data();
 
         Pagina1 p = new Pagina1();
-        p.fill(em, in);
+        p.fill(em, user, in);
 
 
         long t0 = System.currentTimeMillis();

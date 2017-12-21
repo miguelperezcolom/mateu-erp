@@ -51,10 +51,10 @@ public class Pagina2b extends AbstractServerSideWizardPage {
 
 
         Pagina1 p = new Pagina1();
-        p.fill(em, in);
+        p.fill(em, user, in);
 
         Pagina2 p2 = new Pagina2();
-        p2.fill(em, in);
+        p2.fill(em, user, in);
 
         out.set("selectedOption", "" + p2.getHotel().getHotelName() + " " + p2.getHotel().getCategory()
                 + "\n" + p2.getHotel().getCity()
