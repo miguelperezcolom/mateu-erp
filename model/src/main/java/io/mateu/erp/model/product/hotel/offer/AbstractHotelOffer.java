@@ -20,6 +20,7 @@ import org.eclipse.persistence.annotations.CacheIndex;
 import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,8 +91,9 @@ public class AbstractHotelOffer implements IHotelOffer {
     private String extrasDescription;
 
     @SearchFilter
-    @ManyToMany
-    private List<Hotel> hotels = new ArrayList<>();
+    @ManyToOne
+    @NotNull
+    private Hotel hotel;
 
     @SearchFilter
     @ManyToMany

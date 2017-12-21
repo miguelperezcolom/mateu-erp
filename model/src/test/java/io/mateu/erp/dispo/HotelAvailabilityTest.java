@@ -686,7 +686,7 @@ public class HotelAvailabilityTest
         {
             DiscountOffer o;
             hotel.getOffers().add(o = new DiscountOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta descuento 30%");
             o.setId(1);
@@ -715,7 +715,7 @@ public class HotelAvailabilityTest
         {
             EarlyBookingOffer o;
             hotel.getOffers().add(o = new EarlyBookingOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta early booking");
             o.setId(1);
@@ -744,7 +744,7 @@ public class HotelAvailabilityTest
         {
             StayAndPayOffer o;
             hotel.getOffers().add(o = new StayAndPayOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta 4 x 3");
             o.setId(1);
@@ -775,7 +775,7 @@ public class HotelAvailabilityTest
         {
             FreeChildrenOffer o;
             hotel.getOffers().add(o = new FreeChildrenOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta niños gratis");
             o.setId(1);
@@ -809,7 +809,7 @@ public class HotelAvailabilityTest
 
             BoardUpgradeOffer o;
             hotel.getOffers().add(o = new BoardUpgradeOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta mejor régimen");
             o.setId(1);
@@ -879,7 +879,7 @@ public class HotelAvailabilityTest
 
             RoomUpgradeOffer o;
             hotel.getOffers().add(o = new RoomUpgradeOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta mejor habitación");
             o.setId(1);
@@ -923,7 +923,7 @@ public class HotelAvailabilityTest
 
             PriceOffer o;
             hotel.getOffers().add(o = new PriceOffer());
-            o.getHotels().add(hotel);
+            o.setHotel(hotel);
 
             o.setName("Oferta mejor habitación");
             o.setId(1);

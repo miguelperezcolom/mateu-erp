@@ -573,7 +573,7 @@ public class TestPopulator {
 
                     DiscountOffer o;
                     h.getOffers().add(o = new DiscountOffer());
-                    o.getHotels().add(h);
+                    o.setHotel(h);
 
                     for (HotelContract c : h.getContracts()) {
                         h.getOffers().add(o);
