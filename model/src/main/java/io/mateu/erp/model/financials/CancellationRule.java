@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.ICancellationRule;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +18,9 @@ public class CancellationRule implements ICancellationRule {
 
     @ManyToOne
     private Actor actor;
+
+    @ManyToOne
+    private Office office;
 
     private LocalDate start;
     private LocalDate end;
