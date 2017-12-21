@@ -1,5 +1,6 @@
 package io.mateu.erp.model.tpv;
 
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.payments.Account;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,5 +41,8 @@ public class TPV {
 
     @ManyToOne
     private Account account;
+
+    @ManyToOne
+    private Office office;
 
 }

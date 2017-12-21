@@ -1,13 +1,18 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.ui.mdd.server.annotations.SameLine;
 import org.jdom2.Element;
 
 public class FareValue implements XMLSerializable {
 
     private boolean supplement;
+
+    @SameLine
     private boolean discount;
+    @SameLine
     private boolean percent;
+    @SameLine
     private double value;
 
     public FareValue(FareValue v) {
