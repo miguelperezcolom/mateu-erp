@@ -8,10 +8,7 @@ import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.SameLine;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.Separator;
+import io.mateu.ui.mdd.server.annotations.*;
 import jdk.nashorn.internal.ir.annotations.Ignore;
 import lombok.Getter;
 import lombok.Setter;
@@ -66,8 +63,12 @@ public class Actor implements IActor {
     @NotNull
     private Currency currency;
 
+    @Tab("Terms")
     @ManyToMany
     private List<Markup> markups = new ArrayList<>();
+
+    @OneToMany(mappedBy = "actor")
+    private List<CancellationRule> cancellationRules = new ArrayList<>();
 
     @Separator("Orders sending")
     private PurchaseOrderSendingMethod ordersSendingMethod;

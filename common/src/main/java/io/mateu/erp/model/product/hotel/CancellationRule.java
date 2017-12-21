@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CancellationRule implements XMLSerializable {
+public class CancellationRule implements XMLSerializable, ICancellationRule {
 
     private LocalDate start;
     private LocalDate end;
