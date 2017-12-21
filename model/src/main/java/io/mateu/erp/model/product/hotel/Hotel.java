@@ -104,7 +104,7 @@ public class Hotel implements IHotel {
     @Ignored
     private StopSales stopSales;
 
-    @ManyToMany(mappedBy = "hotels")
+    @OneToMany(mappedBy = "hotel")
     @Ignored
     private List<Inventory> inventories = new ArrayList<>();
 
@@ -112,7 +112,7 @@ public class Hotel implements IHotel {
     @Ignored
     private List<HotelContract> contracts = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "hotels")
+    @OneToMany(mappedBy = "hotel")
     @Ignored
     private List<AbstractHotelOffer> offers = new ArrayList<>();
 
