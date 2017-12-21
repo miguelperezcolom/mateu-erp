@@ -295,7 +295,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         try {
 
             Helper.transact((JPATransaction) (em) -> {
-                rs.setBookingId("" + HotelService.createFromKey(u, new KeyValue(rq.getKey()), rq.getLeadName(), rq.getCommentsToProvider()));
+                rs.setBookingId("" + HotelService.createFromKey(u, new KeyValue(rq.getKey()), rq.getBookingReference(), rq.getLeadName(), rq.getCommentsToProvider()));
             });
             long t = System.currentTimeMillis();
 

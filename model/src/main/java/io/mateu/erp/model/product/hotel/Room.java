@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,10 +23,12 @@ public class Room implements IRoom {
 
     @SearchFilter
     @ManyToOne
+    @ListColumn
     private Hotel hotel;
 
     @SearchFilter
     @ManyToOne
+    @ListColumn
     private RoomType type;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -45,6 +48,7 @@ public class Room implements IRoom {
     private boolean infantsInBed;
 
     @ManyToOne
+    @ListColumn(field = "code", value = "Inv. owner")
     private RoomType inventoryPropietary;
 
     @Override

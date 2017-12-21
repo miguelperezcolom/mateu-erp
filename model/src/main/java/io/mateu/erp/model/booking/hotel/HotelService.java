@@ -185,11 +185,11 @@ public class HotelService extends Service implements WithTriggers {
         Pagina2 p2 = (Pagina2)wizard.getPages().get(1);
         Pagina2b p2b = (Pagina2b)wizard.getPages().get(2);
         Pagina3 p3 = (Pagina3)wizard.getPages().get(3);
-        long serviceId = createFromKey(user, new KeyValue(p2b.getOption().getKey()), p3.getLeadName(), p3.getComments());
+        long serviceId = createFromKey(user, new KeyValue(p2b.getOption().getKey()), p3.getAgencyReference(), p3.getLeadName(), p3.getComments());
         return new MDDLink(HotelService.class, ActionType.OPENEDITOR, new Data("_id", serviceId));
     }
 
-    public static long createFromKey(UserData user, KeyValue k, String leadName, String comments) throws Throwable {
+    public static long createFromKey(UserData user, KeyValue k, String agencyReference, String leadName, String comments) throws Throwable {
         long[] id = {-1};
 
         if (Strings.isNullOrEmpty(leadName)) throw new Exception("Lead name is mandatory");
@@ -206,7 +206,7 @@ public class HotelService extends Service implements WithTriggers {
             Booking b = new Booking();
             b.setAgency(agencia);
             b.setCurrency(agencia.getCurrency());
-            b.setAgencyReference("");
+            b.setAgencyReference(agencyReference);
             b.setAudit(new Audit(u));
             b.setConfirmed(true);
             b.setLeadName(leadName);

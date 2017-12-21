@@ -21,6 +21,8 @@ public class Pagina3 extends AbstractServerSideWizardPage {
     @Output
     private String selectedOption;
 
+    private String agencyReference;
+
     @NotNull
     private String leadName;
 

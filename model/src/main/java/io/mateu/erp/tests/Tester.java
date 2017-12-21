@@ -182,7 +182,7 @@ public class Tester {
 
             try {
 
-                long id = HotelService.createFromKey(ud, k, "Mr test", "Local test");
+                long id = HotelService.createFromKey(ud, k, "21321321", "Mr test", "Local test");
 
                 System.out.println("service id = " + id);
 

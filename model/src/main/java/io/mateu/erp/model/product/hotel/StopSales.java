@@ -46,7 +46,7 @@ public class StopSales {
 
         LocalDate desde = LocalDate.now();
         desde = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
-        LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue() + 1, 1).minusDays(1);
+        LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonth(), desde.getDayOfMonth()).plusMonths(1).minusDays(1);
 
         Map<LocalDate, DayClosingStatus> m = new HashMap<>();
 
