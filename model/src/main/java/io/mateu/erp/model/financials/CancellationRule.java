@@ -23,6 +23,7 @@ public class CancellationRule implements ICancellationRule {
     private Office office;
 
     private LocalDate start;
+    @Column(name = "_end")
     private LocalDate end;
     private int release;
     private double amount;
