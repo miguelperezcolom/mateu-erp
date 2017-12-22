@@ -28,6 +28,7 @@ public class AbstractContract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("General")
     @Embedded
     @Output
     private Audit audit;
