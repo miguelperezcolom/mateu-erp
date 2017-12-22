@@ -5,6 +5,7 @@ import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.ui.mdd.server.annotations.DoNotIncludeSeparator;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
@@ -48,7 +49,8 @@ public class HotelContract extends AbstractContract implements IHotelContract {
     private List<AbstractHotelOffer> offers = new ArrayList<>();
 
     @Tab("Terms")
-    @Column(name = "terms2")
+    @DoNotIncludeSeparator
+    @Column(name = "terms_hotel")
     @Convert(converter = HotelContractPhotoConverter.class)
     private HotelContractPhoto terms;
 
