@@ -33,6 +33,7 @@ public class Actor implements IActor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("General")
     @NotNull
     @SearchFilter
     @ListColumn
