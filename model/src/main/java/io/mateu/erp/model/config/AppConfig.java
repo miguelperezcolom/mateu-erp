@@ -4,6 +4,7 @@ import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.financials.CurrencyExchange;
 import io.mateu.erp.model.financials.CurrencyExchangeConverter;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.NotInEditor;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.annotations.TextArea;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 public class AppConfig {
 
     @Id
+    @NotInEditor
     private long id;
 
     @Tab("General")

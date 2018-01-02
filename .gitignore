@@ -2,19 +2,7 @@
 
 
 .idea
-.vertx/
-backoffice/dependency-reduced-pom.xml
-backoffice/overlays/
-backoffice/target/
-common/target/
-consolidador/target/
-dispo-logic/target/
-dispo-model/src/main/java/io/mateu/erp/dispo/model/hotel/
-dispo-model/target/
-dispo-tester/target/
-log-model/target/
-model/src/main/resources/io/mateu/erp/model/product/hotel/
-model/src/test/java/mateu/
-model/target/
-traductor-caval-out/.vertx/
-traductor-caval-out/target/
+.vertx
+overlays
+target
+
