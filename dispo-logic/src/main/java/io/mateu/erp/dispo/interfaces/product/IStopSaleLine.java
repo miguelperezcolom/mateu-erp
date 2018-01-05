@@ -16,4 +16,6 @@ public interface IStopSaleLine {
     public List<String> getRoomIds();
 
     public List<Long> getActorIds();
+
+    public List<Long> getContractIds();
 }

@@ -54,6 +54,11 @@ public class Hotel implements IHotel {
     @SearchFilter
     private Office office;
 
+
+    @ListColumn
+    @CellStyleGenerator(ActiveCellStyleGenerator.class)
+    private boolean active;
+
     @Tab("Location")
     @ManyToOne
     @NotNull
@@ -65,9 +70,6 @@ public class Hotel implements IHotel {
 
     private String lat;
 
-    @ListColumn
-    @CellStyleGenerator(ActiveCellStyleGenerator.class)
-    private boolean active;
 
     @Tab("QuoOn")
     @Index
