@@ -73,11 +73,11 @@ public class StopSales {
             }
             String c = "width: 20px;";
             DayClosingStatus v = m.get(d);
-            if (DayClosingStatus.OPEN.equals(v)) c += "background-color: green;";
-            else if (DayClosingStatus.CLOSED.equals(v)) c += "background-color: red;";
-            else if (DayClosingStatus.PARTIAL.equals(v)) c += "background-color: cyan;";
-            else c += "background-color: green;";
-            sb.append("<td style='" + c + "'>" + d.getDayOfMonth() + "</td>");
+            String s = "";
+            if (DayClosingStatus.OPEN.equals(v)) c += "o-open";
+            else if (DayClosingStatus.CLOSED.equals(v)) c += "o-closed";
+            else if (DayClosingStatus.PARTIAL.equals(v)) c += "o-partial";
+            sb.append("<td style='" + c + "'><div class='" + s + "'>" + d.getDayOfMonth() + "</div></td>");
         }
         if (mes != - 1) sb.append("</tr>");
 
