@@ -77,7 +77,7 @@ public class StopSales {
             if (DayClosingStatus.OPEN.equals(v)) c += "o-open";
             else if (DayClosingStatus.CLOSED.equals(v)) c += "o-closed";
             else if (DayClosingStatus.PARTIAL.equals(v)) c += "o-partial";
-            sb.append("<td style='" + c + "'><div class='" + s + "'>" + d.getDayOfMonth() + "</div></td>");
+            sb.append("<td style='" + c + "'><div class='" + c + "'>" + d.getDayOfMonth() + "</div></td>");
         }
         if (mes != - 1) sb.append("</tr>");
 
