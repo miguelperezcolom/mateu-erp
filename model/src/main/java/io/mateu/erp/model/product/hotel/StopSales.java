@@ -71,13 +71,13 @@ public class StopSales {
                 sb.append("<tr><td style='width:120px;'>" + d.format(f) + "</td>");
                 mes = d.getMonthValue();
             }
-            String c = "width: 20px;";
+            String s = "width: 20px;";
             DayClosingStatus v = m.get(d);
-            String s = "";
+            String c = "";
             if (DayClosingStatus.OPEN.equals(v)) c += "o-open";
             else if (DayClosingStatus.CLOSED.equals(v)) c += "o-closed";
             else if (DayClosingStatus.PARTIAL.equals(v)) c += "o-partial";
-            sb.append("<td style='" + c + "'><div class='" + c + "'>" + d.getDayOfMonth() + "</div></td>");
+            sb.append("<td style='" + s + "'><div class='" + c + "'>" + d.getDayOfMonth() + "</div></td>");
         }
         if (mes != - 1) sb.append("</tr>");
 
