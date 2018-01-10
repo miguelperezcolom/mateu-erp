@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,6 +49,10 @@ public class StopSalesOperation {
     @SearchFilter
     @OneToMany
     private List<Actor> actors = new ArrayList<>();
+
+    @SearchFilter
+    @OneToMany
+    private List<HotelContract> contracts = new ArrayList<>();
 
     @SearchFilter
     private StopSalesAction action;
