@@ -53,6 +53,7 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
         }
 
 
+
         GridData gd = new GridData();
 
         int mes = -1;
@@ -69,15 +70,18 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
                 mes = d.getMonthValue();
             }
             Data dx = new Data();
-            dx.set("_text", d.getDayOfMonth());
+            dx.set("_text", "" + d.getDayOfMonth());
             DayClosingStatus s = DayClosingStatus.OPEN;
             StopSalesLine l = m.get(d);
             if (l != null) {
                 s = DayClosingStatus.CLOSED;
-                if (l.getRooms().size() > 0 || l.getActors().size() > 0 || l.getContracts().size() > 0) s = DayClosingStatus.PARTIAL;
+                if (l.getRooms().size() > 0) s = DayClosingStatus.PARTIAL;
                 dx.set("_id", l.getId());
             }
-            dx.set("status", "" + s);
+            String css = "o-open";
+            if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
+            if (DayClosingStatus.PARTIAL.equals(s)) css = "o-partial";
+            dx.set("_css", css);
             data.set("day_" + d.getDayOfMonth(), dx);
         }
 
