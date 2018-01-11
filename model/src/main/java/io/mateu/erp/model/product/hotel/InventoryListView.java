@@ -11,11 +11,21 @@ public class InventoryListView implements CompositeView<Inventory, InventoryView
 
     @Override
     public String getCols() {
-        return "hotel, name";
+        return "id, hotel.name, name";
+    }
+
+    @Override
+    public String getColHeaders() {
+        return "Hotel, Inventory";
     }
 
     @Override
     public String getOrderCriteria() {
         return "x.hotel.name asc, x.name asc";
+    }
+
+    @Override
+    public String getActionName() {
+        return "Open inventory";
     }
 }

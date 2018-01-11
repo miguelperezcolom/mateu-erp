@@ -23,6 +23,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import java.util.Map;
 public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
     @NotNull
-    @Output
     private Inventory inventory;
 
     private RoomType room;
@@ -44,7 +44,9 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
         hasta = LocalDate.of(hasta.getYear(), hasta.getMonth(), hasta.getDayOfMonth()).plusMonths(1).minusDays(1);
 
-        Map<LocalDate, InventoryLine> m = new HashMap<>();
+        Map<LocalDate, Map<RoomType, InventoryLine>> m = new HashMap<>();
+
+        List<RoomType> rooms = new ArrayList<>();
 
         for (InventoryLine l : getInventory().getLines()) if (!l.getEnd().isBefore(desde)) {
             for (LocalDate d = l.getStart(); !d.isAfter(l.getEnd()); d = d.plusDays(1)) if (!d.isBefore(desde)) {
@@ -53,7 +55,15 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
                 if (getRoom() != null && !l.getRoom().equals(getRoom())) incluir = false;
 
-                if (incluir) m.put(d, l);
+                if (incluir) {
+                    Map<RoomType, InventoryLine> mx = m.get(d);
+                    if (mx == null) {
+                        m.put(d, mx = new HashMap<>());
+                    }
+                    mx.put(l.getRoom(), l);
+
+                    if (!rooms.contains(l.getRoom())) rooms.add(l.getRoom());
+                }
 
                 if (d.isAfter(hasta)) hasta = d;
 
@@ -68,40 +78,63 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
         DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy/MM");
 
-        Data data = null;
-
         LocalDate hoy = LocalDate.now();
+
+        Map<RoomType, Data> mz = null;
+
+        List<Map<RoomType, Data>> mzd = new ArrayList<>();
 
         for (LocalDate d = desde; !d.isAfter(hasta); d = d.plusDays(1)) {
             if (mes != d.getMonthValue()) {
-                gd.getData().add(data = new Data());
-                data.set("year", d.getYear());
-                data.set("month", d.getMonthValue());
+                mzd.add(mz = new HashMap<>());
                 mes = d.getMonthValue();
             }
-            Data dx = new Data();
-            dx.set("_text", "0");
-            DayClosingStatus s = null;
-            InventoryLine l = m.get(d);
-            if (l != null) {
-                s = DayClosingStatus.OPEN;
-                if (l.getQuantity() > 2) s = DayClosingStatus.PARTIAL;
-                if (l.getQuantity() > 2) s = DayClosingStatus.PARTIAL;
-                dx.set("_id", l.getId());
-                dx.set("_text", "" + l.getQuantity());
+
+
+            Map<RoomType, InventoryLine> mx = m.get(d);
+
+            if (mx != null) for (RoomType r : mx.keySet()) {
+                Data data = mz.get(r);
+                if (data == null) {
+                    mz.put(r, data = new Data());
+                    data.set("year", d.getYear());
+                    data.set("month", d.getMonthValue());
+                    data.set("room", r.getName().getEs());
+                }
+
+                Data dx = new Data();
+                dx.set("_text", "0");
+                DayClosingStatus s = null;
+
+                InventoryLine l = mx.get(r);
+                if (l != null) {
+                    s = DayClosingStatus.OPEN;
+                    if (l.getQuantity() < 3) s = DayClosingStatus.PARTIAL;
+                    if (l.getQuantity() < 1) s = DayClosingStatus.CLOSED;
+                    dx.set("_id", l.getId());
+                    dx.set("_text", "" + l.getQuantity());
+                }
+                String css = null;
+                if (s == null) css = "";
+                else if (DayClosingStatus.OPEN.equals(s)) css = "o-open";
+                else if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
+                else if (DayClosingStatus.PARTIAL.equals(s)) css = "o-partial";
+
+                if (d.equals(hoy)) css += " o-today";
+                else if (DayOfWeek.SATURDAY.equals(d.getDayOfWeek()) || DayOfWeek.SUNDAY.equals(d.getDayOfWeek())) css += " o-weekend";
+
+                dx.set("_css", css);
+                data.set("day_" + d.getDayOfMonth(), dx);
+
             }
-            String css = null;
-            if (s == null) css = "";
-            else if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
-            else if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
-            else if (DayClosingStatus.PARTIAL.equals(s)) css = "o-partial";
 
-            if (d.equals(hoy)) css += " o-today";
-            else if (DayOfWeek.SATURDAY.equals(d.getDayOfWeek()) || DayOfWeek.SUNDAY.equals(d.getDayOfWeek())) css += " o-weekend";
 
-            dx.set("_css", css);
-            data.set("day_" + d.getDayOfMonth(), dx);
         }
+
+        for (Map<RoomType, Data> mzx : mzd) {
+            for (RoomType r : rooms) if (mzx.containsKey(r)) gd.getData().add(mzx.get(r));
+        }
+
 
         gd.setOffset(0);
         gd.setTotalLength(gd.getData().size());

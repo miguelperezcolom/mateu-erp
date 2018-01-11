@@ -37,7 +37,7 @@ public class HotelModule extends AbstractModule {
 
         m.add(new MDDAction("Stop sales", StopSalesView.class));
 
-        m.add(new MDDMenu("Inventory", InventoryListView.class));
+        m.add(new MDDAction("Inventory", InventoryListView.class));
 
         m.add(new MDDAction("Contracts", HotelContract.class));
 

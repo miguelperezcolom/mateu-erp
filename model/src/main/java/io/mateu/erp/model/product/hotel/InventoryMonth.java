@@ -8,11 +8,11 @@ import lombok.Setter;
 @Getter@Setter
 public class InventoryMonth {
 
-    @ListColumn
+    @ListColumn(width = 62)
     private int year;
-    @ListColumn
+    @ListColumn(width = 62)
     private int month;
-    @ListColumn
+    @ListColumn(width = 173)
     private String room;
 
     @ListColumn(value = "01", width = 40)

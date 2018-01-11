@@ -1,10 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IInventory;
-import io.mateu.ui.mdd.server.annotations.FullWidth;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.ShowAsHtml;
+import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +25,7 @@ public class Inventory implements IInventory {
 
     @SearchFilter
     @ManyToOne
-    @Ignored
+    @Output
     @NotNull
     private Hotel hotel;
 
