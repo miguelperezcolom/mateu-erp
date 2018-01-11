@@ -11,6 +11,7 @@ import io.mateu.ui.core.shared.GridData;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
@@ -27,16 +28,13 @@ import java.util.List;
 import java.util.Map;
 
 @Getter@Setter
-public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
+public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
     @NotNull
-    private Hotel hotel;
+    @Output
+    private Inventory inventory;
 
     private RoomType room;
-
-    private Actor actor;
-
-    private HotelContract contract;
 
 
     @Override
@@ -46,16 +44,14 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
         hasta = LocalDate.of(hasta.getYear(), hasta.getMonth(), hasta.getDayOfMonth()).plusMonths(1).minusDays(1);
 
-        Map<LocalDate, StopSalesLine> m = new HashMap<>();
+        Map<LocalDate, InventoryLine> m = new HashMap<>();
 
-        for (StopSalesLine l : getHotel().getStopSales().getLines()) if (!l.getEnd().isBefore(desde)) {
+        for (InventoryLine l : getInventory().getLines()) if (!l.getEnd().isBefore(desde)) {
             for (LocalDate d = l.getStart(); !d.isAfter(l.getEnd()); d = d.plusDays(1)) if (!d.isBefore(desde)) {
 
                 boolean incluir = true;
 
-                if (getRoom() != null && l.getRooms().size() > 0 && !l.getRooms().contains(getRoom())) incluir = false;
-                if (getActor() != null && l.getActors().size() > 0 && !l.getActors().contains(getActor())) incluir = false;
-                if (getContract() != null && l.getContracts().size() > 0 && !l.getContracts().contains(getContract())) incluir = false;
+                if (getRoom() != null && !l.getRoom().equals(getRoom())) incluir = false;
 
                 if (incluir) m.put(d, l);
 
@@ -84,17 +80,21 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
                 mes = d.getMonthValue();
             }
             Data dx = new Data();
-            dx.set("_text", "" + d.getDayOfMonth());
-            DayClosingStatus s = DayClosingStatus.OPEN;
-            StopSalesLine l = m.get(d);
+            dx.set("_text", "0");
+            DayClosingStatus s = null;
+            InventoryLine l = m.get(d);
             if (l != null) {
-                s = DayClosingStatus.CLOSED;
-                if (l.getRooms().size() > 0) s = DayClosingStatus.PARTIAL;
+                s = DayClosingStatus.OPEN;
+                if (l.getQuantity() > 2) s = DayClosingStatus.PARTIAL;
+                if (l.getQuantity() > 2) s = DayClosingStatus.PARTIAL;
                 dx.set("_id", l.getId());
+                dx.set("_text", "" + l.getQuantity());
             }
-            String css = "o-open";
-            if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
-            if (DayClosingStatus.PARTIAL.equals(s)) css = "o-partial";
+            String css = null;
+            if (s == null) css = "";
+            else if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
+            else if (DayClosingStatus.CLOSED.equals(s)) css = "o-closed";
+            else if (DayClosingStatus.PARTIAL.equals(s)) css = "o-partial";
 
             if (d.equals(hoy)) css += " o-today";
             else if (DayOfWeek.SATURDAY.equals(d.getDayOfWeek()) || DayOfWeek.SUNDAY.equals(d.getDayOfWeek())) css += " o-weekend";
@@ -110,30 +110,24 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
     }
 
 
-    @Action(name = "Enter stop sales")
+    @Action(name = "Enter inventory")
     public void add(EntityManager em, UserData user,
-                    @Tab("General") @Parameter(name = "Action") @NotNull StopSalesAction action,
+                    @Parameter(name = "Action") @NotNull InventoryAction action,
                     @Parameter(name = "Start") @NotNull LocalDate start,
                     @Parameter(name = "End") @NotNull LocalDate end,
-                    @Tab("Rooms") @Parameter(name = "Rooms") List<RoomType> rooms,
-                    @Tab("Actors") @Parameter(name = "Actors") List<Actor> actors,
-                    @Tab("Contracts") @Parameter(name = "Contracts") List<HotelContract> contracts) throws Throwable {
+                    @Parameter(name = "Room") @NotNull RoomType room) throws Throwable {
 
-        StopSalesOperation o;
-        getHotel().getStopSales().getOperations().add(o = new StopSalesOperation());
+        InventoryOperation o;
+        getInventory().getOperations().add(o = new InventoryOperation());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
         o.setCreatedBy(em.find(User.class, user.getLogin()));
         o.setAction(action);
-        o.getActors().addAll(actors);
-        o.getRooms().addAll(rooms);
-        o.getContracts().addAll(contracts);
+        o.setRoom(room);
         o.setStart(start);
         o.setEnd(end);
-        o.setOnNormalInventory(true);
-        o.setOnSecurityInventory(true);
 
-        getHotel().getStopSales().build(em);
+        getInventory().build(em);
 
     }
 

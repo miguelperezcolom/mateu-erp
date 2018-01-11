@@ -18,7 +18,7 @@ public class StopSalesCube {
     LocalDate ayer = null;
 
     // dimensiones = fecha, habitacion, actor
-    private StopSalesCubeValue[][][] cubo = null;
+    private StopSalesCubeValue[][] cubo = null;
 
     private LocalDate inicio = null;
     private LocalDate fin = null;
@@ -52,23 +52,34 @@ public class StopSalesCube {
             int desdeFecha = (o.getStart() != null)?(int) ChronoUnit.DAYS.between(inicio, (o.getStart().isAfter(ayer))?o.getStart():ayer): 0;
             int hastaFecha = (o.getEnd() != null)?(int) ChronoUnit.DAYS.between(inicio, o.getEnd()):maxdias;
             for (int fecha = desdeFecha; fecha <= hastaFecha; fecha++) {
+
                 List<RoomType> habs = (o.getRooms().size() > 0)?o.getRooms():rooms;
                 for (RoomType r : habs) {
                     int poshab = rooms.indexOf(r);
-                    List<Actor> acts = (o.getActors().size() > 0)?o.getActors():actors;
-                    for (Actor a : acts) {
-                        int posact = actors.indexOf(a);
-                        switch (o.getAction()) {
-                            case OPEN:
-                                cubo[fecha][poshab][posact] = StopSalesCubeValue.OPEN;
-                                break;
-                            case CLOSE:
-                                cubo[fecha][poshab][posact] = StopSalesCubeValue.CLOSED;
-                                break;
-                        }
-
+                    switch (o.getAction()) {
+                        case OPEN:
+                            cubo[fecha][poshab] = StopSalesCubeValue.OPEN;
+                            break;
+                        case CLOSE:
+                            cubo[fecha][poshab] = StopSalesCubeValue.CLOSED;
+                            break;
                     }
                 }
+
+                List<Actor> acts = (o.getActors().size() > 0)?o.getActors():actors;
+                for (Actor a : acts) {
+                    int posact = actors.indexOf(a);
+                    switch (o.getAction()) {
+                        case OPEN:
+                            cubo[fecha][rooms.size() + posact] = StopSalesCubeValue.OPEN;
+                            break;
+                        case CLOSE:
+                            cubo[fecha][rooms.size() + posact] = StopSalesCubeValue.CLOSED;
+                            break;
+                    }
+
+                }
+
             }
 
         }
@@ -92,14 +103,14 @@ public class StopSalesCube {
 
         if (inicio != null && fin != null) maxdias = (int) ChronoUnit.DAYS.between(inicio, fin);
 
-        cubo = new StopSalesCubeValue[maxdias + 1][rooms.size()][actors.size()];
+        cubo = new StopSalesCubeValue[maxdias + 1][rooms.size() + actors.size()];
 
     }
 
     public void save(EntityManager em) {
 
         // vaciamos las líneas actuales
-
+        em.remove(getStopSales().getLines().get(0));
         for (StopSalesLine l : getStopSales().getLines()) em.remove(l);
         getStopSales().getLines().clear();
 
@@ -108,7 +119,7 @@ public class StopSalesCube {
         for (int posfecha = 0; posfecha <= maxdias; posfecha++) {
             String firma = getFirma(posfecha);
             if (!firma.equals(firmaActual)) {
-                if (firmaActual != null) save(em, desdefecha, posfecha, firmaActual);
+                if (firmaActual != null) save(em, desdefecha, posfecha - 1, firmaActual);
                 desdefecha = posfecha;
                 firmaActual = firma;
             }
@@ -121,10 +132,8 @@ public class StopSalesCube {
 
     private String getFirma(int posfecha) {
         StringBuffer sb = new StringBuffer();
-        for (int poshab = 0; poshab < rooms.size(); poshab++) {
-            for (int posact = 0; posact < actors.size(); posact++) {
-                sb.append((StopSalesCubeValue.CLOSED.equals(cubo[posfecha][poshab][posact]))?0:1);
-            }
+        for (int pos = 0; pos < cubo[posfecha].length; pos++) {
+            sb.append((StopSalesCubeValue.CLOSED.equals(cubo[posfecha][pos]))?0:1);
         }
         return sb.toString();
     }
@@ -139,10 +148,10 @@ public class StopSalesCube {
             l.setOnNormalInventory(true);
             l.setOnSecurityInventory(true);
             l.setStopSales(getStopSales());
-            for (int posact = 0; posact < actors.size(); posact++) l.getActors().add(actors.get(posact));
-            if (l.getActors().size() == actors.size()) l.getActors().clear();
-            for (int posact = 0; posact < rooms.size(); posact++) l.getRooms().add(rooms.get(posact));
+            for (int posact = 0; posact < rooms.size(); posact++) if (StopSalesCubeValue.CLOSED.equals(cubo[desdefecha][posact])) l.getRooms().add(rooms.get(posact));
             if (l.getRooms().size() == rooms.size()) l.getRooms().clear();
+            for (int posact = 0; posact < actors.size(); posact++) if (StopSalesCubeValue.CLOSED.equals(cubo[desdefecha][rooms.size() + posact])) l.getActors().add(actors.get(posact));
+            if (l.getActors().size() == actors.size()) l.getActors().clear();
         }
     }
 }
