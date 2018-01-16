@@ -2,6 +2,7 @@ package io.mateu.erp.model.authentication;
 
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.ui.mdd.server.annotations.Indelible;
 import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.util.Date;
 @Entity
 @Getter@Setter
 @NewNotAllowed
+@Indelible
 public class AuthToken {
 
     @Id
