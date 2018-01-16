@@ -208,9 +208,5 @@
     <orderEntry type="library" name="Maven: org.apache.geronimo.specs:geronimo-jms_1.1_spec:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: com.rabbitmq:amqp-client:4.1.1" level="project" />
     <orderEntry type="library" name="Maven: io.mateu.ui:port-vaadin:war:1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: io.mateu.ui:port-javafx:1.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.controlsfx:controlsfx:8.40.13" level="project" />
-    <orderEntry type="library" name="Maven: de.jensd:fontawesomefx:8.9" level="project" />
-    <orderEntry type="library" name="Maven: com.jfoenix:jfoenix:1.9.1" level="project" />
   </component>
 </module>
