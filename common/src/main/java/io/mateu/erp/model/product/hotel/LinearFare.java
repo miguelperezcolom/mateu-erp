@@ -36,7 +36,7 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
 
         if (e.getChild("dates") != null) for (Element z: e.getChild("dates").getChildren()) getDates().add(new DatesRange(z));
 
-        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("fare")) getLines().add(new LinearFareLine(z));
+        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("line")) getLines().add(new LinearFareLine(z));
 
     }
 
