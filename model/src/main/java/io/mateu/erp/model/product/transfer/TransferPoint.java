@@ -34,7 +34,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@UseAutocompleteToSelect()
+@UseAutocompleteToSelect
 public class TransferPoint {
 
     @Id

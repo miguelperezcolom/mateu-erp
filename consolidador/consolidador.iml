@@ -142,6 +142,7 @@
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-jndi:9.4.7.v20170914" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-util:9.4.7.v20170914" level="project" />
     <orderEntry type="library" name="Maven: io.mateu.ui:mdd-annotations:1.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.ostermiller:utils:1.07.00" level="project" />
     <orderEntry type="library" name="Maven: org.easytravelapi:easytravelapi-swagger-java-client:0.1.10" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-annotations:1.5.9" level="project" />
     <orderEntry type="library" name="Maven: com.squareup.okhttp:okhttp:2.7.5" level="project" />

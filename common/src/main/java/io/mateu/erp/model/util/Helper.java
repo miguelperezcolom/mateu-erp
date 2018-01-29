@@ -43,6 +43,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import com.Ostermiller.util.CSVParser;
+import com.Ostermiller.util.CSVPrinter;
+
 /**
  * Created by miguel on 13/9/16.
  */
@@ -666,13 +669,188 @@ public class Helper {
         }
     }
 
-    public static double toDouble(String s) {
-        double v = 0;
+
+
+    public static String leerFichero(Class c, String p) {
+
+        String s = "";
+
+        InputStream input = c.getResourceAsStream(p);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        byte[] buffer = new byte[1024];
+        long count = 0;
+        int n = 0;
         try {
-            v = Double.parseDouble(s);
-        } catch (Exception e) {
+            while (-1 != (n = input.read(buffer))) {
+                output.write(buffer, 0, n);
+                count += n;
+            }
+            s = new String(output.toByteArray());
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return v;
+        return s;
+    }
+
+    public static String leerInputStream(InputStream is, String encoding) {
+        StringBuffer s = new StringBuffer();
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
+            String l = null;
+            boolean primeraLinea = true;
+            while ((l = br.readLine()) != null) {
+                if (primeraLinea) {
+                    primeraLinea = false;
+                } else {
+                    s.append("\n");
+                }
+                s.append(l);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return s.toString();
+    }
+
+    public static String leerFichero(InputStream input, String codificacion) {
+
+        String s = "";
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        byte[] buffer = new byte[1024];
+        long count = 0;
+        int n = 0;
+        try {
+            while (-1 != (n = input.read(buffer))) {
+                output.write(buffer, 0, n);
+                count += n;
+            }
+            s = new String(output.toByteArray(), codificacion);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+
+    public static String leerFichero(InputStream is) throws IOException {
+
+        int count;
+        byte data[] = new byte[BUFFER];
+        ByteArrayOutputStream dest = new ByteArrayOutputStream();
+        while ((count = is.read(data, 0, BUFFER))
+                != -1) {
+            dest.write(data, 0, count);
+        }
+        dest.flush();
+        dest.close();
+
+        return new String(dest.toByteArray());
+    }
+
+    public static String leerFichero(String fn, String encoding) {
+        String s = "";
+        byte[] buffer = new byte[(int) new File(fn).length()];
+        BufferedInputStream f;
+        try {
+            f = new BufferedInputStream(new FileInputStream(fn));
+            f.read(buffer);
+            s = new String(buffer, encoding);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+    public static String leerFichero(String fn) {
+        String s = "";
+        byte[] buffer = new byte[(int) new File(fn).length()];
+        BufferedInputStream f;
+        try {
+            f = new BufferedInputStream(new FileInputStream(fn));
+            f.read(buffer);
+            s = new String(buffer);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+
+    private static final int BUFFER = 2048;
+    public static byte[] leerByteArray(InputStream is) {
+        int count;
+        byte data[] = new byte[BUFFER];
+        // write the files to the disk
+        ByteArrayOutputStream dest = new ByteArrayOutputStream();
+        try {
+            while ((count = is.read(data, 0, BUFFER))
+                    != -1) {
+                dest.write(data, 0, count);
+            }
+            dest.flush();
+            dest.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dest.toByteArray();
+    }
+
+    public static String[][] parsearCSV(String txt, char delimitador) {
+        return CSVParser.parse(txt,delimitador);
+    }
+
+    public static String[][] parsearCSV(String txt) {
+        return parsearCSV(txt, ',');
+    }
+
+    public static String[][] leerCSV(String path, char delimitador) {
+        return CSVParser.parse(leerFichero(path),delimitador);
+    }
+
+    public static String[][] leerCSV(String path) {
+        return leerCSV(path, ',');
+    }
+
+    public static void escribirCSV(List<String[]> data, OutputStream os) throws IOException {
+        CSVPrinter p = new CSVPrinter(os);
+        for (String[] l : data) p.writeln(l);
+        p.close();
+    }
+
+    public static void escribirCSV(List<String[]> data, OutputStream os , char delimiter) throws IOException {
+        CSVPrinter p = new CSVPrinter(os);
+        p.changeDelimiter(delimiter);
+        for (String[] l : data) p.writeln(l);
+        p.close();
+    }
+
+    public static void escribirCSV(List<String[]> data, String fileName) throws IOException {
+        CSVPrinter p = new CSVPrinter(new FileOutputStream(fileName));
+        for (String[] l : data) p.writeln(l);
+        p.close();
+    }
+
+    public static void escribirCSV(List<String[]> data, String path , char delimiter ) throws IOException {
+        CSVPrinter p = new CSVPrinter(new FileOutputStream(path));
+        p.changeDelimiter(delimiter);
+        for (String[] l : data) p.writeln(l);
+        p.close();
+    }
+
+    public static String[][] leerCSV(Class c, String path, char delimitador) {
+        return CSVParser.parse(leerFichero(c, path), delimitador);
+    }
+
+    public static String[][] leerCSV(Class c, String path) {
+        return leerCSV(c, path, ',');
     }
 }
