@@ -853,4 +853,16 @@ public class Helper {
     public static String[][] leerCSV(Class c, String path) {
         return leerCSV(c, path, ',');
     }
+
+
+    public static double toDouble(String s) {
+        double v = 0;
+        try {
+            v = Double.parseDouble(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return v;
+    }
+
 }
