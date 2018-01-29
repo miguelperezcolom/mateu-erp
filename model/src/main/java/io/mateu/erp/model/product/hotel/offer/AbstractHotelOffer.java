@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel.offer;
 
-import io.mateu.erp.dispo.CondicionesPorRegimen;
+import io.mateu.erp.dispo.Condiciones;
 import io.mateu.erp.dispo.LineaReserva;
 import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
@@ -128,7 +128,7 @@ public class AbstractHotelOffer implements IHotelOffer {
 
 
     @Override
-    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr) {
 
 
 

@@ -1,10 +1,14 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.google.common.base.Strings;
+import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.ui.core.shared.SupplementOrPositiveType;
 import io.mateu.ui.mdd.server.annotations.SameLine;
+import io.mateu.ui.mdd.server.interfaces.SupplementOrPositive;
 import org.jdom2.Element;
 
-public class FareValue implements XMLSerializable {
+public class FareValue implements XMLSerializable, SupplementOrPositive {
 
     private boolean supplement;
 
@@ -21,7 +25,6 @@ public class FareValue implements XMLSerializable {
         this.percent = v.isPercent();
         this.value = v.getValue();
     }
-
 
     public boolean isSupplement() {
         return supplement;
@@ -65,6 +68,26 @@ public class FareValue implements XMLSerializable {
     public FareValue() {
     }
 
+    public FareValue(String s) {
+        if (!Strings.isNullOrEmpty(s)) {
+            if (s.startsWith("+") || s.startsWith("-")) setSupplement(true);
+            if (s.endsWith("%")) {
+                setSupplement(true);
+                setPercent(true);
+            }
+            setValue(Helper.toDouble(s.replaceAll("%", "")));
+        }
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        if (isSupplement() && getValue() >= 0) s += "+";
+        s += getValue();
+        if (isPercent()) s += "%";
+        return s;
+    }
+
     public FareValue(boolean supplement, boolean discount, boolean percent, double value) {
         this.supplement = supplement;
         this.discount = discount;
@@ -88,5 +111,21 @@ public class FareValue implements XMLSerializable {
         if (isSupplement()) v = base + v;
         else if (isDiscount()) v = base - v;
         return v;
+    }
+
+    @Override
+    public void fromData(io.mateu.ui.core.shared.SupplementOrPositive data) {
+        setPercent(SupplementOrPositiveType.SUPPLEMENT_PERCENT.equals(data.getType()));
+        setSupplement(SupplementOrPositiveType.SUPPLEMENT.equals(data.getType()));
+        setValue(data.getValue());
+    }
+
+    @Override
+    public io.mateu.ui.core.shared.SupplementOrPositive toData() {
+        SupplementOrPositiveType t;
+        if (isPercent()) t = SupplementOrPositiveType.SUPPLEMENT_PERCENT;
+        else if (isSupplement()) t = SupplementOrPositiveType.SUPPLEMENT;
+        else t = SupplementOrPositiveType.VALUE;
+        return new io.mateu.ui.core.shared.SupplementOrPositive(t, getValue());
     }
 }

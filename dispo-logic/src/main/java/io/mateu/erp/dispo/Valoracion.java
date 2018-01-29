@@ -27,7 +27,7 @@ public class Valoracion {
     private final int totalNoches;
     private final LocalDate salida;
     private final List<LineaReserva> lineasReserva;
-    private Map<IBoard, CondicionesPorRegimen> condicionesPorRegimen = new HashMap<>();
+    private Condiciones condiciones;
     private boolean ignoreMINLOS;
 
     private Map<IBoard, RestriccionesPorRegimen> restriccionesPorRegimen = new HashMap<>();
@@ -72,20 +72,23 @@ public class Valoracion {
 
             // rellenamos con las condiciones del contrato
 
-            for (IBoard board : hotel.getBoards()) {
-                for (Fare f : terms.getFares()) {
-                    for (DatesRange dr : f.getDates())
-                        if (Helper.intersects(dr.getStart(), dr.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
-                            Rango r = new Rango(dr.getStart(), dr.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getTotalNights());
-                            CondicionesPorRegimen vpr = condicionesPorRegimen.get(board);
-                            if (vpr == null)
-                                condicionesPorRegimen.put(board, vpr = new CondicionesPorRegimen(rq.getTotalNights()));
-                            for (int i = r.getDesde(); i <= r.getHasta(); i++) if (vpr.getDias().size() > i) {
-                                CondicionesPorDia cpd = vpr.getDias().get(i);
-                                cpd.setFarePerRoom(f.getFarePerRoom());
-                            }
+            Map<String, IBoard> boards = new HashMap<>();
+            for (IBoard board : hotel.getBoards()) boards.put(board.getCode(), board);
+
+            for (LinearFare f : terms.getFares()) {
+                for (DatesRange dr : f.getDates())
+                    if (Helper.intersects(dr.getStart(), dr.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate())) {
+                        Rango r = new Rango(dr.getStart(), dr.getEnd(), rq.getCheckInLocalDate(), rq.getCheckOutLocalDate(), rq.getTotalNights());
+                        for (LinearFareLine l : f.getLines()) {
+                            if (condiciones == null)
+                                condiciones = new Condiciones(rq.getTotalNights());
+                            for (int i = r.getDesde(); i <= r.getHasta(); i++)
+                                if (condiciones.getDias().size() > i) {
+                                    CondicionesPorDia cpd = condiciones.getDias().get(i);
+                                    cpd.getFarePerRoomAndBoard().put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+                                }
                         }
-                }
+                    }
             }
 
             // rellenamos las restricciones
@@ -224,30 +227,36 @@ public class Valoracion {
             onRequestText = "Allotment";
         }
 
-        for (IBoard board : condicionesPorRegimen.keySet()) {
-            CondicionesPorRegimen cpr = condicionesPorRegimen.get(board);
+        for (IBoard board : hotel.getBoards()) {
             RestriccionesPorRegimen rpr = restriccionesPorRegimen.get(board);
 
             List<Supplement> suplementosAplicados = new ArrayList<>();
 
             Map<String, ValoracionLineaReserva> cache = new HashMap<>();
 
-            if (cpr != null) {
+            if (true) {
 
                 // comprobamos que hay precio todos los días
                 boolean ok = true;
 
-                for (IRoom room : combinacionHabitaciones.getAsignacion().values())
-                    for (CondicionesPorDia vpd : cpr.getDias())
-                        if (vpd.getFarePerRoom().get(room.getCode()) == null) {
-                            ok = false;
-                            break;
-                        } else {
-                            if (vpd.getFarePerRoom().get(room.getCode()).getFarePerBoard().get(board.getCode()) == null) {
+                for (IRoom room : combinacionHabitaciones.getAsignacion().values()) {
+                    if (condiciones != null) {
+                        for (CondicionesPorDia vpd : condiciones.getDias())
+                            if (vpd.getFarePerRoomAndBoard().get(room.getCode() + "-" + board.getCode()) == null) {
                                 ok = false;
                                 break;
+                            } else {
+                                if (vpd.getFarePerRoomAndBoard().get(room.getCode() + "-" + board.getCode()) == null) {
+                                    ok = false;
+                                    break;
+                                }
                             }
-                        }
+                    } else {
+                        ok = false;
+                        break;
+                    }
+                }
+
 
                 //todo: guardar las valoraciones por firma de ocupación para reutilizarlas
 
@@ -270,15 +279,13 @@ public class Valoracion {
                         } else {
                             vlr = new ValoracionLineaReserva(lineaReserva, totalNoches);
 
-
                             int noche = 0;
-                            for (CondicionesPorDia cpd : cpr.getDias()) {
-                                RoomFare rf = cpd.getFarePerRoom().get(room.getCode());
-                                BoardFare bf = rf.getFarePerBoard().get(board.getCode());
+                            for (CondicionesPorDia cpd : condiciones.getDias()) {
+                                LinearFareLine rf = cpd.getFarePerRoomAndBoard().get(room.getCode() + "-" + board.getCode());
 
                                 ValoracionPorDia vpd = vlr.getDias().get(noche);
 
-                                aplicarTarifa(vpd, rf, bf, lineaReserva, room);
+                                aplicarTarifa(vpd, rf, lineaReserva, room);
 
                         /*
                         i.setDesayuno(bf.getPaxPrice().getValue());
@@ -395,7 +402,7 @@ public class Valoracion {
 
                             for (IHotelOffer o : opr.getOfertasPorHabitacion().get(room).getOfertas()) {
 
-                                double importeOferta = aplicarOferta(board, room, lineaReserva, vlr, o, cpr);
+                                double importeOferta = aplicarOferta(board, room, lineaReserva, vlr, o, condiciones);
 
                             }
                         }
@@ -421,9 +428,9 @@ public class Valoracion {
         return resultados;
     }
 
-    public static void aplicarTarifa(ValoracionPorDia vpd, RoomFare rf, BoardFare bf, LineaReserva lineaReserva, IRoom room) {
+    public static void aplicarTarifa(ValoracionPorDia vpd, LinearFareLine rf, LineaReserva lineaReserva, IRoom room) {
 
-        if (bf.getRoomPrice() != null) vpd.setImporteHabitacion(bf.getRoomPrice().getValue());
+        vpd.setImporteHabitacion(rf.getLodgingPrice());
 
         int posjunior = 0;
         int posnino = 0;
@@ -434,39 +441,46 @@ public class Valoracion {
 
         for (int i = 0; i < lineaReserva.getPax(); i++) {
             ImportePorDia ipd = vpd.getImportesPax().get(i);
-            ipd.setAlojamiento(bf.getPaxPrice().getValue());
-            double precioEstanciaYRegimen = bf.getPaxPrice().applicarA(ipd.getAlojamiento());
-            ipd.setDesayuno(precioEstanciaYRegimen - ipd.getAlojamiento());
+            ipd.setAlojamiento(rf.getAdultPrice());
+            ipd.setDesayuno(rf.getMealAdultPrice());
+            double precioEstanciaYRegimen = ipd.getAlojamiento() + ipd.getDesayuno();
 
             totalAlojamiento += ipd.getAlojamiento();
-            totalRegimen += precioEstanciaYRegimen - ipd.getAlojamiento();
+            totalRegimen += ipd.getDesayuno();
 
             FareValue tarifaPax = null;
-            if ((i == 0 && lineaReserva.getPax() == 1) || (i > 1)) tarifaPax = bf.getPaxDiscounts().get(i);
+
+            //if ((i == 0 && lineaReserva.getPax() == 1) || (i > 1)) tarifaPax = bf.getPaxDiscounts().get(i);
+            if (i == 0 && lineaReserva.getPax() == 1) tarifaPax = rf.getSingleUsePrice();
+            if (i > 1) tarifaPax = rf.getExtraAdultPrice();
             if (i >= lineaReserva.getAdultos() && i >= room.getMinAdultsForChildDiscount()) {
                 // es un junior
                 if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors())) {
                     // es un niño
                     if (i >= (lineaReserva.getAdultos() + lineaReserva.getJuniors() + lineaReserva.getNinos())) {
                         // es un bebe
-                        tarifaPax = new FareValue(false, false, false, 0); // de momento todos gratis
-                        if (bf.getInfantDiscounts().containsKey(posbebe)) tarifaPax = bf.getInfantDiscounts().get(posbebe);
+                        tarifaPax = rf.getExtraInfantPrice();
+                        if (tarifaPax == null || posbebe == 0) tarifaPax = rf.getInfantPrice();
                         posbebe++;
                     } else {
-                        if (bf.getChildDiscounts().containsKey(posnino)) tarifaPax = bf.getChildDiscounts().get(posnino);
+                        tarifaPax = rf.getExtraChildPrice();
+                        if (tarifaPax == null || posnino == 0) tarifaPax = rf.getChildPrice();
                         posnino++;
                     }
 
                 } else {
-                    if (bf.getJuniorDiscounts().containsKey(posjunior)) tarifaPax = bf.getJuniorDiscounts().get(posjunior);
+                    tarifaPax = rf.getExtraJuniorPrice();
+                    if (tarifaPax == null || posjunior == 0) tarifaPax = rf.getJuniorPrice();
                     posjunior++;
                 }
             }
+
             if (tarifaPax != null) {
                 double precioPax = tarifaPax.applicarA(precioEstanciaYRegimen);
                 ipd.setDescuentoPax(precioPax - (ipd.getAlojamiento() + ipd.getDesayuno()));
                 totalRegimen -= ipd.getDescuentoPax();
             }
+
         }
 
         vpd.setTotalAlojamiento(totalAlojamiento);
@@ -494,7 +508,7 @@ public class Valoracion {
         return resultados;
     }
 
-    private double aplicarOferta(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+    private double aplicarOferta(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr) {
 
         double importeOferta = o.aplicar(board, room, lineaReserva, vlr, o, cpr);
 
@@ -605,7 +619,7 @@ public class Valoracion {
             /*
     private final CombinacionContratosOfertas combinacionContratosOfertas;
     private final Cupo cupo;
-    private Map<IBoard, CondicionesPorRegimen> condicionesPorRegimen = new HashMap<>();
+    private Map<IBoard, Condiciones> condicionesPorRegimen = new HashMap<>();
 
     private Map<IBoard, RestriccionesPorRegimen> restriccionesPorRegimen = new HashMap<>();
     private Map<IBoard, SuplementosPorRegimen> suplementosPorRegimen = new HashMap<>();

@@ -80,7 +80,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
 
     @Tab("Fares")
-    private List<Fare> fares = new ArrayList<>();
+    private List<LinearFare> fares = new ArrayList<>();
 
 
     @Tab("Min. stay")
@@ -224,11 +224,11 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.youngestFirst = youngestFirst;
     }
 
-    public List<Fare> getFares() {
+    public List<LinearFare> getFares() {
         return fares;
     }
 
-    public void setFares(List<Fare> fares) {
+    public void setFares(List<LinearFare> fares) {
         this.fares = fares;
     }
 
@@ -391,7 +391,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
         Element x = null;
         if ((x = e.getChild("commissions")) != null) for (Element z : x.getChildren()) getCommission().add(new DoublePerDateRange(z));
-        if ((x = e.getChild("fares")) != null) for (Element z : x.getChildren()) getFares().add(new Fare(z));
+        if ((x = e.getChild("fares")) != null) for (Element z : x.getChildren()) getFares().add(new LinearFare(z));
         if ((x = e.getChild("minimumStayRules")) != null) for (Element z : x.getChildren()) getMinimumStayRules().add(new MinimumStayRule(z));
         if ((x = e.getChild("releaseRules")) != null) for (Element z : x.getChildren()) getReleaseRules().add(new ReleaseRule(z));
         if ((x = e.getChild("weekDaysRules")) != null) for (Element z : x.getChildren()) getWeekDaysRules().add(new WeekDaysRule(z));

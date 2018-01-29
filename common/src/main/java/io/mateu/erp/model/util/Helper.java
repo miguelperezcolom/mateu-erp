@@ -665,4 +665,14 @@ public class Helper {
             System.out.println("Properties already loaded");
         }
     }
+
+    public static double toDouble(String s) {
+        double v = 0;
+        try {
+            v = Double.parseDouble(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return v;
+    }
 }

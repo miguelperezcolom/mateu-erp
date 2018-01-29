@@ -22,7 +22,7 @@ public class EarlyBookingOffer extends AbstractHotelOffer {
 
 
     @Override
-    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr) {
         double importeOferta = 0;
         List<Rango> rangos = new ArrayList<>();
         if (getStayDates().getRanges().size() == 0) {

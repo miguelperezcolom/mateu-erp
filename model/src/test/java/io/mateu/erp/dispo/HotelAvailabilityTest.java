@@ -51,9 +51,9 @@ public class HotelAvailabilityTest
     private Actor proveedor;
     private HotelContractPhoto condicionesContrato;
     private Map<Long, HotelContract> contratos;
-    private Fare tarifaEnero;
-    private RoomFare rfDobleEnAbril;
-    private Fare fareAbril;
+    private LinearFare tarifaEnero;
+    private LinearFareLine rfDobleEnAbril;
+    private LinearFare fareAbril;
 
     @Override
     protected void setUp() throws Exception {
@@ -243,61 +243,49 @@ public class HotelAvailabilityTest
         contratos.put(1l, contratoVenta);
 
         {
-            Fare f;
-            condicionesContrato.getFares().add(f = new Fare());
+            LinearFare f;
+            condicionesContrato.getFares().add(f = new LinearFare());
             tarifaEnero = f;
             f.setName("Tarifa Enero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 1, 1), LocalDate.of(2101, 1, 31)));
-            RoomFare rf;
-            f.getFarePerRoom().put("DBL", rf = new RoomFare());
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 10));
+
+
+            LinearFareLine l;
+            f.getLines().add(l = new LinearFareLine("DBL", "SA", 0, 10, 0, 0, 0));
 
             // uso individual
-            bf.getPaxDiscounts().put(0, new FareValue(true, false, true, 40));
+            l.setSingleUsePrice(new FareValue("+40%"));
 
             // tercer pax
-            bf.getPaxDiscounts().put(2, new FareValue(false, true, false, 2));
+            l.setExtraAdultPrice(new FareValue("-2"));
 
             // primer niño
-            bf.getChildDiscounts().put(0, new FareValue(false, true, false, 7));
+            l.setChildPrice(new FareValue("-7"));
 
             // segundo niño
-            bf.getChildDiscounts().put(1, new FareValue(false, false, false, 6));
+            l.setExtraChildPrice(new FareValue(false, false, false, 6));
 
             // bebe
-            bf.getInfantDiscounts().put(0, new FareValue(false, false, false, 1));
+            l.setInfantPrice(new FareValue(false, false, false, 1));
 
             // junior
-            bf.getJuniorDiscounts().put(0, new FareValue(false, false, false, 8));
+            l.setJuniorPrice(new FareValue(false, false, false, 8));
 
         }
         {
-            Fare f;
-            condicionesContrato.getFares().add(f = new Fare());
+            LinearFare f;
+            condicionesContrato.getFares().add(f = new LinearFare());
             f.setName("Tarifa Febrero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 2, 1), LocalDate.of(2101, 2, 28)));
-            RoomFare rf;
-            f.getFarePerRoom().put("DBL", rf = new RoomFare());
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 15));
+            f.getLines().add(new LinearFareLine("DBL", "SA", 0, 15));
         }
 
         {
-            Fare f;
-            condicionesContrato.getFares().add(f = new Fare());
+            LinearFare f;
+            condicionesContrato.getFares().add(f = new LinearFare());
             f.setName("Tarifa Marzo");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 3, 1), LocalDate.of(2101, 3, 31)));
-            RoomFare rf;
-            f.getFarePerRoom().put("DBL", rf = new RoomFare());
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 20));
+            f.getLines().add(new LinearFareLine("DBL", "SA", 0, 20, 0, 0, 0));
 
             Supplement s;
             condicionesContrato.getSupplements().add(s = new Supplement());
@@ -369,19 +357,14 @@ public class HotelAvailabilityTest
         }
 
         {
-            Fare f;
-            condicionesContrato.getFares().add(f = new Fare());
+            LinearFare f;
+            condicionesContrato.getFares().add(f = new LinearFare());
             fareAbril = f;
             f.setName("Tarifa Febrero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
-            RoomFare rf;
-            f.getFarePerRoom().put("DBL", rf = new RoomFare());
-            rfDobleEnAbril = rf;
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 30));
-
+            LinearFareLine l;
+            f.getLines().add(l = new LinearFareLine("DBL", "SA", 0, 30, 0, 0, 0));
+            rfDobleEnAbril = l;
 
         }
 
@@ -801,11 +784,9 @@ public class HotelAvailabilityTest
         {
 
 
-            BoardFare bf;
-            rfDobleEnAbril.getFarePerBoard().put("MP", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 50));
 
+            BoardFare bf;
+            fareAbril.getLines().add(new LinearFareLine("DBL", "MP", 0, 50, 0, 0, 0));
 
             BoardUpgradeOffer o;
             hotel.getOffers().add(o = new BoardUpgradeOffer());
@@ -845,13 +826,8 @@ public class HotelAvailabilityTest
     public void testPrecioOferta06() {
 
         {
-            Fare f = fareAbril;
-            RoomFare rf;
-            f.getFarePerRoom().put("SUI", rf = new RoomFare());
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 100));
+            LinearFare f = fareAbril;
+            f.getLines().add(new LinearFareLine("SUI", "SA", 0, 100, 0, 0, 0));
         }
 
         {
@@ -933,13 +909,7 @@ public class HotelAvailabilityTest
             o.setOnDiscounts(true);
             o.setOnRoom(true);
 
-            RoomFare rf;
-            o.getFarePerRoom().getFares().put("DBL", rf = new RoomFare());
-            rfDobleEnAbril = rf;
-            BoardFare bf;
-            rf.getFarePerBoard().put("SA", bf = new BoardFare());
-            FareValue fv;
-            bf.setPaxPrice(fv = new FareValue(false, false, false, 10));
+            o.setFare(new LinearFareLine("DBL", "SA", 0, 10, 0, 0, 0));
 
             o.setPrepayment(false);
         }

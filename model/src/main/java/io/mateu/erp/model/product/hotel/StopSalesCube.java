@@ -110,7 +110,6 @@ public class StopSalesCube {
     public void save(EntityManager em) {
 
         // vaciamos las líneas actuales
-        em.remove(getStopSales().getLines().get(0));
         for (StopSalesLine l : getStopSales().getLines()) em.remove(l);
         getStopSales().getLines().clear();
 

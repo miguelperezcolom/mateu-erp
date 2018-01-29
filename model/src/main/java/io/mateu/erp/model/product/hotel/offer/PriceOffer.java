@@ -4,33 +4,37 @@ import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.erp.model.product.hotel.BoardFare;
-import io.mateu.erp.model.product.hotel.DatesRange;
-import io.mateu.erp.model.product.hotel.RoomFare;
+import io.mateu.erp.model.product.hotel.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Convert;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Getter@Setter
 public class PriceOffer extends AbstractHotelOffer {
 
-    @Convert(converter = FarePerRoomConverter.class)
-    private FarePerRoom farePerRoom = new FarePerRoom();
+    @ManyToOne
+    private RoomType room;
+
+    @ManyToOne
+    private BoardType board;
+
+    @Convert(converter = LinearFareLineConverter.class)
+    private LinearFareLine fare;
 
     @Override
-    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr) {
         double importeOferta = 0;
+
 
         //todo: puede que estemos cambiando el precio del régimen base. Acalararlo!
 
-        if (getFarePerRoom().getFares().containsKey(room.getCode()) && getFarePerRoom().getFares().get(room.getCode()).getFarePerBoard().containsKey(board.getCode())) {
+        if ((getRoom() == null || room.getCode().equals(getRoom().getCode())) && (getBoard() == null || board.getCode().equals(getBoard().getCode()))) {
 
             List<Rango> rangos = new ArrayList<>();
             if (getStayDates().getRanges().size() == 0) {
@@ -46,33 +50,31 @@ public class PriceOffer extends AbstractHotelOffer {
 
 
             boolean[] aplica = new boolean[lineaReserva.getNumeroNoches()];
-            RoomFare[] rfs = new RoomFare[lineaReserva.getNumeroNoches()];
-            BoardFare[] bfs = new BoardFare[lineaReserva.getNumeroNoches()];
-
-            Map<RoomFare, RoomFare> cacherfs = new HashMap<>();
-            Map<BoardFare, BoardFare> cachebfs = new HashMap<>();
-
-
-            RoomFare rf = getFarePerRoom().getFares().get(room.getCode());
-            BoardFare bf = getFarePerRoom().getFares().get(room.getCode()).getFarePerBoard().get(board.getCode());
+            LinearFareLine[] rfs = new LinearFareLine[lineaReserva.getNumeroNoches()];
 
             for (Rango rx : rangos) for (int i = rx.getDesde(); i < rx.getHasta(); i++) {
                 aplica[i] = true;
 
                 CondicionesPorDia cpd = cpr.getDias().get(i);
-                RoomFare rfz;
-                rfs[i] = rfz = cpd.getFarePerRoom().get(room.getCode());
-                bfs[i] = rfz.getFarePerBoard().get(board.getCode());
+                LinearFareLine rfz;
+                rfs[i] = rfz = new LinearFareLine(cpd.getFarePerRoomAndBoard().get(room.getCode() + "-" + board.getCode()));
 
-                RoomFare rfx = cacherfs.get(rfs[i]);
-                if (rfx == null) {
-                    cacherfs.put(rfs[i], rfx = rfs[i].combineWith(rf));
-                }
+                if (getFare().getLodgingPrice() >= 0) rfz.setLodgingPrice(getFare().getLodgingPrice());
+                if (getFare().getAdultPrice() >= 0) rfz.setAdultPrice(getFare().getAdultPrice());
+                if (getFare().getMealAdultPrice() >= 0) rfz.setMealAdultPrice(getFare().getMealAdultPrice());
 
-                BoardFare bfx = cachebfs.get(bfs[i]);
-                if (bfx == null) {
-                    cachebfs.put(bfs[i], bfx = bfs[i].combineWith(bf));
-                }
+                if (getFare().getJuniorPrice() != null) rfz.setJuniorPrice(new FareValue(getFare().getJuniorPrice()));
+                if (getFare().getChildPrice() != null) rfz.setChildPrice(new FareValue(getFare().getChildPrice()));
+                if (getFare().getInfantPrice() != null) rfz.setInfantPrice(new FareValue(getFare().getInfantPrice()));
+
+                if (getFare().getMealJuniorPrice() != null) rfz.setMealJuniorPrice(new FareValue(getFare().getMealJuniorPrice()));
+                if (getFare().getMealChildPrice() != null) rfz.setMealChildPrice(new FareValue(getFare().getMealChildPrice()));
+                if (getFare().getMealInfantPrice() != null) rfz.setMealInfantPrice(new FareValue(getFare().getMealInfantPrice()));
+
+                if (getFare().getExtraAdultPrice() != null) rfz.setExtraAdultPrice(new FareValue(getFare().getExtraAdultPrice()));
+                if (getFare().getExtraJuniorPrice() != null) rfz.setExtraJuniorPrice(new FareValue(getFare().getExtraJuniorPrice()));
+                if (getFare().getExtraChildPrice() != null) rfz.setExtraChildPrice(new FareValue(getFare().getExtraChildPrice()));
+                if (getFare().getExtraInfantPrice() != null) rfz.setExtraInfantPrice(new FareValue(getFare().getExtraInfantPrice()));
 
             }
 
@@ -81,7 +83,7 @@ public class PriceOffer extends AbstractHotelOffer {
 
                 ValoracionPorDia vpdx = new ValoracionPorDia(lineaReserva.getPax());
 
-                Valoracion.aplicarTarifa(vpdx, cacherfs.get(rfs[i]), cachebfs.get(bfs[i]), lineaReserva, room);
+                Valoracion.aplicarTarifa(vpdx, rfs[i], lineaReserva, room);
 
                 double importe = vpd.getTotalAlojamiento() + vpd.getTotalRegimen() - (vpdx.getTotalAlojamiento() + vpdx.getTotalRegimen());
 

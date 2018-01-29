@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter@Setter
-public class CondicionesPorRegimen {
+public class Condiciones {
 
     private List<CondicionesPorDia> dias = new ArrayList<>();
 
     private double total;
 
-    public CondicionesPorRegimen(int totalNights) {
+    public Condiciones(int totalNights) {
         for (int i = 0; i < totalNights; i++) dias.add(new CondicionesPorDia());
     }
 }

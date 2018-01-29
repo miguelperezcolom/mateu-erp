@@ -1,6 +1,6 @@
 package io.mateu.erp.dispo.interfaces.product;
 
-import io.mateu.erp.dispo.CondicionesPorRegimen;
+import io.mateu.erp.dispo.Condiciones;
 import io.mateu.erp.dispo.LineaReserva;
 import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.common.IActor;
@@ -34,5 +34,5 @@ public interface IHotelOffer {
 
     public String getName();
 
-    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr);
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr);
 }

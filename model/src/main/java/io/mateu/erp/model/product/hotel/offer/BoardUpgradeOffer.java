@@ -4,10 +4,7 @@ import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.erp.model.product.hotel.BoardFare;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.DatesRange;
-import io.mateu.erp.model.product.hotel.RoomFare;
+import io.mateu.erp.model.product.hotel.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +24,7 @@ public class BoardUpgradeOffer extends AbstractHotelOffer {
     private BoardType pay;
 
     @Override
-    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, CondicionesPorRegimen cpr) {
+    public double aplicar(IBoard board, IRoom room, LineaReserva lineaReserva, ValoracionLineaReserva vlr, IHotelOffer o, Condiciones cpr) {
         double importeOferta = 0;
 
         if (board.getCode().equalsIgnoreCase(getGet().getCode())) {
@@ -46,8 +43,7 @@ public class BoardUpgradeOffer extends AbstractHotelOffer {
 
 
             boolean[] aplica = new boolean[lineaReserva.getNumeroNoches()];
-            RoomFare[] rfs = new RoomFare[lineaReserva.getNumeroNoches()];
-            BoardFare[] bfs = new BoardFare[lineaReserva.getNumeroNoches()];
+            LinearFareLine[] rfs = new LinearFareLine[lineaReserva.getNumeroNoches()];
 
             boolean hayTarifa = true;
 
@@ -55,11 +51,10 @@ public class BoardUpgradeOffer extends AbstractHotelOffer {
                 aplica[i] = true;
 
                 CondicionesPorDia cpd = cpr.getDias().get(i);
-                RoomFare rf;
-                rfs[i] = rf = cpd.getFarePerRoom().get(room.getCode());
-                bfs[i] = rf.getFarePerBoard().get(getPay().getCode());
+                LinearFareLine rf;
+                rfs[i] = rf = cpd.getFarePerRoomAndBoard().get(room.getCode() + "-" + getPay().getCode());
 
-                if (bfs[i] == null) {
+                if (rfs[i] == null) {
                     hayTarifa = false;
                     break;
                 }
@@ -70,7 +65,7 @@ public class BoardUpgradeOffer extends AbstractHotelOffer {
 
                 ValoracionPorDia vpdx = new ValoracionPorDia(lineaReserva.getPax());
 
-                Valoracion.aplicarTarifa(vpdx, rfs[i], bfs[i], lineaReserva, room);
+                Valoracion.aplicarTarifa(vpdx, rfs[i], lineaReserva, room);
 
                 double importe = vpd.getTotalAlojamiento() + vpd.getTotalRegimen() - (vpdx.getTotalAlojamiento() + vpdx.getTotalRegimen());
 
