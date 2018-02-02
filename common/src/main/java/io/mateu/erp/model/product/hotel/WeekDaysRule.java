@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.ui.mdd.server.annotations.WeekDays;
 import org.jdom2.Element;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ public class WeekDaysRule implements XMLSerializable {
 
     private boolean onRequest;
 
+    @WeekDays
     private boolean[] weekDays = {false, false, false, false, false, false, false};
 
     private boolean checkin = true;

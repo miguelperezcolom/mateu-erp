@@ -1,24 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
-  <component name="FacetManager">
-    <facet type="jpa" name="JPA">
-      <configuration>
-        <setting name="validation-enabled" value="true" />
-        <setting name="provider-name" value="" />
-        <datasource-mapping>
-          <factory-entry name="default" value="bbdda0fc-0b44-4100-88db-ffba6c0f8672" />
-        </datasource-mapping>
-        <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/main/resources/META-INF/xxpersistence.xml" />
-      </configuration>
-    </facet>
-  </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
@@ -90,6 +78,7 @@
     <orderEntry type="library" name="Maven: com.rabbitmq:amqp-client:4.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-jndi:9.4.7.v20170914" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-util:9.4.7.v20170914" level="project" />
+    <orderEntry type="library" name="Maven: org.ostermiller:utils:1.07.00" level="project" />
     <orderEntry type="library" name="Maven: io.mateu.ui:core:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.reflections:reflections:0.9.11" level="project" />
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.21.0-GA" level="project" />
@@ -172,6 +161,8 @@
     <orderEntry type="library" name="Maven: io.mateu.erp:codec:1.0" level="project" />
     <orderEntry type="library" name="Maven: io.mateu.erp:json:1.0" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-exec:1.3" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.9.1" level="project" />
+    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.13.0" level="project" />
     <orderEntry type="library" name="Maven: io.mateu.jpa-utils:pujoiner-plugin:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven:maven-plugin-api:3.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven:maven-model:3.5.2" level="project" />
