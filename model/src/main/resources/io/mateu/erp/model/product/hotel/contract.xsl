@@ -21,7 +21,7 @@
 
             </fo:layout-master-set>
 
-            <xsl:for-each select="//contrato">
+            <xsl:for-each select="//contract">
 
                 <fo:page-sequence master-reference="dinA4">
 
@@ -35,24 +35,24 @@
                             <fo:table-body>
                                 <fo:table-row>
                                     <fo:table-cell text-align="left"  font-size="8pt">
-                                        <fo:block><fo:external-graphic src="{nosotros/@logo}" content-height="scale-to-fit" height="13.3mm" content-width="scale-to-fit" width="31.2mm"/></fo:block>
-                                        <fo:block><xsl:value-of select="nosotros/@descripcion"></xsl:value-of></fo:block>
+                                        <fo:block><fo:external-graphic src="{@logo}" content-height="scale-to-fit" height="13.3mm" content-width="scale-to-fit" width="31.2mm"/></fo:block>
+                                        <fo:block><xsl:value-of select="@bussinessName"></xsl:value-of></fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="9pt" font-weight="bold" padding="1mm">
-                                        <fo:block><xsl:value-of select="@titulo"></xsl:value-of></fo:block>
+                                        <fo:block><xsl:value-of select="@title"></xsl:value-of></fo:block>
                                         <fo:block><fo:inline color="white">x</fo:inline></fo:block>
-                                        <fo:block><xsl:value-of select="@tipo"/> - Nº<xsl:value-of select="@id"/></fo:block>
+                                        <fo:block><xsl:value-of select="@type"/> - Nº<xsl:value-of select="@id"/></fo:block>
                                         <fo:block><fo:inline color="white">x</fo:inline></fo:block>
-                                        <fo:block><xsl:value-of select="@moneda"/></fo:block>
+                                        <fo:block><xsl:value-of select="@currencyCode"/></fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" padding="1mm">
-                                        <fo:block font-weight="bold"><xsl:value-of select="objeto/@nombre"/> <xsl:value-of select="objeto/@categoria"/> PMI</fo:block>
-                                        <fo:block><xsl:value-of select="objeto/@nombrefiscal"/></fo:block>
-                                        <fo:block><xsl:value-of select="objeto/@cif"/></fo:block>
-                                        <fo:block><xsl:value-of select="objeto/@direccion"/></fo:block>
-                                        <fo:block>t:<xsl:value-of select="objeto/@telefono"/></fo:block>
-                                        <fo:block>f:<xsl:value-of select="objeto/@fax"/></fo:block>
-                                        <fo:block><xsl:value-of select="objeto/@email"/></fo:block>
+                                        <fo:block font-weight="bold"><xsl:value-of select="hotel/@name"/> <xsl:value-of select="hotel/@category"/> PMI</fo:block>
+                                        <fo:block><xsl:value-of select="supplier/@bussinessName"/></fo:block>
+                                        <fo:block><xsl:value-of select="supplier/@vatIdentificationNumber"/></fo:block>
+                                        <fo:block><xsl:value-of select="hotel/@address"/></fo:block>
+                                        <fo:block>t:<xsl:value-of select="hotel/@tel"/></fo:block>
+                                        <fo:block>f:<xsl:value-of select="hotel/@fax"/></fo:block>
+                                        <fo:block><xsl:value-of select="hotel/@email"/></fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>
@@ -73,15 +73,15 @@
                             <fo:table-body>
                                 <fo:table-row>
                                     <fo:table-cell text-align="right" font-size="8pt" padding="1mm" display-align="after">
-                                        <fo:block>And as proof of consent and acceptance of all the clauses , including those contained in page <fo:page-number-citation-last ref-id="end"/>, the two sides signed in <xsl:value-of select="@firmadoen"/>, <xsl:value-of select="@fecha"/></fo:block>
+                                            <fo:block>And as proof of consent and acceptance of all the clauses , including those contained in page <fo:page-number-citation-last ref-id="end"/>, the two sides signed in <xsl:value-of select="@signedAt"/>, <xsl:value-of select="@signatureDate"/></fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm" display-align="after">
                                         <fo:block>Name and surname</fo:block>
-                                        <fo:block>By <xsl:value-of select="entre/@nombre"/></fo:block>
+                                        <fo:block>By <xsl:value-of select="@partnerSignatory"/></fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm" display-align="after">
                                         <fo:block>Name and surname</fo:block>
-                                        <fo:block>By <xsl:value-of select="y/@nombre"/></fo:block>
+                                        <fo:block>By <xsl:value-of select="@ownSignatory"/></fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>
@@ -107,7 +107,7 @@
                                 </fo:table-row>
                                 <fo:table-row>
                                     <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
-                                        <fo:block>Gathered the parties <fo:inline font-weight="bold"><xsl:value-of select="entre/@nombre"/></fo:inline> --<xsl:value-of select="entre/@descripcion"/>-- (THE CUSTOMER) and <fo:inline font-weight="bold"><xsl:value-of select="y/@nombre"/></fo:inline> --<xsl:value-of select="y/@descripcion"/>-- (THE SUPPLIER) agree as follows:</fo:block>
+                                        <fo:block>Gathered the parties <fo:inline font-weight="bold"><xsl:value-of select="contractor/@name"/></fo:inline> --<xsl:value-of select="contractor/@bussinessName"/>-- (THE CUSTOMER) and <fo:inline font-weight="bold"><xsl:value-of select="hired/@nombre"/></fo:inline> --<xsl:value-of select="hired/@descripcion"/>-- (THE SUPPLIER) agree as follows:</fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                                 <fo:table-row>
@@ -125,22 +125,22 @@
                                 </fo:table-row>
                                 <fo:table-row>
                                     <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
-                                        <fo:block>For stays from <xsl:value-of select="@del"/> to <xsl:value-of select="@al"/>.</fo:block>
-                                        <xsl:if test="@formalizaciondel or @formalizacional"><fo:block>For bookings done <xsl:if test="@formalizaciondel"> from <xsl:value-of select="@formalizaciondel"/></xsl:if> <xsl:if test="@formalizacional"> to <xsl:value-of select="@formalizacional"/></xsl:if>.</fo:block></xsl:if>
+                                        <fo:block>For stays from <xsl:value-of select="@validFrom"/> to <xsl:value-of select="@validTo"/>.</fo:block>
+                                        <xsl:if test="@bookingWindowFrom or @bookingWindowTo"><fo:block>For bookings done <xsl:if test="@bookingWindowFrom"> from <xsl:value-of select="@bookingWindowFrom"/></xsl:if> <xsl:if test="@bookingWindowTo"> to <xsl:value-of select="@bookingWindowTo"/></xsl:if>.</fo:block></xsl:if>
                                     </fo:table-cell>
                                 </fo:table-row>
 
                                 <fo:table-row>
                                     <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm"><fo:block>
                                         <xsl:choose>
-                                            <xsl:when test="filtros/*">
+                                            <xsl:when test="targets/*">
                                                 <xsl:choose>
-                                                    <xsl:when test="filtros/*[@included]">
-                                                        For <xsl:for-each select="filtros/*[@included]"><xsl:if test="position() > 1">, </xsl:if><xsl:value-of select="."/></xsl:for-each>.
+                                                    <xsl:when test="targets/*[@included]">
+                                                        For <xsl:for-each select="targets/*[@included]"><xsl:if test="position() > 1">, </xsl:if><xsl:value-of select="."/></xsl:for-each>.
                                                     </xsl:when></xsl:choose>
                                                 <xsl:choose>
-                                                    <xsl:when test="filtros/*[@excluded]">
-                                                        Not for <xsl:for-each select="filtros/*[@excluded]"><xsl:if test="position() > 1">, </xsl:if><xsl:value-of select="."/></xsl:for-each>.
+                                                    <xsl:when test="targets/*[@excluded]">
+                                                        Not for <xsl:for-each select="targets/*[@excluded]"><xsl:if test="position() > 1">, </xsl:if><xsl:value-of select="."/></xsl:for-each>.
                                                     </xsl:when></xsl:choose>
                                             </xsl:when>
                                             <xsl:otherwise>Generally available.</xsl:otherwise>
@@ -155,7 +155,7 @@
                                 </fo:table-row>
                             </fo:table-body>
 
-                            <xsl:if test="@condicionesparticulares">
+                            <xsl:if test="@specialTerms">
                                 <fo:table-body>
                                     <fo:table-row>
                                         <fo:table-cell border-bottom-style="solid" border-right-width="0.3px" padding="1mm">
@@ -164,7 +164,7 @@
                                     </fo:table-row>
                                     <fo:table-row>
                                         <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
-                                            <fo:block><xsl:value-of select="@condicionesparticulares"/></fo:block>
+                                            <fo:block><xsl:value-of select="@specialTerms"/></fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
                                     <fo:table-row>
@@ -178,18 +178,18 @@
                             <fo:table-body>
                                 <fo:table-row>
                                     <fo:table-cell border-bottom-style="solid" border-right-width="0.3px" padding="1mm">
-                                        <fo:block font-weight="700" font-size="12pt">2. Contracted rooms <!-- <fo:inline  font-weight="100" font-size="8pt" font-style="italic">Habitaciones contratadas</fo:inline> --></fo:block>
+                                        <fo:block font-weight="700" font-size="12pt">2. Contracted rooms</fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                                 <fo:table-row>
                                     <fo:table-cell padding="1mm" font-size="8pt" margin-left="54mm">
-                                        <fo:block>Types, capacities , periods , regimes and prices (<xsl:value-of select="@tipoprecio"/> stated in <xsl:value-of select="@moneda"/>, including taxes) , under the conditions listed below.</fo:block>
+                                        <fo:block>Types, capacities , periods , regimes and prices (<xsl:value-of select="terms/@ratesType"/> stated in <xsl:value-of select="@currencyCode"/>, including taxes) , under the conditions listed below.</fo:block>
                                         <fo:block>Supplements / discounts , indicated by + or - , they are Pax / night.</fo:block>
                                         <fo:block>
-                                            <xsl:if test="@bebehasta">Baby until <xsl:value-of select="@bebehasta"/> (not included).</xsl:if>
-                                            <xsl:if test="@ninohasta">Child A until <xsl:value-of select="@ninohasta"/> (included).</xsl:if>
-                                            <xsl:if test="@juniorhasta">Child B until <xsl:value-of select="@juniorhasta"/> (included).</xsl:if>
-                                            Children will be ordered <xsl:choose><xsl:when test="@masjovenprimero">from oldest to youngest</xsl:when><xsl:otherwise>from oldest to youngest</xsl:otherwise></xsl:choose> for discounts application.
+                                            <xsl:if test="hotel/@childStartAge">Baby until <xsl:value-of select="hotel/@childStartAge"/> (not included).</xsl:if>
+                                            <xsl:if test="hotel/@juniorStartAge">Child until <xsl:value-of select="hotel/@childStartAge"/> (not included).</xsl:if>
+                                            <xsl:if test="hotel/@adultStartAge">Junior until <xsl:value-of select="hotel/@adultStartAge"/> (not included).</xsl:if>
+                                            Children will be ordered <xsl:choose><xsl:when test="hotel/@youngestFirst">from youngest to oldest</xsl:when><xsl:otherwise>from oldest to youngest</xsl:otherwise></xsl:choose> for discounts application.
                                         </fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
@@ -199,7 +199,8 @@
                         </fo:table>
 
 
-                        <xsl:for-each select="tarifas/habitaciones/habitacion">
+
+                        <xsl:for-each select="terms/rooms/room">
 
                             <fo:block page-break-inside="avoid">
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
@@ -226,25 +227,25 @@
                                                 <fo:block><xsl:value-of select="@id"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell number-columns-spanned="7" text-align="left" font-size="8pt" padding="1mm">
-                                                <fo:block><fo:inline font-weight="bold"><xsl:value-of select="@nombre"/></fo:inline> - Prices x <fo:inline font-weight="bold"><xsl:value-of select="@preciopor"/></fo:inline> / night. <xsl:if test="@noreembolsable"><fo:inline font-weight="bold">NON REFUNDABLE</fo:inline></xsl:if></fo:block>
-                                                <fo:block><xsl:value-of select="@capacidad"/></fo:block>
+                                                <fo:block><fo:inline font-weight="bold"><xsl:value-of select="@name"/></fo:inline> in <fo:inline font-weight="bold"><xsl:value-of select="@board"/></fo:inline>. <xsl:if test="@nonrefundable"><fo:inline font-weight="bold">NON REFUNDABLE</fo:inline></xsl:if></fo:block>
+                                                <fo:block><xsl:value-of select="@capacity"/></fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
 
 
-                                        <xsl:for-each select="fila">
+                                        <xsl:for-each select="row">
 
                                             <fo:table-row>
                                                 <fo:table-cell>
                                                     <fo:block></fo:block>
                                                 </fo:table-cell>
-                                                <xsl:for-each select="fechas/rangos">
+                                                <xsl:for-each select="dates/ranges">
                                                     <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold">
-                                                        <xsl:for-each select="rango"><fo:block><xsl:value-of select="@del"/></fo:block><fo:block><xsl:value-of select="@al"/></fo:block></xsl:for-each>
+                                                        <xsl:for-each select="range"><fo:block><xsl:value-of select="@start"/></fo:block><fo:block><xsl:value-of select="@end"/></fo:block></xsl:for-each>
                                                     </fo:table-cell>
                                                 </xsl:for-each>
                                             </fo:table-row>
-                                            <xsl:for-each select="linea[@tipo = 'base']">
+                                            <xsl:for-each select="line[@tipo = 'base']">
                                                 <fo:table-row>
                                                     <xsl:variable name="pos" select="position()"></xsl:variable>
                                                     <fo:table-cell
@@ -255,9 +256,9 @@
                                                             border-right-style="solid"
                                                             border-right-width="0.3px">
                                                         <xsl:if test="$pos = 1"><xsl:attribute name="border-before-style">solid</xsl:attribute><xsl:attribute name="border-before-width">0.3px</xsl:attribute></xsl:if>
-                                                        <fo:block><xsl:value-of select="@descripcion"/></fo:block>
+                                                        <fo:block><xsl:value-of select="@description"/></fo:block>
                                                     </fo:table-cell>
-                                                    <xsl:for-each select="precio">
+                                                    <xsl:for-each select="price">
                                                         <fo:table-cell
                                                                 text-align="right"
                                                                 font-size="8pt"
@@ -270,7 +271,7 @@
                                                     </xsl:for-each>
                                                 </fo:table-row>
                                             </xsl:for-each>
-                                            <xsl:for-each select="linea[@tipo = 'suplemento']">
+                                            <xsl:for-each select="line[@tipo = 'suplemento' and price]">
                                                 <xsl:variable name="pos" select="position()"></xsl:variable>
                                                 <fo:table-row>
                                                     <fo:table-cell
@@ -279,9 +280,9 @@
                                                             padding="1mm"
                                                             border-right-style="solid"
                                                             border-right-width="0.3px">
-                                                        <fo:block><xsl:value-of select="@descripcion"/></fo:block>
+                                                        <fo:block><xsl:value-of select="@description"/></fo:block>
                                                     </fo:table-cell>
-                                                    <xsl:for-each select="precio">
+                                                    <xsl:for-each select="price">
                                                         <fo:table-cell
                                                                 text-align="right"
                                                                 font-size="8pt"
@@ -306,7 +307,7 @@
 
 
                         <!-- 3. Release -->
-                        <xsl:if test="releases">
+                        <xsl:if test="terms/releases/rule">
                             <fo:block page-break-inside="avoid">
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow">
                                     <fo:table-column></fo:table-column>
@@ -343,6 +344,7 @@
                                     <fo:table-column column-width="20mm"></fo:table-column>
                                     <fo:table-column column-width="20mm"></fo:table-column>
                                     <fo:table-column column-width="20mm"></fo:table-column>
+                                    <fo:table-column column-width="50mm"></fo:table-column>
 
                                     <fo:table-header>
                                         <fo:table-row>
@@ -360,6 +362,9 @@
                                             </fo:table-cell>
                                             <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold">
                                                 <fo:block>release</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold">
+                                                <fo:block>rooms</fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
                                     </fo:table-header>
@@ -380,8 +385,8 @@
                                                     border-right-width="0.3px"
                                                     border-before-style="solid"
                                                     border-before-width="0.3px">
-                                                <xsl:for-each select="releases/release">
-                                                    <fo:block><xsl:value-of select="@del"/></fo:block>
+                                                <xsl:for-each select="terms/releases/rule">
+                                                    <fo:block><xsl:value-of select="@start"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -392,8 +397,8 @@
                                                     border-right-width="0.3px"
                                                     border-before-style="solid"
                                                     border-before-width="0.3px">
-                                                <xsl:for-each select="releases/release">
-                                                    <fo:block><xsl:value-of select="@al"/></fo:block>
+                                                <xsl:for-each select="terms/releases/rule">
+                                                    <fo:block><xsl:value-of select="@end"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -404,8 +409,20 @@
                                                     border-right-width="0.3px"
                                                     border-before-style="solid"
                                                     border-before-width="0.3px">
-                                                <xsl:for-each select="releases/release">
-                                                    <fo:block><xsl:value-of select="@noches"/></fo:block>
+                                                <xsl:for-each select="terms/releases/rule">
+                                                    <fo:block><xsl:value-of select="@release"/></fo:block>
+                                                </xsl:for-each>
+                                            </fo:table-cell>
+                                            <fo:table-cell
+                                                    text-align="right"
+                                                    font-size="8pt"
+                                                    padding="1mm"
+                                                    border-right-style="solid"
+                                                    border-right-width="0.3px"
+                                                    border-before-style="solid"
+                                                    border-before-width="0.3px">
+                                                <xsl:for-each select="terms/releases/rule">
+                                                    <fo:block><xsl:for-each select="room"><xsl:value-of select="@id"/> </xsl:for-each></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                         </fo:table-row>
@@ -493,8 +510,8 @@
                                                 padding="1mm"
                                                 border-right-style="solid"
                                                 border-right-width="0.3px">
-                                            <xsl:for-each select="cupo/cupo">
-                                                <fo:block><xsl:for-each select="habitacion"><xsl:if test="position() > 1"> | </xsl:if><xsl:value-of select="@id"/></xsl:for-each></fo:block>
+                                            <xsl:for-each select="terms/allotment/allotment">
+                                                <fo:block><xsl:value-of select="@room"/></fo:block>
                                             </xsl:for-each>
                                         </fo:table-cell>
                                         <fo:table-cell
@@ -503,8 +520,8 @@
                                                 padding="1mm"
                                                 border-right-style="solid"
                                                 border-right-width="0.3px">
-                                            <xsl:for-each select="cupo/cupo">
-                                                <fo:block><xsl:value-of select="@del"/></fo:block>
+                                            <xsl:for-each select="terms/allotment/allotment">
+                                                <fo:block><xsl:value-of select="@start"/></fo:block>
                                             </xsl:for-each>
                                         </fo:table-cell>
                                         <fo:table-cell
@@ -513,8 +530,8 @@
                                                 padding="1mm"
                                                 border-right-style="solid"
                                                 border-right-width="0.3px">
-                                            <xsl:for-each select="cupo/cupo">
-                                                <fo:block><xsl:value-of select="@al"/></fo:block>
+                                            <xsl:for-each select="terms/allotment/allotment">
+                                                <fo:block><xsl:value-of select="@start"/></fo:block>
                                             </xsl:for-each>
                                         </fo:table-cell>
                                         <fo:table-cell
@@ -523,8 +540,8 @@
                                                 padding="1mm"
                                                 border-right-style="solid"
                                                 border-right-width="0.3px">
-                                            <xsl:for-each select="cupo/cupo">
-                                                <fo:block><xsl:value-of select="@numero"/></fo:block>
+                                            <xsl:for-each select="terms/allotment/allotment">
+                                                <fo:block><xsl:value-of select="@quantity"/></fo:block>
                                             </xsl:for-each>
                                         </fo:table-cell>
                                     </fo:table-row>
@@ -652,7 +669,7 @@
 
                         </xsl:if>
 
-                        <!-- 6. Suplementos --><xsl:if test="suplementos">
+                        <!-- 6. Suplementos --><xsl:if test="terms/supplements/supplement">
                         <fo:block page-break-inside="avoid">
                             <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
                                 <fo:table-body>
@@ -663,7 +680,7 @@
                                     </fo:table-row>
                                     <fo:table-row>
                                         <fo:table-cell border-bottom-style="solid" border-right-width="0.3px" padding="1mm">
-                                            <fo:block font-weight="700" font-size="12pt">5. Supplements <!-- <fo:inline  font-weight="100" font-size="8pt" font-style="italic">Suplementos</fo:inline>--></fo:block>
+                                            <fo:block font-weight="700" font-size="12pt">5. Supplements and discounts<!-- <fo:inline  font-weight="100" font-size="8pt" font-style="italic">Suplementos</fo:inline>--></fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
                                 </fo:table-body>
@@ -671,51 +688,19 @@
 
                             <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
 
-                                <fo:table-column column-width="17mm"></fo:table-column>
-                                <fo:table-column column-width="17mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
-                                <fo:table-column column-width="20mm"></fo:table-column>
+                                <fo:table-column column-width="174mm"></fo:table-column>
 
                                 <fo:table-header>
                                     <fo:table-row display-align="after">
                                         <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>From</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>to</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>description</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>character</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>%</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>amount</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>per</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>boards</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                            <fo:block>rooms</fo:block>
+                                            <fo:block>Description</fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
                                 </fo:table-header>
 
                                 <fo:table-body>
 
-                                    <xsl:for-each select="suplementos/suplemento">
+                                    <xsl:for-each select="terms/supplements/supplement">
 
 
                                         <fo:table-row>
@@ -725,73 +710,7 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@del"/></fo:block>
-                                            </fo:table-cell>
-
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@al"/></fo:block>
-                                            </fo:table-cell>
-
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@descripcion"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@caracter"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@porcentaje"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@importe"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@tipo"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@regimenes"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <fo:block><xsl:value-of select="@habitaciones"/></fo:block>
+                                                <fo:block><xsl:value-of select="@descriptionforpdf"/></fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
                                     </xsl:for-each>
@@ -800,7 +719,7 @@
                         </fo:block>
                     </xsl:if>
                         <!-- 6. Estáncias mínimas -->
-                        <xsl:if test="estanciasminimas">
+                        <xsl:if test="terms/minimumStays/rule">
                             <fo:block page-break-inside="avoid">
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
                                     <fo:table-body>
@@ -826,22 +745,13 @@
 
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
 
-                                    <fo:table-column column-width="14mm"></fo:table-column>
                                     <fo:table-column column-width="20mm"></fo:table-column>
                                     <fo:table-column column-width="20mm"></fo:table-column>
                                     <fo:table-column column-width="20mm"></fo:table-column>
-                                    <fo:table-column column-width="20mm"></fo:table-column>
-                                    <fo:table-column column-width="20mm"></fo:table-column>
-                                    <fo:table-column column-width="60mm"></fo:table-column>
+                                    <fo:table-column column-width="114mm"></fo:table-column>
 
                                     <fo:table-header>
                                         <fo:table-row display-align="after">
-                                            <fo:table-cell>
-                                                <fo:block></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell>
-                                                <fo:block></fo:block>
-                                            </fo:table-cell>
                                             <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
                                                 <fo:block>from</fo:block>
                                             </fo:table-cell>
@@ -852,9 +762,6 @@
                                                 <fo:block>nights</fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
-                                                <fo:block>week days</fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell text-align="right" font-size="8pt" padding="1mm" font-weight="bold" border-after-style="solid" border-after-width="0.3px">
                                                 <fo:block>action</fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
@@ -863,19 +770,15 @@
                                     <fo:table-body>
 
                                         <fo:table-row>
-                                            <fo:table-cell>
-                                                <fo:block></fo:block>
-                                            </fo:table-cell>
 
                                             <fo:table-cell
-                                                    number-columns-spanned="2"
                                                     text-align="right"
                                                     font-size="8pt"
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="estanciasminimas/estanciaminima">
-                                                    <fo:block><xsl:value-of select="@del"/></fo:block>
+                                                <xsl:for-each select="terms/minimumStays/rule">
+                                                    <fo:block><xsl:value-of select="@start"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -884,8 +787,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="estanciasminimas/estanciaminima">
-                                                    <fo:block><xsl:value-of select="@al"/></fo:block>
+                                                <xsl:for-each select="terms/minimumStays/rule">
+                                                    <fo:block><xsl:value-of select="@end"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -894,8 +797,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="estanciasminimas/estanciaminima">
-                                                    <fo:block><xsl:value-of select="@noches"/></fo:block>
+                                                <xsl:for-each select="terms/minimumStays/rule">
+                                                    <fo:block><xsl:value-of select="@nights"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -904,18 +807,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="estanciasminimas/estanciaminima">
-                                                    <fo:block><xsl:value-of select="@diassemana"/></fo:block>
-                                                </xsl:for-each>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    text-align="right"
-                                                    font-size="8pt"
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.3px">
-                                                <xsl:for-each select="estanciasminimas/estanciaminima">
-                                                    <fo:block><xsl:value-of select="@descripcion"/></fo:block>
+                                                <xsl:for-each select="terms/minimumStays/rule">
+                                                    <fo:block><xsl:value-of select="@description"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                         </fo:table-row>
@@ -924,7 +817,7 @@
                             </fo:block>
                         </xsl:if>
                         <!-- 6. Días entrada -->
-                        <xsl:if test="diasentrada">
+                        <xsl:if test="terms/weekDays/rule">
                             <fo:block page-break-inside="avoid">
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
                                     <fo:table-body>
@@ -937,7 +830,7 @@
 
                                         <fo:table-row>
                                             <fo:table-cell border-bottom-style="solid" border-right-width="0.3px" padding="1mm">
-                                                <fo:block font-weight="700" font-size="12pt">7. Mandatory checkin and checkout days <!-- <fo:inline  font-weight="100" font-size="8pt" font-style="italic">Dias de entrada y salida obligatorios</fo:inline> --></fo:block>
+                                                <fo:block font-weight="700" font-size="12pt">7. Mandatory checkin, stay and checkout days <!-- <fo:inline  font-weight="100" font-size="8pt" font-style="italic">Dias de entrada y salida obligatorios</fo:inline> --></fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
                                     </fo:table-body>
@@ -997,8 +890,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
-                                                    <fo:block><xsl:value-of select="@del"/></fo:block>
+                                                <xsl:for-each select="terms/weekDays/rule">
+                                                    <fo:block><xsl:value-of select="@start"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -1007,8 +900,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
-                                                    <fo:block><xsl:value-of select="@al"/></fo:block>
+                                                <xsl:for-each select="terms/weekDays/rule">
+                                                    <fo:block><xsl:value-of select="@end"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -1017,8 +910,8 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
-                                                    <fo:block><xsl:value-of select="@diassemana"/></fo:block>
+                                                <xsl:for-each select="terms/weekDays/rule">
+                                                    <fo:block><xsl:value-of select="@weekDays"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
                                             <fo:table-cell
@@ -1027,7 +920,7 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
+                                                <xsl:for-each select="terms/weekDays/rule">
                                                     <fo:block><xsl:value-of select="@diasmes"/></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
@@ -1037,7 +930,7 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
+                                                <xsl:for-each select="terms/weekDays/rule">
                                                     <fo:block><xsl:choose><xsl:when test="@salida">checkout</xsl:when><xsl:otherwise>checkin</xsl:otherwise></xsl:choose></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
@@ -1047,7 +940,7 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.3px">
-                                                <xsl:for-each select="diasentrada/condicion">
+                                                <xsl:for-each select="terms/weekDays/rule">
                                                     <fo:block><xsl:choose><xsl:when test="@dejaronrequest">leave on request</xsl:when><xsl:otherwise>not allow</xsl:otherwise></xsl:choose></fo:block>
                                                 </xsl:for-each>
                                             </fo:table-cell>
@@ -1208,7 +1101,7 @@
                         </xsl:if>
 
                         <!-- 8. Condiciones de cancelación -->
-                        <xsl:if test="condicionescancelacion">
+                        <xsl:if test="terms/cancellation/rule">
                             <fo:block page-break-inside="avoid">
                                 <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" border-collapse="separate">
                                     <fo:table-body>
@@ -1263,7 +1156,7 @@
                                     </fo:table-header>
 
                                     <fo:table-body>
-                                        <xsl:for-each select="condicionescancelacion/condicion">
+                                        <xsl:for-each select="terms/cancellation/rule">
                                             <fo:table-row>
                                                 <fo:table-cell>
                                                     <fo:block></fo:block>
@@ -1279,7 +1172,7 @@
                                                         padding="1mm"
                                                         border-right-style="solid"
                                                         border-right-width="0.3px">
-                                                    <fo:block><xsl:value-of select="@del"/></fo:block>
+                                                    <fo:block><xsl:value-of select="@start"/></fo:block>
                                                 </fo:table-cell>
                                                 <fo:table-cell
                                                         text-align="right"
@@ -1287,7 +1180,7 @@
                                                         padding="1mm"
                                                         border-right-style="solid"
                                                         border-right-width="0.3px">
-                                                    <fo:block><xsl:value-of select="@al"/></fo:block>
+                                                    <fo:block><xsl:value-of select="@end"/></fo:block>
                                                 </fo:table-cell>
                                                 <fo:table-cell
                                                         text-align="right"
@@ -1449,6 +1342,8 @@
                             Legends of the contract
                         </fo:block>
 
+                        <xsl:if test="habitaciones/habitacion or regimenes/regimen">
+
                         <fo:list-block font-size="7.7pt" font-family="Liberation Sans Narrow" provisional-distance-between-starts="10mm" provisional-label-separation="1mm">
 
                             <xsl:for-each select="habitaciones/habitacion">
@@ -1482,6 +1377,8 @@
                             </xsl:for-each>
 
                         </fo:list-block>
+
+                        </xsl:if>
 
                         <!-- Delegaciones -->
                         <fo:block font-size="7.7pt" font-family="Liberation Sans Narrow" font-weight="bold" space-before="5mm" space-after="1mm">Offices</fo:block>

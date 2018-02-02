@@ -66,7 +66,10 @@ public class AppConfig {
     private String xslfoForList;
 
     @TextArea
-    private String xslfoForContract;
+    private String xslfoForHotelContract;
+
+    @TextArea
+    private String xslfoForTransferContract;
 
     @TextArea
     private String xslfoForVoucher;

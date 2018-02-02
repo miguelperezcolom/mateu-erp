@@ -9,11 +9,15 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
+import javax.persistence.EntityManager;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.*;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by miguel on 1/10/16.
@@ -21,13 +25,9 @@ import java.util.List;
 @XmlRootElement(name = "terms")
 public class HotelContractPhoto implements Serializable, Externalizable {
 
-
-
     @StartTabs
     @FullWidth
     @Tab("General")
-    private String currencyIsoCode;
-
     private RatesType ratesType = RatesType.NET;
 
     private List<DoublePerDateRange> commission = new ArrayList<>();
@@ -80,6 +80,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
 
     @Tab("Fares")
+    @FullWidth
     private List<LinearFare> fares = new ArrayList<>();
 
 
@@ -107,15 +108,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     @Tab("Clauses")
     private List<String> clauses = new ArrayList<>();
 
-
-    @XmlAttribute
-    public String getCurrencyIsoCode() {
-        return currencyIsoCode;
-    }
-
-    public void setCurrencyIsoCode(String currencyIsoCode) {
-        this.currencyIsoCode = currencyIsoCode;
-    }
 
     @XmlAttribute
     public RatesType getRatesType() {
@@ -309,8 +301,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         xml.setAttribute("ratesType", "" + getRatesType());
 
 
-        if (getCurrencyIsoCode() != null) xml.setAttribute("currencyIsoCode", getCurrencyIsoCode());
-
         {
             Element l = new Element("commissions");
             for (XMLSerializable x : getCommission()) l.addContent(x.toXml());
@@ -430,5 +420,172 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         } catch (JDOMException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public Element getXmlForPdf(EntityManager em, Map<String, Map<String, String>> roomData, Map<String, Map<String, String>> boardData) {
+        Element xml = new Element("terms");
+
+
+        List<String> rooms = new ArrayList<>();
+        List<String> boards = new ArrayList<>();
+        Map<String, LinearFareLine> linesMap = new HashMap<>();
+        for (LinearFare f : getFares()) for (LinearFareLine l : f.getLines()) {
+            if (!rooms.contains(l.getRoomTypeCode())) rooms.add(l.getRoomTypeCode());
+            if (!boards.contains(l.getBoardTypeCode())) boards.add(l.getBoardTypeCode());
+            linesMap.put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+        }
+
+        Element erooms;
+        xml.addContent(erooms = new Element("rooms"));
+
+        for (String rcode : rooms) for (String bcode : boards) {
+            Element eroom;
+            erooms.addContent(eroom = new Element("room"));
+            eroom.setAttribute("id", rcode);
+            if (roomData.containsKey(rcode)) {
+                if (roomData.get(rcode).get("name") != null) eroom.setAttribute("name", roomData.get(rcode).get("name"));
+                else eroom.setAttribute("name", rcode);
+                if (roomData.get(rcode).get("capacity") != null) eroom.setAttribute("capacity", roomData.get(rcode).get("capacity"));
+            } else eroom.setAttribute("name", rcode);
+
+            if (boardData.containsKey(bcode)) {
+                if (boardData.get(bcode).get("board") != null) eroom.setAttribute("board", boardData.get(bcode).get("board"));
+                else eroom.setAttribute("board", bcode);
+            } else eroom.setAttribute("board", bcode);
+
+
+            Element el = null;
+            Element eds = null;
+            Map<String, Element> els = null;
+            int pos = 0;
+            for (LinearFare f : getFares()) {
+                if (pos++ % 6 == 0) {
+                    eroom.addContent(el = new Element("row"));
+                    el.addContent(eds = new Element("dates"));
+
+                    els = new HashMap<>();
+                    els.put("room", new Element("line").setAttribute("tipo", "base").setAttribute("description", "Room"));
+                    els.put("adult", new Element("line").setAttribute("tipo", "base").setAttribute("description", "Adult"));
+                    els.put("adultmeal", new Element("line").setAttribute("tipo", "base").setAttribute("description", "Meal"));
+
+                    els.put("junior", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Junior"));
+                    els.put("juniormeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Junior meal"));
+                    els.put("child", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Child"));
+                    els.put("childmeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Child meal"));
+                    els.put("infant", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Infant"));
+                    els.put("infantmeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Infant meal"));
+
+                    els.put("extraadult", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra adult"));
+                    els.put("extraadultmeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra meal"));
+                    els.put("extrajunior", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra junior"));
+                    els.put("extrajuniormeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra junior meal"));
+                    els.put("extrachild", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra child"));
+                    els.put("extrachildmeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra child meal"));
+                    els.put("extrainfant", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra infant"));
+                    els.put("extrainfantmeal", new Element("line").setAttribute("tipo", "suplemento").setAttribute("description", "Extra infant meal"));
+
+
+                    el.addContent(els.get("room"));
+                    el.addContent(els.get("adult"));
+                    el.addContent(els.get("adultmeal"));
+
+                    el.addContent(els.get("junior"));
+                    el.addContent(els.get("juniormeal"));
+                    el.addContent(els.get("child"));
+                    el.addContent(els.get("childmeal"));
+                    el.addContent(els.get("infant"));
+                    el.addContent(els.get("infantmeal"));
+
+                    el.addContent(els.get("extraadult"));
+                    el.addContent(els.get("extraadultmeal"));
+                    el.addContent(els.get("extrajunior"));
+                    el.addContent(els.get("extrajuniormeal"));
+                    el.addContent(els.get("extrachild"));
+                    el.addContent(els.get("extrachildmeal"));
+                    el.addContent(els.get("extrainfant"));
+                    el.addContent(els.get("extrainfantmeal"));
+
+                }
+
+                Element ers;
+                eds.addContent(ers = new Element("ranges"));
+                for (DatesRange dr : f.getDates()) {
+                    ers.addContent(new Element("range").setAttribute("start", dr.getStart().format(DateTimeFormatter.BASIC_ISO_DATE)).setAttribute("end", dr.getEnd().format(DateTimeFormatter.BASIC_ISO_DATE)));
+                };
+
+
+
+                LinearFareLine l = linesMap.get(rcode + "-" + bcode);
+
+                els.get("room").addContent(new Element("price").setText("" + l.getLodgingPrice()));
+                els.get("adult").addContent(new Element("price").setText("" + l.getAdultPrice()));
+                els.get("adultmeal").addContent(new Element("price").setText("" + l.getMealAdultPrice()));
+
+                if (l.getJuniorPrice() != null) els.get("junior").addContent(new Element("price").setText(l.getJuniorPrice().toString()));
+                if (l.getMealJuniorPrice() != null) els.get("juniormeal").addContent(new Element("price").setText(l.getMealJuniorPrice().toString()));
+                if (l.getChildPrice() != null) els.get("child").addContent(new Element("price").setText(l.getChildPrice().toString()));
+                if (l.getMealChildPrice() != null) els.get("childmeal").addContent(new Element("price").setText(l.getMealChildPrice().toString()));
+                if (l.getInfantPrice() != null) els.get("infant").addContent(new Element("price").setText(l.getInfantPrice().toString()));
+                if (l.getMealInfantPrice() != null) els.get("infantmeal").addContent(new Element("price").setText(l.getMealInfantPrice().toString()));
+
+                if (l.getExtraAdultPrice() != null) els.get("extraadult").addContent(new Element("price").setText(l.getExtraAdultPrice().toString()));
+                if (l.getExtraJuniorPrice() != null) els.get("extrajunior").addContent(new Element("price").setText(l.getExtraJuniorPrice().toString()));
+                if (l.getExtraChildPrice() != null) els.get("extrachild").addContent(new Element("price").setText(l.getExtraChildPrice().toString()));
+                if (l.getExtraInfantPrice() != null) els.get("extrainfant").addContent(new Element("price").setText(l.getExtraInfantPrice().toString()));
+            }
+
+        }
+
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("releases"));
+            for (ReleaseRule r : getReleaseRules()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("allotment"));
+            for (Allotment r : getAllotment()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("supplements"));
+            for (Supplement r : getSupplements()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("minimumStays"));
+            for (MinimumStayRule r : getMinimumStayRules()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("weekDays"));
+            for (WeekDaysRule r : getWeekDaysRules()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("cancellation"));
+            for (CancellationRule r : getCancellationRules()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        return xml;
     }
 }

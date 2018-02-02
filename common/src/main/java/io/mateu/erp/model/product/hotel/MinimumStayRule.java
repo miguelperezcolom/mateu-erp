@@ -149,6 +149,37 @@ public class MinimumStayRule implements XMLSerializable {
         for (String k : getRooms()) e.addContent(new Element("room").setAttribute("id", "" + k));
         for (String k : getBoards()) e.addContent(new Element("board").setAttribute("id", "" + k));
 
+        StringBuffer sb = new StringBuffer("");
+        if (getSupplementPercent() != 0) sb.append("" + getSupplementPercent() + " %");
+        if (getSupplementValue() != 0) {
+            sb.append("" + getSupplementValue() + "");
+            sb.append(" per " + getPer());
+        }
+        if (getSupplementPercent() != 0 || getSupplementValue() != 0) sb.append(" supplement will be applied");
+        if (isOnRequest()) {
+            if (sb.length() > 0) sb.append(" and ");
+            sb.append("the booking will be on request");
+        }
+        if (getRooms().size() > 0) {
+            if (sb.length() > 0) sb.append(". ");
+            sb.append("Appliable on rooms ");
+            int aux = 0;
+            for (String rcode : getRooms()) {
+                if (aux++ > 0) sb.append(", ");
+                sb.append(rcode);
+            }
+        }
+        if (getBoards().size() > 0) {
+            sb.append((getRooms().size() > 0)?" and on boards ":((sb.length() > 0)?". ":""));
+            int aux = 0;
+            for (String rcode : getBoards()) {
+                if (aux++ > 0) sb.append(", ");
+                sb.append(rcode);
+            }
+        }
+
+        if (sb.length() > 0) e.setAttribute("description", "For shorter stays " + sb.toString());
+
         return e;
     }
 }

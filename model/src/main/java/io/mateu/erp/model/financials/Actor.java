@@ -99,7 +99,7 @@ public class Actor implements IActor {
         xml.setAttribute("name", getName());
         if (getBusinessName() != null) xml.setAttribute("bussinessName", getBusinessName());
         if (getAddress() != null) xml.setAttribute("address", getBusinessName());
-        if (getVatIdentificationNumber() != null) xml.setAttribute("vaiIdentificationNumber", getVatIdentificationNumber());
+        if (getVatIdentificationNumber() != null) xml.setAttribute("vatIdentificationNumber", getVatIdentificationNumber());
         if (getEmail() != null) xml.setAttribute("email", getEmail());
         if (getComments() != null) xml.setAttribute("comments", getComments());
 

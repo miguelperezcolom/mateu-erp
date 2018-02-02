@@ -615,6 +615,7 @@ public class TestPopulator {
                 User u = em.find(User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
                 Actor prov = em.find(Actor.class, 4l); // barceló
+                Currency eur = em.find(Currency.class, "EUR");
 
                 for (Hotel h : hoteles) {
 
@@ -639,6 +640,8 @@ public class TestPopulator {
                         c.setSupplier(prov);
                         c.getTargets().add(a);
 
+                        c.setCurrency(eur);
+
                         c.setTerms(crearTerms(c, bc));
 
                         i++;
@@ -657,7 +660,6 @@ public class TestPopulator {
 
         HotelContractPhoto p = new HotelContractPhoto();
 
-        p.setCurrencyIsoCode("EUR");
         p.setRatesType(RatesType.NET);
 
         p.setZeroPricesAllowed(false);

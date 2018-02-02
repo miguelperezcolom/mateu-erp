@@ -70,6 +70,16 @@ public class Hotel implements IHotel {
 
     private String lat;
 
+    private String address;
+
+    private String zip;
+
+    private String telephone;
+
+    private String fax;
+
+    private String email;
+
 
     @Tab("QuoOn")
     @Index

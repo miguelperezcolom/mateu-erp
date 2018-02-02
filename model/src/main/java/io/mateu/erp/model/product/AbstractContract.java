@@ -3,6 +3,7 @@ package io.mateu.erp.model.product;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
@@ -50,6 +51,9 @@ public class AbstractContract {
 
     private boolean VATIncluded;
 
+    @ManyToOne
+    private Currency currency;
+
     @NotNull
     @ListColumn
     private LocalDate validFrom;
@@ -87,6 +91,19 @@ public class AbstractContract {
 
     @OneToMany
     private List<Actor> targets = new ArrayList<>();
+
+
+    @Tab("Signature")
+    private String signedAt;
+
+    private String signedBy;
+
+    private String partnerSignatory;
+
+    private String ownSignatory;
+
+    private LocalDate signatureDate;
+
 
     @Ignored
     private double averagePrice;

@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -126,7 +127,7 @@ public class Contract extends AbstractContract {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForContract())), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForTransferContract())), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");
@@ -160,12 +161,25 @@ public class Contract extends AbstractContract {
         if (getBillingConcept() != null && getBillingConcept().getName() != null) xml.setAttribute("billingConcept", getBillingConcept().getName());
         if (getValidFrom() != null) xml.setAttribute("validFrom", getValidFrom().toString());
         if (getValidTo() != null) xml.setAttribute("validTo", getValidTo().toString());
+        if (getBookingWindowFrom() != null) xml.setAttribute("bookingWindowFrom", getBookingWindowFrom().toString());
+        if (getBookingWindowTo() != null) xml.setAttribute("bookingWindowTo", getBookingWindowTo().toString());
         if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("supplier"));
         xml.setAttribute("transferType", "" + getTransferType());
         if (getSpecialTerms() != null) xml.setAttribute("specialTerms", getSpecialTerms());
         xml.setAttribute("vat", (isVATIncluded())?"Included":"Not included");
         if (getAudit() != null) xml.setAttribute("audit", getAudit().toString());
-        for (Actor t : getTargets()) xml.addContent(t.toXml().setName("target"));
+
+        Element ts;
+        xml.addContent(ts = new Element("targets"));
+        for (Actor t : getTargets()) ts.addContent(t.toXml().setName("target"));
+
+        if (getCurrency() != null) xml.setAttribute("currencyCode", getCurrency().getIsoCode());
+
+        if (getSignedAt() != null) xml.setAttribute("signedAt", getSignedAt());
+        if (getPartnerSignatory() != null) xml.setAttribute("partnerSignatory", getSignedAt());
+        if (getOwnSignatory() != null) xml.setAttribute("ownSignatory", getSignedAt());
+        if (getSignatureDate() != null) xml.setAttribute("signatureDate", getSignatureDate().format(DateTimeFormatter.BASIC_ISO_DATE));
+
 
         List<Vehicle> vs = new ArrayList<>();
         List<Zone> os = new ArrayList<>();

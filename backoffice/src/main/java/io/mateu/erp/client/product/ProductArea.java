@@ -20,8 +20,8 @@ public class ProductArea extends AbstractArea {
     public List<AbstractModule> getModules() {
         List<AbstractModule> l = new ArrayList<>();
         l.add(new HotelModule());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new TransferModule());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new GenericModule());
+        l.add(new TransferModule());
+        l.add(new GenericModule());
         return l;
     }
 }
