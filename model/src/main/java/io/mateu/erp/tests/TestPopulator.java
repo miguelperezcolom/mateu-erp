@@ -928,7 +928,7 @@ public class TestPopulator {
                         , "Palau Sa Font"
                         , "Palacio de Congresos"
                         , "Hotel Tryp Palma Bellver"
-                        , "Hotel Palladium"
+                        , "xx-Hotel Alohas"
                         , "xx-Hotel Aloha"
                         , "xx-Central"
                         , "xx-Hotel Hawai"
