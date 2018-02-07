@@ -50,15 +50,19 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll(AppConfig.class, Actor.class);
+        populateAll(AppConfig.class, Actor.class, true);
 
+    }
+
+    public static void populateEverythingButContracts() throws Throwable {
+        populateAll(AppConfig.class, Actor.class, false);
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class, Actor.class);
+        populateAll(AppConfig.class, Actor.class, true);
     }
 
-    public static void populateAll(Class appConfigClass, Class actorClass) throws Throwable {
+    public static void populateAll(Class appConfigClass, Class actorClass, boolean hotelContracts) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
@@ -89,15 +93,18 @@ public class TestPopulator {
 
         p.populateHotels();
 
-        p.populateStopSales();
+        if (hotelContracts) {
+            p.populateStopSales();
 
-        p.populateInventory();
+            p.populateInventory();
 
-        p.populateContracts();
+            p.populateContracts();
 
-        p.populateOffers();
+            p.populateOffers();
 
-        p.populateBookings();
+            p.populateBookings();
+        }
+
 
         p.populateAuthTokens();
 
@@ -712,7 +719,7 @@ public class TestPopulator {
         for (int j = 1; j < 20; j++) {
             p.getSupplements().add(new Supplement(null, null, false, true, "Suplemento " + j, (j % 2 == 0)?SupplementPer.PAX:SupplementPer.ROOM,
                     (j % 2 == 0)?SupplementScope.NIGHT:SupplementScope.BOOKING, false, 0, j, 0, bc.getCode(), null, null
-                    ));
+            ));
         }
 
         for (int j = 0; j < 50; j++) {
@@ -922,9 +929,9 @@ public class TestPopulator {
                         , "Palacio de Congresos"
                         , "Hotel Tryp Palma Bellver"
                         , "Hotel Palladium"
-                        , "Puro Hotel"
-                        , "Sant Frances Hotel Singular"
-                        , "Hotel Continental"
+                        , "xx-Hotel Aloha"
+                        , "xx-Central"
+                        , "xx-Hotel Hawai"
                         , "Hotel Costa Azul"
                         , "Hotel Born"
                         , "Hotel Amic Horizonte"
