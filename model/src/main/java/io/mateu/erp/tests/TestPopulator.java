@@ -1004,6 +1004,12 @@ public class TestPopulator {
                         h.getBoards().add(r);
                     }
 
+
+                    StopSales ss;
+                    h.setStopSales(ss = new StopSales());
+                    em.persist(ss);
+                    ss.setHotel(h);
+
                     em.flush();
 
                 }
@@ -1030,10 +1036,7 @@ public class TestPopulator {
 
                 for (Hotel h : hoteles) {
 
-                    StopSales s;
-                    h.setStopSales(s = new StopSales());
-                    em.persist(s);
-                    s.setHotel(h);
+                    StopSales s = h.getStopSales();
 
                     int maxStopSales = 10 + random.nextInt(30);
 
