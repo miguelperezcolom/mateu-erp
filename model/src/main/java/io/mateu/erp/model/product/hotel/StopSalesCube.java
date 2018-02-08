@@ -47,7 +47,7 @@ public class StopSalesCube {
 
     private void apply(StopSalesOperation o) {
 
-        if (o.getEnd().isAfter(ayer)) {
+        if (o.getEnd() != null && o.getEnd().isAfter(ayer)) {
 
             int desdeFecha = (o.getStart() != null)?(int) ChronoUnit.DAYS.between(inicio, (o.getStart().isAfter(ayer))?o.getStart():ayer): 0;
             int hastaFecha = (o.getEnd() != null)?(int) ChronoUnit.DAYS.between(inicio, o.getEnd()):maxdias;
@@ -91,7 +91,7 @@ public class StopSalesCube {
 
         ayer = LocalDate.now().minusDays(1);
 
-        for (StopSalesOperation o : getStopSales().getOperations()) if (o.getEnd().isAfter(ayer)) {
+        for (StopSalesOperation o : getStopSales().getOperations()) if (o.getEnd() != null && o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             for (RoomType r : o.getRooms()) if (!rooms.contains(r)) rooms.add(r);
