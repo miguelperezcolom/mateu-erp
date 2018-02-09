@@ -1,5 +1,6 @@
 package io.mateu.erp.model.importing;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
@@ -251,6 +252,7 @@ public class TransferBookingRequest {
 
     //formato dd/MM/yyyy
     private String checkDayFormat(String day) {
+        if (Strings.isNullOrEmpty(day)) return null;
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDate d = LocalDate.parse(day.trim(), df);
         return df.format(d);
@@ -258,6 +260,7 @@ public class TransferBookingRequest {
     }
     //formato HH:mm
     private String checkTimeFormat(String time) {
+        if (Strings.isNullOrEmpty(time)) return null;
         DateTimeFormatter dh = DateTimeFormatter.ofPattern("HH:mm");
          try {
             return dh.format(LocalDateTime.parse("01/01/2015 " +time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));

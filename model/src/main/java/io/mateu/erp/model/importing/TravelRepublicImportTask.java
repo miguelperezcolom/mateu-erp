@@ -9,19 +9,25 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.util.Helper;
+import lombok.Getter;
+import lombok.Setter;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.io.StringReader;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
+
+@Entity
+@Getter
+@Setter
 public class TravelRepublicImportTask extends TransferImportTask {
 
     public TravelRepublicImportTask() {}
@@ -66,10 +72,6 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
             String[][] lines = Helper.parsearCSV(getHtml());
 
-
-            SAXBuilder builder = new SAXBuilder();
-            Document doc = builder.build(new StringReader(this.getHtml()));
-            Element root = doc.getRootElement();
 
             //recorre cada transfer del fichero
             String res = "";
@@ -172,7 +174,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             rq.setArrivalAirport(m.get("OutboundFlightArrivalAirport"));
             rq.setArrivalResort(m.get("DestinationName"));
             rq.setArrivalAddress(m.get("DestinationAddress"));
-            rq.setArrivalFlightDate(m.get("OutboundFlightArrivalDate"));
+            rq.setArrivalFlightDate(convertirFormatoFecha(m.get("OutboundFlightArrivalDate")));
             rq.setArrivalFlightTime(m.get("OutboundFlightArrivalTime"));
             rq.setArrivalFlightNumber(m.get("OutboundFlightNumber"));
             rq.setArrivalFlightCompany("");
@@ -197,7 +199,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             rq.setDepartureAirport(m.get("InboundFlightDepartureAirport"));
             rq.setDepartureResort(m.get("DestinationName"));
             rq.setDepartureAddress(m.get("DestinationAddress"));
-            rq.setDepartureFlightDate(m.get("InboundFlightDepartureDate"));
+            rq.setDepartureFlightDate(convertirFormatoFecha(m.get("InboundFlightDepartureDate")));
             rq.setDepartureFlightTime(m.get("InboundFlightDepartureTime"));
             rq.setDepartureFlightNumber(m.get("InboundFlightNumber"));
             rq.setDepartureFlightCompany("");
@@ -212,6 +214,15 @@ public class TravelRepublicImportTask extends TransferImportTask {
         }
 
         return rq;
+    }
+
+    private String convertirFormatoFecha(String s) {
+        try {
+            return LocalDate.parse(s, DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.UK)).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return s;
+        }
     }
 
 }
