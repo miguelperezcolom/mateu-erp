@@ -20,7 +20,7 @@ public class BookingArea extends AbstractArea {
     public List<AbstractModule> getModules() {
         List<AbstractModule> l = new ArrayList<>();
         l.add(new BookingModule());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new ImportingModule());
+        l.add(new ImportingModule());
         return l;
     }
 }
