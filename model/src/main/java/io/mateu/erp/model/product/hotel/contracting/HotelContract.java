@@ -10,7 +10,6 @@ import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.annotations.Table;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -23,6 +22,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
+import javax.persistence.Table;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.io.File;
@@ -39,7 +39,7 @@ import java.util.List;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@Table("HOTELCONTRACT")
+@Table(name = "HOTELCONTRACT")
 @Getter
 @Setter
 @NamedQueries(

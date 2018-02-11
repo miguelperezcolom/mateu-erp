@@ -3,8 +3,11 @@ package io.mateu.erp.model.importing;
 //import okhttp3.*;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.fluent.Form;
@@ -21,7 +24,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.Transient;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,11 +38,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+
+@Entity
+@Getter
+@Setter
 public class TravelRepublicAutoImport extends TransferAutoImport {
 
     //OkHttpClient client = new OkHttpClient();
 
+    @Transient
+    @Ignored
     BasicCookieStore cookieStore = new BasicCookieStore();
+
+    @Transient
+    @Ignored
     CloseableHttpClient httpclient = HttpClients.custom()
             .setDefaultCookieStore(cookieStore)
             .build();
@@ -46,6 +60,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
     public static void main(String... args) {
         new TravelRepublicAutoImport().getBookings(LocalDate.now(), 30);
     }
+
 
 
     @Override

@@ -19,8 +19,9 @@ import java.util.List;
 /**
  * Created by miguel on 1/10/16.
  */
-@Entity
-@Table(name = "contract")
+//@Entity
+//@Table(name = "contract")
+@MappedSuperclass
 @Getter
 @Setter
 public class AbstractContract {

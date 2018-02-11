@@ -15,6 +15,7 @@ import io.mateu.erp.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.transfer.Contract;
@@ -52,7 +53,7 @@ public class Populator {
             AppConfig c = (AppConfig) appConfigClass.newInstance();
             c.setId(1);
             c.setXslfoForTransferContract(Resources.toString(Resources.getResource(Contract.class, "contract.xsl"), Charsets.UTF_8));
-            c.setXslfoForHotelContract(Resources.toString(Resources.getResource(HotelContract.class, "contract.xsl"), Charsets.UTF_8));
+            c.setXslfoForHotelContract(Resources.toString(Resources.getResource(Hotel.class, "contract.xsl"), Charsets.UTF_8));
             c.setXslfoForWorld(Resources.toString(Resources.getResource(Contract.class, "portfolio.xsl"), Charsets.UTF_8));
             c.setXslfoForList(Resources.toString(Resources.getResource(BaseServiceImpl.class, "listing.xsl"), Charsets.UTF_8));
             em.persist(c);
