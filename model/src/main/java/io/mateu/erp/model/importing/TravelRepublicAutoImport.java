@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TravelRepublicAutoImport extends TransferAutoImport {
@@ -62,7 +63,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
                     String fdesde = from.format(df);
                     String fhasta = from.plusDays(days).format(df);
                     try {
-                        csv = recuperarCsv(fdesde,fhasta);
+                        csv = recuperarCsv(from, from.plusDays(days));
                     } catch (Exception e)
                     {
                         addHistory(LocalDateTime.now().format(dfh) + " - Error: " + e.getMessage() + " \n " + e.getStackTrace());
@@ -93,7 +94,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
 
     }
 
-    private String recuperarCsv(String fdesde, String fhasta) throws Exception {
+    private String recuperarCsv(LocalDate fdesde, LocalDate fhasta) throws Exception {
 
         String h = get("https://transfers.travelrepublic.co.uk");
 
@@ -142,8 +143,8 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
             });
 
 
-            m.put("ctl00$cphMainContent$txtDepartureStartDate", "01-jan-2018");
-            m.put("ctl00$cphMainContent$txtDepartureEndDate", "01-may-2018");
+            m.put("ctl00$cphMainContent$txtDepartureStartDate", fdesde.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.UK))); //"01-jan-2018");
+            m.put("ctl00$cphMainContent$txtDepartureEndDate", fhasta.format(DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.UK))); //"01-may-2018");
             m.put("ctl00$cphMainContent$chkIncludeCancelled", "on");
             m.put("__EVENTTARGET", "ctl00$cphMainContent$btnView");
             m.put("__LASTFOCUS", "");
