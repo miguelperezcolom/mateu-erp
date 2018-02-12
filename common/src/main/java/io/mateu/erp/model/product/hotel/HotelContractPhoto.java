@@ -518,21 +518,27 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
                 LinearFareLine l = linesMap.get(rcode + "-" + bcode);
 
-                els.get("room").addContent(new Element("price").setText("" + l.getLodgingPrice()));
-                els.get("adult").addContent(new Element("price").setText("" + l.getAdultPrice()));
-                els.get("adultmeal").addContent(new Element("price").setText("" + l.getMealAdultPrice()));
+                if (l != null) {
 
-                if (l.getJuniorPrice() != null) els.get("junior").addContent(new Element("price").setText(l.getJuniorPrice().toString()));
-                if (l.getMealJuniorPrice() != null) els.get("juniormeal").addContent(new Element("price").setText(l.getMealJuniorPrice().toString()));
-                if (l.getChildPrice() != null) els.get("child").addContent(new Element("price").setText(l.getChildPrice().toString()));
-                if (l.getMealChildPrice() != null) els.get("childmeal").addContent(new Element("price").setText(l.getMealChildPrice().toString()));
-                if (l.getInfantPrice() != null) els.get("infant").addContent(new Element("price").setText(l.getInfantPrice().toString()));
-                if (l.getMealInfantPrice() != null) els.get("infantmeal").addContent(new Element("price").setText(l.getMealInfantPrice().toString()));
+                    els.get("room").addContent(new Element("price").setText("" + l.getLodgingPrice()));
+                    els.get("adult").addContent(new Element("price").setText("" + l.getAdultPrice()));
+                    els.get("adultmeal").addContent(new Element("price").setText("" + l.getMealAdultPrice()));
 
-                if (l.getExtraAdultPrice() != null) els.get("extraadult").addContent(new Element("price").setText(l.getExtraAdultPrice().toString()));
-                if (l.getExtraJuniorPrice() != null) els.get("extrajunior").addContent(new Element("price").setText(l.getExtraJuniorPrice().toString()));
-                if (l.getExtraChildPrice() != null) els.get("extrachild").addContent(new Element("price").setText(l.getExtraChildPrice().toString()));
-                if (l.getExtraInfantPrice() != null) els.get("extrainfant").addContent(new Element("price").setText(l.getExtraInfantPrice().toString()));
+                    if (l.getJuniorPrice() != null) els.get("junior").addContent(new Element("price").setText(l.getJuniorPrice().toString()));
+                    if (l.getMealJuniorPrice() != null) els.get("juniormeal").addContent(new Element("price").setText(l.getMealJuniorPrice().toString()));
+                    if (l.getChildPrice() != null) els.get("child").addContent(new Element("price").setText(l.getChildPrice().toString()));
+                    if (l.getMealChildPrice() != null) els.get("childmeal").addContent(new Element("price").setText(l.getMealChildPrice().toString()));
+                    if (l.getInfantPrice() != null) els.get("infant").addContent(new Element("price").setText(l.getInfantPrice().toString()));
+                    if (l.getMealInfantPrice() != null) els.get("infantmeal").addContent(new Element("price").setText(l.getMealInfantPrice().toString()));
+
+                    if (l.getExtraAdultPrice() != null) els.get("extraadult").addContent(new Element("price").setText(l.getExtraAdultPrice().toString()));
+                    if (l.getExtraJuniorPrice() != null) els.get("extrajunior").addContent(new Element("price").setText(l.getExtraJuniorPrice().toString()));
+                    if (l.getExtraChildPrice() != null) els.get("extrachild").addContent(new Element("price").setText(l.getExtraChildPrice().toString()));
+                    if (l.getExtraInfantPrice() != null) els.get("extrainfant").addContent(new Element("price").setText(l.getExtraInfantPrice().toString()));
+
+                }
+
+
             }
 
         }
