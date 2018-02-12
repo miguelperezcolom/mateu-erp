@@ -81,20 +81,24 @@ public class TransferService extends Service implements WithTriggers {
     @Separator("Pickup")
     private String pickupText;
     @ManyToOne
+    @SameLine
     private TransferPoint pickup;
     @ManyToOne
     @Output
     @SearchFilter
+    @SameLine
     private TransferPoint effectivePickup;
 
 
     @Separator("Dropoff")
     private String dropoffText;
     @ManyToOne
+    @SameLine
     private TransferPoint dropoff;
     @ManyToOne
     @Output
     @SearchFilter
+    @SameLine
     private TransferPoint effectiveDropoff;
 
 
@@ -102,13 +106,16 @@ public class TransferService extends Service implements WithTriggers {
     private String flightNumber;
     @NotNull
     @ListColumn(order = true)
+    @SameLine
     private LocalDateTime flightTime;
+    @SameLine
     private String flightOriginOrDestination;
 
     @Separator("Pickup info")
     @ListColumn
     private LocalDateTime pickupTime;
     @Output
+    @SameLine
     private LocalDateTime importedPickupTime;
     @SameLine
     private LocalDateTime pickupConfirmedByTelephone;
