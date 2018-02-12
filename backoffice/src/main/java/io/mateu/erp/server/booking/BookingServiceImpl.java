@@ -108,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
 
                 for (int i = 0; i < 9; i++) {
                     Data dx = new Data();
-                    dx.set("_id", LocalDate.from(r.get("_id")));
+                    dx.set("_id", LocalDate.from(((Date)r.get("_id")).toInstant()));
                     dx.set("_text", "" + l[3 + i]);
                     dx.set("_status", l[3 + i + 9 + 1]);
                     String css = "";
