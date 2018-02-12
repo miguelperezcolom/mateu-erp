@@ -17,6 +17,7 @@ import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -98,6 +99,9 @@ public class BookingServiceImpl implements BookingService {
 
         d.getList("_data");
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMMdd");
+
         for (Object[] l : ServerSideHelper.getServerSideApp().selectPage(sql, fromRow, rowsPerPage)) {
             Data r;
             d.getList("_data").add(r = new Data());
@@ -108,7 +112,7 @@ public class BookingServiceImpl implements BookingService {
 
                 for (int i = 0; i < 9; i++) {
                     Data dx = new Data();
-                    dx.set("_id", LocalDate.from(((Date)r.get("_id")).toInstant()));
+                    dx.set("_id", LocalDate.parse(sdf.format(r.get("_id")), df));
                     dx.set("_text", "" + l[3 + i]);
                     dx.set("_status", l[3 + i + 9 + 1]);
                     String css = "";
