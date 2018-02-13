@@ -23,17 +23,13 @@ public class LinearFareLine implements XMLSerializable {
     @SameLine
     private String boardTypeCode;
 
-    @NotNull
-    private LinearFareKey key;
-
-
 
     private double lodgingPrice;
-
-
-
+    @SameLine
     private double adultPrice;
     @SameLine
+    private double mealAdultPrice;
+
     private FareValue juniorPrice;
     @SameLine
     private FareValue childPrice;
@@ -43,7 +39,6 @@ public class LinearFareLine implements XMLSerializable {
 
 
 
-    private double mealAdultPrice;
     @SameLine
     private FareValue mealJuniorPrice;
     @SameLine
@@ -62,7 +57,7 @@ public class LinearFareLine implements XMLSerializable {
     @SameLine
     private FareValue extraInfantPrice;
 
-    @SameLine
+
     private FareValue singleUsePrice;
 
 
@@ -71,7 +66,6 @@ public class LinearFareLine implements XMLSerializable {
         setRoomTypeCode(e.getAttributeValue("room"));
         setBoardTypeCode(e.getAttributeValue("board"));
 
-        setKey(LinearFareKey.valueOf(e.getAttributeValue("key")));
 
         setLodgingPrice(Helper.toDouble(e.getAttributeValue("lodging")));
 
@@ -96,7 +90,6 @@ public class LinearFareLine implements XMLSerializable {
 
 
     public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodging, double adult) {
-        this.key = LinearFareKey.PAX;
         this.roomTypeCode = roomTypeCode;
         this.boardTypeCode = boardTypeCode;
         this.lodgingPrice = lodging;
@@ -104,20 +97,8 @@ public class LinearFareLine implements XMLSerializable {
     }
 
     public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodging, double adult, double junior, double child, double infant) {
-        this.key = LinearFareKey.PAX;
         this.roomTypeCode = roomTypeCode;
         this.boardTypeCode = boardTypeCode;
-        this.lodgingPrice = lodging;
-        this.adultPrice = adult;
-        this.juniorPrice = new FareValue("" + junior);
-        this.childPrice = new FareValue("" + child);
-        this.infantPrice = new FareValue("" + infant);
-    }
-
-    public LinearFareLine(String roomTypeCode, String boardTypeCode, LinearFareKey key, double lodging, double adult, double junior, double child, double infant) {
-        this.roomTypeCode = roomTypeCode;
-        this.boardTypeCode = boardTypeCode;
-        this.key = key;
         this.lodgingPrice = lodging;
         this.adultPrice = adult;
         this.juniorPrice = new FareValue("" + junior);
@@ -128,7 +109,6 @@ public class LinearFareLine implements XMLSerializable {
     public LinearFareLine(LinearFareLine o) {
         this.roomTypeCode = o.roomTypeCode;
         this.boardTypeCode = o.boardTypeCode;
-        this.key = o.key;
         this.lodgingPrice = o.lodgingPrice;
         this.adultPrice = o.adultPrice;
         if (o.juniorPrice != null) this.juniorPrice = o.juniorPrice;
@@ -144,10 +124,9 @@ public class LinearFareLine implements XMLSerializable {
         if (o.extraInfantPrice != null) this.extraInfantPrice = o.extraInfantPrice;
     }
 
-    public LinearFareLine(String roomTypeCode, String boardTypeCode, LinearFareKey key, double lodgingPrice, double adultPrice, FareValue juniorPrice, FareValue childPrice, FareValue infantPrice, double mealAdultPrice, FareValue mealJuniorPrice, FareValue mealChildPrice, FareValue mealInfantPrice, FareValue extraAdultPrice, FareValue extraJuniorPrice, FareValue extraChildPrice, FareValue extraInfantPrice) {
+    public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodgingPrice, double adultPrice, FareValue juniorPrice, FareValue childPrice, FareValue infantPrice, double mealAdultPrice, FareValue mealJuniorPrice, FareValue mealChildPrice, FareValue mealInfantPrice, FareValue extraAdultPrice, FareValue extraJuniorPrice, FareValue extraChildPrice, FareValue extraInfantPrice) {
         this.roomTypeCode = roomTypeCode;
         this.boardTypeCode = boardTypeCode;
-        this.key = key;
         this.lodgingPrice = lodgingPrice;
         this.adultPrice = adultPrice;
         this.juniorPrice = juniorPrice;
@@ -169,7 +148,6 @@ public class LinearFareLine implements XMLSerializable {
 
         e.setAttribute("room", getRoomTypeCode());
         e.setAttribute("board", getBoardTypeCode());
-        e.setAttribute("key", "" + getKey());
 
 
         e.setAttribute("lodging", "" + getLodgingPrice());
