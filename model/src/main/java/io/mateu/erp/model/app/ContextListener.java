@@ -1,6 +1,7 @@
 package io.mateu.erp.model.app;
 
 import io.mateu.erp.model.email.Pop3Reader;
+import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.workflow.TaskRunnerRunnable;
 
 import javax.servlet.ServletContextEvent;
@@ -16,6 +17,8 @@ public class ContextListener implements javax.servlet.ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
+        System.out.println("****CONTEXTLISTENER****");
+        Helper.loadProperties();
         if ("yes".equalsIgnoreCase(System.getProperty("taskrunner")) || "true".equalsIgnoreCase(System.getProperty("taskrunner"))) {
             if (hiloTaskRunner == null) {
                 System.out.println("****ARRANCANDO TASKRUNNER****");
