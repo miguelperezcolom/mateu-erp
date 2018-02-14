@@ -17,6 +17,7 @@ import javax.persistence.EntityManager;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,47 +37,51 @@ public class BookingServiceImpl implements BookingService {
         String sql = "select d.value, to_char(d.value, 'yyyy-MM-dd DY'), a.name " +
 
 
-                ", sum(case when transfertype = 1 and direction in (0,2) then pax else 0 end)" +
+                ", sum(case when transfertype = 1 and direction = 0 then pax else 0 end)" +
                 ", sum(case when transfertype = 1 and direction = 1 then pax else 0 end)" +
 
-                ", sum(case when transfertype = 3 and direction in (0,2) then pax else 0 end)" +
+                ", sum(case when transfertype = 3 and direction = 0 then pax else 0 end)" +
                 ", sum(case when transfertype = 3 and direction = 1 then pax else 0 end)" +
 
-                ", sum(case when transfertype = 2 and direction in (0,2) then pax else 0 end)" +
+                ", sum(case when transfertype = 2 and direction = 0 then pax else 0 end)" +
                 ", sum(case when transfertype = 2 and direction = 1 then pax else 0 end)" +
 
-                ", sum(case when transfertype = 0 and direction in (0,2) then pax else 0 end)" +
+                ", sum(case when transfertype = 0 and direction = 0 then pax else 0 end)" +
                 ", sum(case when transfertype = 0 and direction = 1 then pax else 0 end)" +
 
+                ", sum(case when direction = 2 then pax else 0 end)" +
 
                 ", to_char(pickupTimeInformed, 'Mon-dd HH24:MI')" +
 
 
-                ", min(case when transfertype = 1 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 1 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 3 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 3 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", min(case when transfertype = 3 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 2 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 2 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", min(case when transfertype = 2 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
-                ", min(case when transfertype = 0 and direction in (0,2) then effectiveprocessingstatus else 1000 end)" +
+                ", min(case when transfertype = 0 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
 
+                ", min(case when direction = 2 then effectiveprocessingstatus else 1000 end)" +
 
-                ", max(case when transfertype = 1 and direction in (0,2) then validationstatus else 0 end)" +
+
+                ", max(case when transfertype = 1 and direction = 0 then validationstatus else 0 end)" +
                 ", max(case when transfertype = 1 and direction = 1 then validationstatus else 0 end)" +
 
-                ", max(case when transfertype = 3 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 3 and direction = 0 then validationstatus else 0 end)" +
                 ", max(case when transfertype = 3 and direction = 1 then validationstatus else 0 end)" +
 
-                ", max(case when transfertype = 2 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 2 and direction = 0 then validationstatus else 0 end)" +
                 ", max(case when transfertype = 2 and direction = 1 then validationstatus else 0 end)" +
 
-                ", max(case when transfertype = 0 and direction in (0,2) then validationstatus else 0 end)" +
+                ", max(case when transfertype = 0 and direction = 0 then validationstatus else 0 end)" +
                 ", max(case when transfertype = 0 and direction = 1 then validationstatus else 0 end)" +
 
+                ", max(case when direction = 2 then validationstatus else 0 end)" +
 
                 "from dummydate d left outer join service on d.value = start left outer join transferpoint a on a.id = airport_id " +
 
@@ -94,6 +99,9 @@ public class BookingServiceImpl implements BookingService {
 
         d.getList("_data");
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMMdd");
+
         for (Object[] l : ServerSideHelper.getServerSideApp().selectPage(sql, fromRow, rowsPerPage)) {
             Data r;
             d.getList("_data").add(r = new Data());
@@ -102,18 +110,19 @@ public class BookingServiceImpl implements BookingService {
                     r.set((i == 0)?"_id":"col" + i, l[i]);
                 }
 
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 9; i++) {
                     Data dx = new Data();
+                    dx.set("_id", LocalDate.parse(sdf.format(r.get("_id")), df));
                     dx.set("_text", "" + l[3 + i]);
-                    dx.set("_status", l[3 + i + 8 + 1]);
+                    dx.set("_status", l[3 + i + 9 + 1]);
                     String css = "";
-                    Object o = l[3 + i + 8 + 1];
+                    Object o = l[3 + i + 9 + 1];
                     int v = 0;
                     if (o == null) v = 0;
                     else if (o instanceof Integer) v = (Integer)o;
                     else if (o instanceof Long) v = ((Long)o).intValue();
 
-                    o = l[3 + i + 8 + 1 + 8];
+                    o = l[3 + i + 9 + 1 + 9];
                     int w = 0;
                     if (o == null) w = 0;
                     else if (o instanceof Integer) w = (Integer)o;
@@ -134,7 +143,7 @@ public class BookingServiceImpl implements BookingService {
                     dx.set("_css", css);
                     r.set("col" + (3 + i), dx);
                 }
-                int i = 11;
+                int i = 12;
                 r.set("col" + i, l[i++]);
 
             }

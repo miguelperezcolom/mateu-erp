@@ -15,6 +15,17 @@ public class Supplement implements XMLSerializable {
     private LocalDate start;
     private LocalDate end;
 
+    /*
+        private LocalDate stayStart;
+    private LocalDate stayEnd;
+
+    private LocalDate checkinStart;
+    private LocalDate checkinEnd;
+
+    private LocalDate checkoutStart;
+    private LocalDate checkoutEnd;
+     */
+
     private boolean optional;
 
     private boolean affectedByOffers;
@@ -246,8 +257,8 @@ public class Supplement implements XMLSerializable {
         if (getStart() != null || getEnd() != null) {
             if (sb.length() > 0) sb.append(", ");
             sb.append(" for stays");
-            if (getStart() != null) sb.append(" from " + getStart().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            if (getEnd() != null) sb.append(" to " + getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            if (getStart() != null) sb.append(" from " + getStart().format(DateTimeFormatter.ISO_LOCAL_DATE));
+            if (getEnd() != null) sb.append(" to " + getEnd().format(DateTimeFormatter.ISO_LOCAL_DATE));
         }
 
         if (sb.length() > 0) sb.append(", ");

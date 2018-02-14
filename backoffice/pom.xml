@@ -122,6 +122,16 @@
 
 
     <profiles>
+
+        <profile>
+            <id>jaronly</id>
+
+            <properties>
+                <empaquetado>jar</empaquetado>
+            </properties>
+
+        </profile>
+
         <profile>
             <id>vaadin</id>
 

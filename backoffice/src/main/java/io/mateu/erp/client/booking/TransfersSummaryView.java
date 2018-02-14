@@ -123,7 +123,13 @@ public class TransfersSummaryView extends AbstractListView {
                 linkedOn(getId(), data);
             }
         }.setAlignment(ColumnAlignment.RIGHT));
-        l.add(new OutputColumn("col11", "PU Infd.", 120));
+        l.add(new DataColumn("col11", "P2P", 90) {
+            @Override
+            public void run(Data data) {
+                linkedOn(getId(), data);
+            }
+        }.setAlignment(ColumnAlignment.RIGHT));
+        l.add(new OutputColumn("col12", "PU Infd.", 120));
         return l;
     }
 
@@ -164,7 +170,11 @@ public class TransfersSummaryView extends AbstractListView {
             case 10:
                 d.set("transferType", new Pair("INCOMING", "INCOMING"));
                 d.set("direction", new Pair("OUTBOUND", "OUTBOUND"));
-                break;        }
+                break;
+            case 11:
+                d.set("direction", new Pair("POINTTOPOINT", "POINTTOPOINT"));
+                break;
+        }
         ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.booking.transfer.TransferService", "io.mateu.erp.model.booking.transfer.TransferService", null, new MDDCallback(d));
     }
 
