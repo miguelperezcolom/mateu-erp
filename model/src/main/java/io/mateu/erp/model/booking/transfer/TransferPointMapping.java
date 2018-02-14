@@ -56,7 +56,6 @@ public class TransferPointMapping implements WithTriggers {
 
         Data[] data = new Data[1];
 
-
         List<TransferPointMapping> l = em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.point is null order by x.text").getResultList();
         if (l.size() == 0) throw new Exception("No more pending mappings");
         else {
@@ -88,8 +87,24 @@ public class TransferPointMapping implements WithTriggers {
     }
 
     @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Exception {
+    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
         setText(getText().toLowerCase().trim());
+
+        List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setParameter("s", getText()).getResultList();
+
+        for (TransferService s : ss) {
+            s.setPickup(getPoint());
+            if (getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(getPoint());
+            s.afterSet(em, false);
+        }
+
+        ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setParameter("s", getText()).getResultList();
+
+        for (TransferService s : ss) {
+            s.setDropoff(getPoint());
+            if (getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(getPoint());
+            s.afterSet(em, false);
+        }
     }
 
     @Override
