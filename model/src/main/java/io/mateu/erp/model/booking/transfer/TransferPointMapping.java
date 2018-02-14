@@ -36,7 +36,6 @@ public class TransferPointMapping implements WithTriggers {
     private String text;
 
     @ManyToOne
-    @SearchFilter
     @SearchFilterIsNull(value = "Unmapped")
     private TransferPoint point;
 

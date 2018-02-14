@@ -34,7 +34,6 @@ public class Office {
 
     @Separator("Email")
     @NotInList
-    @SameLine
     private String emailHost;
     @NotInList
     @SameLine
