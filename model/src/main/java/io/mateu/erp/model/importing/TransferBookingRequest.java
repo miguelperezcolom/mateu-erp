@@ -62,6 +62,9 @@ public class TransferBookingRequest {
     @SameLine
     private double value;
 
+    @Transient
+    private double effectiveValue;
+
     //public enum SERVICETYPE {SHUTTLE, PRIVATE};//Shuttle, Private, se pueden agregar mas...
     @ListColumn
     @Output
@@ -327,6 +330,18 @@ public class TransferBookingRequest {
 
             System.out.println("yyyy ref=" + getAgencyReference());
 
+            System.out.println("value=" + value);
+
+            if (TRANSFERSERVICES.BOTH.equals(transferServices)) {
+                effectiveValue = Helper.roundEuros(value / 2);
+            } else {
+                effectiveValue = value;
+            }
+
+            System.out.println("effectiveValue=" + effectiveValue);
+
+
+
             //Si ok, actualizamos la reserva...
             Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
             User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
@@ -355,12 +370,6 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillArrival(s);
-                    if (value != 0) {
-                        s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                        s.setValueOverrided(true);
-                    } else {
-                        s.setValueOverrided(false);
-                    }
                     s.afterSet(em,false);
                     this.getTask().increaseAdditions();
                 }
@@ -372,12 +381,6 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillDeparture(s);
-                    if (value != 0) {
-                        s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                        s.setValueOverrided(true);
-                    } else {
-                        s.setValueOverrided(false);
-                    }
                     s.afterSet(em, false);
                     this.getTask().increaseAdditions();
                 }
@@ -406,8 +409,6 @@ public class TransferBookingRequest {
                 }
 
 
-                System.out.println("value=" + value);
-
 
                 if (TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
                     TransferService s = getArrival(b);
@@ -418,14 +419,6 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillArrival(s);
-
-                        if (value != 0) {
-                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                            s.setValueOverrided(true);
-                        } else {
-                            s.setValueOverrided(false);
-                        }
-
                         s.afterSet(em, false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -446,14 +439,6 @@ public class TransferBookingRequest {
                         else
                         {
                             fillArrival(s);
-
-                            if (value != 0) {
-                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                                s.setValueOverrided(true);
-                            } else {
-                                s.setValueOverrided(false);
-                            }
-
                             s.getAudit().touch(u);
                             s.afterSet(em,false);
                             hayCambios=true;
@@ -477,14 +462,6 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillDeparture(s);
-
-                        if (value != 0) {
-                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                            s.setValueOverrided(true);
-                        } else {
-                            s.setValueOverrided(false);
-                        }
-
                         s.afterSet(em,false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -504,14 +481,6 @@ public class TransferBookingRequest {
                         }
                         else {
                             fillDeparture(s);
-
-                            if (value != 0) {
-                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
-                                s.setValueOverrided(true);
-                            } else {
-                                s.setValueOverrided(false);
-                            }
-
                             s.getAudit().touch(u);
                             s.afterSet(em,false);
                             hayCambios = true;
@@ -601,6 +570,11 @@ public class TransferBookingRequest {
         if (!s.getComment().contains(comm) )
             s.setComment(comm + "\n" + s.getComment());
 
+        if (effectiveValue != 0) {
+            s.setOverridedNetValue(effectiveValue);
+            s.setValueOverrided(true);
+        }
+
     }
 
     private boolean changesInArrival(TransferService s) {
@@ -647,6 +621,8 @@ public class TransferBookingRequest {
         if (babies>0) comm += (babies + " BABIES. ");
         if (extras>0) comm += (babies + " EXTRAS. ");
         if (!s.getComment().contains(comm) ) return true;
+
+        if (effectiveValue != 0 && effectiveValue != s.getOverridedNetValue()) return true;
 
         return false;
     }
@@ -707,6 +683,8 @@ public class TransferBookingRequest {
         if (extras>0) comm += (babies + " EXTRAS. ");
         if (!s.getComment().contains(comm) ) return true;
 
+        if (effectiveValue != 0 && effectiveValue != s.getOverridedNetValue()) return true;
+
         return false;
     }
 
@@ -745,6 +723,12 @@ public class TransferBookingRequest {
         if (extras>0) comm += (babies + " EXTRAS. ");
         if (!s.getComment().contains(comm) )
             s.setComment(comm + "\n" + s.getComment());
+
+        if (effectiveValue != 0) {
+            s.setOverridedNetValue(effectiveValue);
+            s.setValueOverrided(true);
+        }
+
     }
 
 
