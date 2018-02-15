@@ -10,6 +10,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
+import io.mateu.erp.model.util.Helper;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -402,7 +403,7 @@ public class TransferBookingRequest {
                         fillArrival(s);
 
                         if (value != 0) {
-                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
                             s.setValueOverrided(true);
                         } else {
                             s.setValueOverrided(false);
@@ -430,7 +431,7 @@ public class TransferBookingRequest {
                             fillArrival(s);
 
                             if (value != 0) {
-                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
                                 s.setValueOverrided(true);
                             } else {
                                 s.setValueOverrided(false);
@@ -461,7 +462,7 @@ public class TransferBookingRequest {
                         fillDeparture(s);
 
                         if (value != 0) {
-                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
                             s.setValueOverrided(true);
                         } else {
                             s.setValueOverrided(false);
@@ -488,7 +489,7 @@ public class TransferBookingRequest {
                             fillDeparture(s);
 
                             if (value != 0) {
-                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
                                 s.setValueOverrided(true);
                             } else {
                                 s.setValueOverrided(false);
