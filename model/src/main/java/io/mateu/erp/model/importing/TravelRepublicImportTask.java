@@ -9,6 +9,7 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -159,8 +160,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
         boolean isArrival=false;
         rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.DEPARTURE);//departure=el aerpuerto esta en el destino
         String departureAirport = m.get("InboundFlightDepartureAirport");
-        String arrivalAirport = m.get("OutboundFlightArrivalTime");
-        if (Strings.isNullOrEmpty(arrivalAirport) && !Strings.isNullOrEmpty(departureAirport)) {
+        String arrivalAirport = m.get("OutboundFlightArrivalAirport");
+        if (!Strings.isNullOrEmpty(arrivalAirport)) {
             rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.ARRIVAL);
 
             TransferBookingRequest.STATUS s =  TransferBookingRequest.STATUS.OK;
@@ -209,7 +210,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             rq.setDeparturePickupTime("");
 
         }
-        if (Strings.isNullOrEmpty(arrivalAirport) && !Strings.isNullOrEmpty(departureAirport)) {
+        if (!Strings.isNullOrEmpty(arrivalAirport) && !Strings.isNullOrEmpty(departureAirport)) {
             rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.BOTH);
         }
 
@@ -223,6 +224,26 @@ public class TravelRepublicImportTask extends TransferImportTask {
             e.printStackTrace();
             return s;
         }
+    }
+
+
+
+    public static void main(String... args) throws Throwable {
+
+        System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
+
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                TravelRepublicImportTask t = new TravelRepublicImportTask();
+                t.setHtml(Helper.leerFichero(getClass().getResourceAsStream("/manifest.csv")));
+                t.execute(em);
+
+            }
+        });
+
     }
 
 }
