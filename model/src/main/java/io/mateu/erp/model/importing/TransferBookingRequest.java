@@ -325,7 +325,7 @@ public class TransferBookingRequest {
 
             _result = "";
 
-            System.out.println("xxx ref=" + getAgencyReference());
+            System.out.println("yyyy ref=" + getAgencyReference());
 
             //Si ok, actualizamos la reserva...
             Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
@@ -404,6 +404,9 @@ public class TransferBookingRequest {
                     b.setComments(b.getComments() + "--" + comments);
                     hayCambios=true;
                 }
+
+
+                System.out.println("value=" + value);
 
 
                 if (TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
