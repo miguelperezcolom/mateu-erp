@@ -56,6 +56,11 @@ public class TransferBookingRequest {
     @Output
     private String modified; //ojo, de momento estos campos no se estan aplicando en la reserva
 
+    private String currency;
+
+    @SameLine
+    private double value;
+
     //public enum SERVICETYPE {SHUTTLE, PRIVATE};//Shuttle, Private, se pueden agregar mas...
     @ListColumn
     @Output
@@ -385,6 +390,7 @@ public class TransferBookingRequest {
                     hayCambios=true;
                 }
 
+
                 if (TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
                     TransferService s = getArrival(b);
                     if (s==null)
@@ -394,6 +400,14 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillArrival(s);
+
+                        if (value != 0) {
+                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                            s.setValueOverrided(true);
+                        } else {
+                            s.setValueOverrided(false);
+                        }
+
                         s.afterSet(em, false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -414,6 +428,14 @@ public class TransferBookingRequest {
                         else
                         {
                             fillArrival(s);
+
+                            if (value != 0) {
+                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                                s.setValueOverrided(true);
+                            } else {
+                                s.setValueOverrided(false);
+                            }
+
                             s.getAudit().touch(u);
                             s.afterSet(em,false);
                             hayCambios=true;
@@ -437,6 +459,14 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillDeparture(s);
+
+                        if (value != 0) {
+                            s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                            s.setValueOverrided(true);
+                        } else {
+                            s.setValueOverrided(false);
+                        }
+
                         s.afterSet(em,false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -456,6 +486,14 @@ public class TransferBookingRequest {
                         }
                         else {
                             fillDeparture(s);
+
+                            if (value != 0) {
+                                s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))?value / 2:value);
+                                s.setValueOverrided(true);
+                            } else {
+                                s.setValueOverrided(false);
+                            }
+
                             s.getAudit().touch(u);
                             s.afterSet(em,false);
                             hayCambios = true;

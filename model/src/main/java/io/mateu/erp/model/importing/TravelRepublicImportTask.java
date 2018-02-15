@@ -161,6 +161,18 @@ public class TravelRepublicImportTask extends TransferImportTask {
         rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.DEPARTURE);//departure=el aerpuerto esta en el destino
         String departureAirport = m.get("InboundFlightDepartureAirport");
         String arrivalAirport = m.get("OutboundFlightArrivalAirport");
+
+        String nc = m.get("NetCost");
+        if (!Strings.isNullOrEmpty(nc)) {
+            //EUR19.18
+            try {
+                rq.setCurrency(nc.substring(0, 3));
+                rq.setValue(Helper.toDouble(nc.substring(3)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         if (!Strings.isNullOrEmpty(arrivalAirport)) {
             rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.ARRIVAL);
 
@@ -213,6 +225,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
         if (!Strings.isNullOrEmpty(arrivalAirport) && !Strings.isNullOrEmpty(departureAirport)) {
             rq.setTransferServices(TransferBookingRequest.TRANSFERSERVICES.BOTH);
         }
+
+
 
         return rq;
     }
