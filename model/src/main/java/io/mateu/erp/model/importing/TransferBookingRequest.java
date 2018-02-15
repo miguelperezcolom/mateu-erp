@@ -325,6 +325,8 @@ public class TransferBookingRequest {
 
             _result = "";
 
+            System.out.println("xxx ref=" + getAgencyReference());
+
             //Si ok, actualizamos la reserva...
             Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
             User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
@@ -353,6 +355,12 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillArrival(s);
+                    if (value != 0) {
+                        s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
+                        s.setValueOverrided(true);
+                    } else {
+                        s.setValueOverrided(false);
+                    }
                     s.afterSet(em,false);
                     this.getTask().increaseAdditions();
                 }
@@ -364,6 +372,12 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillDeparture(s);
+                    if (value != 0) {
+                        s.setOverridedNetValue((TRANSFERSERVICES.BOTH.equals(transferServices))? Helper.roundEuros(value / 2):value);
+                        s.setValueOverrided(true);
+                    } else {
+                        s.setValueOverrided(false);
+                    }
                     s.afterSet(em, false);
                     this.getTask().increaseAdditions();
                 }
