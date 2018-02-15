@@ -24,6 +24,8 @@ public class LinearFareLine implements XMLSerializable {
 
     private double lodgingPrice;
     @SameLine
+    private FareValue singleUsePrice;
+
     private double adultPrice;
     @SameLine
     private double mealAdultPrice;
@@ -37,7 +39,6 @@ public class LinearFareLine implements XMLSerializable {
 
 
 
-    @SameLine
     private FareValue mealJuniorPrice;
     @SameLine
     private FareValue mealChildPrice;
@@ -55,8 +56,6 @@ public class LinearFareLine implements XMLSerializable {
     @SameLine
     private FareValue extraInfantPrice;
 
-
-    private FareValue singleUsePrice;
 
 
 
