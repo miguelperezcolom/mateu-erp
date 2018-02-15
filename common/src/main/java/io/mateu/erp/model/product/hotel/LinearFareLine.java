@@ -15,11 +15,9 @@ import javax.validation.constraints.NotNull;
 public class LinearFareLine implements XMLSerializable {
 
     @ValueClass(RoomType.class)
-    @NotNull
     private String roomTypeCode;
 
     @ValueClass(BoardType.class)
-    @NotNull
     @SameLine
     private String boardTypeCode;
 
