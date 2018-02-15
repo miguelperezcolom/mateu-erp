@@ -168,6 +168,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             try {
                 rq.setCurrency(nc.substring(0, 3));
                 rq.setValue(Helper.toDouble(nc.substring(3)));
+                if (rq.getValue() != 0) rq.setValue(rq.getValue() + 0.01);
             } catch (Exception e) {
                 e.printStackTrace();
             }
