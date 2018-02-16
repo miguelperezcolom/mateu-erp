@@ -763,7 +763,7 @@ public class TransferService extends Service implements WithTriggers {
     public String getSubitle() {
         String s = super.toString();
         TransferService r = null;
-        for (Service sv : getBooking().getServices()) {
+        if (getBooking() != null) for (Service sv : getBooking().getServices()) {
             if (sv.getId() != getId() && sv instanceof TransferService) {
                 r = (TransferService) sv;
                 break;
