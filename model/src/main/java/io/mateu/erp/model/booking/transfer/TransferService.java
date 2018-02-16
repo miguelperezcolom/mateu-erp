@@ -175,14 +175,20 @@ public class TransferService extends Service implements WithTriggers {
     public List<MDDLink> getLinks() {
         List<MDDLink> l = super.getLinks();
 
-        TransferService r = null;
-        for (Service s : getBooking().getServices()) {
-            if (s.getId() != getId() && s instanceof TransferService) {
-                r = (TransferService) s;
-                break;
+        if (getBooking() != null) {
+
+            TransferService r = null;
+            for (Service s : getBooking().getServices()) {
+                if (s.getId() != getId() && s instanceof TransferService) {
+                    r = (TransferService) s;
+                    break;
+                }
             }
+            if (r != null) l.add(new MDDLink((TransferDirection.OUTBOUND.equals(r.getDirection()))?"Outbound":"Inbound", TransferService.class, ActionType.OPENEDITOR, new Data("_id", r.getId())));
+
         }
-        if (r != null) l.add(new MDDLink((TransferDirection.OUTBOUND.equals(r.getDirection()))?"Outbound":"Inbound", TransferService.class, ActionType.OPENEDITOR, new Data("_id", r.getId())));
+
+
 
         return l;
     }
