@@ -577,7 +577,7 @@ public class TransferBookingRequest {
             s.setComment(comm + "\n" + s.getComment());
 
 
-        if (effectiveValue != 0 || getTask().getCustomer().getId() == 47) {
+        if (getValue() != 0) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
             effectiveValue = 0;
@@ -732,7 +732,7 @@ public class TransferBookingRequest {
         if (!s.getComment().contains(comm) )
             s.setComment(comm + "\n" + s.getComment());
 
-        if (effectiveValue != 0 || getTask().getCustomer().getId() == 47) {
+        if (getValue() != 0) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
             effectiveValue = 0;
