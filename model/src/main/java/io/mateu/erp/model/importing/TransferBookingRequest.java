@@ -630,7 +630,7 @@ public class TransferBookingRequest {
         if (extras>0) comm += (babies + " EXTRAS. ");
         if (!s.getComment().contains(comm) ) return true;
 
-        if (effectiveValue != 0 && effectiveValue != s.getOverridedNetValue()) return true;
+        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue()) return true;
 
         return false;
     }
@@ -691,7 +691,7 @@ public class TransferBookingRequest {
         if (extras>0) comm += (babies + " EXTRAS. ");
         if (!s.getComment().contains(comm) ) return true;
 
-        if (effectiveValue != 0 && effectiveValue != s.getOverridedNetValue()) return true;
+        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue()) return true;
 
         return false;
     }
