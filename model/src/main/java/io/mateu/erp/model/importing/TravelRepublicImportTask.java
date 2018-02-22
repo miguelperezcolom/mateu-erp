@@ -253,6 +253,9 @@ public class TravelRepublicImportTask extends TransferImportTask {
             public void run(EntityManager em) throws Throwable {
 
                 TravelRepublicImportTask t = new TravelRepublicImportTask();
+                em.persist(t);
+                t.setAudit(new Audit());
+                t.setCustomer(em.find(Actor.class, 47l));
                 t.setHtml(Helper.leerFichero(getClass().getResourceAsStream("/manifest.csv")));
                 t.execute(em);
 
