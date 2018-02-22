@@ -332,11 +332,7 @@ public class TransferBookingRequest {
 
             System.out.println("value=" + value);
 
-            if (TRANSFERSERVICES.BOTH.equals(transferServices)) {
-                effectiveValue = Helper.roundEuros(value / 2);
-            } else {
-                effectiveValue = value;
-            }
+            effectiveValue = value;
 
             System.out.println("effectiveValue=" + effectiveValue);
 
@@ -573,6 +569,7 @@ public class TransferBookingRequest {
         if (effectiveValue != 0) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
+            effectiveValue = 0;
         }
 
     }
