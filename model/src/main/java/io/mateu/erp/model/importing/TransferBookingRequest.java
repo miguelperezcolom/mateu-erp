@@ -722,9 +722,10 @@ public class TransferBookingRequest {
         if (!s.getComment().contains(comm) )
             s.setComment(comm + "\n" + s.getComment());
 
-        if (effectiveValue != 0) {
+        if (effectiveValue != 0 || getTask().getCustomer().getId() == 47) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
+            effectiveValue = 0;
         }
 
     }
