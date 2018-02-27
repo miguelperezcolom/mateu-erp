@@ -122,7 +122,7 @@ public class Pagina2b extends AbstractServerSideWizardPage {
         List<Data> l = new ArrayList<>();
         for (PriceOption o : options) {
             Data d = new Data();
-            ERPServiceImpl.fillData(user, em, d, o);
+            ERPServiceImpl.fillData(user, em, d, o, null);
             l.add(d);
         }
         out.set("option_data", l);

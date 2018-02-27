@@ -101,7 +101,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         List<Data> l = new ArrayList<>();
         for (HotelOption o : options) {
             Data d = new Data();
-            ERPServiceImpl.fillData(user, em, d, o);
+            ERPServiceImpl.fillData(user, em, d, o, null);
             l.add(d);
         }
         out.set("hotel_data", l);
