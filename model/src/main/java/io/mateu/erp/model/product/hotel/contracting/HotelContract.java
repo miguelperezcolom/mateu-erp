@@ -10,6 +10,7 @@ import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.interfaces.CalendarLimiter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -49,7 +51,7 @@ import java.util.List;
                         @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
                 })
 )
-public class HotelContract extends AbstractContract implements IHotelContract {
+public class HotelContract extends AbstractContract implements IHotelContract, CalendarLimiter {
 
     @Tab("Others")
     @org.eclipse.persistence.annotations.Index
@@ -261,4 +263,13 @@ public class HotelContract extends AbstractContract implements IHotelContract {
 
     }
 
+    @Override
+    public LocalDate getBegining() {
+        return getValidFrom();
+    }
+
+    @Override
+    public LocalDate getEnding() {
+        return getValidTo();
+    }
 }
