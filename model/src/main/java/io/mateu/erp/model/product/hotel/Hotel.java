@@ -114,12 +114,16 @@ public class Hotel implements IHotel, WithTriggers {
     private List<Board> boards = new ArrayList<>();
 
     @ManyToOne
-    @Ignored
+    @Output
     private StopSales stopSales;
 
     @OneToMany(mappedBy = "hotel")
     @Ignored
     private List<Inventory> inventories = new ArrayList<>();
+
+    @ManyToOne
+    @Output
+    private Inventory realInventory;
 
     @OneToMany(mappedBy = "hotel")
     @Ignored
@@ -168,7 +172,15 @@ public class Hotel implements IHotel, WithTriggers {
     public void afterSet(EntityManager entityManager, boolean b) throws Exception, Throwable {
         if (getStopSales() == null) {
             setStopSales(new StopSales());
+            getStopSales().setHotel(this);
             entityManager.persist(getStopSales());
+        }
+
+        if (getRealInventory() == null) {
+            setRealInventory(new Inventory());
+            getRealInventory().setHotel(this);
+            getRealInventory().setName("Real inventory");
+            entityManager.persist(getRealInventory());
         }
     }
 
