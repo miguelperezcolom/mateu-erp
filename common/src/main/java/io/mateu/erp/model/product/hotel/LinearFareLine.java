@@ -57,6 +57,9 @@ public class LinearFareLine implements XMLSerializable {
     private FareValue extraInfantPrice;
 
 
+    public LinearFareLine() {
+
+    }
 
 
     public LinearFareLine(Element e) {

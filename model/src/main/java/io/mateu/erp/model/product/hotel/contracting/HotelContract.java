@@ -7,6 +7,7 @@ import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.HotelContractPhoto;
+import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -24,6 +25,7 @@ import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.io.File;
@@ -60,7 +62,12 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
     @SearchFilter
     @ManyToOne
+    @NotNull
     private Hotel hotel;
+
+    @ManyToOne
+    @NotNull
+    private Inventory inventory;
 
     @ManyToOne
     private HotelContract parent;

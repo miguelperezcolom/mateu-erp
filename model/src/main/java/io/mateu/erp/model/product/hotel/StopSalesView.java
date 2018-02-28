@@ -22,8 +22,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Getter@Setter
@@ -80,7 +82,7 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
             if (mes != d.getMonthValue()) {
                 gd.getData().add(data = new Data());
                 data.set("year", d.getYear());
-                data.set("month", d.getMonthValue());
+                data.set("month", d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
                 mes = d.getMonthValue();
             }
             Data dx = new Data();

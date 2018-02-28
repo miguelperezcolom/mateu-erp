@@ -8,6 +8,7 @@ import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.CacheIndex;
@@ -32,7 +33,7 @@ import java.util.List;
                         @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
                 })
 )
-public class Hotel implements IHotel {
+public class Hotel implements IHotel, WithTriggers {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -158,4 +159,26 @@ public class Hotel implements IHotel {
         return h;
     }
 
+    @Override
+    public void beforeSet(EntityManager entityManager, boolean b) throws Throwable {
+
+    }
+
+    @Override
+    public void afterSet(EntityManager entityManager, boolean b) throws Exception, Throwable {
+        if (getStopSales() == null) {
+            setStopSales(new StopSales());
+            entityManager.persist(getStopSales());
+        }
+    }
+
+    @Override
+    public void beforeDelete(EntityManager entityManager) throws Throwable {
+
+    }
+
+    @Override
+    public void afterDelete(EntityManager entityManager) throws Throwable {
+
+    }
 }

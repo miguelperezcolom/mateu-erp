@@ -85,7 +85,6 @@ public class Pagina2 extends AbstractServerSideWizardPage {
 
                 o.setId(ah.getHotelId());
                 o.setCategory(ah.getHotelCategoryName());
-                o.setCity(ah.getHotelCategoryId());
                 o.setHotelName(ah.getHotelName());
                 o.setBestDeal(ah.getBestDeal());
 
@@ -96,7 +95,21 @@ public class Pagina2 extends AbstractServerSideWizardPage {
 
         long t = System.currentTimeMillis();
 
-        out.set("message", "" + options.size() + " prices found in " + (t - t0) + " ms.");
+        out.set("message", "" + options.size() + " hotels found in " + (t - t0) + " ms.");
+
+        System.out.println("" + out.get("message"));
+
+
+        for (HotelOption o : options) {
+            Hotel h = em.find(Hotel.class, Long.parseLong(o.getId()));
+            o.setCity(h.getCity().getName());
+        }
+
+        long t1 = System.currentTimeMillis();
+
+        System.out.println("data completed in " + (t - t0) + " ms.");
+
+
 
         List<Data> l = new ArrayList<>();
         for (HotelOption o : options) {

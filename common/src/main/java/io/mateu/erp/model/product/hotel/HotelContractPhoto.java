@@ -594,4 +594,9 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
         return xml;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && toString().equals(obj.toString());
+    }
 }

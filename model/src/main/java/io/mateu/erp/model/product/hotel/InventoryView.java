@@ -14,6 +14,8 @@ import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,10 +25,8 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.format.TextStyle;
+import java.util.*;
 
 @Getter@Setter
 public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
@@ -98,7 +98,7 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
                 if (data == null) {
                     mz.put(r, data = new Data());
                     data.set("year", d.getYear());
-                    data.set("month", d.getMonthValue());
+                    data.set("month", d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
                     data.set("room", r.getName().getEs());
                 }
 
@@ -148,7 +148,9 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
                     @Parameter(name = "Action") @NotNull InventoryAction action,
                     @Parameter(name = "Start") @NotNull LocalDate start,
                     @Parameter(name = "End") @NotNull LocalDate end,
-                    @Parameter(name = "Room") @NotNull RoomType room) throws Throwable {
+                    @Parameter(name = "Room") @NotNull RoomType room,
+                    @Parameter(name = "Nr of rooms") @NotNull int quantity
+                    ) throws Throwable {
 
         InventoryOperation o;
         getInventory().getOperations().add(o = new InventoryOperation());
@@ -159,10 +161,12 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
         o.setRoom(room);
         o.setStart(start);
         o.setEnd(end);
+        o.setQuantity(quantity);
 
         getInventory().build(em);
 
     }
+
 
 
 
