@@ -204,6 +204,7 @@ public abstract class Service implements WithTriggers {
 
     @Tab("Purchase")
     @ManyToOne
+    @QLFilter("x.provider = true")
     private Actor preferredProvider;
 
     private boolean alreadyPurchased;
@@ -379,7 +380,7 @@ public abstract class Service implements WithTriggers {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
+    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider")@QLFilter("x.provider") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             s.setAlreadyPurchased(false);

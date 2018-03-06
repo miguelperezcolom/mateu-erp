@@ -109,4 +109,5 @@ public class AbstractContract {
     @Ignored
     private double averagePrice;
 
+
 }

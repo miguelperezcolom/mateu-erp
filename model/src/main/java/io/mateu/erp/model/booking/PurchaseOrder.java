@@ -63,6 +63,7 @@ public class PurchaseOrder implements WithTriggers {
     @NotNull
     @ListColumn
     @SearchFilter
+    @QLFilter("x.provider = true")
     private Actor provider;
 
     @ListColumn

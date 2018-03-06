@@ -50,6 +50,7 @@ public class Booking implements WithTriggers {
     @ManyToOne
     @NotNull
     @SearchFilter
+    @QLFilter("x.agency = true")
     private Actor agency;
 
     @NotNull
