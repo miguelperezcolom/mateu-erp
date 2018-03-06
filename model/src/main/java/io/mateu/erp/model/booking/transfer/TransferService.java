@@ -645,7 +645,11 @@ public class TransferService extends Service implements WithTriggers {
         Price bestPrice = null;
         for (Price p : prices) {
             double v = p.getPrice();
-            if (PricePer.PAX.equals(p.getPricePer())) v = getPax() * p.getPrice();
+            if (PricePer.PAX.equals(p.getPricePer())) {
+                int pax = getPax();
+                if (p.getContract().getMinPaxPerBooking() > pax) pax = p.getContract().getMinPaxPerBooking();
+                v = pax * p.getPrice();
+            }
             if (v < value) {
                 value = v;
                 bestPrice = p;

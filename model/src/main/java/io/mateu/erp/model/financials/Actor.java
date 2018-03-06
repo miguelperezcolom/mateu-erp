@@ -82,6 +82,7 @@ public class Actor implements IActor {
     private boolean exportableToinvoicingApp;
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;
+    private boolean oneLinePerBooking;
 
 
     @Ignore

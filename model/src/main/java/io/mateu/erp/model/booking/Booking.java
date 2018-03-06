@@ -1,11 +1,16 @@
 package io.mateu.erp.model.booking;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
+import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -20,8 +25,8 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * holder for booking. Basically a booking locator associated with a customer, under which we will
@@ -188,5 +193,59 @@ public class Booking implements WithTriggers {
     @Override
     public void afterDelete(EntityManager em) throws Throwable {
 
+    }
+
+    public Map<String,Object> getData() {
+        Map<String, Object> d = new HashMap<>();
+
+        d.put("start", getStart());
+        d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
+        double iva = Helper.roundOffEuros(getTotalNetValue() - base);
+
+
+        d.put("base", base);
+        d.put("iva", iva);
+
+        List<String> points = new ArrayList<>();
+        String comentarios = "";
+        int pax = 0;
+        boolean allServicesAreValued = true;
+        boolean allPurchasesAreValued = true;
+        double totalCost = 0;
+
+        for (Service s : getServices()) {
+            if (s instanceof TransferService) {
+                TransferService t = (TransferService) s;
+                if (pax < t.getPax()) pax = t.getPax();
+                if (!points.contains(t.getPickupText())) points.add(t.getPickupText());
+                if (!points.contains(t.getDropoffText())) points.add(t.getDropoffText());
+            }
+            allServicesAreValued &= s.isValued();
+            allPurchasesAreValued &= s.isPurchaseValued();
+            if (!Strings.isNullOrEmpty(s.getComment())) comentarios += s.getComment();
+            totalCost += s.getTotalCost();
+        }
+
+        d.put("valued", allServicesAreValued);
+        d.put("total", getTotalNetValue());
+        d.put("purchaseValued", allPurchasesAreValued);
+        d.put("totalCost", totalCost);
+
+        d.put("id", getId());
+        d.put("locator", getId());
+        d.put("leadName", getLeadName());
+        d.put("agency", getAgency().getName());
+        d.put("agencyReference", getAgencyReference());
+        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        d.put("office", "");
+
+        d.put("comments", comentarios);
+        d.put("direction", String.join(",", points));
+        d.put("pax", pax);
+
+        return d;
     }
 }

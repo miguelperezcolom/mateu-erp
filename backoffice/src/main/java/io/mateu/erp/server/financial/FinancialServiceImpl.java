@@ -3,6 +3,7 @@ package io.mateu.erp.server.financial;
 import com.google.common.io.Files;
 import io.mateu.erp.model.beroni.P1101;
 import io.mateu.erp.model.beroni.P1105;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -582,6 +583,9 @@ public class FinancialServiceImpl implements FinancialService {
                 double totalventa = 0;
                 double totalcompra = 0;
 
+
+                Map<Booking, Data> dataPerBooking = new HashMap<>();
+
                 for (Service s : l) {
 
                     Map<Actor, Data> dpa = dataPerAgency;
@@ -598,24 +602,54 @@ public class FinancialServiceImpl implements FinancialService {
                         agencyData.set("name", s.getBooking().getAgency().getName());
                     }
 
-                    {
-                        int valoradas = agencyData.getInt("valued");
-                        int novaloradas = agencyData.getInt("notvalued");
-                        double total = agencyData.getDouble("total");
 
-                        if (s.isValued()) {
-                            valoradas++;
-                            total += s.getTotalNetValue();
-                            totalventa += s.getTotalNetValue();
-                        } else {
-                            novaloradas++;
+                    if (s.getBooking().getAgency().isOneLinePerBooking()) {
+
+                        if (!dataPerBooking.containsKey(s.getBooking()) && s.getBooking().getFinish().isBefore(from)) {
+                            int valoradas = agencyData.getInt("valued");
+                            int novaloradas = agencyData.getInt("notvalued");
+                            double total = agencyData.getDouble("total");
+
+                            if (s.isValued()) {
+                                valoradas++;
+                                total += s.getTotalNetValue();
+                                totalventa += s.getTotalNetValue();
+                            } else {
+                                novaloradas++;
+                            }
+
+                            Data bookingData;
+                            agencyData.getList("services").add(bookingData = new Data(s.getBooking().getData()));
+                            dataPerBooking.put(s.getBooking(), bookingData);
+
+                            agencyData.set("valued", valoradas);
+                            agencyData.set("notvalued", novaloradas);
+                            agencyData.set("total", Helper.roundEuros(total));
+
                         }
 
-                        agencyData.getList("services").add(new Data(s.getData()));
+                    } else {
 
-                        agencyData.set("valued", valoradas);
-                        agencyData.set("notvalued", novaloradas);
-                        agencyData.set("total", Helper.roundEuros(total));
+                        {
+                            int valoradas = agencyData.getInt("valued");
+                            int novaloradas = agencyData.getInt("notvalued");
+                            double total = agencyData.getDouble("total");
+
+                            if (s.isValued()) {
+                                valoradas++;
+                                total += s.getTotalNetValue();
+                                totalventa += s.getTotalNetValue();
+                            } else {
+                                novaloradas++;
+                            }
+
+                            agencyData.getList("services").add(new Data(s.getData()));
+
+                            agencyData.set("valued", valoradas);
+                            agencyData.set("notvalued", novaloradas);
+                            agencyData.set("total", Helper.roundEuros(total));
+
+                        }
 
                     }
 
