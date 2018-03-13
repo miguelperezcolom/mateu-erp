@@ -246,6 +246,9 @@ public abstract class Service implements WithTriggers {
     @Ignored
     private String signatureBefore;
 
+    @Ignored
+    private boolean visibleInSummary;
+
     public void updateProcessingStatus(EntityManager em) {
         if (isAlreadyPurchased()) {
             setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
@@ -893,5 +896,9 @@ public abstract class Service implements WithTriggers {
 
         updateProcessingStatus(em);
         validate(em);
+
+
+        setVisibleInSummary(!isCancelled() || getSentToProvider() != null);
+
     }
 }

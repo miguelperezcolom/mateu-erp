@@ -60,6 +60,13 @@ public class BookingModule extends AbstractModule {
             }
         });
 
+        m.add(new AbstractAction("Pickup confirmation") {
+            @Override
+            public void run() {
+                MateuUI.openView(new PickupConfirmationView());
+            }
+        });
+
         return m;
     }
 }

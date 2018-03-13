@@ -62,7 +62,6 @@ public class User implements WithTriggers {
     private Office office;
 
     @OneToMany
-    @Ignored
     private List<Permission> permissions = new ArrayList<Permission>();
 
 

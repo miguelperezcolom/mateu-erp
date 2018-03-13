@@ -24,4 +24,6 @@ public interface BookingService {
 
     public Data getAvailableHotels(Data parameters) throws Throwable;
 
+    public void pickupTimeInformed(String login, long serviceId, String comments) throws Throwable;
+
 }

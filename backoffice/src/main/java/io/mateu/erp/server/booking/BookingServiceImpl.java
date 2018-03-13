@@ -1,5 +1,6 @@
 package io.mateu.erp.server.booking;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -85,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
 
                 "from dummydate d left outer join service on d.value = start left outer join transferpoint a on a.id = airport_id " +
 
-                "where 1 = 1 ";
+                "where visibleinsummary ";
 
         if (!parameters.isEmpty("start")) sql += " and d.value >= '" + parameters.getLocalDate("start").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
         if (!parameters.isEmpty("finish")) sql += " and d.value <= '" + parameters.getLocalDate("finish").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
@@ -211,6 +212,23 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Data getAvailableHotels(Data parameters) throws Throwable {
         return new Data();
+    }
+
+    @Override
+    public void pickupTimeInformed(String login, long serviceId, String comments) throws Throwable {
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                TransferService s = em.find(TransferService.class, serviceId);
+                s.setPickupConfirmedByTelephone(LocalDateTime.now());
+                if (!Strings.isNullOrEmpty(comments)) {
+                    String aux = s.getComment();
+                    if (Strings.isNullOrEmpty(aux)) aux = "";
+                    else aux += "\n";
+                    s.setComment(aux + ">>TELEPHONE (" + login + "): " + comments);
+                }
+            }
+        });
     }
 
     @Override

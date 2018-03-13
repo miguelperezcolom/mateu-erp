@@ -60,7 +60,12 @@ public class TransferPoint {
     @TextArea
     private String instructions;
 
+    private String address;
+
     private String email;
+
+    @SameLine
+    private String telephone;
 
     @SameLine
     private String fax;
