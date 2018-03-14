@@ -825,6 +825,7 @@ public class TransferService extends Service implements WithTriggers {
             if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
+                t.getServices().add(this);
                 t.setAudit(new Audit(em.find(User.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
@@ -845,6 +846,7 @@ public class TransferService extends Service implements WithTriggers {
                 t.setTo(getEffectivePickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
+                t.getServices().add(this);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
             }
@@ -869,9 +871,10 @@ public class TransferService extends Service implements WithTriggers {
                 t.setTo(getEffectivePickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
+                t.getServices().add(this);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            }
+            } else throw new Exception("No effective pickup or missing email for it. Please set before sending the email");
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
@@ -891,7 +894,7 @@ public class TransferService extends Service implements WithTriggers {
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
-            }
+            } else throw new Exception("No telephone or clickatell api. Please set before sending the sms");
         } else throw new Exception("No pickup time. Please set before sending the sms");
     }
 
@@ -901,7 +904,7 @@ public class TransferService extends Service implements WithTriggers {
 
             AppConfig appconfig = AppConfig.get(em);
 
-            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
+            if (getEffectivePickup() != null) {
                 TransferPoint p = getEffectivePickup();
                 if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
                     p = p.getAlternatePointForShuttle();
@@ -915,10 +918,11 @@ public class TransferService extends Service implements WithTriggers {
                 t.setTo(email);
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
+                t.getServices().add(this);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            } else throw new Exception("No pickup time. Please set before sending the email");
-        }
+            } else throw new Exception("No effective pickup. Please set before sending the email");
+        } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
     @Action(name = "Test SMS")
@@ -936,10 +940,11 @@ public class TransferService extends Service implements WithTriggers {
             if (tel > 0 && !Strings.isNullOrEmpty(appconfig.getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 getTasks().add(t);
+                t.getServices().add(this);
                 t.setAudit(new Audit(em.find(User.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 em.persist(t);
-            }
+            } else throw new Exception("No telephone or clickatell api. Please set before sending the sms");
         } else throw new Exception("No pickup time. Please set before sending the sms");
     }
 
