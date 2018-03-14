@@ -14,6 +14,7 @@ import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
 import io.mateu.ui.core.client.views.AbstractDialog;
 import io.mateu.ui.core.client.views.AbstractListView;
 import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.client.AbstractJPAListView;
 import io.mateu.ui.mdd.client.JPAAutocompleteField;
 
@@ -25,7 +26,10 @@ public class PickupConfirmationView extends AbstractJPAListView {
     public String getSql() {
         String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone, 'Choose' from TransferService x left join x.effectivePickup epu where 1 = 1 ";
         if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
+        if (getData().get("hotel") != null) jpql += " and x.effectivePickup.id = " + ((Pair)getData().get("hotel")).getValue() + " ";
         if (!Strings.isNullOrEmpty(getData().getString("nombre"))) jpql += " and lower(x.booking.leadName) like '%" + getData().getString("nombre").toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(getData().getString("ref"))) jpql += " and lower(x.booking.agencyReference) like '%" + getData().getString("ref").toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(getData().getString("vuelo"))) jpql += " and lower(x.flightNumber) like '%" + getData().getString("vuelo").toLowerCase().replaceAll("'", "''")+ "%' ";
         jpql += " order by x.start";
         return jpql;
     }
@@ -87,7 +91,7 @@ public class PickupConfirmationView extends AbstractJPAListView {
     @Override
     public void build() {
         add(new DateField("fecha", "Date"));
-        add(new JPAAutocompleteField("hotel", "Pickup point", "select x.id, x.name from TransferPoint x where x.name like 'xxxx'"));
+        add(new JPAAutocompleteField("hotel", "Pickup point", "select x.id, x.name from TransferPoint x order by x.name"));
         add(new TextField("ref", "Reference"));
         add(new TextField("vuelo", "Filght number"));
         add(new TextField("nombre", "Lead name"));

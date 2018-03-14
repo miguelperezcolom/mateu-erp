@@ -872,7 +872,7 @@ public class TransferService extends Service implements WithTriggers {
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
             }
-        }
+        } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
     @Action(name = "Send SMS")
@@ -892,7 +892,7 @@ public class TransferService extends Service implements WithTriggers {
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
             }
-        }
+        } else throw new Exception("No pickup time. Please set before sending the sms");
     }
 
     @Action(name = "Test Email")
@@ -917,7 +917,7 @@ public class TransferService extends Service implements WithTriggers {
                 getTasks().add(t);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            }
+            } else throw new Exception("No pickup time. Please set before sending the email");
         }
     }
 
@@ -940,7 +940,7 @@ public class TransferService extends Service implements WithTriggers {
                 //t.run(em, em.find(User.class, user.getLogin()));
                 em.persist(t);
             }
-        }
+        } else throw new Exception("No pickup time. Please set before sending the sms");
     }
 
 
