@@ -951,12 +951,13 @@ public class TransferService extends Service implements WithTriggers {
 
     @Action(name = "Solo miguel")
     public static void repair(EntityManager em) {
-        for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.start >= :d").setParameter("d", LocalDate.now()).getResultList()) {
+        //for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.start >= :d").setParameter("d", LocalDate.now()).getResultList()) {
+        for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x").getResultList()) {
             s.setVisibleInSummary(!s.isCancelled() || s.getSentToProvider() != null);
-            if (s.getBooking().getAgency().getId() == 47 && s.isValueOverrided()) {
+/*            if (s.getBooking().getAgency().getId() == 47 && s.isValueOverrided()) {
                 s.setValueOverrided(false);
                 s.setOverridedNetValue(0);
-            }
+            }*/
         }
     }
 
