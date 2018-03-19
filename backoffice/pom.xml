@@ -15,6 +15,7 @@
         <empaquetado>war</empaquetado>
         <kotlin.version>1.2.30</kotlin.version>
         <junit.version>4.12</junit.version>
+        <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
 
     <build>
