@@ -26,13 +26,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NamedQueries(
-        @NamedQuery( name = "Hotel.getByQuoonId", query = "select h from io.mateu.erp.model.product.hotel.Hotel h where h.quoonId = :qid",
-                hints={
-                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE, value="TRUE"),
-                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
-                })
-)
 public class Hotel implements IHotel, WithTriggers {
 
     @Id
@@ -80,12 +73,6 @@ public class Hotel implements IHotel, WithTriggers {
     private String fax;
 
     private String email;
-
-
-    @Tab("QuoOn")
-    @Index
-    @CacheIndex
-    private String quoonId;
 
     @Tab("Ages")
     /**
@@ -151,17 +138,6 @@ public class Hotel implements IHotel, WithTriggers {
         return getStopSales().getLines();
     }
 
-
-
-
-    public static Hotel getByQuoonId(EntityManager em, String quoonId) {
-        Hotel h = null;
-        try {
-            h = (Hotel) em.createNamedQuery("Hotel.getByQuoonId").setParameter("qid", quoonId).getSingleResult();
-        } catch (Exception e) {
-        }
-        return h;
-    }
 
     @Override
     public void beforeSet(EntityManager entityManager, boolean b) throws Throwable {

@@ -46,19 +46,9 @@ import java.util.List;
 @Table(name = "HOTELCONTRACT")
 @Getter
 @Setter
-@NamedQueries(
-        @NamedQuery( name = "HotelContract.getByQuoonId", query = "select h from io.mateu.erp.model.product.hotel.contracting.HotelContract h where h.quoonId = :qid",
-                hints={
-                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE, value="TRUE"),
-                        @QueryHint(name= QueryHints.QUERY_RESULTS_CACHE_SIZE, value="500")
-                })
-)
 public class HotelContract extends AbstractContract implements IHotelContract, CalendarLimiter {
 
     @Tab("Others")
-    @org.eclipse.persistence.annotations.Index
-    @CacheIndex
-    private String quoonId;
 
     @SearchFilter
     @ManyToOne
@@ -82,15 +72,6 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @Convert(converter = HotelContractPhotoConverter.class)
     @FullWidth
     private HotelContractPhoto terms;
-
-    public static HotelContract getByQuoonId(EntityManager em, String quoonId) {
-        HotelContract h = null;
-        try {
-            h = (HotelContract) em.createNamedQuery("HotelContract.getByQuoonId").setParameter("qid", quoonId).getResultList().get(0);
-        } catch (Exception e) {
-        }
-        return h;
-    }
 
 
     @Action(name = "Pdf")

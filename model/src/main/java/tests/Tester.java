@@ -103,9 +103,9 @@ public class Tester {
 
                 for (int j = 0; j < 10; j++) {
 
-                    Hotel h = Hotel.getByQuoonId(em, "435");
+                    //Hotel h = Hotel.getByQuoonId(em, "435");
 
-                    System.out.println("" + finalI + "," + j + ".h = " + h);
+                    //System.out.println("" + finalI + "," + j + ".h = " + h);
 
                 }
 
