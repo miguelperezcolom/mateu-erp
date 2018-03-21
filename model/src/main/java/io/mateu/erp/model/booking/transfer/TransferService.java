@@ -117,13 +117,15 @@ public class TransferService extends Service implements WithTriggers {
     @Output
     @SameLine
     private LocalDateTime importedPickupTime;
-    @SameLine
+
+
+    @Output
     private LocalDateTime pickupConfirmedByTelephone;
     @Output
     @SameLine
     private LocalDateTime pickupConfirmedByWeb;
+
     @Output
-    @SameLine
     private LocalDateTime pickupConfirmedByEmailToHotel;
     @Output
     @SameLine
