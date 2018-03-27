@@ -50,19 +50,19 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll(AppConfig.class, Actor.class, true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, true);
 
     }
 
     public static void populateEverythingButContracts() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, false);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, false);
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class,true);
     }
 
-    public static void populateAll(Class appConfigClass, Class actorClass, boolean hotelContracts) throws Throwable {
+    public static void populateAll(Class appConfigClass, Class actorClass, Class hotelClass, boolean hotelContracts) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
@@ -91,7 +91,7 @@ public class TestPopulator {
 
         p.populateRoomsBoardsAndHotelCategories();
 
-        p.populateHotels();
+        p.populateHotels(hotelClass);
 
         if (hotelContracts) {
             p.populateStopSales();
@@ -896,7 +896,7 @@ public class TestPopulator {
     }
 
 
-    public void populateHotels() throws Throwable {
+    public void populateHotels(Class hotelClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -948,7 +948,7 @@ public class TestPopulator {
 
                 for (String hn : nombresHotel) {
 
-                    Hotel h = new Hotel();
+                    Hotel h = (Hotel) hotelClass.newInstance();
                     em.persist(h);
                     h.setName(hn);
                     h.setCity(s);

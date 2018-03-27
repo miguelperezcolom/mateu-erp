@@ -36,11 +36,11 @@ public class ERPApp extends AbstractApplication {
         List<AbstractArea> l = new ArrayList<>();
         l.add(new AdminArea());
         l.add(new CMSArea());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new CRMArea());
+        l.add(new CRMArea());
         l.add(new ProductArea());
         l.add(new BookingArea());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new FinancialArea());
-        if (!MateuUI.getApp().getName().toLowerCase().contains("quoon")) l.add(new ManagementArea());
+        l.add(new FinancialArea());
+        l.add(new ManagementArea());
         l.add(new UtilsArea());
         return l;
     }
