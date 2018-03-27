@@ -50,19 +50,19 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll(AppConfig.class, Actor.class, true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, true, HotelContract.class);
 
     }
 
     public static void populateEverythingButContracts() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, false);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, false, HotelContract.class);
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class,true, HotelContract.class);
     }
 
-    public static void populateAll(Class appConfigClass, Class actorClass, boolean hotelContracts) throws Throwable {
+    public static void populateAll(Class appConfigClass, Class actorClass, Class hotelClass, boolean hotelContracts, Class hotelContractClass) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
@@ -91,16 +91,16 @@ public class TestPopulator {
 
         p.populateRoomsBoardsAndHotelCategories();
 
-        p.populateHotels();
+        p.populateHotels(hotelClass);
 
         if (hotelContracts) {
-            p.populateStopSales();
+            p.populateStopSales(hotelClass);
 
-            p.populateInventory();
+            p.populateInventory(hotelClass);
 
-            p.populateContracts();
+            p.populateContracts(hotelClass, hotelContractClass);
 
-            p.populateOffers();
+            p.populateOffers(hotelClass);
 
             p.populateBookings();
         }
@@ -560,13 +560,13 @@ public class TestPopulator {
 
     }
 
-    public void populateOffers() throws Throwable {
+    public void populateOffers(Class hotelClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s order by s.name").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s order by s.name").getResultList();
 
                 User u = em.find(User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
@@ -610,13 +610,13 @@ public class TestPopulator {
 
     }
 
-    public void populateContracts() throws Throwable {
+    public void populateContracts(Class hotelClass, Class hotelContractClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s order by s.name").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s order by s.name").getResultList();
                 List<Actor> actores = em.createQuery("select s from " + Actor.class.getName() + " s order by s.name").getResultList();
 
                 User u = em.find(User.class, "admin");
@@ -629,7 +629,7 @@ public class TestPopulator {
                     int i = 1;
                     for (Actor a : actores) {
 
-                        HotelContract c = new HotelContract();
+                        HotelContract c = (HotelContract) hotelContractClass.newInstance();
                         h.getContracts().add(c);
                         c.setHotel(h);
                         em.persist(c);
@@ -896,7 +896,7 @@ public class TestPopulator {
     }
 
 
-    public void populateHotels() throws Throwable {
+    public void populateHotels(Class hotelClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -948,7 +948,7 @@ public class TestPopulator {
 
                 for (String hn : nombresHotel) {
 
-                    Hotel h = new Hotel();
+                    Hotel h = (Hotel) hotelClass.newInstance();
                     em.persist(h);
                     h.setName(hn);
                     h.setCity(s);
@@ -1022,7 +1022,7 @@ public class TestPopulator {
     }
 
 
-    public void populateStopSales() throws Throwable {
+    public void populateStopSales(Class hotelClass) throws Throwable {
 
         Random random = new Random();
 
@@ -1030,7 +1030,7 @@ public class TestPopulator {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s").getResultList();
 
                 List<Actor> actores =  em.createQuery("select s from " + Actor.class.getName() + " s").getResultList();
 
@@ -1075,7 +1075,7 @@ public class TestPopulator {
     }
 
 
-    public void populateInventory() throws Throwable {
+    public void populateInventory(Class hotelClass) throws Throwable {
 
         Random random = new Random();
 
@@ -1083,7 +1083,7 @@ public class TestPopulator {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s").getResultList();
 
 
                 for (Hotel h : hoteles) if (h.getRooms().size() > 0) {
