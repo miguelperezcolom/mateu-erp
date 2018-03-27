@@ -24,7 +24,7 @@ import java.util.List;
 public class PickupConfirmationView extends AbstractJPAListView {
     @Override
     public String getSql() {
-        String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone, 'Choose' from TransferService x left join x.effectivePickup epu where 1 = 1 ";
+        String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone from TransferService x left join x.effectivePickup epu where 1 = 1 ";
         if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (getData().get("hotel") != null) jpql += " and x.effectivePickup.id = " + ((Pair)getData().get("hotel")).getValue() + " ";
         if (!Strings.isNullOrEmpty(getData().getString("nombre"))) jpql += " and lower(x.booking.leadName) like '%" + getData().getString("nombre").toLowerCase().replaceAll("'", "''")+ "%' ";
@@ -42,17 +42,6 @@ public class PickupConfirmationView extends AbstractJPAListView {
                 , new TextColumn("col" + col++, "Lead name", 170, false)
                 , new TextColumn("col" + col++, "Service", 80, false)
                 , new TextColumn("col" + col++, "Pax", 40, false)
-                , new TextColumn("col" + col++, "F. date", 150, false)
-                , new TextColumn("col" + col++, "F. number", 150, false)
-                , new TextColumn("col" + col++, "Orig/Dest", 150, false)
-                , new TextColumn("col" + col++, "PU time", 150, false)
-                , new TextColumn("col" + col++, "PU point", 200, false)
-                , new TextColumn("col" + col++, "Provider", 150, false)
-                , new TextColumn("col" + col++, "Sent to prov", 150, false)
-                , new TextColumn("col" + col++, "Web", 150, false)
-                , new TextColumn("col" + col++, "Email", 150, false)
-                , new TextColumn("col" + col++, "SMS", 150, false)
-                , new TextColumn("col" + col++, "Telephone", 150, false)
 
                 , new LinkColumn("col" + col++, "Informed", 100) {
                     @Override
@@ -80,6 +69,17 @@ public class PickupConfirmationView extends AbstractJPAListView {
                         });
                     }
                 }
+                , new TextColumn("col" + col++, "F. date", 150, false)
+                , new TextColumn("col" + col++, "F. number", 150, false)
+                , new TextColumn("col" + col++, "Orig/Dest", 150, false)
+                , new TextColumn("col" + col++, "PU time", 150, false)
+                , new TextColumn("col" + col++, "PU point", 200, false)
+                , new TextColumn("col" + col++, "Provider", 150, false)
+                , new TextColumn("col" + col++, "Sent to prov", 150, false)
+                , new TextColumn("col" + col++, "Web", 150, false)
+                , new TextColumn("col" + col++, "Email", 150, false)
+                , new TextColumn("col" + col++, "SMS", 150, false)
+                , new TextColumn("col" + col++, "Telephone", 150, false)
         );
     }
 
