@@ -94,9 +94,9 @@ public class TestPopulator {
         p.populateHotels(hotelClass);
 
         if (hotelContracts) {
-            p.populateStopSales();
+            p.populateStopSales(hotelClass);
 
-            p.populateInventory();
+            p.populateInventory(hotelClass);
 
             p.populateContracts();
 
@@ -1022,7 +1022,7 @@ public class TestPopulator {
     }
 
 
-    public void populateStopSales() throws Throwable {
+    public void populateStopSales(Class hotelClass) throws Throwable {
 
         Random random = new Random();
 
@@ -1030,7 +1030,7 @@ public class TestPopulator {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s").getResultList();
 
                 List<Actor> actores =  em.createQuery("select s from " + Actor.class.getName() + " s").getResultList();
 
@@ -1075,7 +1075,7 @@ public class TestPopulator {
     }
 
 
-    public void populateInventory() throws Throwable {
+    public void populateInventory(Class hotelClass) throws Throwable {
 
         Random random = new Random();
 
@@ -1083,7 +1083,7 @@ public class TestPopulator {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Hotel> hoteles = em.createQuery("select s from " + Hotel.class.getName() + " s").getResultList();
+                List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s").getResultList();
 
 
                 for (Hotel h : hoteles) if (h.getRooms().size() > 0) {
