@@ -50,19 +50,19 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-erp");
 
 
-        populateAll(AppConfig.class, Actor.class, Hotel.class, true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, true, HotelContract.class);
 
     }
 
     public static void populateEverythingButContracts() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, Hotel.class, false);
+        populateAll(AppConfig.class, Actor.class, Hotel.class, false, HotelContract.class);
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, Hotel.class,true);
+        populateAll(AppConfig.class, Actor.class, Hotel.class,true, HotelContract.class);
     }
 
-    public static void populateAll(Class appConfigClass, Class actorClass, Class hotelClass, boolean hotelContracts) throws Throwable {
+    public static void populateAll(Class appConfigClass, Class actorClass, Class hotelClass, boolean hotelContracts, Class hotelContractClass) throws Throwable {
 
         Helper.transact((JPATransaction) (em) -> {
 
@@ -98,7 +98,7 @@ public class TestPopulator {
 
             p.populateInventory(hotelClass);
 
-            p.populateContracts(hotelClass);
+            p.populateContracts(hotelClass, hotelContractClass);
 
             p.populateOffers(hotelClass);
 
@@ -610,7 +610,7 @@ public class TestPopulator {
 
     }
 
-    public void populateContracts(Class hotelClass) throws Throwable {
+    public void populateContracts(Class hotelClass, Class hotelContractClass) throws Throwable {
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -629,7 +629,7 @@ public class TestPopulator {
                     int i = 1;
                     for (Actor a : actores) {
 
-                        HotelContract c = new HotelContract();
+                        HotelContract c = (HotelContract) hotelContractClass.newInstance();
                         h.getContracts().add(c);
                         c.setHotel(h);
                         em.persist(c);
