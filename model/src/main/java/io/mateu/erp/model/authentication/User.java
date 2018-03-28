@@ -49,7 +49,7 @@ public class User implements WithTriggers {
     private String email;
 
     @Ignored
-    private String password;
+    private String password = "1";
 
     @ListColumn("Status")
     @NotNull
@@ -91,7 +91,6 @@ public class User implements WithTriggers {
 
     @Override
     public void afterSet(EntityManager em, boolean isNew) throws Exception {
-        setPassword("1");
     }
 
     @Override
