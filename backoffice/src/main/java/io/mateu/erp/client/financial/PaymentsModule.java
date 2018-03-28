@@ -25,7 +25,7 @@ public class PaymentsModule extends AbstractModule {
     }
 
     @Override
-    public List<MenuEntry> getMenu() {
+    public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
         /*

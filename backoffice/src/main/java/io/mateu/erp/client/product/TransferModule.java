@@ -24,7 +24,7 @@ public class TransferModule extends AbstractModule {
     }
 
     @Override
-    public List<MenuEntry> getMenu() {
+    public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
         m.add(new MDDAction("Transfer points", TransferPoint.class));

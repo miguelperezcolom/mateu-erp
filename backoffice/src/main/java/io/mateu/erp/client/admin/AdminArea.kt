@@ -10,7 +10,7 @@ import java.util.Arrays
  */
 class AdminArea : AbstractArea("Admin") {
 
-    override fun getModules(): List<AbstractModule> {
+    override fun buildModules(): List<AbstractModule> {
         return Arrays.asList<AbstractModule>(AdminModule())
     }
 }

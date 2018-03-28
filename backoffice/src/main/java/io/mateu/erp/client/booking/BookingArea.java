@@ -17,7 +17,7 @@ public class BookingArea extends AbstractArea {
     }
 
     @Override
-    public List<AbstractModule> getModules() {
+    public List<AbstractModule> buildModules() {
         List<AbstractModule> l = new ArrayList<>();
         l.add(new BookingModule());
         l.add(new ImportingModule());

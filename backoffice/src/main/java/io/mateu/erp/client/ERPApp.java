@@ -32,7 +32,7 @@ public class ERPApp extends AbstractApplication {
     }
 
     @Override
-    public List<AbstractArea> getAreas() {
+    public List<AbstractArea> buildAreas() {
         List<AbstractArea> l = new ArrayList<>();
         l.add(new AdminArea());
         l.add(new CMSArea());

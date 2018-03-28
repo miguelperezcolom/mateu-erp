@@ -16,7 +16,7 @@ public class ManagementArea extends AbstractArea {
     }
 
     @Override
-    public List<AbstractModule> getModules() {
+    public List<AbstractModule> buildModules() {
         return Arrays.asList(new ManagementModule());
     }
 }
