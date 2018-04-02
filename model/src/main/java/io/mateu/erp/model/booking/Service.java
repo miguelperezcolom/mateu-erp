@@ -398,11 +398,12 @@ public abstract class Service implements WithTriggers {
         User u = em.find(User.class, user.getLogin());
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
-            if (provider != null) s.setPreferredProvider(provider);
-            for (PurchaseOrder po : s.getPurchaseOrders()) {
-                SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                if (t == null) {
-                    if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
+            if (!s.isCancelled() || s.getSentToProvider() != null) {
+                if (provider != null) s.setPreferredProvider(provider);
+                for (PurchaseOrder po : s.getPurchaseOrders()) {
+                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                    if (t == null) {
+                        if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
                         /*
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
                         em.persist(t);
@@ -413,30 +414,31 @@ public abstract class Service implements WithTriggers {
                         ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
                         t.setPostscript(postscript);
                         */
-                    } else { // email
-                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
-                        em.persist(t);
-                        t.setOffice(s.getOffice());
-                        t.setProvider(po.getProvider());
-                        t.setStatus(TaskStatus.PENDING);
-                        t.setAudit(new Audit(u));
-                        if (!Strings.isNullOrEmpty(email)) {
-                            t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                            ((SendPurchaseOrdersByEmailTask)t).setTo(email);
-                        } else {
-                            t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                            ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                        } else { // email
+                            taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
+                            em.persist(t);
+                            t.setOffice(s.getOffice());
+                            t.setProvider(po.getProvider());
+                            t.setStatus(TaskStatus.PENDING);
+                            t.setAudit(new Audit(u));
+                            if (!Strings.isNullOrEmpty(email)) {
+                                t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                                ((SendPurchaseOrdersByEmailTask)t).setTo(email);
+                            } else {
+                                t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                                ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                            }
+                            ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
+                            t.setPostscript(postscript);
                         }
-                        ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
-                        t.setPostscript(postscript);
                     }
-                }
-                t.getPurchaseOrders().add(po);
-                po.getSendingTasks().add(t);
-                try {
-                    po.afterSet(em, false);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    t.getPurchaseOrders().add(po);
+                    po.getSendingTasks().add(t);
+                    try {
+                        po.afterSet(em, false);
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
                 }
             }
         }
