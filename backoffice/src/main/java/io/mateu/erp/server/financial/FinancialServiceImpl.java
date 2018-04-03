@@ -618,9 +618,9 @@ public class FinancialServiceImpl implements FinancialService {
                             for (Service x : s.getBooking().getServices()) {
                                 valorada &= x.isValued();
                                 if (x.isValued()) {
-                                    total += s.getTotalNetValue();
-                                    totalventa += s.getTotalNetValue();
-                                    totalReserva += s.getTotalNetValue();
+                                    total += x.getTotalNetValue();
+                                    totalventa += x.getTotalNetValue();
+                                    totalReserva += x.getTotalNetValue();
                                 } else {
                                 }
                                 pos.addAll(x.getPurchaseOrders());
