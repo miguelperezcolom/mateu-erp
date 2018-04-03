@@ -215,13 +215,17 @@ public class Booking implements WithTriggers {
         boolean allPurchasesAreValued = true;
         double totalCost = 0;
 
+        boolean todoCancelado = true;
+
         for (Service s : getServices()) {
             if (s instanceof TransferService) {
                 TransferService t = (TransferService) s;
                 if (pax < t.getPax()) pax = t.getPax();
                 if (!points.contains(t.getPickupText())) points.add(t.getPickupText());
                 if (!points.contains(t.getDropoffText())) points.add(t.getDropoffText());
+                d.put("transferType", "" + t.getTransferType());
             }
+            todoCancelado &= s.isCancelled();
             allServicesAreValued &= s.isValued();
             allPurchasesAreValued &= s.isPurchaseValued();
             if (!Strings.isNullOrEmpty(s.getComment())) comentarios += s.getComment();
@@ -238,7 +242,7 @@ public class Booking implements WithTriggers {
         d.put("leadName", getLeadName());
         d.put("agency", getAgency().getName());
         d.put("agencyReference", getAgencyReference());
-        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("status", (todoCancelado)?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", "");
 

@@ -37,7 +37,7 @@ public class FinancialServiceImpl implements FinancialService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.start >= :a and x.start <= :b order by x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
                 for (Service s : l) {
                     try {
@@ -101,7 +101,7 @@ public class FinancialServiceImpl implements FinancialService {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
-                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.start >= :a and x.start <= :b order by x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintWriter pw = new PrintWriter(baos);
@@ -571,7 +571,7 @@ public class FinancialServiceImpl implements FinancialService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.start >= :a and x.start <= :b order by x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
 
                 Map<Actor, Data> dataPerAgency = new LinkedHashMap<>();
@@ -602,18 +602,34 @@ public class FinancialServiceImpl implements FinancialService {
                         agencyData.set("name", s.getBooking().getAgency().getName());
                     }
 
+                    List<PurchaseOrder> pos = s.getPurchaseOrders();
 
                     if (s.getBooking().getAgency().isOneLinePerBooking()) {
 
-                        if (!dataPerBooking.containsKey(s.getBooking()) && s.getBooking().getFinish().isBefore(from)) {
+                        pos = new ArrayList<>();
+
+                        if (!dataPerBooking.containsKey(s.getBooking())) {
                             int valoradas = agencyData.getInt("valued");
                             int novaloradas = agencyData.getInt("notvalued");
                             double total = agencyData.getDouble("total");
 
-                            if (s.isValued()) {
+                            boolean valorada = true;
+                            double totalReserva = 0;
+                            for (Service x : s.getBooking().getServices()) {
+                                valorada &= x.isValued();
+                                if (x.isValued()) {
+                                    total += s.getTotalNetValue();
+                                    totalventa += s.getTotalNetValue();
+                                    totalReserva += s.getTotalNetValue();
+                                } else {
+                                }
+                                pos.addAll(x.getPurchaseOrders());
+                            }
+
+                            s.getBooking().setTotalNetValue(totalReserva);
+
+                            if (valorada) {
                                 valoradas++;
-                                total += s.getTotalNetValue();
-                                totalventa += s.getTotalNetValue();
                             } else {
                                 novaloradas++;
                             }
@@ -653,7 +669,7 @@ public class FinancialServiceImpl implements FinancialService {
 
                     }
 
-                    for (PurchaseOrder po : s.getPurchaseOrders()) if (po.getProvider() != null) {
+                    for (PurchaseOrder po : pos) if (po.getProvider() != null) {
 
                         // para esta agencia
                         {

@@ -228,6 +228,9 @@ public abstract class Service implements WithTriggers {
     @ListColumn
     private LocalDate finish;
 
+    @Ignored
+    private LocalDate serviceDateForInvoicing;
+
 
     @Ignored
     @OneToMany
@@ -333,7 +336,25 @@ public abstract class Service implements WithTriggers {
                     List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x order by x.id").getResultList();
 
                     for (Service s : l) {
-                        s.setSignature(s.createSignature());
+                        //s.setSignature(s.createSignature());
+
+                        if (true || s.getBooking().getFinish() == null) {
+                            for (Service x : s.getBooking().getServices()) {
+                                if (x.getStart() != null) {
+                                    if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getStart())) s.getBooking().setStart(x.getStart());
+                                    if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getStart())) s.getBooking().setFinish(x.getStart());
+                                }
+
+                                if (x.getFinish() != null) {
+                                    if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getFinish())) s.getBooking().setStart(x.getFinish());
+                                    if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getFinish())) s.getBooking().setFinish(x.getFinish());
+                                }
+
+                                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
+                                else x.setServiceDateForInvoicing(x.getStart());
+                            }
+                        }
+
                     }
 
                 }
@@ -889,6 +910,24 @@ public abstract class Service implements WithTriggers {
 
     @Override
     public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+
+        if (true || getBooking().getFinish() == null) {
+            for (Service x : getBooking().getServices()) {
+                if (x.getStart() != null) {
+                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getStart())) getBooking().setStart(x.getStart());
+                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getStart())) getBooking().setFinish(x.getStart());
+                }
+
+                if (x.getFinish() != null) {
+                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getFinish())) getBooking().setStart(x.getFinish());
+                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getFinish())) getBooking().setFinish(x.getFinish());
+                }
+
+                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
+                else x.setServiceDateForInvoicing(x.getStart());
+            }
+        }
+
         try {
             price(em, getAudit().getModifiedBy());
             checkPurchase(em, getAudit().getModifiedBy());
@@ -901,6 +940,7 @@ public abstract class Service implements WithTriggers {
 
 
         setVisibleInSummary(!isCancelled() || getSentToProvider() != null);
+
 
     }
 }
