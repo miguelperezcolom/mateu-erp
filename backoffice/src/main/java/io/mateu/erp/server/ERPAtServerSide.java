@@ -170,6 +170,8 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                 } else throw new Exception("No user with login " + login);
             }
         });
+
+        System.out.println("userdata=" + d);
         return d;
     }
 
