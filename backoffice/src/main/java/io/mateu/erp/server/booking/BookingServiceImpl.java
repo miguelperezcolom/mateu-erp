@@ -95,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
 
         long t0 = new Date().getTime();
 
-        int rowsPerPage = 3000;
+        int rowsPerPage = 100;
         int fromRow = 0;
 
         d.getList("_data");
