@@ -49,6 +49,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 
@@ -627,6 +628,10 @@ public class TransferService extends Service implements WithTriggers {
             if (ok) contracts.add(c);
         }
         if (contracts.size() == 0) throw new Exception("No valid contract");
+
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getTargets().size() > 0).collect(Collectors.toList());
+
+        if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
         List<Price> prices = new ArrayList<>();
         for (Contract c : contracts) for (Price p : c.getPrices()) {
