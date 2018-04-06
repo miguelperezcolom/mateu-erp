@@ -101,7 +101,7 @@ public class FinancialServiceImpl implements FinancialService {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
-                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b and not x.cancelled order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintWriter pw = new PrintWriter(baos);
@@ -571,7 +571,7 @@ public class FinancialServiceImpl implements FinancialService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
+                List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b and not x.cancelled order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
 
                 Map<Actor, Data> dataPerAgency = new LinkedHashMap<>();

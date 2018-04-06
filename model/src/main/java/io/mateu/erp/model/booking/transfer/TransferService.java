@@ -106,7 +106,7 @@ public class TransferService extends Service implements WithTriggers {
     @Separator("Flight")
     private String flightNumber;
     @NotNull
-    @ListColumn(order = true)
+    @ListColumn
     @SameLine
     private LocalDateTime flightTime;
     @SameLine
