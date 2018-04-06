@@ -121,15 +121,19 @@ public class TransferService extends Service implements WithTriggers {
 
 
     @Output
+    @ListColumn
     private LocalDateTime pickupConfirmedByTelephone;
     @Output
     @SameLine
+    @ListColumn
     private LocalDateTime pickupConfirmedByWeb;
 
     @Output
+    @ListColumn
     private LocalDateTime pickupConfirmedByEmailToHotel;
     @Output
     @SameLine
+    @ListColumn
     private LocalDateTime pickupConfirmedBySMS;
 
     @Ignored
