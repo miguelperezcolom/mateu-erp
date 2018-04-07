@@ -47,7 +47,7 @@ public class BookingModule extends AbstractModule {
         m.add(new AbstractAction("Transfers summary") {
             @Override
             public void run() {
-                MateuUI.openView(new TransfersSummaryView());
+                MateuUI.openView(new TransfersSummaryView(), isModifierPressed());
             }
         });
 
@@ -56,14 +56,14 @@ public class BookingModule extends AbstractModule {
         m.add(new AbstractAction("Import pickup times") {
             @Override
             public void run() {
-                MateuUI.openView(new PickupTimeImportingView());
+                MateuUI.openView(new PickupTimeImportingView(), isModifierPressed());
             }
         });
 
         m.add(new AbstractAction("Pickup confirmation") {
             @Override
             public void run() {
-                MateuUI.openView(new PickupConfirmationView());
+                MateuUI.openView(new PickupConfirmationView(), isModifierPressed());
             }
         });
 
