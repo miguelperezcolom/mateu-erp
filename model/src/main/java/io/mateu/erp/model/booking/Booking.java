@@ -199,6 +199,8 @@ public class Booking implements WithTriggers {
         Map<String, Object> d = new HashMap<>();
 
         d.put("start", getStart());
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"...") + " - " + ((getFinish() != null)?getFinish().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));

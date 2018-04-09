@@ -443,7 +443,7 @@ public class FinancialServiceImpl implements FinancialService {
                 row = sheet.createRow(fila++);
 
                 col = 0;
-                for (String id : new String[] {"leadName", "", "", "agencyReference", "startddmmyyyy", "base", "iva", "", "total"}){
+                for (String id : new String[] {"leadName", "", "", "agencyReference", "serviceDates", "base", "iva", "", "total"}){
                     cell = row.createCell(col++);
 
                     Object o = s.get(id);
