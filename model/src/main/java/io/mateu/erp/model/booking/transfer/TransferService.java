@@ -792,8 +792,8 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     private void mapTransferPoints(EntityManager em) {
-        if (getPickup() == null) setEffectivePickup(TransferPointMapping.getTransferPoint(em, getPickupText()));
-        if (getDropoff() == null) setEffectiveDropoff(TransferPointMapping.getTransferPoint(em, getDropoffText()));
+        if (getPickup() == null) setEffectivePickup(TransferPointMapping.getTransferPoint(em, getPickupText(), this));
+        if (getDropoff() == null) setEffectiveDropoff(TransferPointMapping.getTransferPoint(em, getDropoffText(), this));
     }
 
 

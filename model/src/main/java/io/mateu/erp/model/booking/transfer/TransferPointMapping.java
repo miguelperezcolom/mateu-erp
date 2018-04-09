@@ -5,11 +5,10 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.Action;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.SearchFilterIsNull;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,13 +38,17 @@ public class TransferPointMapping implements WithTriggers {
     @SearchFilterIsNull(value = "Unmapped")
     private TransferPoint point;
 
+    @Output
+    private TransferService createdBy;
+
 
     public TransferPointMapping() {
 
     }
 
-    public TransferPointMapping(String text) {
+    public TransferPointMapping(String text, TransferService transferService) {
         this.text = text;
+        this.createdBy = transferService;
     }
 
 
@@ -66,7 +69,7 @@ public class TransferPointMapping implements WithTriggers {
         return data[0];
     }
 
-    public static TransferPoint getTransferPoint(EntityManager em, String text) {
+    public static TransferPoint getTransferPoint(EntityManager em, String text, TransferService transferService) {
         text = text.toLowerCase().trim();
         TransferPoint p = null;
         boolean found = false;
@@ -76,7 +79,7 @@ public class TransferPointMapping implements WithTriggers {
             break;
         }
         if (!found) {
-            em.persist(new TransferPointMapping(text));
+            em.persist(new TransferPointMapping(text, transferService));
         }
         return p;
     }
