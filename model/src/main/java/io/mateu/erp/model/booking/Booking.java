@@ -141,7 +141,7 @@ public class Booking implements WithTriggers {
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
     {
         try {
-            String jpql = "select x from Booking x" +
+            String jpql = "select x from " + Booking.class.getName() + " x" +
                     " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
             Query q = em.createQuery(jpql);
             List<Booking> l = q.getResultList();
