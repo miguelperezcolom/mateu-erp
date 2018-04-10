@@ -805,6 +805,8 @@ public abstract class Service implements WithTriggers {
         d.put("office", getOffice().getName());
 
         d.put("start", getStart());
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));

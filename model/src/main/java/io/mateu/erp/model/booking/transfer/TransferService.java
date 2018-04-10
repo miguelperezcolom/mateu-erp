@@ -301,8 +301,26 @@ public class TransferService extends Service implements WithTriggers {
                     eg.setAttribute("type", "" + t);
 
 
+                    List<TransferService> ls = ss.get(f).get(d).get(t);
+
+                    Collections.sort(ls, new Comparator<TransferService>() {
+                        @Override
+                        public int compare(TransferService o1, TransferService o2) {
+                            if (TransferDirection.OUTBOUND.equals(d)) {
+                                if (o1.getPickupTime() != null && o2.getPickupTime() != null) return o1.getPickupTime().compareTo(o2.getPickupTime());
+                                if (o1.getPickupTime() != null && o2.getPickupTime() == null) return -1;
+                                if (o1.getPickupTime() == null && o2.getPickupTime() != null) return 1;
+                                if (o1.getFlightTime() != null && o2.getFlightTime() != null) return o1.getFlightTime().compareTo(o2.getFlightTime());
+                            } else {
+                                if (o1.getFlightTime() != null && o2.getFlightTime() != null) return o1.getFlightTime().compareTo(o2.getFlightTime());
+                            }
+                            return 0;
+                        }
+                    });
+
+
                     int totalPax = 0;
-                    for (TransferService s : ss.get(f).get(d).get(t)) {
+                    for (TransferService s : ls) {
 
                         if (!s.isCancelled() && !s.isHeld()) {
 
@@ -774,8 +792,8 @@ public class TransferService extends Service implements WithTriggers {
     }
 
     private void mapTransferPoints(EntityManager em) {
-        if (getPickup() == null) setEffectivePickup(TransferPointMapping.getTransferPoint(em, getPickupText()));
-        if (getDropoff() == null) setEffectiveDropoff(TransferPointMapping.getTransferPoint(em, getDropoffText()));
+        if (getPickup() == null) setEffectivePickup(TransferPointMapping.getTransferPoint(em, getPickupText(), this));
+        if (getDropoff() == null) setEffectiveDropoff(TransferPointMapping.getTransferPoint(em, getDropoffText(), this));
     }
 
 

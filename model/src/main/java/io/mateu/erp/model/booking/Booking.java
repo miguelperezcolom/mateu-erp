@@ -149,7 +149,7 @@ public class Booking implements WithTriggers {
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
     {
         try {
-            String jpql = "select x from Booking x" +
+            String jpql = "select x from " + Booking.class.getName() + " x" +
                     " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
             Query q = em.createQuery(jpql);
             List<Booking> l = q.getResultList();
@@ -207,6 +207,8 @@ public class Booking implements WithTriggers {
         Map<String, Object> d = new HashMap<>();
 
         d.put("start", getStart());
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"...") + " - " + ((getFinish() != null)?getFinish().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
