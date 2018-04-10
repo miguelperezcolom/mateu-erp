@@ -2,7 +2,7 @@ package io.mateu.erp.model.product.hotel.contracting;
 
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -16,8 +16,6 @@ import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.persistence.annotations.CacheIndex;
-import org.eclipse.persistence.config.QueryHints;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;

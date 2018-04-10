@@ -1,16 +1,14 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -46,6 +44,7 @@ public class Booking implements WithTriggers {
     @Order(desc = true, priority = 10)
     private long id;
 
+    @Tab("Info")
     @Embedded
     @Output
     @SearchFilter(field="created")
@@ -75,6 +74,8 @@ public class Booking implements WithTriggers {
 
     @SameLine
     private boolean cancelled;
+
+
 
     @Ignored
     @SearchFilter
@@ -112,14 +113,21 @@ public class Booking implements WithTriggers {
     private boolean wasCancelled = false;
 
 
+    @Tab("Services")
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "orderInBooking")
-    @Ignored
+    @Output
     private List<Service> services = new ArrayList<>();
 
+    @Tab("Charges")
+    @OneToMany(mappedBy = "booking")
+    @Output
+    private List<Charge> charges = new ArrayList<>();
+
+    @Tab("Payments")
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "id")
-    @Ignored
+    @Output
     private List<BookingPaymentAllocation> payments = new ArrayList<>();
 
 

@@ -6,7 +6,7 @@ import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.DatesRanges;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -16,8 +16,6 @@ import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.persistence.annotations.CacheIndex;
-import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

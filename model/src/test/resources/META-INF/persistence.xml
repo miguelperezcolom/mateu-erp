@@ -20,7 +20,7 @@
         <class>io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer</class>
         <class>io.mateu.erp.model.invoicing.AbstractInvoiceLine</class>
         <class>io.mateu.erp.model.workflow.AbstractTask</class>
-        <class>io.mateu.erp.model.financials.Actor</class>
+        <class>io.mateu.erp.model.partners.Actor</class>
         <class>io.mateu.erp.model.product.generic.Allotment</class>
         <class>io.mateu.erp.model.financials.Amount</class>
         <class>io.mateu.erp.model.config.AppConfig</class>

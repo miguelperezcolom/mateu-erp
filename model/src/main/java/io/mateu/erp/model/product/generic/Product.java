@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.generic;
 
+import io.mateu.ui.mdd.server.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,21 +22,10 @@ public class Product {
 
     private String name;
 
-    @ManyToOne
-    private Shop shop;
+    private boolean active = true;
 
     @OneToMany(mappedBy = "product")
+    @OwnedList
     private List<Extra> extras = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product")
-    private List<Allotment> allotments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product")
-    private List<StopSales> stopSales = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product")
-    private List<Release> releases = new ArrayList<>();
-
-    @OneToMany(mappedBy = "product")
-    private List<MinimumStay> minimumStays = new ArrayList<>();
 }

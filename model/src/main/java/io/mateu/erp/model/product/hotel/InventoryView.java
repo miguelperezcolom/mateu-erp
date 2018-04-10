@@ -1,21 +1,12 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.financials.Actor;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.client.views.RPCView;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.GridData;
 import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 

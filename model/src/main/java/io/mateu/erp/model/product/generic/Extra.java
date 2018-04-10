@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 31/1/17.
@@ -18,6 +19,7 @@ public class Extra {
     private long id;
 
     @ManyToOne
+    @NotNull
     private Product product;
 
     private String name;

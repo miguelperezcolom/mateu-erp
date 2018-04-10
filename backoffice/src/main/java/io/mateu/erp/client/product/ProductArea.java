@@ -19,6 +19,7 @@ public class ProductArea extends AbstractArea {
     @Override
     public List<AbstractModule> buildModules() {
         List<AbstractModule> l = new ArrayList<>();
+        l.add(new ProductModule());
         l.add(new HotelModule());
         l.add(new TransferModule());
         l.add(new GenericModule());

@@ -7,7 +7,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.USER_STATUS;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.LocalizationRule;
@@ -71,7 +71,6 @@ public class HotelAvailabilityTest
         // creamos una divisa
         eur = new Currency();
         eur.setName("Euro");
-        eur.setDecimals(2);
         eur.setIso4217Code("487");
         eur.setIsoCode("EUR");
 

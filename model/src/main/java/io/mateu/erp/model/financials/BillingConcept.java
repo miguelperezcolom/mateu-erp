@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.ui.mdd.server.annotations.QLForCombo;
+import io.mateu.ui.mdd.server.annotations.SameLine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +28,22 @@ public class BillingConcept {
 
     @NotNull
     private LocalizationRule localizationRule;
+
+
+    private boolean hotel;
+
+    @SameLine
+    private boolean transfer;
+
+    @SameLine
+    private boolean generic;
+
+    @SameLine
+    private boolean commission;
+
+    @SameLine
+    private boolean handlingFee;
+
 
 
 }

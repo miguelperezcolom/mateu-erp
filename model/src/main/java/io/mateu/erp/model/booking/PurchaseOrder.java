@@ -4,7 +4,8 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
@@ -46,6 +47,7 @@ public class PurchaseOrder implements WithTriggers {
     @SearchFilter
     private long id;
 
+    @Tab("Info")
     @Embedded
     @Ignored
     private Audit audit;
@@ -89,6 +91,7 @@ public class PurchaseOrder implements WithTriggers {
     @ListColumn
     private String providerComment;
 
+    @Tab("Price")
     private boolean valueOverrided;
 
     private double overridedValue;
@@ -105,6 +108,13 @@ public class PurchaseOrder implements WithTriggers {
 
     @Output
     private String priceReport;
+
+
+    @Tab("Charges")
+    @OneToMany(mappedBy = "purchaseOrder")
+    @Output
+    private List<Charge> charges = new ArrayList<>();
+
 
     @Ignored
     private String signature;

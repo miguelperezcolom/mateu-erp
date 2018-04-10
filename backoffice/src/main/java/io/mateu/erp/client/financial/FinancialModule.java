@@ -1,6 +1,7 @@
 package io.mateu.erp.client.financial;
 
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.financials.Abseiling;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.CurrencyExchange;
 import io.mateu.erp.shared.financial.FinancialService;
@@ -23,7 +24,7 @@ import java.util.List;
 public class FinancialModule extends AbstractModule {
     @Override
     public String getName() {
-        return "Finnancial";
+        return "Financial";
     }
 
     @Override
@@ -33,6 +34,8 @@ public class FinancialModule extends AbstractModule {
         m.add(new MDDAction("Currency exchanges", CurrencyExchange.class));
 
         m.add(new MDDAction("Billing concepts", BillingConcept.class));
+
+        m.add(new MDDAction("Abseiling", Abseiling.class));
 
         m.add(new AbstractAction("Reprice") {
             @Override

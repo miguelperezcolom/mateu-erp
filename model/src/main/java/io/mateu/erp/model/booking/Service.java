@@ -7,7 +7,8 @@ import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
@@ -197,6 +198,11 @@ public abstract class Service implements WithTriggers {
     @Output
     @ListColumn
     private double totalCost;
+
+    @Tab("Charges")
+    @OneToMany(mappedBy = "service")
+    @Output
+    private List<Charge> charges = new ArrayList<>();
 
     @Tab("Handling")
     @Ignored

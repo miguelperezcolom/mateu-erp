@@ -1,16 +1,16 @@
 package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.revenue.Product;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,11 +30,11 @@ public class AbstractContract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("General")
     @Embedded
     @Output
     private Audit audit;
 
-    @Tab("General")
     @FullWidth
     @NotNull
     @SearchFilter
@@ -49,6 +49,10 @@ public class AbstractContract {
     @NotNull
     @ManyToOne
     private BillingConcept billingConcept;
+
+    @ManyToOne
+    @NotNull
+    private Product product;
 
     private boolean VATIncluded;
 

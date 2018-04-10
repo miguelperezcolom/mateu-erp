@@ -23,7 +23,11 @@ public class ExtraPrice {
     @ManyToOne
     private Price price;
 
-    double basePrice;
-    double pricePerDay;
+    private double pricePerUnit;
+    private double pricePerAdult;
+    private double pricePerChild;
+    private double pricePerUnitAndDay;
+    private double pricePerAdultAndDay;
+    private double pricePerChildAndDay;
 
 }

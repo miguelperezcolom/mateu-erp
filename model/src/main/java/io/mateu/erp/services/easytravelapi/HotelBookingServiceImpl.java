@@ -8,7 +8,7 @@ import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.hotel.HotelService;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.City;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 

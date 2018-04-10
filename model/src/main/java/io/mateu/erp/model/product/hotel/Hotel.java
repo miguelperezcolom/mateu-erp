@@ -43,6 +43,9 @@ public class Hotel implements IHotel, WithTriggers {
     private HotelCategory category;
 
     @ManyToOne
+    private HotelChain chain;
+
+    @ManyToOne
     @NotNull
     @ListColumn
     @SearchFilter

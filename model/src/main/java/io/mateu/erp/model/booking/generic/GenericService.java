@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking.generic;
 
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.annotations.Tab;

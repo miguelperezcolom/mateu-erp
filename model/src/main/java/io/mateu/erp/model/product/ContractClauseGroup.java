@@ -1,27 +1,25 @@
-package io.mateu.erp.model.product.generic;
+package io.mateu.erp.model.product;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by miguel on 31/1/17.
- */
 @Entity
 @Getter
 @Setter
-public class Shop {
+public class ContractClauseGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotNull
     private String name;
 
-    @OneToMany(mappedBy = "shop")
-    private List<Product> products = new ArrayList<>();
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "group")
+    private List<ContractClause> clauses = new ArrayList<>();
 }

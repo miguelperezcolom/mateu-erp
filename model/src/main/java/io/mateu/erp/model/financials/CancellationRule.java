@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.ICancellationRule;
 import lombok.Getter;
 import lombok.Setter;

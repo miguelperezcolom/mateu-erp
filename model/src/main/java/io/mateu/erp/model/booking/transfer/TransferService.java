@@ -6,7 +6,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;

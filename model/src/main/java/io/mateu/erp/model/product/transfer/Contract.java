@@ -3,7 +3,7 @@ package io.mateu.erp.model.product.transfer;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.core.server.BaseServerSideApp;

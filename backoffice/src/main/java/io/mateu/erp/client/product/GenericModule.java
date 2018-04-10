@@ -1,18 +1,12 @@
 package io.mateu.erp.client.product;
 
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.product.generic.Contract;
+import io.mateu.erp.model.product.generic.ExtraPrice;
+import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.Product;
-import io.mateu.erp.model.product.generic.Shop;
-import io.mateu.erp.model.product.generic.StopSales;
-import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +28,9 @@ public class GenericModule extends AbstractModule {
 
         m.add(new MDDAction("Contracts", Contract.class));
 
-        m.add(new MDDAction("Shops", Shop.class));
+        m.add(new MDDAction("Product prices", Price.class));
 
-        m.add(new MDDAction("Stop sales", StopSales.class));
-
+        m.add(new MDDAction("Extra prices", ExtraPrice.class));
 
         return m;
     }

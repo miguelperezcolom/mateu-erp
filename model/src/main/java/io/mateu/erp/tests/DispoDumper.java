@@ -2,7 +2,7 @@ package io.mateu.erp.tests;
 
 import io.mateu.erp.dispo.model.portfolio.World;
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.util.Helper;

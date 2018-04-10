@@ -8,7 +8,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.shared.Data;

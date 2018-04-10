@@ -1,6 +1,6 @@
 package io.mateu.erp.model.authentication;
 
-import io.mateu.erp.model.financials.Actor;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.Indelible;
 import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
