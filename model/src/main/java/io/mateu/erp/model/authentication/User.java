@@ -28,6 +28,7 @@ import java.util.List;
 @Getter@Setter
 public class User implements WithTriggers {
 
+    @Tab("Info")
     @Embedded
     @Output
     private Audit audit = new Audit();
@@ -55,19 +56,20 @@ public class User implements WithTriggers {
     @NotNull
     private USER_STATUS status;
 
+    @NotInList
+    @ManyToOne
+    private File photo;
+
+    @Tab("Segmentation")
     @ManyToOne
     private Actor actor;
 
     @ManyToOne
     private Office office;
 
+    @Tab("Permissions")
     @OneToMany
     private List<Permission> permissions = new ArrayList<Permission>();
-
-
-    @Ignored
-    @ManyToOne
-    private File photo;
 
 
     @Action(name = "Create token")

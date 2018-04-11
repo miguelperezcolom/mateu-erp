@@ -3,7 +3,6 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.generic.PriceDetail;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -236,11 +235,6 @@ public abstract class Service implements WithTriggers {
 
     @Ignored
     private LocalDate serviceDateForInvoicing;
-
-
-    @Ignored
-    @OneToMany
-    private List<PriceDetail> priceBreakdown = new ArrayList<>();
 
     @SearchFilter(value="Purchase Order Id", field = "id")
     @ManyToMany

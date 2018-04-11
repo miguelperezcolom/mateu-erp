@@ -20,6 +20,6 @@ public class FinancialArea extends AbstractArea {
         return Arrays.asList(new FinancialModule()
         , new InvoicingModule()
         , new PaymentsModule()
-                , new TaxesModule());
+                , new ViajesIbizaModule());
     }
 }

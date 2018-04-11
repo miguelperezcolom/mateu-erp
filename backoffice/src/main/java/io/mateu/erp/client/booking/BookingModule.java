@@ -3,6 +3,7 @@ package io.mateu.erp.client.booking;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
@@ -37,6 +38,8 @@ public class BookingModule extends AbstractModule {
         m.add(new MDDAction("All services", Service.class));
 
         m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
+
+        m.add(new MDDAction("Free text only", FreeTextService.class));
 
         m.add(new MDDAction("Generics only", GenericService.class));
 

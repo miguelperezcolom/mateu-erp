@@ -1,9 +1,14 @@
 package io.mateu.erp.client.financial;
 
+import io.mateu.erp.model.accounting.AccountingEntry;
+import io.mateu.erp.model.accounting.LineItem;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Abseiling;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.CurrencyExchange;
+import io.mateu.erp.model.taxes.VAT;
+import io.mateu.erp.model.taxes.VATPercent;
+import io.mateu.erp.model.taxes.VATSettlement;
 import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.client.app.*;
 import io.mateu.ui.core.client.components.fields.DateField;
@@ -12,6 +17,7 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.client.MDDMenu;
 import io.mateu.ui.mdd.shared.ERPService;
 
 import java.net.URL;
@@ -35,184 +41,13 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new MDDAction("Billing concepts", BillingConcept.class));
 
-        m.add(new MDDAction("Abseiling", Abseiling.class));
+        m.add(new MDDAction("Abseiling settlements", Abseiling.class));
 
-        m.add(new AbstractAction("Reprice") {
-            @Override
-            public void run() {
-                MateuUI.openView(new AbstractDialog() {
-                    @Override
-                    public void onOk(Data data) {
-                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).reprice(MateuUI.getApp().getUserData(), data.getLocalDate("from"), data.getLocalDate("to"), new Callback<>());
-                    }
-
-                    @Override
-                    public String getTitle() {
-                        return "Reprice";
-                    }
-
-                    @Override
-                    public void build() {
-                        add(new DateField("from", "From")).add(new DateField("to", "To"));
-                    }
-                });
-            }
-        });
-
-        m.add(new AbstractAction("General report") {
-            @Override
-            public void run() {
-                MateuUI.openView(new AbstractDialog() {
-                    @Override
-                    public void onOk(Data data) {
-                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).generalReport(data.getLocalDate("from"), data.getLocalDate("to"), new Callback<URL>() {
-                            @Override
-                            public void onSuccess(URL result) {
-                                MateuUI.open(result);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public String getTitle() {
-                        return "General report";
-                    }
-
-                    @Override
-                    public void build() {
-                        add(new DateField("from", "From")).add(new DateField("to", "To"));
-                    }
-                });
-            }
-        });
-
-        m.add(new AbstractAction("Export to Beroni") {
-            @Override
-            public void run() {
-                MateuUI.openView(new AbstractDialog() {
-                    @Override
-                    public void onOk(Data data) {
-                        ((FinancialServiceAsync)MateuUI.create(FinancialService.class)).exportToBeroni(data.getLocalDate("from"), data.getLocalDate("to"), new Callback<>());
-                    }
-
-                    @Override
-                    public String getTitle() {
-                        return "Reprice";
-                    }
-
-                    @Override
-                    public void build() {
-                        add(new DateField("from", "From")).add(new DateField("to", "To"));
-                    }
-                });
-            }
-        });
+        m.add(new MDDMenu("VAT", "VAT", VAT.class, "Percents", VATPercent.class, "Settlements", VATSettlement.class));
 
 
-        if (false) {
+        m.add(new MDDMenu("Accounting", "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
 
-            m.add(new AbstractAction("Isued invoices") {
-                @Override
-                public void run() {
-                }
-            });
-
-            m.add(new AbstractAction("Received invoices") {
-                @Override
-                public void run() {
-                }
-            });
-
-            m.add(new AbstractAction("Payment gateways") {
-                @Override
-                public void run() {
-                }
-            });
-
-            m.add(new AbstractAction("VCC") {
-                @Override
-                public void run() {
-                }
-            });
-
-            m.add(new AbstractAction("VAT") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Commissions") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Abseiling") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Prepayment") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Portfolios") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Payments") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Collections") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Bank remittances") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Direct payments") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Bank reconciliation") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-            m.add(new AbstractAction("Accounting") {
-                @Override
-                public void run() {
-
-                }
-            });
-
-        }
 
         return m;
     }

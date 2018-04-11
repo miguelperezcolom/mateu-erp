@@ -47,8 +47,6 @@ public class PaymentsModule extends AbstractModule {
 
         m.add(new MDDAction("Bank reconciliation", BankStatement.class));
 
-        m.add(new MDDMenu("Accounting", "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
-
         return m;
     }
 }

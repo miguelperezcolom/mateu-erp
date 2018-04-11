@@ -1,13 +1,12 @@
 package io.mateu.erp.model.thirdParties;
 
 import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
+import io.mateu.erp.model.revenue.Product;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -19,6 +18,10 @@ public class Integration implements IIntegration {
     private long id;
 
     private String name;
+
+    @NotNull
+    @ManyToOne
+    private Product product;
 
     private String baseUrl;
 

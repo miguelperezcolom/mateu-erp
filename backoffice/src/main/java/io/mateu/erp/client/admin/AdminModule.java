@@ -15,6 +15,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.ActorGroup;
 import io.mateu.erp.model.partners.Market;
+import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.State;
@@ -50,11 +51,13 @@ public class AdminModule extends AbstractModule {
 
         m.add(new MDDMenu("Multilingual", "Languages", Language.class, "Translations", Literal.class));
 
-        m.add(new MDDAction("Templates", Template.class));
-
         m.add(new MDDMenu("World", "Countries", Country.class, "States", State.class, "City", City.class, "Zone", Zone.class));
 
-        m.add(new MDDMenu("Monitoring", "Watchdogs", Watchdog.class, "Alarms", Alarm.class, "Watchers", Watcher.class));
+        m.add(new MDDAction("Third party integrations", Integration.class));
+
+        //m.add(new MDDMenu("Monitoring", "Watchdogs", Watchdog.class, "Alarms", Alarm.class, "Watchers", Watcher.class));
+
+        m.add(new MDDAction("Templates", Template.class));
 
         return m;
     }

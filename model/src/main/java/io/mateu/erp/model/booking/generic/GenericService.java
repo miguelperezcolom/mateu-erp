@@ -2,7 +2,12 @@ package io.mateu.erp.model.booking.generic;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Actor;
-import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.erp.model.product.ContractType;
+import io.mateu.erp.model.product.generic.Contract;
+import io.mateu.erp.model.product.generic.Extra;
+import io.mateu.erp.model.product.generic.Price;
+import io.mateu.erp.model.product.generic.Product;
+import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -10,10 +15,7 @@ import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.time.LocalDate;
@@ -35,30 +37,34 @@ public class GenericService extends Service implements WithTriggers {
 
     @Tab("Service")
     @NotNull
-    private String description;
+    @ManyToOne
+    private Product product;
 
-    @OneToMany(mappedBy = "service")
+    @OneToMany
     @OrderBy("id asc")
-    @OwnedList
-    private List<PriceLine> priceLines = new ArrayList<>();
+    private List<Extra> extras = new ArrayList<>();
 
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
+    private int units;
 
+    private int adults;
+
+    private int children;
+
+    @NotNull
+    private LocalDate deliveryDate;
+
+    @NotNull
+    private LocalDate returnDate;
+
+
+    @PrePersist@PreUpdate
+    public void pre(){
+        setStart(getDeliveryDate());
+        setFinish(getReturnDate());
     }
 
     @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
-
-        LocalDate s = null, f = null;
-        for (PriceLine l : getPriceLines()) {
-            if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
-            if (l.getFinish() != null && (f == null || l.getFinish().isAfter(f))) f = l.getFinish();
-        }
-        setStart(s);
-        setFinish(f);
-
-        super.afterSet(em, isNew);
+    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
 
     }
 
@@ -77,19 +83,17 @@ public class GenericService extends Service implements WithTriggers {
         String s = "error when serializing";
         try {
             Map<String, Object> m = toMap();
-            m.put("description", getDescription());
+            m.put("product", getProduct().getName());
             List<Map<String, Object>> ls = new ArrayList<>();
-            for (PriceLine l : getPriceLines()) {
+            for (Extra l : getExtras()) {
                 Map<String, Object> x;
                 ls.add(x = new HashMap<>());
-                x.put("units", l.getUnits());
-                x.put("description", l.getDescription());
-                x.put("start", l.getStart());
-                x.put("finish", l.getFinish());
-                x.put("priceperunit", l.getPricePerUnit());
-                x.put("priceperunitandnight", l.getPricePerUnitAndNight());
+                x.put("description", l.getName());
             }
 
+            m.put("units", getUnits());
+            m.put("adults", getAdults());
+            m.put("children", getChildren());
             m.put("cancelled", "" + isCancelled());
             s = Helper.toJson(m);
         } catch (Exception e) {
@@ -99,22 +103,90 @@ public class GenericService extends Service implements WithTriggers {
     }
     @Override
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
-        if (getPriceLines().size() == 0) throw new Throwable("No price lines");
-        double value = 0;
-        for (PriceLine l : getPriceLines()) {
-            LocalDate start = getStart();
-            LocalDate finish = getFinish();
-            if (l.getStart() != null) start = l.getStart();
-            if (l.getStart() != null) finish = l.getStart();
-            long nights = DAYS.between(start, finish) - 1;
-            value += l.getUnits() * l.getPricePerUnit() + l.getUnits() * nights * l.getPricePerUnitAndNight();
+        // seleccionamos los contratos válidos
+        List<Contract> contracts = new ArrayList<>();
+        for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
+            boolean ok = true;
+            ok &= ContractType.SALE.equals(c.getType());
+            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= c.getValidFrom().isBefore(getStart());
+            ok &= c.getValidTo().isAfter(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
         }
+        if (contracts.size() == 0) throw new Exception("No valid contract");
+
+        List<Price> prices = new ArrayList<>();
+        for (Contract c : contracts) for (Price p : c.getPrices()) {
+            boolean ok = true;
+            ok &= p.getProduct().equals(getProduct());
+
+            if (ok) prices.add(p);
+        }
+        if (prices.size() == 0) throw new Exception("No valid price in selectable contracts");
+
+        // valoramos con cada uno de ellos y nos quedamos con el precio más económico
+        double value = Double.MAX_VALUE;
+        Actor provider = null;
+        long noches = DAYS.between(getStart(), getFinish());
+        for (Price p : prices) {
+            double v = 0;
+            v += getUnits() * (p.getPricePerUnit() + noches * p.getPricePerUnitAndDay());
+            v += getAdults() * (p.getPricePerAdult() + noches * p.getPricePerAdultAndDay());
+            v += getChildren() * (p.getPricePerChild() + noches * p.getPricePerChildAndDay());
+            if (v < value) {
+                value = v;
+            }
+        }
+
         return value;
     }
 
     @Override
     public Actor findBestProvider(EntityManager em) throws Throwable {
-        return null;
+        // seleccionamos los contratos válidos
+        List<Contract> contracts = new ArrayList<>();
+        for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
+            boolean ok = true;
+            ok &= ContractType.PURCHASE.equals(c.getType());
+            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= c.getValidFrom().isBefore(getStart());
+            ok &= c.getValidTo().isAfter(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
+        }
+        if (contracts.size() == 0) throw new Exception("No valid contract");
+
+        List<Price> prices = new ArrayList<>();
+        for (Contract c : contracts) for (Price p : c.getPrices()) {
+            boolean ok = true;
+            ok &= p.getProduct().equals(getProduct());
+
+            if (ok) prices.add(p);
+        }
+        if (prices.size() == 0) throw new Exception("No valid price in selectable contracts");
+
+        // valoramos con cada uno de ellos y nos quedamos con el precio más económico
+        double value = Double.MAX_VALUE;
+        Actor provider = null;
+        long noches = DAYS.between(getStart(), getFinish());
+        for (Price p : prices) {
+            double v = 0;
+            v += getUnits() * (p.getPricePerUnit() + noches * p.getPricePerUnitAndDay());
+            v += getAdults() * (p.getPricePerAdult() + noches * p.getPricePerAdultAndDay());
+            v += getChildren() * (p.getPricePerChild() + noches * p.getPricePerChildAndDay());
+            if (v < value) {
+                value = v;
+                provider = p.getContract().getSupplier();
+            }
+        }
+
+        return provider;
+
     }
 
 
@@ -132,12 +204,6 @@ public class GenericService extends Service implements WithTriggers {
 
         d.put("comments", getComment());
 
-        List<Map<String, Object>> l = new ArrayList<>();
-        for (PriceLine pl : getPriceLines()) {
-            l.add(pl.getData());
-        }
-        d.put("lines", l);
-
         return d;
     }
 
@@ -149,6 +215,6 @@ public class GenericService extends Service implements WithTriggers {
 
     @Override
     public String toString() {
-        return getDescription();
+        return (getProduct() != null)?getProduct().getName():"--";
     }
 }

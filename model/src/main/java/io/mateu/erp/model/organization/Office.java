@@ -1,9 +1,11 @@
 package io.mateu.erp.model.organization;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.annotations.Separator;
+import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,8 +25,16 @@ public class Office {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("Info")
     @NotNull
     private String name;
+
+
+    @NotNull
+    @ManyToOne
+    @NotInList
+    private City city;
+
 
     @NotNull
     @ManyToOne
@@ -32,7 +42,7 @@ public class Office {
     private TransferPoint defaultAirportForTransfers;
 
 
-    @Separator("Email")
+    @Tab("Email")
     @NotInList
     private String emailHost;
     @NotInList
