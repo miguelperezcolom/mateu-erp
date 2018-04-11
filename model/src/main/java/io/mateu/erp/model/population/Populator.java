@@ -129,11 +129,7 @@ public class Populator {
                 em.persist(usd);
             }
 
-            {
-                Office o = new Office();
-                o.setName("Head office");
-                em.persist(o);
-            }
+
 
             {
                 PointOfSale pos = new PointOfSale();
@@ -149,6 +145,7 @@ public class Populator {
                 em.persist(bc);
             }
 
+            City ct;
             {
                 Country co = new Country();
                 em.persist(co);
@@ -161,7 +158,6 @@ public class Populator {
                 s.setCountry(co);
                 s.setName("UNMAPPED");
 
-                City ct;
                 s.getCities().add(ct = new City());
                 em.persist(ct);
                 ct.setState(s);
@@ -178,6 +174,14 @@ public class Populator {
                 b.setCode("UNMAPPED");
                 b.setName(new Literal("UNMAPPED", "UNMAPPED"));
 
+            }
+
+
+            {
+                Office o = new Office();
+                o.setName("Head office");
+                o.setCity(ct);
+                em.persist(o);
             }
 
         });
