@@ -148,31 +148,31 @@ public class Populator {
             City ct;
             {
                 Country co = new Country();
-                em.persist(co);
                 co.setIsoCode("UNMAPPED");
                 co.setName("UNMAPPED");
+                em.persist(co);
 
                 State s;
                 co.getStates().add(s = new State());
-                em.persist(s);
                 s.setCountry(co);
                 s.setName("UNMAPPED");
+                em.persist(s);
 
                 s.getCities().add(ct = new City());
-                em.persist(ct);
                 ct.setState(s);
                 ct.setName("UNMAPPED");
+                em.persist(ct);
 
 
                 RoomType r = new RoomType();
-                em.persist(r);
                 r.setCode("UNMAPPED");
                 r.setName(new Literal("UNMAPPED", "UNMAPPED"));
+                em.persist(r);
 
                 BoardType b = new BoardType();
-                em.persist(b);
                 b.setCode("UNMAPPED");
                 b.setName(new Literal("UNMAPPED", "UNMAPPED"));
+                em.persist(b);
 
             }
 
