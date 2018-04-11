@@ -115,7 +115,6 @@ public class Populator {
 
             {
                 Currency eur = new Currency();
-                em.persist(eur);
                 eur.setIsoCode("EUR");
                 eur.setIso4217Code("978");
                 eur.setName("Euro");
@@ -124,7 +123,6 @@ public class Populator {
 
             {
                 Currency usd = new Currency();
-                em.persist(usd);
                 usd.setIsoCode("USD");
                 usd.setIso4217Code("840");
                 usd.setName("US Dollar");
