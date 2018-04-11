@@ -19,6 +19,8 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.transfer.Contract;
+import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.product.transfer.TransferPointType;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
@@ -146,6 +148,7 @@ public class Populator {
             }
 
             City ct;
+            TransferPoint apt;
             {
                 Country co = new Country();
                 co.setIsoCode("UNMAPPED");
@@ -162,6 +165,12 @@ public class Populator {
                 ct.setState(s);
                 ct.setName("UNMAPPED");
                 em.persist(ct);
+
+                ct.getTransferPoints().add(apt = new TransferPoint());
+                apt.setCity(ct);
+                apt.setName("DEFAULT AIRPORT");
+                apt.setType(TransferPointType.AIRPORT);
+                em.persist(apt);
 
 
                 RoomType r = new RoomType();
@@ -181,6 +190,7 @@ public class Populator {
                 Office o = new Office();
                 o.setName("Head office");
                 o.setCity(ct);
+                o.setDefaultAirportForTransfers(apt);
                 em.persist(o);
             }
 
