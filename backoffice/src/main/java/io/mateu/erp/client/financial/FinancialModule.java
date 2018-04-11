@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Abseiling;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.CurrencyExchange;
+import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
 import io.mateu.erp.model.taxes.VATSettlement;
@@ -36,6 +37,8 @@ public class FinancialModule extends AbstractModule {
     @Override
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
+
+        m.add(new MDDAction("Agents", FinancialAgent.class));
 
         m.add(new MDDAction("Currency exchanges", CurrencyExchange.class));
 
