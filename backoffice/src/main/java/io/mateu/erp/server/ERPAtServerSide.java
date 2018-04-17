@@ -160,7 +160,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                 User u = em.find(User.class, login.toLowerCase().trim());
                 if (u != null) {
 
-                    if (u.getExpiryDate() != null && u.getExpiryDate().isAfter(LocalDate.now())) u.setStatus(USER_STATUS.EXPIRED);
+                    if (u.getExpiryDate() != null && u.getExpiryDate().isBefore(LocalDate.now())) u.setStatus(USER_STATUS.EXPIRED);
 
                     if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
                     if (USER_STATUS.BLOCKED.equals(u.getStatus())) throw new Exception("Blocked user");
