@@ -75,6 +75,9 @@ public abstract class Service implements WithTriggers {
     private Booking booking;
 
 
+    @ManyToOne
+    private BookingPart bookingPart;
+
     @Ignored
     @NotInEditor
     @ListColumn

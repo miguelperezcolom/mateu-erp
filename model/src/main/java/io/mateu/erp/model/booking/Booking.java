@@ -113,6 +113,19 @@ public class Booking implements WithTriggers {
     private boolean wasCancelled = false;
 
 
+    @Tab("Quotation requests")
+    @OneToMany(mappedBy = "booking")
+    @OrderColumn(name = "orderInBooking")
+    @Output
+    private List<QuotationRequest> quotationRequests = new ArrayList<>();
+
+
+    @Tab("Parts")
+    @OneToMany(mappedBy = "booking")
+    @OrderColumn(name = "orderInBooking")
+    @Output
+    private List<BookingPart> parts = new ArrayList<>();
+
     @Tab("Services")
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "orderInBooking")
