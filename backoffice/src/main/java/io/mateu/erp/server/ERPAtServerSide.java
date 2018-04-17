@@ -24,6 +24,8 @@ import javax.jms.Destination;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Created by miguel on 3/1/17.
@@ -157,12 +159,18 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
 
                 User u = em.find(User.class, login.toLowerCase().trim());
                 if (u != null) {
+
+                    if (u.getExpiryDate() != null && u.getExpiryDate().isAfter(LocalDate.now())) u.setStatus(USER_STATUS.EXPIRED);
+
                     if (u.getPassword() == null) throw new Exception("Missing password for user " + login);
                     if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) throw new Exception("Wrong password");
                     if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
+                    if (USER_STATUS.BLOCKED.equals(u.getStatus())) throw new Exception("Blocked user");
+                    if (USER_STATUS.EXPIRED.equals(u.getStatus())) throw new Exception("Expired user");
                     d.setName(u.getName());
                     d.setEmail(u.getEmail());
                     d.setLogin(login);
+                    u.setLastLogin(LocalDateTime.now());
                     if (u.getActor() != null) d.set("agencyId", u.getActor().getId());
                     if (u.getOffice() != null) d.set("officeId", u.getOffice().getId());
                     if (u.getPhoto() != null) d.setPhoto(u.getPhoto().toFileLocator().getUrl());
