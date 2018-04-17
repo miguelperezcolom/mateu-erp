@@ -1,10 +1,8 @@
 package io.mateu.erp.model.booking;
 
+import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.ui.mdd.server.annotations.Order;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.interfaces.AuditRecord;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +29,7 @@ public class QuotationRequest {
     private QuotationRequestDirection direction;
 
     @Embedded
-    private AuditRecord audit;
+    private Audit audit;
 
     @NotNull
     @ManyToOne
