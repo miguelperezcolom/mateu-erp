@@ -28,6 +28,10 @@ public class CreditLimit {
     @Column(name = "_limit")
     private double limit;
 
+    @NotNull
+    @ManyToOne
+    private Currency currency;
+
     @Output
     private double remaining;
 

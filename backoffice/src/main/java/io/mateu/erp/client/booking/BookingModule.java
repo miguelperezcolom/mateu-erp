@@ -1,6 +1,7 @@
 package io.mateu.erp.client.booking;
 
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceRequest;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
@@ -32,6 +33,8 @@ public class BookingModule extends AbstractModule {
     @Override
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
+
+        m.add(new MDDAction("Price requests", PriceRequest.class));
 
         m.add(new MDDAction("Bookings", Booking.class));
 

@@ -41,6 +41,7 @@ public class TransferPoint {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Tab("Info")
     @NotNull
     private TransferPointType type;
 
@@ -72,6 +73,11 @@ public class TransferPoint {
 
     @ManyToOne
     private State gatewayOf;
+
+    @Tab("Needed time")
+    private int minutesForNationalFlights;
+
+    private int minutesForInternationalFlights;
 
 
     @Override

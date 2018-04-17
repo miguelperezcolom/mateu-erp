@@ -49,7 +49,9 @@ public class AdminModule extends AbstractModule {
 
         m.add(new MDDAction("Currencies", Currency.class));
 
-        m.add(new MDDMenu("Multilingual", "Languages", Language.class, "Translations", Literal.class));
+        //m.add(new MDDMenu("Multilingual", "Languages", Language.class, "Translations", Literal.class));
+
+        m.add(new MDDAction("Translations", Literal.class));
 
         m.add(new MDDMenu("World", "Countries", Country.class, "States", State.class, "City", City.class, "Zone", Zone.class));
 

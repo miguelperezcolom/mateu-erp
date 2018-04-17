@@ -6,6 +6,7 @@ import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.WithTriggers;
@@ -92,6 +93,11 @@ public class Hotel implements IHotel, WithTriggers {
      * inclusive
      */
     private int adultStartAge;
+
+
+    @Tab("Transfers")
+    @ManyToOne
+    private TransferPoint transferPoint;
 
 
 
