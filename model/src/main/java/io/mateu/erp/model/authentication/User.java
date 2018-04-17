@@ -63,6 +63,9 @@ public class User implements WithTriggers {
     @Output
     private LocalDateTime lastLogin;
 
+    @Output
+    private int failedLogins;
+
     @NotInList
     @ManyToOne
     private File photo;

@@ -163,7 +163,12 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     if (u.getExpiryDate() != null && u.getExpiryDate().isAfter(LocalDate.now())) u.setStatus(USER_STATUS.EXPIRED);
 
                     if (u.getPassword() == null) throw new Exception("Missing password for user " + login);
-                    if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) throw new Exception("Wrong password");
+                    if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) {
+                        u.setFailedLogins(u.getFailedLogins() + 1);
+                        if (u.getFailedLogins() > 10) u.setStatus(USER_STATUS.BLOCKED);
+                        em.getTransaction().commit();
+                        throw new Exception("Wrong password");
+                    }
                     if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
                     if (USER_STATUS.BLOCKED.equals(u.getStatus())) throw new Exception("Blocked user");
                     if (USER_STATUS.EXPIRED.equals(u.getStatus())) throw new Exception("Expired user");
@@ -171,6 +176,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     d.setEmail(u.getEmail());
                     d.setLogin(login);
                     u.setLastLogin(LocalDateTime.now());
+                    u.setFailedLogins(0);
                     if (u.getActor() != null) d.set("agencyId", u.getActor().getId());
                     if (u.getOffice() != null) d.set("officeId", u.getOffice().getId());
                     if (u.getPhoto() != null) d.setPhoto(u.getPhoto().toFileLocator().getUrl());
