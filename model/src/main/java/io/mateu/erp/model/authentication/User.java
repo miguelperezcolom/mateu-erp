@@ -70,6 +70,9 @@ public class User implements WithTriggers {
     @ManyToOne
     private File photo;
 
+    @TextArea
+    private String comments;
+
     @Tab("Segmentation")
     @ManyToOne
     private Actor actor;
