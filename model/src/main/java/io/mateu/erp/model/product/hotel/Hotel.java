@@ -45,7 +45,7 @@ public class Hotel implements IHotel, WithTriggers {
     private HotelCategory category;
 
     @ManyToOne
-    private Actor chain;
+    private Actor hotelChain;
 
     @ManyToOne
     @NotNull
