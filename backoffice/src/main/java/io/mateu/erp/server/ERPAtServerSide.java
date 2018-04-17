@@ -162,6 +162,10 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
 
                     if (u.getExpiryDate() != null && u.getExpiryDate().isAfter(LocalDate.now())) u.setStatus(USER_STATUS.EXPIRED);
 
+                    if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
+                    if (USER_STATUS.BLOCKED.equals(u.getStatus())) throw new Exception("Blocked user");
+                    if (USER_STATUS.EXPIRED.equals(u.getStatus())) throw new Exception("Expired user");
+
                     if (u.getPassword() == null) throw new Exception("Missing password for user " + login);
                     if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) {
                         u.setFailedLogins(u.getFailedLogins() + 1);
@@ -169,9 +173,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                         em.getTransaction().commit();
                         throw new Exception("Wrong password");
                     }
-                    if (USER_STATUS.INACTIVE.equals(u.getStatus())) throw new Exception("Deactivated user");
-                    if (USER_STATUS.BLOCKED.equals(u.getStatus())) throw new Exception("Blocked user");
-                    if (USER_STATUS.EXPIRED.equals(u.getStatus())) throw new Exception("Expired user");
+
                     d.setName(u.getName());
                     d.setEmail(u.getEmail());
                     d.setLogin(login);
