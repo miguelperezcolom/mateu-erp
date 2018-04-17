@@ -14,6 +14,8 @@ import javax.persistence.*;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +57,11 @@ public class User implements WithTriggers {
     @ListColumn("Status")
     @NotNull
     private USER_STATUS status;
+
+    private LocalDate expiryDate;
+
+    @Output
+    private LocalDateTime lastLogin;
 
     @NotInList
     @ManyToOne

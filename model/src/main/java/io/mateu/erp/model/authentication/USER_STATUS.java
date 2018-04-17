@@ -5,6 +5,6 @@ package io.mateu.erp.model.authentication;
  */
 public enum USER_STATUS {
 
-    ACTIVE, INACTIVE
+    ACTIVE, INACTIVE, EXPIRED, BLOCKED
 
 }
