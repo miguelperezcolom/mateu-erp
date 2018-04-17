@@ -50,6 +50,9 @@ public class Actor implements IActor {
     @SameLine
     private boolean provider;
 
+    @SameLine
+    private boolean hotelChain;
+
     @ManyToOne
     private ActorGroup group;
 
