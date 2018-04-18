@@ -98,16 +98,14 @@ public class Actor implements IActor {
     @ManyToOne
     private HandlingFee handlingFee;
 
+    @ManyToOne
+    private CancellationRules cancellationRules;
+
     @Tab("As supplier")
     private String payableByInVoucher;
 
     private double extraMarkupPercent;
 
-
-    @Tab("Cancellation rules")
-    @OneToMany(mappedBy = "actor")
-    @OwnedList
-    private List<CancellationRule> cancellationRules = new ArrayList<>();
 
     @Tab("Invoicing")
     private boolean exportableToinvoicingApp;

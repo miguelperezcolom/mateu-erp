@@ -18,7 +18,7 @@ public class CancellationRule implements ICancellationRule {
     private long id;
 
     @ManyToOne
-    private Actor actor;
+    private CancellationRules rules;
 
     @ManyToOne
     private Office office;
