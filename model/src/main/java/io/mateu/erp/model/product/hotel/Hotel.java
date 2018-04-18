@@ -8,14 +8,13 @@ import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.util.JPATransaction;
+import io.mateu.erp.model.workflow.WorkflowEngine;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.persistence.annotations.CacheIndex;
-import org.eclipse.persistence.annotations.Index;
-import org.eclipse.persistence.config.QueryHints;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -28,7 +27,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Hotel implements IHotel, WithTriggers {
+public class Hotel implements IHotel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -149,34 +148,48 @@ public class Hotel implements IHotel, WithTriggers {
     }
 
 
-    @Override
-    public void beforeSet(EntityManager entityManager, boolean b) throws Throwable {
+
+    @PostPersist@PostUpdate
+    public void afterSet() throws Exception, Throwable {
+
+        WorkflowEngine.add(new Runnable() {
+
+            long hotelId = getId();
+
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            Hotel h = em.find(Hotel.class, hotelId);
+
+
+                            if (h.getStopSales() == null) {
+                                h.setStopSales(new StopSales());
+                                h.getStopSales().setHotel(h);
+                                em.persist(h.getStopSales());
+                            }
+
+                            if (h.getRealInventory() == null) {
+                                h.setRealInventory(new Inventory());
+                                h.getRealInventory().setHotel(h);
+                                h.getRealInventory().setName("Real inventory");
+                                em.persist(h.getRealInventory());
+                            }
+
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
 
     }
 
-    @Override
-    public void afterSet(EntityManager entityManager, boolean b) throws Exception, Throwable {
-        if (getStopSales() == null) {
-            setStopSales(new StopSales());
-            getStopSales().setHotel(this);
-            entityManager.persist(getStopSales());
-        }
-
-        if (getRealInventory() == null) {
-            setRealInventory(new Inventory());
-            getRealInventory().setHotel(this);
-            getRealInventory().setName("Real inventory");
-            entityManager.persist(getRealInventory());
-        }
-    }
-
-    @Override
-    public void beforeDelete(EntityManager entityManager) throws Throwable {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager entityManager) throws Throwable {
-
-    }
 }

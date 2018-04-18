@@ -6,7 +6,6 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +27,7 @@ import java.util.List;
 @Entity
 @Table(name = "_USER")
 @Getter@Setter
-public class User implements WithTriggers {
+public class User {
 
     @Tab("Info")
     @Embedded
@@ -97,25 +96,6 @@ public class User implements WithTriggers {
 
         t.setId(t.createId(this));
         System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
-    }
-
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
-
-    }
-
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Exception {
-    }
-
-    @Override
-    public void beforeDelete(EntityManager em) throws Exception {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager em) throws Exception {
-
     }
 
 }
