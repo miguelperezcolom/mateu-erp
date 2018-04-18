@@ -1,6 +1,9 @@
 package io.mateu.erp.model.booking.transfer;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.util.Helper;
+import io.mateu.erp.model.util.JPATransaction;
+import io.mateu.erp.model.workflow.WorkflowEngine;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
@@ -8,7 +11,6 @@ import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.SearchFilterIsNull;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +24,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TransferPointMapping implements WithTriggers {
+public class TransferPointMapping {
 
     //select x.id, x.text, y.name from io.mateu.erp.model.booking.transfer.TransferPointMapping x left outer join TransferPoint y on x.point = y order by x.text
 
@@ -84,39 +86,48 @@ public class TransferPointMapping implements WithTriggers {
         return p;
     }
 
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
 
-    }
-
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+    @PostPersist@PostUpdate
+    public void afterSet() throws Throwable {
         setText(getText().toLowerCase().trim());
 
-        List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setParameter("s", getText()).getResultList();
+        WorkflowEngine.add(new Runnable() {
 
-        for (TransferService s : ss) {
-            s.setPickup(getPoint());
-            if (getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(getPoint());
-            s.afterSet(em, false);
-        }
+            long tpmId = getId();
 
-        ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setParameter("s", getText()).getResultList();
+                               @Override
+                               public void run() {
 
-        for (TransferService s : ss) {
-            s.setDropoff(getPoint());
-            if (getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(getPoint());
-            s.afterSet(em, false);
-        }
-    }
+                                   try {
+                                       Helper.transact(new JPATransaction() {
+                                           @Override
+                                           public void run(EntityManager em) throws Throwable {
 
-    @Override
-    public void beforeDelete(EntityManager em) throws Exception {
+                                               TransferPointMapping tpm = em.find(TransferPointMapping.class, tpmId);
 
-    }
+                                               List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setParameter("s", tpm.getText()).getResultList();
 
-    @Override
-    public void afterDelete(EntityManager em) throws Exception {
+                                               for (TransferService s : ss) {
+                                                   s.setPickup(tpm.getPoint());
+                                                   if (tpm.getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(tpm.getPoint());
+                                               }
 
+                                               ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setParameter("s", tpm.getText()).getResultList();
+
+                                               for (TransferService s : ss) {
+                                                   s.setDropoff(tpm.getPoint());
+                                                   if (tpm.getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(tpm.getPoint());
+                                               }
+
+
+                                           }
+                                       });
+                                   } catch (Throwable throwable) {
+                                       throwable.printStackTrace();
+                                   }
+
+                               }
+                           }
+        );
     }
 }

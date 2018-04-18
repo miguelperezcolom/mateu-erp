@@ -18,7 +18,6 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
@@ -48,7 +47,7 @@ import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 @Entity
 @Getter
 @Setter
-public abstract class Service implements WithTriggers {
+public abstract class Service {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -458,11 +457,6 @@ public abstract class Service implements WithTriggers {
                     }
                     t.getPurchaseOrders().add(po);
                     po.getSendingTasks().add(t);
-                    try {
-                        po.afterSet(em, false);
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
                 }
             }
         }
@@ -916,39 +910,62 @@ public abstract class Service implements WithTriggers {
     }
 
 
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+    @PostUpdate@PostPersist
+    public void afterSet() throws Throwable {
 
-        if (true || getBooking().getFinish() == null) {
-            for (Service x : getBooking().getServices()) {
-                if (x.getStart() != null) {
-                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getStart())) getBooking().setStart(x.getStart());
-                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getStart())) getBooking().setFinish(x.getStart());
+        WorkflowEngine.add(new Runnable() {
+
+            long serviceId = getId();
+
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            Service s = em.find(Service.class, serviceId);
+
+                            if (true || getBooking().getFinish() == null) {
+                                for (Service x : s.getBooking().getServices()) {
+                                    if (x.getStart() != null) {
+                                        if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getStart())) s.getBooking().setStart(x.getStart());
+                                        if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getStart())) s.getBooking().setFinish(x.getStart());
+                                    }
+
+                                    if (x.getFinish() != null) {
+                                        if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getFinish())) s.getBooking().setStart(x.getFinish());
+                                        if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getFinish())) s.getBooking().setFinish(x.getFinish());
+                                    }
+
+                                    if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
+                                    else x.setServiceDateForInvoicing(x.getStart());
+                                }
+                            }
+
+                            try {
+                                s.price(em, s.getAudit().getModifiedBy());
+                                s.checkPurchase(em, s.getAudit().getModifiedBy());
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
+
+                            s.updateProcessingStatus(em);
+                            s.validate(em);
+
+
+                            s.setVisibleInSummary(!s.isCancelled() || s.getSentToProvider() != null);
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
 
-                if (x.getFinish() != null) {
-                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getFinish())) getBooking().setStart(x.getFinish());
-                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getFinish())) getBooking().setFinish(x.getFinish());
-                }
 
-                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
-                else x.setServiceDateForInvoicing(x.getStart());
             }
-        }
-
-        try {
-            price(em, getAudit().getModifiedBy());
-            checkPurchase(em, getAudit().getModifiedBy());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        updateProcessingStatus(em);
-        validate(em);
-
-
-        setVisibleInSummary(!isCancelled() || getSentToProvider() != null);
-
+        });
 
     }
 }

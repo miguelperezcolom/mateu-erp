@@ -9,10 +9,10 @@ import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
+import io.mateu.erp.model.workflow.WorkflowEngine;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
@@ -36,7 +36,7 @@ import java.util.*;
 @Getter
 @Setter
 @UseIdToSelect(ql = "select x.id, concat(x.leadName, ' - ', x.agency.name, ' - ', x.id) as text from Booking x where x.id = xxxx")
-public class Booking implements WithTriggers {
+public class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -188,32 +188,45 @@ public class Booking implements WithTriggers {
 
     }
 
-    @Override
+    @PrePersist@PreUpdate
     public void beforeSet(EntityManager em, boolean isNew) throws Throwable {
         setWasCancelled(isCancelled());
     }
 
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable {
-        if (isCancelled() && isCancelled() != isWasCancelled()) {
-            cancel(em, getAudit().getModifiedBy());
-        }
+    @PostPersist@PostUpdate
+    public void afterSet() throws Exception, Throwable {
+        WorkflowEngine.add(new Runnable() {
+
+            long bookingId = getId();
+
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            Booking b = em.find(Booking.class, bookingId);
+
+                            if (b.isCancelled() && b.isCancelled() != b.isWasCancelled()) {
+                                b.cancel(em, b.getAudit().getModifiedBy());
+                            }
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
     }
 
     public void cancel(EntityManager em, User u) {
         for (Service s : getServices()) {
             s.cancel(em, u);
         }
-    }
-
-    @Override
-    public void beforeDelete(EntityManager em) throws Throwable {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager em) throws Throwable {
-
     }
 
     public Map<String,Object> getData() {

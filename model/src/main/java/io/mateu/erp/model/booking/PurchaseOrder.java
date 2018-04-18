@@ -4,22 +4,22 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
+import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
 import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.*;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
@@ -40,7 +40,7 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
-public class PurchaseOrder implements WithTriggers {
+public class PurchaseOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -214,7 +214,6 @@ public class PurchaseOrder implements WithTriggers {
 //        if (getProvider().isAutomaticOrderConfirmation()) {
 //            setStatus(PurchaseOrderStatus.CONFIRMED);
 //        }
-        afterSet(em, false);
     }
 
     public Map<String,Object> getData() {
@@ -311,45 +310,57 @@ public class PurchaseOrder implements WithTriggers {
 
 
 
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) throws Throwable {
+    @PostPersist@PostUpdate
+    public void afterSet() throws Exception, Throwable {
 
-    }
+        WorkflowEngine.add(new Runnable() {
 
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Exception, Throwable {
-        for (Service s : getServices()) {
-            if (s.getEffectiveProcessingStatus() < 300) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+            long poId = getId();
+
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            PurchaseOrder po = em.find(PurchaseOrder.class, poId);
+
+                            for (Service s : po.getServices()) {
+                                if (s.getEffectiveProcessingStatus() < 300) {
+                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+                                }
+
+                                if (po.isSent() && s.getEffectiveProcessingStatus() < 400) {
+                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+                                    s.setSentToProvider(getSentTime());
+                                }
+
+                                if (PurchaseOrderStatus.REJECTED.equals(po.getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
+                                }
+
+                                if (PurchaseOrderStatus.CONFIRMED.equals(po.getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+                                }
+                            }
+                            try {
+                                po.price(em);
+                            } catch (Throwable e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+
             }
+        });
 
-            if (isSent() && s.getEffectiveProcessingStatus() < 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
-                s.setSentToProvider(getSentTime());
-            }
-
-            if (PurchaseOrderStatus.REJECTED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
-            }
-
-            if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-            }
-        }
-        try {
-            price(em);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void beforeDelete(EntityManager em) throws Throwable {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager em) throws Throwable {
 
     }
 }
