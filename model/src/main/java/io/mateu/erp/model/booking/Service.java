@@ -740,9 +740,10 @@ public abstract class Service implements WithTriggers {
                     po = null;
                 }
             }
+            boolean nueva = false;
             if (po == null) {
+                nueva = true;
                 po = new PurchaseOrder();
-                em.persist(po);
                 po.setAudit(new Audit());
                 po.getServices().add(this);
                 getPurchaseOrders().add(po);
@@ -751,6 +752,8 @@ public abstract class Service implements WithTriggers {
             po.setOffice(getOffice());
             po.setProvider(provider);
             po.setCurrency(provider.getCurrency());
+
+            if (nueva) em.persist(po);
 
         }
     }
