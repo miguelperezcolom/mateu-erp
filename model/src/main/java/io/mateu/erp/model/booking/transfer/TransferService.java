@@ -644,6 +644,7 @@ public class TransferService extends Service {
 
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
+        aaaaa
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setLockMode(LockModeType.OPTIMISTIC).getResultList()) {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale && ContractType.PURCHASE.equals(c.getType()));
@@ -711,6 +712,7 @@ public class TransferService extends Service {
 
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
+        aaaa
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setLockMode(LockModeType.OPTIMISTIC).getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
