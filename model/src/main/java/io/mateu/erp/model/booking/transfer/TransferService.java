@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.transfer;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
@@ -1027,15 +1028,64 @@ public class TransferService extends Service {
 
 
     @Action(name = "Solo miguel")
-    public static void repair(EntityManager em) {
-        //for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.start >= :d").setParameter("d", LocalDate.now()).getResultList()) {
-        for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x").getResultList()) {
-            s.setVisibleInSummary(!s.isCancelled() || s.getSentToProvider() != null);
-/*            if (s.getBooking().getAgency().getId() == 47 && s.isValueOverrided()) {
-                s.setValueOverrided(false);
-                s.setOverridedNetValue(0);
-            }*/
+    public static void repair() throws Throwable {
+
+        List<Long> ids = new ArrayList<>();
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.audit.created >= :f").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+                    ids.add(s.getId());
+                }
+            }
+        });
+
+
+        for (long id : ids) {
+            try {
+                Helper.transact(new JPATransaction() {
+                    @Override
+                    public void run(EntityManager em) throws Throwable {
+                        TransferService s = em.find(TransferService.class, id);
+                        s.afterSet();
+                    }
+                });
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
         }
+
+
+
+        ids.clear();
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+                for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x where (x.audit.created >= :f or x.sentTime > :f)").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+                    ids.add(s.getId());
+                }
+            }
+        });
+
+
+        for (long id : ids) {
+            try {
+                Helper.transact(new JPATransaction() {
+                    @Override
+                    public void run(EntityManager em) throws Throwable {
+                        PurchaseOrder s = em.find(PurchaseOrder.class, id);
+                        s.afterSet();
+                    }
+                });
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+
     }
 
 }
