@@ -927,35 +927,7 @@ public abstract class Service {
 
                             Service s = em.find(Service.class, serviceId);
 
-                            if (true || getBooking().getFinish() == null) {
-                                for (Service x : s.getBooking().getServices()) {
-                                    if (x.getStart() != null) {
-                                        if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getStart())) s.getBooking().setStart(x.getStart());
-                                        if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getStart())) s.getBooking().setFinish(x.getStart());
-                                    }
-
-                                    if (x.getFinish() != null) {
-                                        if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getFinish())) s.getBooking().setStart(x.getFinish());
-                                        if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getFinish())) s.getBooking().setFinish(x.getFinish());
-                                    }
-
-                                    if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
-                                    else x.setServiceDateForInvoicing(x.getStart());
-                                }
-                            }
-
-                            try {
-                                s.price(em, s.getAudit().getModifiedBy());
-                                s.checkPurchase(em, s.getAudit().getModifiedBy());
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                            }
-
-                            s.updateProcessingStatus(em);
-                            s.validate(em);
-
-
-                            s.setVisibleInSummary(!s.isCancelled() || s.getSentToProvider() != null);
+                            s.afterSetAsService(em);
 
                         }
                     });
@@ -967,5 +939,44 @@ public abstract class Service {
             }
         });
 
+    }
+
+    public void afterSetAsService(EntityManager em) {
+        if (true || getBooking().getFinish() == null) {
+            for (Service x : getBooking().getServices()) {
+                if (x.getStart() != null) {
+                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getStart())) getBooking().setStart(x.getStart());
+                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getStart())) getBooking().setFinish(x.getStart());
+                }
+
+                if (x.getFinish() != null) {
+                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getFinish())) getBooking().setStart(x.getFinish());
+                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getFinish())) getBooking().setFinish(x.getFinish());
+                }
+
+                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
+                else x.setServiceDateForInvoicing(x.getStart());
+            }
+        }
+
+
+        try {
+            price(em, getAudit().getModifiedBy());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        try {
+            checkPurchase(em, getAudit().getModifiedBy());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+
+        updateProcessingStatus(em);
+        validate(em);
+
+
+        setVisibleInSummary(!isCancelled() || getSentToProvider() != null);
     }
 }

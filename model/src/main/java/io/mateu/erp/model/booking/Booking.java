@@ -155,7 +155,7 @@ public class Booking {
     public List<MDDLink> getLinks() {
         List<MDDLink> l = new ArrayList<>();
         l.add(new MDDLink("Services", Service.class, ActionType.OPENLIST, new Data("booking.id", getId())));
-        l.add(new MDDLink("Updates", TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference())));
+        if (getAgency() != null) l.add(new MDDLink("Updates", TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference())));
         return l;
     }
 
@@ -189,7 +189,7 @@ public class Booking {
     }
 
     @PrePersist@PreUpdate
-    public void beforeSet(EntityManager em, boolean isNew) throws Throwable {
+    public void beforeSet() throws Throwable {
         setWasCancelled(isCancelled());
     }
 

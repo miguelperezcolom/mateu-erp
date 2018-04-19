@@ -367,7 +367,6 @@ public class TestPopulator {
                     b.setAgencyReference("AXS" + i);
                     b.setCancelled(false);
                     b.setComments("Test booking created b test populator");
-                    b.afterSet(em, true);
 
                     //ida
                     {
@@ -393,7 +392,6 @@ public class TestPopulator {
                         s.setSentToProvider(LocalDateTime.now());
                         s.setAlreadyPurchased(true);
                         s.setAlreadyInvoiced(true);
-                        s.afterSet(em, true);
                     }
 
 
@@ -421,7 +419,6 @@ public class TestPopulator {
                         s.setSentToProvider(LocalDateTime.now());
                         s.setAlreadyPurchased(true);
                         s.setAlreadyInvoiced(true);
-                        s.afterSet(em, true);
                     }
 
 

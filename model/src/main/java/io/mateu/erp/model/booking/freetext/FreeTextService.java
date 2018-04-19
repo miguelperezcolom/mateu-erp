@@ -66,19 +66,4 @@ public class FreeTextService extends Service {
     public Actor findBestProvider(EntityManager em) throws Throwable {
         return null;
     }
-
-    @Override
-    public void beforeSet(EntityManager entityManager, boolean b) throws Throwable {
-
-    }
-
-    @Override
-    public void beforeDelete(EntityManager entityManager) throws Throwable {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager entityManager) throws Throwable {
-
-    }
 }

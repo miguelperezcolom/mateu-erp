@@ -6,20 +6,21 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
+import io.mateu.erp.model.workflow.WorkflowEngine;
 import io.mateu.ui.core.client.views.AbstractListView;
 import io.mateu.ui.core.shared.AsyncCallback;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
+import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
@@ -34,10 +35,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.mail.internet.InternetAddress;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -59,7 +57,7 @@ import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 @Entity
 @Getter
 @Setter
-public class TransferService extends Service implements WithTriggers {
+public class TransferService extends Service {
 
     @Tab("Service")
     @NotNull
@@ -513,49 +511,69 @@ public class TransferService extends Service implements WithTriggers {
     }
 
 
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) {
+    @PostUpdate@PostPersist
+    public void afterSet() throws Throwable {
 
-    }
+        long serviceId = getId();
 
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
 
-        if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
-        if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
 
-        LocalDate s = getFlightTime().toLocalDate();
-        if (getFlightTime().getHour() < 6) s = s.minusDays(1);
-        setStart(s);
-        setFinish(s);
-
-        TransferPoint p = null;
-        if (getPickup() != null) p = getPickup();
-        setEffectivePickup(p);
-
-        p = null;
-        if (getDropoff() != null) p = getDropoff();
-        setEffectiveDropoff(p);
+                            TransferService ts = em.find(TransferService.class, serviceId);
 
 
-        mapTransferPoints(em);
+                            if ((ts.getPickupText() == null || "".equals(ts.getPickupText().trim())) && ts.getPickup() == null) throw new Exception("Pickup is required");
+                            if ((ts.getDropoffText() == null || "".equals(ts.getDropoffText().trim())) && ts.getDropoff() == null) throw new Exception("Dropoff is required");
 
-        TransferDirection d = TransferDirection.POINTTOPOINT;
-        if (getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(getEffectivePickup().getType()) || TransferPointType.PORT.equals(getEffectivePickup().getType()))) {
-            d = TransferDirection.INBOUND;
-            setAirport(getEffectivePickup());
-        }
-        else if (getEffectiveDropoff() != null && (TransferPointType.AIRPORT.equals(getEffectiveDropoff().getType()) || TransferPointType.PORT.equals(getEffectiveDropoff().getType()))) {
-            d = TransferDirection.OUTBOUND;
-            setAirport(getEffectiveDropoff());
-        }
-        if (getAirport() == null && getOffice() != null) {
-            setAirport(getOffice().getDefaultAirportForTransfers());
-        }
+                            LocalDate s = ts.getFlightTime().toLocalDate();
+                            if (ts.getFlightTime().getHour() < 6) s = s.minusDays(1);
+                            ts.setStart(s);
+                            ts.setFinish(s);
 
-        setDirection(d);
+                            TransferPoint p = null;
+                            if (ts.getPickup() != null) p = ts.getPickup();
+                            ts.setEffectivePickup(p);
 
-        super.afterSet(em, isNew);
+                            p = null;
+                            if (ts.getDropoff() != null) p = ts.getDropoff();
+                            ts.setEffectiveDropoff(p);
+
+
+                            ts.mapTransferPoints(em);
+
+                            TransferDirection d = TransferDirection.POINTTOPOINT;
+                            if (ts.getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(ts.getEffectivePickup().getType()) || TransferPointType.PORT.equals(ts.getEffectivePickup().getType()))) {
+                                d = TransferDirection.INBOUND;
+                                ts.setAirport(ts.getEffectivePickup());
+                            }
+                            else if (ts.getEffectiveDropoff() != null && (TransferPointType.AIRPORT.equals(ts.getEffectiveDropoff().getType()) || TransferPointType.PORT.equals(ts.getEffectiveDropoff().getType()))) {
+                                d = TransferDirection.OUTBOUND;
+                                ts.setAirport(ts.getEffectiveDropoff());
+                            }
+                            if (ts.getAirport() == null && ts.getOffice() != null) {
+                                ts.setAirport(ts.getOffice().getDefaultAirportForTransfers());
+                            }
+
+                            ts.setDirection(d);
+
+                            ts.afterSetAsService(em);
+
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
     }
 
     @Override
@@ -589,16 +607,6 @@ public class TransferService extends Service implements WithTriggers {
     @Override
     public boolean isAllMapped(EntityManager em) {
         return getEffectivePickup() != null && getEffectiveDropoff() != null;
-    }
-
-    @Override
-    public void beforeDelete(EntityManager em) {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager em) {
-
     }
 
     @Override
@@ -836,8 +844,6 @@ public class TransferService extends Service implements WithTriggers {
             TransferService s = em.find(TransferService.class, d.get("_id"));
 
             s.setAlreadyPurchased(true);
-
-            s.afterSet(em, false);
 
         }
     }

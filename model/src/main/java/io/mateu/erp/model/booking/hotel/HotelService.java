@@ -7,17 +7,17 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.workflow.WorkflowEngine;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.shared.ActionType;
@@ -29,10 +29,7 @@ import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
 import org.easytravelapi.hotel.Option;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.time.LocalDate;
@@ -42,7 +39,7 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
-public class HotelService extends Service implements WithTriggers {
+public class HotelService extends Service {
 
     @Tab("Service")
     @ManyToOne
@@ -134,35 +131,45 @@ public class HotelService extends Service implements WithTriggers {
         return rq;
     }
 
-    @Override
-    public void beforeSet(EntityManager entityManager, boolean b) throws Throwable {
 
-    }
+    @PostUpdate@PostPersist
+    public void afterSet() throws Throwable {
 
-    @Override
-    public void beforeDelete(EntityManager entityManager) throws Throwable {
+        WorkflowEngine.add(new Runnable() {
 
-    }
+            long serviceId = getId();
 
-    @Override
-    public void afterDelete(EntityManager entityManager) throws Throwable {
+            @Override
+            public void run() {
 
-    }
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
 
-    @Override
-    public void afterSet(EntityManager em, boolean isNew) throws Throwable {
-        LocalDate s = null, f = null;
-        boolean algunaLineaActiva = false;
-        for (HotelServiceLine l : getLines()) {
-            if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
-            if (l.getEnd() != null && (f == null || l.getEnd().isAfter(f))) f = l.getEnd();
-            algunaLineaActiva |= l.isActive();
-        }
-        setStart(s);
-        setFinish(f);
-        setCancelled(!algunaLineaActiva);
+                            HotelService hs = em.find(HotelService.class, serviceId);
 
-        super.afterSet(em, isNew);
+                            LocalDate s = null, f = null;
+                            boolean algunaLineaActiva = false;
+                            for (HotelServiceLine l : hs.getLines()) {
+                                if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
+                                if (l.getEnd() != null && (f == null || l.getEnd().isAfter(f))) f = l.getEnd();
+                                algunaLineaActiva |= l.isActive();
+                            }
+                            hs.setStart(s);
+                            hs.setFinish(f);
+                            hs.setCancelled(!algunaLineaActiva);
+
+                            hs.afterSetAsService(em);
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
 
     }
 
@@ -244,12 +251,6 @@ public class HotelService extends Service implements WithTriggers {
                 l.setRoomType(em.find(RoomType.class, a.getRoomId()));
 
             }
-
-
-            s.afterSet(em, true);
-
-            b.afterSet(em, true);
-
 
             em.flush();
 

@@ -7,10 +7,8 @@ import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.Product;
-import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.interfaces.WithTriggers;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +31,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Entity
 @Getter
 @Setter
-public class GenericService extends Service implements WithTriggers {
+public class GenericService extends Service {
 
     @Tab("Service")
     @NotNull
@@ -61,21 +59,6 @@ public class GenericService extends Service implements WithTriggers {
     public void pre(){
         setStart(getDeliveryDate());
         setFinish(getReturnDate());
-    }
-
-    @Override
-    public void beforeSet(EntityManager em, boolean isNew) throws Exception {
-
-    }
-
-    @Override
-    public void beforeDelete(EntityManager em) throws Exception {
-
-    }
-
-    @Override
-    public void afterDelete(EntityManager em) throws Exception {
-
     }
 
     @Override

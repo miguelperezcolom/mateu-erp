@@ -365,7 +365,6 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillArrival(s);
-                    s.afterSet(em,false);
                     this.getTask().increaseAdditions();
                 }
 
@@ -376,7 +375,6 @@ public class TransferBookingRequest {
                     s.setBooking(b);
                     em.persist(s);
                     fillDeparture(s);
-                    s.afterSet(em, false);
                     this.getTask().increaseAdditions();
                 }
             }
@@ -414,7 +412,6 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillArrival(s);
-                        s.afterSet(em, false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
@@ -435,7 +432,6 @@ public class TransferBookingRequest {
                         {
                             fillArrival(s);
                             s.getAudit().touch(u);
-                            s.afterSet(em,false);
                             hayCambios=true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
                             else this.getTask().increaseModifications();
@@ -462,7 +458,6 @@ public class TransferBookingRequest {
                         s.setBooking(b);
                         em.persist(s);
                         fillDeparture(s);
-                        s.afterSet(em,false);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
@@ -482,7 +477,6 @@ public class TransferBookingRequest {
                         else {
                             fillDeparture(s);
                             s.getAudit().touch(u);
-                            s.afterSet(em,false);
                             hayCambios = true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
                             else this.getTask().increaseModifications();
