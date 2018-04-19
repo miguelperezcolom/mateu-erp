@@ -961,6 +961,20 @@ public abstract class Service {
             }
         }
 
+        try {
+            price(em, getAudit().getModifiedBy());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        try {
+            checkPurchase(em, getAudit().getModifiedBy());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        /*
+
         boolean laFirmaHaCambiado = getSignature() == null || !getSignature().equals(createSignature());
         setSignature(createSignature());
 
@@ -978,6 +992,7 @@ public abstract class Service {
             }
 
         }
+        */
 
         updateProcessingStatus(em);
         validate(em);
