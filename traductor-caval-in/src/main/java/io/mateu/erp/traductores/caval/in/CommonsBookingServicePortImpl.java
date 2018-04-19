@@ -7,6 +7,12 @@
 package io.mateu.erp.traductores.caval.in;
 
 import org.easytravelapi.common.*;
+import org.easytravelapi.common.Amount;
+import org.easytravelapi.common.Booking;
+import org.easytravelapi.common.City;
+import org.easytravelapi.common.Country;
+import org.easytravelapi.common.State;
+import travel.caval._20091127.commons.*;
 
 import javax.jws.WebService;
 import javax.ws.rs.client.Client;
@@ -73,15 +79,15 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
             v.setYourReference("");
 
             if (b.getNetValue() != null) {
-                Amount p;
-                v.setNetPrice(p = new Amount());
+                travel.caval._20091127.commons.Amount p;
+                v.setNetPrice(p = new travel.caval._20091127.commons.Amount());
                 p.setCurrencyCode(b.getNetValue().getCurrencyIsoCode());
                 p.setValue(b.getNetValue().getValue());
             }
 
             if (b.getRetailValue() != null) {
-                Amount p;
-                v.setNetPrice(p = new Amount());
+                travel.caval._20091127.commons.Amount p;
+                v.setNetPrice(p = new travel.caval._20091127.commons.Amount());
                 p.setCurrencyCode(b.getRetailValue().getCurrencyIsoCode());
                 p.setValue(b.getRetailValue().getValue());
             }
@@ -194,15 +200,15 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
                 bx.setYourReference("");
 
                 if (b.getNetValue() != null) {
-                    Amount p;
-                    bx.setNetPrice(p = new Amount());
+                    travel.caval._20091127.commons.Amount p;
+                    bx.setNetPrice(p = new travel.caval._20091127.commons.Amount());
                     p.setCurrencyCode(b.getNetValue().getCurrencyIsoCode());
                     p.setValue(b.getNetValue().getValue());
                 }
 
                 if (b.getRetailValue() != null) {
-                    Amount p;
-                    bx.setNetPrice(p = new Amount());
+                    travel.caval._20091127.commons.Amount p;
+                    bx.setNetPrice(p = new travel.caval._20091127.commons.Amount());
                     p.setCurrencyCode(b.getRetailValue().getCurrencyIsoCode());
                     p.setValue(b.getRetailValue().getValue());
                 }
@@ -245,14 +251,14 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
                 cx.setName(c.getName());
 
                 for (org.easytravelapi.common.State s : c.getStates()) {
-                    State sx;
-                    cx.getStates().add(sx = new State());
+                    travel.caval._20091127.commons.State sx;
+                    cx.getStates().add(sx = new travel.caval._20091127.commons.State());
                     sx.setId(s.getResourceId());
                     sx.setName(s.getName());
 
                     for (org.easytravelapi.common.City l : s.getCities()) {
-                        City lx;
-                        sx.getCities().add(lx = new City());
+                        travel.caval._20091127.commons.City lx;
+                        sx.getCities().add(lx = new travel.caval._20091127.commons.City());
                         lx.setId(l.getResourceId());
                         lx.setName(l.getName());
 

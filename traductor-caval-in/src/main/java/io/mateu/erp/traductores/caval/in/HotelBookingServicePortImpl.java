@@ -8,6 +8,8 @@ package io.mateu.erp.traductores.caval.in;
 
 import com.google.common.base.Strings;
 import org.easytravelapi.hotel.*;
+import org.easytravelapi.hotel.BoardPrice;
+import travel.caval._20091127.hotelbooking.*;
 
 import javax.jws.WebService;
 import javax.ws.rs.client.Client;

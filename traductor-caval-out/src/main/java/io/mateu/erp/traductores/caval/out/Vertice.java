@@ -14,8 +14,17 @@ import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.handler.BodyHandler;
 import org.easytravelapi.common.*;
 import org.easytravelapi.hotel.*;
-import travel.caval._20091127.hotelbooking.ObjectFactory;
-import travel.caval._20091127.hotelbooking.RoomOccupation;
+import travel.caval._20091127.commons.*;
+import travel.caval._20091127.commons.Amount;
+import travel.caval._20091127.commons.Booking;
+import travel.caval._20091127.commons.CancellationCost;
+import travel.caval._20091127.commons.City;
+import travel.caval._20091127.commons.Country;
+import travel.caval._20091127.commons.ObjectFactory;
+import travel.caval._20091127.commons.RoomOccupation;
+import travel.caval._20091127.commons.State;
+import travel.caval._20091127.hotelbooking.*;
+import travel.caval._20091127.hotelbooking.BoardPrice;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
@@ -136,7 +145,7 @@ public class Vertice extends AbstractVerticle {
                     x.setStatus(b.getStatus());
                     x.setServiceDescription(b.getDescription());
                     x.setServiceType("");
-                    if (b.getNetPrice() != null) x.setNetValue(new Amount(b.getNetPrice().getCurrencyCode(), b.getNetPrice().getValue()));
+                    if (b.getNetPrice() != null) x.setNetValue(new org.easytravelapi.common.Amount(b.getNetPrice().getCurrencyCode(), b.getNetPrice().getValue()));
                     x.setBookingId(b.getLocator());
                     x.setEnd(b.getToDate());
                     x.setStart(b.getFromDate());
@@ -412,7 +421,7 @@ public class Vertice extends AbstractVerticle {
 
             rq.setKey(new String(BaseEncoding.base64().decode(b.getKey())));
 
-            ObjectFactory f = new ObjectFactory();
+            travel.caval._20091127.hotelbooking.ObjectFactory f = new travel.caval._20091127.hotelbooking.ObjectFactory();
 
             rq.getRest().add(f.createCavalHotelBookingConfirmRQAgencyReference(b.getBookingReference()));
             rq.getRest().add(f.createCavalHotelBookingConfirmRQAgencyEmail(""));
@@ -488,12 +497,12 @@ public class Vertice extends AbstractVerticle {
                 rs.setStatusCode(r.getResultCode());
                 rs.setMsg(r.getMessage());
 
-                for (CancellationCost c : r.getCancellationCosts()) {
+                for (travel.caval._20091127.hotelbooking.CancellationCost c : r.getCancellationCosts()) {
                     org.easytravelapi.common.CancellationCost x;
                     rs.getCancellationCosts().add(x = new org.easytravelapi.common.CancellationCost());
                     x.setGMTtime(c.getFrom());
-                    Amount a;
-                    x.setNet(a = new Amount());
+                    org.easytravelapi.common.Amount a;
+                    x.setNet(a = new org.easytravelapi.common.Amount());
                     a.setCurrencyIsoCode(c.getNetPrice().getCurrencyCode());
                     a.setValue(c.getNetPrice().getValue());
                     x.setCommission(null);
@@ -617,7 +626,7 @@ public class Vertice extends AbstractVerticle {
                         StringBuffer sb = new StringBuffer();
 
                         int pos = 0;
-                        for (RoomOccupation ro : cp.getRooms()) {
+                        for (travel.caval._20091127.hotelbooking.RoomOccupation ro : cp.getRooms()) {
                             Allocation a;
                             o.getDistribution().add(a = new Allocation());
                             a.setRoomId(ro.getRoomCode());
@@ -649,8 +658,8 @@ public class Vertice extends AbstractVerticle {
                             p.setNonRefundable(false);
                             p.setRetailPrice(null);
                             p.setCommission(null);
-                            Amount n;
-                            p.setNetPrice(n = new Amount());
+                            org.easytravelapi.common.Amount n;
+                            p.setNetPrice(n = new org.easytravelapi.common.Amount());
                             n.setValue(bp.getNetPrice().getValue());
                             n.setCurrencyIsoCode(bp.getNetPrice().getCurrencyCode());
 
