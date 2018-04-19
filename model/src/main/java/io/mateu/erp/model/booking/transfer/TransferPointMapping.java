@@ -91,6 +91,25 @@ public class TransferPointMapping {
     public void afterSet() throws Throwable {
         setText(getText().toLowerCase().trim());
 
+        EntityManager em = io.mateu.ui.mdd.server.util.Helper.getEMFromThreadLocal();
+
+        List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", getText()).getResultList();
+
+        for (TransferService s : ss) {
+            s.setPickup(getPoint());
+            if (getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(getPoint());
+        }
+
+        ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", getText()).getResultList();
+
+        for (TransferService s : ss) {
+            s.setDropoff(getPoint());
+            if (getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(getPoint());
+        }
+        
+        
+        /*
+
         WorkflowEngine.add(new Runnable() {
 
             long tpmId = getId();
@@ -129,5 +148,7 @@ public class TransferPointMapping {
                                }
                            }
         );
+        
+        */
     }
 }

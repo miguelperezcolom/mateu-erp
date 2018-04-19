@@ -861,7 +861,7 @@ public abstract class Service {
     }
 
     @PreUpdate
-    public void preStore() {
+    public void preStore() throws Throwable {
         String l = getChangeLog();
         if (l == null) l = "";
         boolean update = false;
@@ -913,10 +913,12 @@ public abstract class Service {
             update = true;
         }
         setChangeLog(l);
+
+        afterSet();
     }
 
 
-    @PostUpdate@PostPersist
+    @PrePersist
     public void afterSet() throws Throwable {
 
         WorkflowEngine.add(new Runnable() {

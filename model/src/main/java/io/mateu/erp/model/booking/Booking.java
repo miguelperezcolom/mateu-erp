@@ -191,13 +191,22 @@ public class Booking {
 
     }
 
-    @PrePersist@PreUpdate
+    @PostLoad
     public void beforeSet() throws Throwable {
         setWasCancelled(isCancelled());
     }
 
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
+
+        EntityManager em = Helper.getEMFromThreadLocal();
+        
+        if (isCancelled() && isCancelled() != isWasCancelled()) {
+            cancel(em, getAudit().getModifiedBy());
+        }
+        
+        /*
+        
         WorkflowEngine.add(new Runnable() {
 
             long bookingId = getId();
@@ -224,6 +233,7 @@ public class Booking {
 
             }
         });
+        */
     }
 
     public void cancel(EntityManager em, User u) {

@@ -314,6 +314,34 @@ public class PurchaseOrder {
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
+        EntityManager em = Helper.getEMFromThreadLocal();
+
+        for (Service s : getServices()) {
+            if (s.getEffectiveProcessingStatus() < 300) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+            }
+
+            if (isSent() && s.getEffectiveProcessingStatus() < 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+                s.setSentToProvider(getSentTime());
+            }
+
+            if (PurchaseOrderStatus.REJECTED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
+            }
+
+            if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
+                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+            }
+        }
+        try {
+            price(em);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        /*
+
         WorkflowEngine.add(new Runnable() {
 
             long poId = getId();
@@ -361,7 +389,7 @@ public class PurchaseOrder {
 
             }
         });
-
+        */
 
     }
 }

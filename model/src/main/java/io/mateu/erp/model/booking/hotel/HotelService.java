@@ -135,6 +135,24 @@ public class HotelService extends Service {
     @PostUpdate@PostPersist
     public void afterSet() throws Throwable {
 
+        EntityManager em = Helper.getEMFromThreadLocal();
+
+        LocalDate s = null, f = null;
+        boolean algunaLineaActiva = false;
+        for (HotelServiceLine l : getLines()) {
+            if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
+            if (l.getEnd() != null && (f == null || l.getEnd().isAfter(f))) f = l.getEnd();
+            algunaLineaActiva |= l.isActive();
+        }
+        setStart(s);
+        setFinish(f);
+        setCancelled(!algunaLineaActiva);
+
+        afterSetAsService(em);
+        
+        
+        /*
+
         WorkflowEngine.add(new Runnable() {
 
             long serviceId = getId();
@@ -169,6 +187,7 @@ public class HotelService extends Service {
 
             }
         });
+        */
 
 
     }

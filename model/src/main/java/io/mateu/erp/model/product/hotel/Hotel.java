@@ -152,6 +152,23 @@ public class Hotel implements IHotel {
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
+        EntityManager em = io.mateu.ui.mdd.server.util.Helper.getEMFromThreadLocal();
+
+        if (getStopSales() == null) {
+            setStopSales(new StopSales());
+            getStopSales().setHotel(this);
+            em.persist(getStopSales());
+        }
+
+        if (getRealInventory() == null) {
+            setRealInventory(new Inventory());
+            getRealInventory().setHotel(this);
+            getRealInventory().setName("Real inventory");
+            em.persist(getRealInventory());
+        }
+        
+        /*
+
         WorkflowEngine.add(new Runnable() {
 
             long hotelId = getId();
@@ -189,6 +206,8 @@ public class Hotel implements IHotel {
 
             }
         });
+        
+        */
 
     }
 

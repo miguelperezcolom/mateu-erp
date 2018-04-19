@@ -142,7 +142,6 @@ public class Helper {
         }
 
         em.close();
-
     }
 
     public static void transact(JPATransaction t) throws Throwable {

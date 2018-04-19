@@ -511,8 +511,50 @@ public class TransferService extends Service {
     }
 
 
-    @PostUpdate@PostPersist
+    @PreUpdate@PrePersist
     public void afterSet() throws Throwable {
+
+        EntityManager em = Helper.getEMFromThreadLocal();
+
+        if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
+        if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
+
+        LocalDate s = getFlightTime().toLocalDate();
+        if (getFlightTime().getHour() < 6) s = s.minusDays(1);
+        setStart(s);
+        setFinish(s);
+
+        TransferPoint p = null;
+        if (getPickup() != null) p = getPickup();
+        setEffectivePickup(p);
+
+        p = null;
+        if (getDropoff() != null) p = getDropoff();
+        setEffectiveDropoff(p);
+
+
+        mapTransferPoints(em);
+
+        TransferDirection d = TransferDirection.POINTTOPOINT;
+        if (getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(getEffectivePickup().getType()) || TransferPointType.PORT.equals(getEffectivePickup().getType()))) {
+            d = TransferDirection.INBOUND;
+            setAirport(getEffectivePickup());
+        }
+        else if (getEffectiveDropoff() != null && (TransferPointType.AIRPORT.equals(getEffectiveDropoff().getType()) || TransferPointType.PORT.equals(getEffectiveDropoff().getType()))) {
+            d = TransferDirection.OUTBOUND;
+            setAirport(getEffectiveDropoff());
+        }
+        if (getAirport() == null && getOffice() != null) {
+            setAirport(getOffice().getDefaultAirportForTransfers());
+        }
+
+        setDirection(d);
+
+        afterSetAsService(em);
+        
+        /*
+        
+        
 
         long serviceId = getId();
 
@@ -573,6 +615,7 @@ public class TransferService extends Service {
 
             }
         });
+        */
 
     }
 
