@@ -473,35 +473,37 @@ public abstract class Service {
     public abstract String createSignature();
 
     public void checkPurchase(EntityManager em, User u) throws Throwable {
-        if (false && !isAlreadyPurchasedBefore() && isAlreadyPurchased()) {
-            setSignature(createSignature());
-        } else if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
+        if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setSignature(createSignature());
 
-            generatePurchaseOrders(em);
-            for (PurchaseOrder po : getPurchaseOrders()) {
-                if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
-            }
-            for (PurchaseOrder po : getPurchaseOrders()) {
-                if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
-                    try {
-                        po.send(em, u);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            String ps = "";
-            for (PurchaseOrder po : getPurchaseOrders()) {
-                if (!"".equals(ps)) ps += ",";
-                ps += po.getProvider().getName();
-            }
-            setProviders(ps);
+            refreshPurchaseOrders(em, u);
 
         } else {
             throw new Throwable("Nothing changed. No need to purchase again");
         }
 
+    }
+
+    public void refreshPurchaseOrders(EntityManager em, User u) throws Throwable {
+        generatePurchaseOrders(em);
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
+        }
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
+                try {
+                    po.send(em, u);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        String ps = "";
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            if (!"".equals(ps)) ps += ",";
+            ps += po.getProvider().getName();
+        }
+        setProviders(ps);
     }
 
 
@@ -959,19 +961,23 @@ public abstract class Service {
             }
         }
 
+        boolean laFirmaHaCambiado = getSignature() == null || !getSignature().equals(createSignature());
+        setSignature(createSignature());
 
-        try {
-            price(em, getAudit().getModifiedBy());
-        } catch (Throwable e) {
-            e.printStackTrace();
+        if (laFirmaHaCambiado) {
+            try {
+                price(em, getAudit().getModifiedBy());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+
+            try {
+                refreshPurchaseOrders(em, getAudit().getModifiedBy());
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+
         }
-
-        try {
-            checkPurchase(em, getAudit().getModifiedBy());
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
 
         updateProcessingStatus(em);
         validate(em);

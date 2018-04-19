@@ -40,6 +40,11 @@ public class WorkflowEngine {
 
                         while (queue.size() > 0) {
                             try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            try {
                                 Object o = queue.poll();
                                 System.out.println("Runing task " + o.getClass().getName());
                                 Runnable task = (Runnable) o;
