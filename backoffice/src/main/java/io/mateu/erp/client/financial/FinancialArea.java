@@ -17,9 +17,6 @@ public class FinancialArea extends AbstractArea {
 
     @Override
     public List<AbstractModule> buildModules() {
-        return Arrays.asList(new FinancialModule()
-        , new InvoicingModule()
-        , new PaymentsModule()
-                , new ViajesIbizaModule());
+        return Arrays.asList(new FinancialModule());
     }
 }

@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel.contracting;
 
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
@@ -63,6 +64,20 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @SearchFilter
     @ManyToMany(mappedBy = "contracts")
     private List<AbstractHotelOffer> offers = new ArrayList<>();
+
+    @Tab("Warranty")
+    private boolean warranty;
+
+    @NotNull
+    private WarrantySettlementBasis warrantySettlementBasis = WarrantySettlementBasis.NONE;
+
+    private double warrantyPercent;
+
+    private double extrasIncludedInWarranty;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "hotelContract")
+    private List<Charge> warrantySettlements = new ArrayList<>();
+
 
     @Tab("Terms")
     @DoNotIncludeSeparator

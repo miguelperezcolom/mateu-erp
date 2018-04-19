@@ -166,8 +166,12 @@ public abstract class Service {
     private boolean valueOverrided;
     @SameLine
     private double overridedNetValue;
+    @Ignored
+    private String overridedNetValueCalculator;
     @SameLine
     private double overridedRetailValue;
+    @Ignored
+    private String overridedRetailValueCalculator;
     @SameLine
     private double overridedCommissionValue;
 
@@ -313,7 +317,7 @@ public abstract class Service {
     }
 
 
-    @Action(name = "Repair signature")
+    //@Action(name = "Repair signature")
     public static void repairSignature(@Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -369,7 +373,7 @@ public abstract class Service {
         });
     }
 
-    @Action(name = "Repair bookings")
+    //@Action(name = "Repair bookings")
     public static void repair(UserData user) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override

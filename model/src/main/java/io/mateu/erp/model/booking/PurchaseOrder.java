@@ -98,6 +98,10 @@ public class PurchaseOrder {
 
     private double overridedValue;
 
+    @Ignored
+    private String overridedValueCalculator;
+
+
     @Output
     private boolean valued;
 

@@ -1027,7 +1027,7 @@ public class TransferService extends Service {
     }
 
 
-    @Action(name = "Solo miguel")
+    //@Action(name = "Solo miguel")
     public static void repair() throws Throwable {
 
         List<Long> ids = new ArrayList<>();

@@ -5,6 +5,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.TextArea;
@@ -22,6 +23,9 @@ public class Charge {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @NotNull
+    private ChargeType type;
 
     @NotNull
     private Currency currency;
@@ -51,6 +55,8 @@ public class Charge {
     @ManyToOne
     private Service service;
 
+    @ManyToOne
+    private HotelContract hotelContract;
 
     @ManyToOne
     private PurchaseOrder purchaseOrder;

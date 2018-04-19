@@ -6,12 +6,17 @@ import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.ui.core.client.app.AbstractAction;
-import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MateuUI;
-import io.mateu.ui.core.client.app.MenuEntry;
+import io.mateu.erp.model.importing.TransferAutoImport;
+import io.mateu.erp.model.importing.TransferBookingRequest;
+import io.mateu.ui.core.client.app.*;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDAction;
+import io.mateu.ui.mdd.client.MDDCallback;
+import io.mateu.ui.mdd.client.MDDMenu;
+import io.mateu.ui.mdd.shared.ERPService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,27 +33,28 @@ public class BookingModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("Price requests", PriceRequest.class));
+        m.add(new MDDAction("Quotation requests", QuotationRequest.class));
 
         m.add(new MDDAction("Bookings", Booking.class));
 
-        m.add(new MDDAction("Quotation requests", QuotationRequest.class));
-
         m.add(new MDDAction("All services", Service.class));
+
+        m.add(new MDDMenu("Free text", "Summary", FreeTextService.class, "Services", FreeTextService.class));
+
+        m.add(new MDDMenu("Generic", "Summary", FreeTextService.class, "Services", GenericService.class));
+
+        m.add(new MDDMenu("Hotel", "Summary", FreeTextService.class, "Services", HotelService.class, "Rooming", HotelService.class));
+
+        m.add(new MDDMenu("Transfers", "Summary", FreeTextService.class, "Services", TransferService.class, "Mapping", TransferService.class, "Import pickup times", TransferService.class, "Pickup confirmation", TransferService.class));
 
         m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
 
-        m.add(new MDDAction("Free text only", FreeTextService.class));
-
-        m.add(new MDDAction("Generics only", GenericService.class));
-
-        m.add(new MDDAction("Hotels only", HotelService.class));
-
+        /*
         m.add(new MDDAction("Transfers only", TransferService.class));
 
         m.add(new AbstractAction("Transfers summary") {
             @Override
-            public void run() {
+            public void run() {piensa
                 MateuUI.openView(new TransfersSummaryView(), isModifierPressed());
             }
         });
@@ -66,6 +72,29 @@ public class BookingModule extends AbstractModule {
             @Override
             public void run() {
                 MateuUI.openView(new PickupConfirmationView(), isModifierPressed());
+            }
+        });
+
+        */
+
+        m.add(new AbstractMenu("Importing") {
+            @Override
+            public List<MenuEntry> getEntries() {
+                List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new AbstractAction("Importing Queue") {
+                    @Override
+                    public void run() {
+                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.importing.TransferImportTask", "io.mateu.erp.model.importing.TransferImportTask", null, new MDDCallback(new Data("modified_from", LocalDate.now(), "modified_to", LocalDate.now()), isModifierPressed()));
+                    }
+                });
+
+                m.add(new MDDAction("Auto imports", TransferAutoImport.class));
+
+                m.add(new MDDAction("Transfer requests", TransferBookingRequest.class));
+
+                return m;
+
             }
         });
 
