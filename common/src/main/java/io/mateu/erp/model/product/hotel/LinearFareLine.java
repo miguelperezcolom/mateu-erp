@@ -1,15 +1,12 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.annotations.ValueClass;
-import io.mateu.ui.mdd.server.interfaces.SupplementOrPositive;
+import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
-
-import javax.validation.constraints.NotNull;
 
 @Getter@Setter
 public class LinearFareLine implements XMLSerializable {

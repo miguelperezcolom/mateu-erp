@@ -1,11 +1,10 @@
 package tests;
 
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.tests.TestPopulator;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import java.util.List;
 

@@ -5,7 +5,6 @@ import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.interfaces.CompositeView;
-import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 
 import javax.persistence.EntityManager;

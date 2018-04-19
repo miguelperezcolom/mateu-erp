@@ -1,15 +1,12 @@
 package io.mateu.erp.client.product;
 
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
-import io.mateu.ui.core.client.app.*;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
+import io.mateu.ui.core.client.app.AbstractModule;
+import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDCallback;
 import io.mateu.ui.mdd.client.MDDMenu;
-import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
 import java.util.List;

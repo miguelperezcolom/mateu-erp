@@ -1,8 +1,8 @@
 package io.mateu.erp.model.authentication;
 
 import io.mateu.erp.model.common.File;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;

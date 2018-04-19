@@ -17,7 +17,6 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.transfer.Contract;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferPointType;

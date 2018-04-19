@@ -1,6 +1,6 @@
 package io.mateu.erp.servlets;
 
-import io.mateu.erp.model.util.Helper;
+import io.mateu.ui.mdd.server.util.Helper;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

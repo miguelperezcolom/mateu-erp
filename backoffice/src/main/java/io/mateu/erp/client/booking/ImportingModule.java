@@ -1,9 +1,7 @@
 package io.mateu.erp.client.booking;
 
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.importing.TransferAutoImport;
 import io.mateu.erp.model.importing.TransferBookingRequest;
-import io.mateu.erp.model.importing.TransferImportTask;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MateuUI;

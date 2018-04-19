@@ -1,11 +1,11 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.util.XMLSerializable;
 import io.mateu.ui.core.shared.SupplementOrPositiveType;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.interfaces.SupplementOrPositive;
+import io.mateu.ui.mdd.server.util.Helper;
 import org.jdom2.Element;
 
 public class FareValue implements XMLSerializable, SupplementOrPositive {

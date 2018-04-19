@@ -2,6 +2,8 @@ package io.mateu.erp.model.util;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.HtmlEmail;

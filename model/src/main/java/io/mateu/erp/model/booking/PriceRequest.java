@@ -1,7 +1,5 @@
 package io.mateu.erp.model.booking;
 
-import io.mateu.ui.mdd.server.annotations.Order;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

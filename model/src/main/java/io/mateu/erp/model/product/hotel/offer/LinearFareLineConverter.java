@@ -2,7 +2,6 @@ package io.mateu.erp.model.product.hotel.offer;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.product.hotel.LinearFareLine;
-import io.mateu.erp.model.product.hotel.RoomFare;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
@@ -12,8 +11,6 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 
 @Converter
 public class LinearFareLineConverter implements AttributeConverter<LinearFareLine, String> {

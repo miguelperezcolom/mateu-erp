@@ -1,21 +1,15 @@
 package io.mateu.erp.client.financial;
 
-import io.mateu.erp.model.accounting.AccountingEntry;
-import io.mateu.erp.model.accounting.LineItem;
 import io.mateu.erp.model.financials.BankRemittance;
 import io.mateu.erp.model.financials.BankStatement;
-import io.mateu.erp.model.invoicing.Invoice;
-import io.mateu.erp.model.payments.*;
+import io.mateu.erp.model.payments.Account;
+import io.mateu.erp.model.payments.Deposit;
+import io.mateu.erp.model.payments.Payment;
+import io.mateu.erp.model.payments.VCC;
 import io.mateu.erp.model.tpv.TPV;
-import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MateuUI;
 import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
 import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.client.MDDMenu;
-import io.mateu.ui.mdd.shared.ERPService;
 
 import java.util.ArrayList;
 import java.util.List;

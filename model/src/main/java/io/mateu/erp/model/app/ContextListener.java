@@ -1,8 +1,8 @@
 package io.mateu.erp.model.app;
 
 import io.mateu.erp.model.email.Pop3Reader;
-import io.mateu.erp.model.util.Helper;
 import io.mateu.erp.model.workflow.TaskRunnerRunnable;
+import io.mateu.ui.mdd.server.util.Helper;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.annotation.WebListener;

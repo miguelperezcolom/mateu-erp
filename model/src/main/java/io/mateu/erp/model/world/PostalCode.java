@@ -1,15 +1,17 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.common.File;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Parameter;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.Index;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

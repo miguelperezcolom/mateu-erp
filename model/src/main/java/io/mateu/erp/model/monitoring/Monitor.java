@@ -1,11 +1,9 @@
 package io.mateu.erp.model.monitoring;
 
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.persistence.EntityManager;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
 

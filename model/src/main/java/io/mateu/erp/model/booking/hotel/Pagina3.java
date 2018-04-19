@@ -1,7 +1,5 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;

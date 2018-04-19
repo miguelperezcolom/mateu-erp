@@ -12,7 +12,6 @@ import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.LinkColumn;
 import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
 import io.mateu.ui.core.client.views.AbstractDialog;
-import io.mateu.ui.core.client.views.AbstractListView;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.client.AbstractJPAListView;

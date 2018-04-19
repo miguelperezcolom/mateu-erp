@@ -4,7 +4,6 @@ import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.SameLine;
-import io.mateu.ui.mdd.server.annotations.Separator;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;

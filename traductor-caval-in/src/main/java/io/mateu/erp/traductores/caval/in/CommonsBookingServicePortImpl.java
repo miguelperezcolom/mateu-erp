@@ -6,12 +6,7 @@
 
 package io.mateu.erp.traductores.caval.in;
 
-import org.easytravelapi.common.Booking;
 import org.easytravelapi.common.*;
-import travel.caval._20091127.commons.Amount;
-import travel.caval._20091127.commons.*;
-import travel.caval._20091127.commons.City;
-import travel.caval._20091127.commons.State;
 
 import javax.jws.WebService;
 import javax.ws.rs.client.Client;

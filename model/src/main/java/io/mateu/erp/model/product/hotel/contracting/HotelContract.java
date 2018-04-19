@@ -218,7 +218,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
         System.setProperty("appconf", "/home/miguel/quonext/quoon.properties");
 
-        io.mateu.erp.model.util.Helper.loadProperties();
+        io.mateu.ui.mdd.server.util.Helper.loadProperties();
 
 
         Helper.transact(new JPATransaction() {

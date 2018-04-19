@@ -1,6 +1,7 @@
 package io.mateu.erp.model.importing;
 
 //import okhttp3.*;
+
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.util.Constants;
 import io.mateu.ui.mdd.server.annotations.Ignored;
@@ -9,11 +10,7 @@ import io.mateu.ui.mdd.server.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.fluent.Form;
-import org.apache.http.client.fluent.Request;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;

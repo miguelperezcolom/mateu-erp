@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 

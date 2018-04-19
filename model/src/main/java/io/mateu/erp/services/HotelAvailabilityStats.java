@@ -1,7 +1,5 @@
 package io.mateu.erp.services;
 
-import java.time.LocalDate;
-
 public class HotelAvailabilityStats {
 
     private static HotelAvailabilityStatsData data;

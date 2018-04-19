@@ -1,8 +1,8 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;

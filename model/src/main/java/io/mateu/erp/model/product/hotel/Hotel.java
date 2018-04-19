@@ -8,11 +8,8 @@ import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 

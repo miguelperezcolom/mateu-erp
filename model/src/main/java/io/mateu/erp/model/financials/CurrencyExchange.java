@@ -4,18 +4,10 @@ import io.mateu.erp.model.authentication.Audit;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 
 @Entity
 @Getter

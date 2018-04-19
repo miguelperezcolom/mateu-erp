@@ -1,7 +1,6 @@
 package io.mateu.erp.dispo;
 
 import io.mateu.erp.model.product.hotel.LinearFareLine;
-import io.mateu.erp.model.product.hotel.RoomFare;
 import lombok.Getter;
 import lombok.Setter;
 

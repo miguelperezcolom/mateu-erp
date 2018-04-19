@@ -14,7 +14,6 @@ import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;

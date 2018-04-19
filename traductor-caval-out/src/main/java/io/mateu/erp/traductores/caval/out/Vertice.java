@@ -12,17 +12,8 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.handler.BodyHandler;
-import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.*;
 import org.easytravelapi.hotel.*;
-import travel.caval._20091127.commons.Booking;
-import travel.caval._20091127.commons.*;
-import travel.caval._20091127.commons.City;
-import travel.caval._20091127.commons.Country;
-import travel.caval._20091127.commons.State;
-import travel.caval._20091127.hotelbooking.*;
-import travel.caval._20091127.hotelbooking.BoardPrice;
-import travel.caval._20091127.hotelbooking.CancellationCost;
 import travel.caval._20091127.hotelbooking.ObjectFactory;
 import travel.caval._20091127.hotelbooking.RoomOccupation;
 

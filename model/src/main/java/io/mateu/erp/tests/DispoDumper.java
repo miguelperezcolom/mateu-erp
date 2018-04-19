@@ -5,11 +5,11 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.thirdParties.Integration;
-import io.mateu.erp.model.util.Helper;
-import io.mateu.erp.model.util.JPATransaction;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.State;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;

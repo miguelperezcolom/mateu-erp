@@ -1,7 +1,5 @@
 package io.mateu.erp.services;
 
-import java.time.LocalDate;
-
 public class HotelAvailabilityStatsData {
 
     public double priceAvg;
