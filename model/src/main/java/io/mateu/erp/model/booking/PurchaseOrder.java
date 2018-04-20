@@ -316,7 +316,7 @@ public class PurchaseOrder {
 
 
 
-    @PostPersist@PostUpdate
+    @PrePersist@PreUpdate
     public void afterSet() throws Exception, Throwable {
 
         EntityManager em = Helper.getEMFromThreadLocal();

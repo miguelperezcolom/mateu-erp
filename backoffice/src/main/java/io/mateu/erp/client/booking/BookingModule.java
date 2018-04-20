@@ -45,37 +45,47 @@ public class BookingModule extends AbstractModule {
 
         m.add(new MDDMenu("Hotel", "Summary", FreeTextService.class, "Services", HotelService.class, "Rooming", HotelService.class));
 
+        m.add(new AbstractMenu("Transfers") {
+            @Override
+            public List<MenuEntry> getEntries() {
+                List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new AbstractAction("Transfers summary") {
+                    @Override
+                    public void run() {
+                        MateuUI.openView(new TransfersSummaryView(), isModifierPressed());
+                    }
+                });
+
+                m.add(new MDDAction("Services", TransferService.class));
+
+                m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
+
+                m.add(new MDDAction("Mapping", TransferPointMapping.class));
+
+                m.add(new AbstractAction("Import pickup times") {
+                    @Override
+                    public void run() {
+                        MateuUI.openView(new PickupTimeImportingView(), isModifierPressed());
+                    }
+                });
+
+                m.add(new AbstractAction("Pickup confirmation") {
+                    @Override
+                    public void run() {
+                        MateuUI.openView(new PickupConfirmationView(), isModifierPressed());
+                    }
+                });
+
+
+                return m;
+            }
+        });
+
         m.add(new MDDMenu("Transfers", "Summary", FreeTextService.class, "Services", TransferService.class, "Mapping", TransferService.class, "Import pickup times", TransferService.class, "Pickup confirmation", TransferService.class));
 
         m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
 
-        /*
-        m.add(new MDDAction("Transfers only", TransferService.class));
-
-        m.add(new AbstractAction("Transfers summary") {
-            @Override
-            public void run() {piensa
-                MateuUI.openView(new TransfersSummaryView(), isModifierPressed());
-            }
-        });
-
-        m.add(new MDDAction("Mapping", TransferPointMapping.class));
-
-        m.add(new AbstractAction("Import pickup times") {
-            @Override
-            public void run() {
-                MateuUI.openView(new PickupTimeImportingView(), isModifierPressed());
-            }
-        });
-
-        m.add(new AbstractAction("Pickup confirmation") {
-            @Override
-            public void run() {
-                MateuUI.openView(new PickupConfirmationView(), isModifierPressed());
-            }
-        });
-
-        */
 
         m.add(new AbstractMenu("Importing") {
             @Override
