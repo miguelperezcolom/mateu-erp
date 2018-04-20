@@ -277,7 +277,7 @@ public abstract class Service {
 
                     boolean allSent = true;
 
-                    for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus()) && !po.isSent()) allSent = false;
+                    for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) if (!po.isSent()) allSent = false;
 
                     if (allSent) {
                         ps = ProcessingStatus.PURCHASEORDERS_SENT;
