@@ -681,7 +681,7 @@ public class TransferService extends Service {
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
-            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale && ContractType.PURCHASE.equals(c.getType()));
+            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
             ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
             ok &= supplier == null || supplier.equals(c.getSupplier());
             ok &= getTransferType().equals(c.getTransferType());

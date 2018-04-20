@@ -266,7 +266,7 @@ public abstract class Service {
         ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
             ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
-        } else if (getFinish() != null && getFinish().isAfter(LocalDate.now())) {
+        } else if (getFinish() != null && !getFinish().isBefore(LocalDate.now())) {
             ps = ProcessingStatus.INITIAL;
             if (isCancelled() && getSentToProvider() == null) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
             else if (isAllMapped(em)) {
