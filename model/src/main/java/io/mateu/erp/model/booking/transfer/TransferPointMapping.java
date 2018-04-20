@@ -72,7 +72,7 @@ public class TransferPointMapping {
         text = text.toLowerCase().trim();
         TransferPoint p = null;
         boolean found = false;
-        for (TransferPointMapping m : (List<TransferPointMapping>) em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.text = '" + text.replaceAll("'", "''") + "'").getResultList()) {
+        for (TransferPointMapping m : (List<TransferPointMapping>) em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.text = '" + text.replaceAll("'", "''") + "'").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             p = m.getPoint();
             found = true;
             break;

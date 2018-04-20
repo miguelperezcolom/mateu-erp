@@ -59,7 +59,7 @@ public class BookingModule extends AbstractModule {
 
                 m.add(new MDDAction("Services", TransferService.class));
 
-                m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
+                m.add(new MDDAction("Buses", PurchaseOrder.class));
 
                 m.add(new MDDAction("Mapping", TransferPointMapping.class));
 
@@ -82,9 +82,7 @@ public class BookingModule extends AbstractModule {
             }
         });
 
-        m.add(new MDDMenu("Transfers", "Summary", FreeTextService.class, "Services", TransferService.class, "Mapping", TransferService.class, "Import pickup times", TransferService.class, "Pickup confirmation", TransferService.class));
-
-        m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
+         m.add(new MDDAction("Purchase orders", PurchaseOrder.class));
 
 
         m.add(new AbstractMenu("Importing") {
