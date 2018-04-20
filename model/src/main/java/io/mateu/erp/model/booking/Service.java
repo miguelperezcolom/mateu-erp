@@ -263,23 +263,24 @@ public abstract class Service {
     private boolean visibleInSummary;
 
     public void updateProcessingStatus(EntityManager em) {
+        ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
-            setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+            ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
         } else if (getFinish() != null && getFinish().isAfter(LocalDate.now())) {
-            setProcessingStatus(ProcessingStatus.INITIAL);
-            if (isCancelled() && getSentToProvider() == null) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
+            ps = ProcessingStatus.INITIAL;
+            if (isCancelled() && getSentToProvider() == null) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
             else if (isAllMapped(em)) {
-                setProcessingStatus(ProcessingStatus.DATA_OK);
+                ps = ProcessingStatus.DATA_OK;
 
                 if (getPurchaseOrders().size() > 0) {
-                    setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
+                    ps = ProcessingStatus.PURCHASEORDERS_READY;
 
                     boolean allSent = true;
 
                     for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus()) && !po.isSent()) allSent = false;
 
                     if (allSent) {
-                        setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
+                        ps = ProcessingStatus.PURCHASEORDERS_SENT;
 
                         boolean allConfirmed = true;
                         boolean anyRejected = false;
@@ -289,8 +290,8 @@ public abstract class Service {
                             if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
                         }
 
-                        if (allConfirmed) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-                        else if (anyRejected) setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
+                        if (allConfirmed) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
+                        else if (anyRejected) ps = ProcessingStatus.PURCHASEORDERS_REJECTED;
 
                     }
 
@@ -300,6 +301,7 @@ public abstract class Service {
         } else {
             // finished service. Nothing to do
         }
+        setProcessingStatus(ps);
     }
 
     public boolean isAllMapped(EntityManager em) {

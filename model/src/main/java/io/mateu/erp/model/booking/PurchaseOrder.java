@@ -272,24 +272,26 @@ public class PurchaseOrder {
     }
 
     public void price(EntityManager em) {
-        setValued(false);
-        setTotal(0);
+        boolean v = false;
+        double t = 0;
         if (isValueOverrided()) {
-            setTotal(getOverridedValue());
-            setValued(true);
+            t = getOverridedValue();
+            v = true;
             setPriceReport("Used overrided value");
         }
         else {
             try {
                 StringWriter sw = new StringWriter();
-                setTotal(rate(em, new PrintWriter(sw)));
+                t = rate(em, new PrintWriter(sw));
                 setPriceReport(sw.toString());
-                setValued(true);
+                v = true;
             } catch (Throwable throwable) {
                 setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
                 throwable.printStackTrace();
             }
         }
+        setValued(v);
+        setTotal(t);
     }
 
     private double rate(EntityManager em, PrintWriter report) throws Throwable {

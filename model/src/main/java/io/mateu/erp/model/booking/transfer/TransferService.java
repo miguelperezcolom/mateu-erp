@@ -524,16 +524,8 @@ public class TransferService extends Service {
         setStart(s);
         setFinish(s);
 
-        TransferPoint p = null;
-        if (getPickup() != null) p = getPickup();
-        setEffectivePickup(p);
 
-        p = null;
-        if (getDropoff() != null) p = getDropoff();
-        setEffectiveDropoff(p);
-
-
-        mapTransferPoints(em);
+        setAndMapTransferPoints(em);
 
         TransferDirection d = TransferDirection.POINTTOPOINT;
         if (getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(getEffectivePickup().getType()) || TransferPointType.PORT.equals(getEffectivePickup().getType()))) {
@@ -587,7 +579,7 @@ public class TransferService extends Service {
                             ts.setEffectiveDropoff(p);
 
 
-                            ts.mapTransferPoints(em);
+                            ts.setAndMapTransferPoints(em);
 
                             TransferDirection d = TransferDirection.POINTTOPOINT;
                             if (ts.getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(ts.getEffectivePickup().getType()) || TransferPointType.PORT.equals(ts.getEffectivePickup().getType()))) {
@@ -680,7 +672,7 @@ public class TransferService extends Service {
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
 
         // verificamos que tenemos lo que necesitamos para valorar
-        mapTransferPoints(em);
+        setAndMapTransferPoints(em);
 
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
         if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
@@ -747,7 +739,7 @@ public class TransferService extends Service {
     public Actor findBestProvider(EntityManager em) throws Throwable {
         // verificamos que tenemos lo que necesitamos para valorar
 
-        mapTransferPoints(em);
+        setAndMapTransferPoints(em);
 
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
         if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
@@ -842,9 +834,20 @@ public class TransferService extends Service {
         return d;
     }
 
-    private void mapTransferPoints(EntityManager em) {
-        if (getPickup() == null) setEffectivePickup(TransferPointMapping.getTransferPoint(em, getPickupText(), this));
-        if (getDropoff() == null) setEffectiveDropoff(TransferPointMapping.getTransferPoint(em, getDropoffText(), this));
+    private void setAndMapTransferPoints(EntityManager em) {
+        TransferPoint p = null;
+        if (getPickup() != null) p = getPickup();
+
+        TransferPoint d = null;
+        if (getDropoff() != null) d = getDropoff();
+
+
+        if (getPickup() == null) p = TransferPointMapping.getTransferPoint(em, getPickupText(), this);
+        if (getDropoff() == null) d = TransferPointMapping.getTransferPoint(em, getDropoffText(), this);
+
+        setEffectivePickup(p);
+        setEffectiveDropoff(d);
+
     }
 
 
