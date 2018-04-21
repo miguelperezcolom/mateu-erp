@@ -927,6 +927,11 @@ public abstract class Service {
     @PrePersist
     public void afterSet() throws Throwable {
 
+        EntityManager em = Helper.getEMFromThreadLocal();
+
+        afterSetAsService(em);
+
+        /*
         WorkflowEngine.add(new Runnable() {
 
             long serviceId = getId();
@@ -952,7 +957,7 @@ public abstract class Service {
 
             }
         });
-
+        */
     }
 
     public void afterSetAsService(EntityManager em) {
@@ -976,13 +981,19 @@ public abstract class Service {
         try {
             price(em, getAudit().getModifiedBy());
         } catch (Throwable e) {
-            e.printStackTrace();
+            String error = "" + e.getClass().getName() + ":" + e.getMessage();
+            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) e.printStackTrace();
+            else error = error.substring(error.indexOf(":"));
+            System.out.println(error);
         }
 
         try {
             checkPurchase(em, getAudit().getModifiedBy());
         } catch (Throwable e) {
-            e.printStackTrace();
+            String error = "" + e.getClass().getName() + ":" + e.getMessage();
+            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) e.printStackTrace();
+            else error = error.substring(error.indexOf(":"));
+            System.out.println(error);
         }
 
         /*

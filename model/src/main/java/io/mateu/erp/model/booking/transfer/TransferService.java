@@ -1030,12 +1030,12 @@ public class TransferService extends Service {
     }
 
 
-    //@Action(name = "Solo miguel")
+    @Action(name = "Solo miguel")
     public static void repair() throws Throwable {
 
         List<Long> ids = new ArrayList<>();
 
-        Helper.transact(new JPATransaction() {
+/*        Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
@@ -1058,7 +1058,7 @@ public class TransferService extends Service {
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-        }
+        }*/
 
 
 
@@ -1068,7 +1068,8 @@ public class TransferService extends Service {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x where (x.audit.created >= :f or x.sentTime > :f)").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+                //for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x where (x.audit.created >= :f or x.sentTime > :f)").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+                for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
                     ids.add(s.getId());
                 }
             }
@@ -1081,7 +1082,7 @@ public class TransferService extends Service {
                     @Override
                     public void run(EntityManager em) throws Throwable {
                         PurchaseOrder s = em.find(PurchaseOrder.class, id);
-                        s.afterSet();
+                        if (s.getSignature() == null && s.isSent()) s.setSignature(s.createSignature());
                     }
                 });
             } catch (Throwable throwable) {

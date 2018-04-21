@@ -78,6 +78,11 @@ public class PurchaseOrder {
     @ListColumn
     @CellStyleGenerator(SentCellStyleGenerator.class)
     private boolean sent;
+
+    public void setSent(boolean v) {
+        this.sent = v;
+    }
+
     @Output
     @ListColumn
     private LocalDateTime sentTime;
@@ -286,8 +291,10 @@ public class PurchaseOrder {
                 setPriceReport(sw.toString());
                 v = true;
             } catch (Throwable throwable) {
-                setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
-                throwable.printStackTrace();
+                String error = "" + throwable.getClass().getName() + ":" + throwable.getMessage();
+                if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) throwable.printStackTrace();
+                else error = error.substring(error.indexOf(":"));
+                setPriceReport(error);
             }
         }
         setValued(v);
