@@ -504,7 +504,10 @@ public abstract class Service {
                 try {
                     po.send(em, u);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    String error = "" + e.getClass().getName() + ":" + e.getMessage();
+                    if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
+                    else error = error.substring(error.indexOf(":"));
+                    System.out.println(error);
                 }
             }
         }
@@ -550,7 +553,10 @@ public abstract class Service {
         try {
             checkPurchase(em, u);
         } catch (Throwable e) {
-            e.printStackTrace();
+            String error = "" + e.getClass().getName() + ":" + e.getMessage();
+            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
+            else error = error.substring(error.indexOf(":"));
+            System.out.println(error);
         }
 
         double totalCost = 0;
