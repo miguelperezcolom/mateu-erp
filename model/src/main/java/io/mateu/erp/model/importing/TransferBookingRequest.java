@@ -15,9 +15,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -318,6 +322,9 @@ public class TransferBookingRequest {
     {
         String _result="";
         try {
+
+            List<Object> nuevasEntidades = new ArrayList<>();
+
             //Validamos y si no va bien salimos devolviendo el error
             _result = validate();
             if (_result.length() > 0) {
@@ -344,7 +351,7 @@ public class TransferBookingRequest {
             {
                 b = new Booking();
                 b.setAudit(new Audit(u));
-                em.persist(b);
+                nuevasEntidades.add(b);
 
                 b.setAgencyReference(agencyReference);
                 b.setAgency(customer);
@@ -354,7 +361,7 @@ public class TransferBookingRequest {
                 if (comments!=null) b.setComments(comments);
                //TODO: b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
                 setBooking(b);
-                em.persist(this);
+                nuevasEntidades.add(this);
 
                 //ojo, si la reserva es nueva no comprobamos fechas ni el estado. La reserva se crea siempre
                 if ((TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)))
@@ -363,7 +370,7 @@ public class TransferBookingRequest {
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
-                    em.persist(s);
+                    nuevasEntidades.add(s);
                     fillArrival(s);
                     this.getTask().increaseAdditions();
                 }
@@ -373,7 +380,7 @@ public class TransferBookingRequest {
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
-                    em.persist(s);
+                    nuevasEntidades.add(s);
                     fillDeparture(s);
                     this.getTask().increaseAdditions();
                 }
@@ -410,7 +417,7 @@ public class TransferBookingRequest {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
-                        em.persist(s);
+                        nuevasEntidades.add(s);
                         fillArrival(s);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -456,7 +463,7 @@ public class TransferBookingRequest {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
-                        em.persist(s);
+                        nuevasEntidades.add(s);
                         fillDeparture(s);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
@@ -497,14 +504,33 @@ public class TransferBookingRequest {
                     //TODO:    b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
                     b.getAudit().touch(u);
                     setBooking(b);
-                    em.persist(this);
+                    nuevasEntidades.add(this);
                 }
 
             }//fin else
 
+            for (Object o : nuevasEntidades) em.persist(o);
 
         } catch (Throwable ex) {
             _result += ex.getMessage();
+
+            ConstraintViolationException cve = (ConstraintViolationException) ex.getCause();
+            if (ex instanceof ConstraintViolationException) {
+                cve = (ConstraintViolationException) ex;
+            } else if (ex.getCause() != null && ex.getCause() instanceof ConstraintViolationException) {
+                cve = (ConstraintViolationException) ex.getCause();
+            }
+
+            if (cve != null) {
+                StringBuffer sb = new StringBuffer();
+                for (ConstraintViolation v : cve.getConstraintViolations()) {
+                    if (sb.length() > 0) sb.append("\n");
+                    sb.append(v.toString());
+                }
+                System.out.println(sb.toString());
+                ex = new Exception(sb.toString());
+            }
+
             ex.printStackTrace();
             this.getTask().increaseErrors();
         }

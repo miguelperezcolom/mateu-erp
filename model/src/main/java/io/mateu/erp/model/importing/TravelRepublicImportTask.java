@@ -243,7 +243,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public static void main(String... args) throws Throwable {
 
-        System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
+        //System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
+        System.setProperty("appconf", "/Users/miguel/mateu.properties");
 
 
         Helper.transact(new JPATransaction() {
@@ -254,6 +255,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
                 em.persist(t);
                 t.setAudit(new Audit());
                 t.setCustomer(em.find(Actor.class, 47l));
+                t.setOffice(em.find(Office.class, 1l));
+                t.setPointOfSale(em.find(PointOfSale.class, 1l));
                 t.setHtml(Helper.leerFichero(getClass().getResourceAsStream("/manifest.csv")));
                 t.execute(em);
 
