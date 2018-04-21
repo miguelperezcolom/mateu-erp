@@ -982,7 +982,7 @@ public abstract class Service {
             price(em, getAudit().getModifiedBy());
         } catch (Throwable e) {
             String error = "" + e.getClass().getName() + ":" + e.getMessage();
-            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) e.printStackTrace();
+            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
             else error = error.substring(error.indexOf(":"));
             System.out.println(error);
         }
@@ -991,7 +991,7 @@ public abstract class Service {
             checkPurchase(em, getAudit().getModifiedBy());
         } catch (Throwable e) {
             String error = "" + e.getClass().getName() + ":" + e.getMessage();
-            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) e.printStackTrace();
+            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
             else error = error.substring(error.indexOf(":"));
             System.out.println(error);
         }

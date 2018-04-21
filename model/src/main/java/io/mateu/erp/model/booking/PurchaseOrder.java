@@ -292,8 +292,9 @@ public class PurchaseOrder {
                 v = true;
             } catch (Throwable throwable) {
                 String error = "" + throwable.getClass().getName() + ":" + throwable.getMessage();
-                if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Excpetion")) throwable.printStackTrace();
+                if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) throwable.printStackTrace();
                 else error = error.substring(error.indexOf(":"));
+                System.out.println(error);
                 setPriceReport(error);
             }
         }
