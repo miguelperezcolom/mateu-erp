@@ -47,11 +47,6 @@ public class SendEmailTask extends AbstractTask {
         email.setAuthenticator(new DefaultAuthenticator((getOffice() != null)?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), (getOffice() != null)?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
         //email.setSSLOnConnect(true);
         email.setFrom((getOffice() != null)?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
-            for (String s : ((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
-                if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
-            }
-        }
 
         email.setSubject(getSubject());
 
@@ -65,8 +60,19 @@ public class SendEmailTask extends AbstractTask {
 
         email.setMsg(msg);
 
-        for (String s : getTo().split("[;, ]")) {
-            if (!Strings.isNullOrEmpty(s)) email.addTo(s);
+        if (!Strings.isNullOrEmpty(System.getProperty("allemailsto"))) {
+            email.addTo(System.getProperty("allemailsto"));
+        } else {
+
+            if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
+                for (String s : ((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
+                    if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
+                }
+            }
+
+            for (String s : getTo().split("[;, ]")) {
+                if (!Strings.isNullOrEmpty(s)) email.addTo(s);
+            }
         }
 
 

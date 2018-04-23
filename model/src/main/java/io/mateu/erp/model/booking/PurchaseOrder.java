@@ -206,8 +206,6 @@ public class PurchaseOrder {
 
         t = getProvider().createTask(em, this);
 
-        em.persist(t);
-
         t.setOffice(getOffice());
         t.setProvider(getProvider());
         t.setStatus(TaskStatus.PENDING);
@@ -218,6 +216,8 @@ public class PurchaseOrder {
 
         t.getPurchaseOrders().add(this);
         getSendingTasks().add(t);
+
+        em.persist(t);
 
 //        setSent(true);
 //        setSentTime(LocalDateTime.now());
@@ -348,6 +348,8 @@ public class PurchaseOrder {
             if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
                 s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
             }
+
+            s.afterSet();
         }
         try {
             price(em);

@@ -62,7 +62,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
 
         email.setSubject("Purchase Orders");
         email.setMsg(getMessage(appconfig));
-        email.addTo(getTo());
+        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
 
         File attachment = createExcel();
         if (attachment != null) email.attach(attachment);

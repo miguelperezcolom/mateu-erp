@@ -32,7 +32,7 @@ public class EmailHelper {
                 email.setSubject(subject);
                 //email.setMsg(io.mateu.ui.mdd.server.util.Helper.freemark(template, getData()));
                 email.setMsg(text);
-                email.addTo(toEmail);
+                email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):toEmail);
                 email.send();
             }
         });

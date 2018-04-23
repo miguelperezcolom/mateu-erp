@@ -62,10 +62,10 @@ public class IslandbusHelper {
 
                 xmlParte.setAttribute("Shuttle","no");
                 xmlParte.setAttribute("CodigoServicio",TransferDirection.INBOUND.equals(firstService.getDirection())?"ENTRADA":"SALIDA");
-                xmlParte.setAttribute("Fecha", firstTime.format(df));
+                xmlParte.setAttribute("Fecha", (firstTime != null)?firstTime.format(df):"");
                 xmlParte.setAttribute("Guia","");
                 xmlParte.setAttribute("ZonaTrabajo","");
-                xmlParte.setAttribute("HoraInicio", firstTime.format(hf));
+                xmlParte.setAttribute("HoraInicio", (firstTime != null)?firstTime.format(hf):"");
                 xmlParte.setAttribute("LugarPresentacion",TransferDirection.INBOUND.equals(firstService.getDirection())?"AEROPUERTO":"");
 
                 //Añadimos las líneas y los Vuelos

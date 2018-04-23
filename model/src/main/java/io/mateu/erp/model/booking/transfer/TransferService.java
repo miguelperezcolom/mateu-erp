@@ -501,7 +501,7 @@ public class TransferService extends Service {
 
         email.setSubject("PICKUP TIMES");
         if (msg != null) email.setMsg(msg);
-        email.addTo(toEmail);
+        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):toEmail);
 
         if (excel != null) email.attach(excel);
 

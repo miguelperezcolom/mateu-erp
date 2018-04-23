@@ -436,7 +436,7 @@ public abstract class Service {
                 for (PurchaseOrder po : s.getPurchaseOrders()) {
                     SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
                     if (t == null) {
-                        if (PurchaseOrderSendingMethod.QUOONAGENT.equals(provider.getOrdersSendingMethod())) {
+                        if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
                         /*
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
                         em.persist(t);
