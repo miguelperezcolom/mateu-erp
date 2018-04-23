@@ -79,6 +79,7 @@ public abstract class Service {
 
 
     @ManyToOne
+    @Ignored
     private BookingPart bookingPart;
 
     @Ignored
@@ -529,7 +530,7 @@ public abstract class Service {
     public void price(EntityManager em, User u) {
         setValued(false);
         setTotalNetValue(0);
-        if (isValueOverrided()) {
+        if (!isCancelled() && isValueOverrided()) {
             setTotalNetValue(getOverridedNetValue());
             setValued(true);
             setPriceReport("Used overrided value");
@@ -561,16 +562,12 @@ public abstract class Service {
 
         double totalCost = 0;
         boolean purchaseValued = getPurchaseOrders().size() > 0;
+
         for (PurchaseOrder po : getPurchaseOrders()) {
-            if (isCancelled() || po.isCancelled()) {
-                po.setValued(true);
-                po.setTotal(0);
-            } else {
-                try {
-                    po.price(em);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+            try {
+                po.price(em);
+            } catch (Throwable e) {
+                e.printStackTrace();
             }
             if (po.isValued()) totalCost += po.getTotal();
             purchaseValued &= po.isValued();
@@ -872,8 +869,32 @@ public abstract class Service {
         setValidationMessage("");
     }
 
-    @PreUpdate
-    public void preStore() throws Throwable {
+    @PostUpdate
+    public void postUpdate() throws Throwable {
+
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+                            em.find(Service.class, getId()).postUpdate(em);
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
+
+    }
+
+    public void postUpdate(EntityManager em) throws Throwable {
+
         String l = getChangeLog();
         if (l == null) l = "";
         boolean update = false;
@@ -929,13 +950,32 @@ public abstract class Service {
         afterSet();
     }
 
-
-    @PrePersist
+    @PostPersist
     public void afterSet() throws Throwable {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
+        long finalId = getId();
 
-        afterSetAsService(em);
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            em.find(Service.class, finalId).afterSetAsService(em);
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
+
 
         /*
         WorkflowEngine.add(new Runnable() {
@@ -967,6 +1007,9 @@ public abstract class Service {
     }
 
     public void afterSetAsService(EntityManager em) {
+
+        System.out.println("service " + getId() + ".afterset");
+
         if (true || getBooking().getFinish() == null) {
             for (Service x : getBooking().getServices()) {
                 if (x.getStart() != null) {

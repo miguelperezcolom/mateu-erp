@@ -22,6 +22,8 @@ import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
@@ -113,6 +115,11 @@ public class PurchaseOrder {
     @Output
     @ListColumn
     double total;
+
+    public void setTotal(double v) {
+        this.total = v;
+    }
+
     @ManyToOne
     @NotNull
     Currency currency;
@@ -304,7 +311,7 @@ public class PurchaseOrder {
 
     private double rate(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
-        for (Service s : getServices()) {
+        if (!isCancelled()) for (Service s : getServices()) if (!s.isCancelled()) {
             double serviceCost = s.rate(em, false, getProvider(), report);
             total += serviceCost;
         }
@@ -326,10 +333,35 @@ public class PurchaseOrder {
 
 
 
-    @PrePersist@PreUpdate
+    @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
+        long finalId = getId();
+
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+                            em.find(PurchaseOrder.class, finalId).afterSet(em);
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
+
+    }
+
+    public void afterSet(EntityManager em) throws Exception, Throwable {
+
+        System.out.println("po " + getId() + ".afterset");
 
         for (Service s : getServices()) {
             if (s.getEffectiveProcessingStatus() < 300) {
@@ -348,65 +380,12 @@ public class PurchaseOrder {
             if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
                 s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
             }
-
-            s.afterSet();
         }
         try {
             price(em);
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
-        /*
-
-        WorkflowEngine.add(new Runnable() {
-
-            long poId = getId();
-
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            PurchaseOrder po = em.find(PurchaseOrder.class, poId);
-
-                            for (Service s : po.getServices()) {
-                                if (s.getEffectiveProcessingStatus() < 300) {
-                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
-                                }
-
-                                if (po.isSent() && s.getEffectiveProcessingStatus() < 400) {
-                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
-                                    s.setSentToProvider(getSentTime());
-                                }
-
-                                if (PurchaseOrderStatus.REJECTED.equals(po.getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
-                                }
-
-                                if (PurchaseOrderStatus.CONFIRMED.equals(po.getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                                    s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-                                }
-                            }
-                            try {
-                                po.price(em);
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-
-            }
-        });
-        */
 
     }
 }

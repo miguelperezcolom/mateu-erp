@@ -23,6 +23,7 @@ import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import io.mateu.ui.mdd.shared.ActionType;
 import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
@@ -511,10 +512,37 @@ public class TransferService extends Service {
     }
 
 
-    @PreUpdate@PrePersist
+    @PostUpdate@PostPersist
     public void afterSet() throws Throwable {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
+        long finalId = getId();
+
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+
+                            em.find(TransferService.class, finalId).afterSet(em);
+
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+
+
+    }
+
+    public void afterSet(EntityManager em) throws Throwable {
+
+        System.out.println("transferservice " + getId() + ".afterset");
 
         if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
         if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
@@ -543,71 +571,6 @@ public class TransferService extends Service {
         setDirection(d);
 
         afterSetAsService(em);
-        
-        /*
-        
-        
-
-        long serviceId = getId();
-
-        WorkflowEngine.add(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            TransferService ts = em.find(TransferService.class, serviceId);
-
-
-                            if ((ts.getPickupText() == null || "".equals(ts.getPickupText().trim())) && ts.getPickup() == null) throw new Exception("Pickup is required");
-                            if ((ts.getDropoffText() == null || "".equals(ts.getDropoffText().trim())) && ts.getDropoff() == null) throw new Exception("Dropoff is required");
-
-                            LocalDate s = ts.getFlightTime().toLocalDate();
-                            if (ts.getFlightTime().getHour() < 6) s = s.minusDays(1);
-                            ts.setStart(s);
-                            ts.setFinish(s);
-
-                            TransferPoint p = null;
-                            if (ts.getPickup() != null) p = ts.getPickup();
-                            ts.setEffectivePickup(p);
-
-                            p = null;
-                            if (ts.getDropoff() != null) p = ts.getDropoff();
-                            ts.setEffectiveDropoff(p);
-
-
-                            ts.setAndMapTransferPoints(em);
-
-                            TransferDirection d = TransferDirection.POINTTOPOINT;
-                            if (ts.getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(ts.getEffectivePickup().getType()) || TransferPointType.PORT.equals(ts.getEffectivePickup().getType()))) {
-                                d = TransferDirection.INBOUND;
-                                ts.setAirport(ts.getEffectivePickup());
-                            }
-                            else if (ts.getEffectiveDropoff() != null && (TransferPointType.AIRPORT.equals(ts.getEffectiveDropoff().getType()) || TransferPointType.PORT.equals(ts.getEffectiveDropoff().getType()))) {
-                                d = TransferDirection.OUTBOUND;
-                                ts.setAirport(ts.getEffectiveDropoff());
-                            }
-                            if (ts.getAirport() == null && ts.getOffice() != null) {
-                                ts.setAirport(ts.getOffice().getDefaultAirportForTransfers());
-                            }
-
-                            ts.setDirection(d);
-
-                            ts.afterSetAsService(em);
-
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-        */
 
     }
 
@@ -670,6 +633,8 @@ public class TransferService extends Service {
 
     @Override
     public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
+
+        if (isCancelled()) return 0;
 
         // verificamos que tenemos lo que necesitamos para valorar
         setAndMapTransferPoints(em);
@@ -751,7 +716,7 @@ public class TransferService extends Service {
             ok &= ContractType.PURCHASE.equals(c.getType());
             ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
             ok &= getTransferType().equals(c.getTransferType());
-            ok &= c.getValidFrom().isBefore(getStart());
+            ok &= !c.getValidFrom().isAfter(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
             ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
