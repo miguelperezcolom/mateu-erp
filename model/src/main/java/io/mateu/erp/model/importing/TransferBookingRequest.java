@@ -389,23 +389,31 @@ public class TransferBookingRequest {
             {
                 boolean hayCambios=false;
 
-                if (!passengerName.equals(b.getLeadName())) {
-                    b.setLeadName(passengerName);
-                    hayCambios=true;
-                }
-                if (phone!=null && !phone.equals(b.getTelephone())) {
-                    b.setTelephone(phone);
-                    hayCambios=true;
-                }
-                if (email!=null && !email.equals(b.getEmail()))
-                {
-                    b.setEmail(email);
-                    hayCambios=true;
-                }
-                if (comments!=null && !b.getComments().contains(comments))
-                {
-                    b.setComments(b.getComments() + "--" + comments);
-                    hayCambios=true;
+                boolean hayBloqueos = false;
+
+                for (Service s : b.getServices()) hayBloqueos |= s.isLocked();
+
+                if (hayBloqueos) {
+
+                    if (!passengerName.equals(b.getLeadName())) {
+                        b.setLeadName(passengerName);
+                        hayCambios=true;
+                    }
+                    if (phone!=null && !phone.equals(b.getTelephone())) {
+                        b.setTelephone(phone);
+                        hayCambios=true;
+                    }
+                    if (email!=null && !email.equals(b.getEmail()))
+                    {
+                        b.setEmail(email);
+                        hayCambios=true;
+                    }
+                    if (comments!=null && !b.getComments().contains(comments))
+                    {
+                        b.setComments(b.getComments() + "--" + comments);
+                        hayCambios=true;
+                    }
+
                 }
 
 
