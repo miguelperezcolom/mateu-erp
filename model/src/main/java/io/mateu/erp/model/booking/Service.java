@@ -105,6 +105,7 @@ public abstract class Service {
 
     @ListColumn
     @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
+    @SearchFilter
     @NotInEditor
     private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 

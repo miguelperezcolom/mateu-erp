@@ -243,8 +243,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public static void main(String... args) throws Throwable {
 
-        //System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
-        System.setProperty("appconf", "/Users/miguel/mateu.properties");
+        System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
+        //System.setProperty("appconf", "/Users/miguel/mateu.properties");
 
 
         Helper.transact(new JPATransaction() {
