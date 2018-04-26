@@ -4,10 +4,7 @@ import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.SearchFilterIsNull;
+import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
@@ -27,6 +24,7 @@ import java.util.List;
 @Setter
 public class TransferPointMapping {
 
+    @Ignored
     static ThreadLocal<List<String>> persisted = new ThreadLocal<>();
 
     //select x.id, x.text, y.name from io.mateu.erp.model.booking.transfer.TransferPointMapping x left outer join TransferPoint y on x.point = y order by x.text
