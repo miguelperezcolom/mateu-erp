@@ -8,11 +8,15 @@ import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import io.mateu.ui.mdd.server.annotations.SearchFilterIsNull;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +26,8 @@ import java.util.List;
 @Getter
 @Setter
 public class TransferPointMapping {
+
+    static ThreadLocal<List<String>> persisted = new ThreadLocal<>();
 
     //select x.id, x.text, y.name from io.mateu.erp.model.booking.transfer.TransferPointMapping x left outer join TransferPoint y on x.point = y order by x.text
 
@@ -72,80 +78,68 @@ public class TransferPointMapping {
         text = text.toLowerCase().trim();
         TransferPoint p = null;
         boolean found = false;
-        for (TransferPointMapping m : (List<TransferPointMapping>) em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.text = '" + text.replaceAll("'", "''") + "'").getResultList()) {
+        for (TransferPointMapping m : (List<TransferPointMapping>) em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.text = :t").setParameter("t", text).setFlushMode(FlushModeType.COMMIT).getResultList()) {
             p = m.getPoint();
             found = true;
             break;
         }
         if (!found) {
-            em.persist(new TransferPointMapping(text, transferService));
+            List<String> l = persisted.get();
+            if (l == null) {
+                persisted.set(l = new ArrayList<>());
+            }
+            if (!l.contains(text)) {
+                em.persist(new TransferPointMapping(text, transferService));
+                l.add(text);
+            }
         }
         return p;
+    }
+
+    @PrePersist@PreUpdate
+    public void beforeSave() {
+        setText(getText().toLowerCase().trim());
     }
 
 
     @PostPersist@PostUpdate
     public void afterSet() throws Throwable {
-        setText(getText().toLowerCase().trim());
-
-        EntityManager em = io.mateu.ui.mdd.server.util.Helper.getEMFromThreadLocal();
-
-        List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", getText()).getResultList();
-
-        for (TransferService s : ss) {
-            s.setPickup(getPoint());
-            if (getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(getPoint());
-        }
-
-        ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", getText()).getResultList();
-
-        for (TransferService s : ss) {
-            s.setDropoff(getPoint());
-            if (getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(getPoint());
-        }
-        
-        
-        /*
 
         WorkflowEngine.add(new Runnable() {
 
             long tpmId = getId();
 
-                               @Override
-                               public void run() {
+            @Override
+            public void run() {
 
-                                   try {
-                                       Helper.transact(new JPATransaction() {
-                                           @Override
-                                           public void run(EntityManager em) throws Throwable {
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
 
-                                               TransferPointMapping tpm = em.find(TransferPointMapping.class, tpmId);
+                            TransferPointMapping tpm = em.find(TransferPointMapping.class, tpmId);
 
-                                               List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setParameter("s", tpm.getText()).getResultList();
+                            List<TransferService> ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.pickupText) = :s and x.pickup is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", tpm.getText()).getResultList();
 
-                                               for (TransferService s : ss) {
-                                                   s.setPickup(tpm.getPoint());
-                                                   if (tpm.getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(tpm.getPoint());
-                                               }
+                            for (TransferService s : ss) {
+                                s.setPickup(tpm.getPoint());
+                                if (tpm.getText().equalsIgnoreCase(s.getDropoffText()) && s.getDropoff() == null) s.setDropoff(tpm.getPoint());
+                            }
 
-                                               ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setParameter("s", tpm.getText()).getResultList();
+                            ss = em.createQuery("select x from " + TransferService.class.getName() + " x where lower(x.dropoffText) = :s and x.dropoff is null").setFlushMode(FlushModeType.COMMIT).setParameter("s", tpm.getText()).getResultList();
 
-                                               for (TransferService s : ss) {
-                                                   s.setDropoff(tpm.getPoint());
-                                                   if (tpm.getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(tpm.getPoint());
-                                               }
+                            for (TransferService s : ss) {
+                                s.setDropoff(tpm.getPoint());
+                                if (tpm.getText().equalsIgnoreCase(s.getPickupText()) && s.getPickup() == null) s.setPickup(tpm.getPoint());
+                            }
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
 
+            }
+        });
 
-                                           }
-                                       });
-                                   } catch (Throwable throwable) {
-                                       throwable.printStackTrace();
-                                   }
-
-                               }
-                           }
-        );
-        
-        */
     }
 }
