@@ -105,6 +105,8 @@ public class TransferPointMapping {
     @PostPersist@PostUpdate
     public void afterSet() throws Throwable {
 
+        if (persisted.get() != null) persisted.get().remove(getText());
+
         WorkflowEngine.add(new Runnable() {
 
             long tpmId = getId();
