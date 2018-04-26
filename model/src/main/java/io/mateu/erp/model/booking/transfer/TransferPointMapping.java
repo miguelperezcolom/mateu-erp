@@ -73,7 +73,7 @@ public class TransferPointMapping {
     }
 
     public static TransferPoint getTransferPoint(EntityManager em, String text, TransferService transferService) {
-        text = text.toLowerCase().trim();
+        text = text.toLowerCase().trim().replaceAll("\\n", "_").replaceAll("\\r", "_");
         TransferPoint p = null;
         boolean found = false;
         for (TransferPointMapping m : (List<TransferPointMapping>) em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.text = :t").setParameter("t", text).setFlushMode(FlushModeType.COMMIT).getResultList()) {
@@ -96,7 +96,7 @@ public class TransferPointMapping {
 
     @PrePersist@PreUpdate
     public void beforeSave() {
-        setText(getText().toLowerCase().trim());
+        setText(getText().toLowerCase().trim().replaceAll("\\n", "_").replaceAll("\\r", "_"));
     }
 
 
