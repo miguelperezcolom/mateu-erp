@@ -105,6 +105,7 @@ public abstract class Service {
 
     @ListColumn
     @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
+    @SearchFilter
     @NotInEditor
     private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 
@@ -175,6 +176,13 @@ public abstract class Service {
     private String overridedRetailValueCalculator;
     @SameLine
     private double overridedCommissionValue;
+
+
+    private boolean costOverrided;
+    @SameLine
+    private double overridedCostValue;
+    @Ignored
+    private String overridedCostValueCalculator;
 
 
     @Output
@@ -561,19 +569,34 @@ public abstract class Service {
         }
 
         double totalCost = 0;
-        boolean purchaseValued = getPurchaseOrders().size() > 0;
 
-        for (PurchaseOrder po : getPurchaseOrders()) {
-            try {
-                po.price(em);
-            } catch (Throwable e) {
-                e.printStackTrace();
+        if (isCostOverrided()) {
+            setTotalCost(getOverridedCostValue());
+            setPurchaseValued(true);
+
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                if (!po.isCancelled()) {
+                    po.setValueOverrided(true);
+                    po.setOverridedValue(getOverridedCostValue());
+                }
             }
-            if (po.isValued()) totalCost += po.getTotal();
-            purchaseValued &= po.isValued();
+
+        } else {
+            boolean purchaseValued = getPurchaseOrders().size() > 0;
+
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                try {
+                    po.price(em);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+                if (po.isValued()) totalCost += po.getTotal();
+                purchaseValued &= po.isValued();
+            }
+            setTotalCost(Helper.roundOffEuros(totalCost));
+            setPurchaseValued(purchaseValued);
         }
-        setTotalCost(Helper.roundOffEuros(totalCost));
-        setPurchaseValued(purchaseValued);
+
     }
 
     @Action(name = "Price")

@@ -166,7 +166,7 @@ public class Booking {
         try {
             String jpql = "select x from " + Booking.class.getName() + " x" +
                     " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
-            Query q = em.createQuery(jpql);
+            Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<Booking> l = q.getResultList();
             Booking b = (l.size() > 0)?l.get(0):null;
             return b;

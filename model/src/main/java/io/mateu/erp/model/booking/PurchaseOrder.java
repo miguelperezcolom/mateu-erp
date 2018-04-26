@@ -312,7 +312,8 @@ public class PurchaseOrder {
     private double rate(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
         if (!isCancelled()) for (Service s : getServices()) if (!s.isCancelled()) {
-            double serviceCost = s.rate(em, false, getProvider(), report);
+            double serviceCost = s.getOverridedCostValue();
+            if (!s.isCostOverrided()) serviceCost = s.rate(em, false, getProvider(), report);
             total += serviceCost;
         }
         return Helper.roundEuros(total);

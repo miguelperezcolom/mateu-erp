@@ -89,6 +89,10 @@ public class TransferService extends Service {
     @SameLine
     private TransferPoint effectivePickup;
 
+    public void setEffectivePickup(TransferPoint p) {
+        this.effectivePickup = p;
+    }
+
 
     @Separator("Dropoff")
     private String dropoffText;
@@ -101,6 +105,9 @@ public class TransferService extends Service {
     @SameLine
     private TransferPoint effectiveDropoff;
 
+    public void setEffectiveDropoff(TransferPoint effectiveDropoff) {
+        this.effectiveDropoff = effectiveDropoff;
+    }
 
     @Separator("Flight")
     private String flightNumber;
