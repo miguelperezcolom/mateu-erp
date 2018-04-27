@@ -193,10 +193,20 @@ public class TransferBookingRequest {
     @ListColumn
     @Output
     private String departureResort;
+
+    public void setDepartureResort(String departureResort) {
+        this.departureResort = (departureResort != null)?departureResort.replaceAll("\\n", "_").replaceAll("\\r", "_"):departureResort;
+    }
+
     @ListColumn
     @Output
     @SameLine
     private String departureAddress;
+
+    public void setDepartureAddress(String departureAddress) {
+        this.departureAddress = (departureAddress != null)?departureAddress.replaceAll("\\n", "_").replaceAll("\\r", "_"):departureAddress;
+    }
+
     @ListColumn
     @Output
     private boolean departureConfirmed=false;
@@ -393,7 +403,7 @@ public class TransferBookingRequest {
 
                 for (Service s : b.getServices()) hayBloqueos |= s.isLocked();
 
-                if (hayBloqueos) {
+                if (!hayBloqueos) {
 
                     if (!passengerName.equals(b.getLeadName())) {
                         b.setLeadName(passengerName);

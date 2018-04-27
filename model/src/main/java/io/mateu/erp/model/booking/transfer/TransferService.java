@@ -518,13 +518,6 @@ public class TransferService extends Service {
 
     }
 
-    @PrePersist@PreUpdate
-    public void pre() {
-        if (getPickupText() != null) setPickupText(getPickupText().toLowerCase().trim().replaceAll("\\n", "_").replaceAll("\\r", "_"));
-        if (getDropoffText() != null) setDropoffText(getDropoffText().toLowerCase().trim().replaceAll("\\n", "_").replaceAll("\\r", "_"));
-    }
-
-
     @PostUpdate@PostPersist
     public void afterSet() throws Throwable {
 
