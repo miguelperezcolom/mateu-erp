@@ -21,6 +21,7 @@ import io.mateu.ui.mdd.client.JPAAutocompleteField;
 import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDOpenEditorAction;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -28,7 +29,10 @@ public class PickupConfirmationView extends AbstractJPAListView {
     @Override
     public String getSql() {
         String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone from TransferService x left join x.effectivePickup epu where 1 = 1 ";
-        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, x.providers, x.sentToProvider from TransferService x left join x.effectivePickup epu where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND ";
+        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, x.providers, x.sentToProvider " +
+                " from TransferService x left join x.effectivePickup epu " +
+                " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
+                " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (getData().get("hotel") != null) jpql += " and x.effectivePickup.id = " + ((Pair)getData().get("hotel")).getValue() + " ";
         if (!Strings.isNullOrEmpty(getData().getString("nombre"))) jpql += " and lower(x.booking.leadName) like '%" + getData().getString("nombre").toLowerCase().replaceAll("'", "''")+ "%' ";
