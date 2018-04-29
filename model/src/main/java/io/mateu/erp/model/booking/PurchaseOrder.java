@@ -81,6 +81,8 @@ public class PurchaseOrder {
     @CellStyleGenerator(SentCellStyleGenerator.class)
     private boolean sent;
 
+    private String comment;
+
     public void setSent(boolean v) {
         this.sent = v;
     }

@@ -246,5 +246,12 @@
         </dependency>
 
 
+        <!-- https://mvnrepository.com/artifact/com.googlecode/google-api-translate-java -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-translate</artifactId>
+            <version>1.26.0</version>
+        </dependency>
+
     </dependencies>
 </project>

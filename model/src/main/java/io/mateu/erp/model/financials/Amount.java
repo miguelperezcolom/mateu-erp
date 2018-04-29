@@ -10,11 +10,7 @@ import java.time.LocalDateTime;
 @Embeddable
 public class Amount {
 
-    private long value;
-
-    private int decimals;
-
-    private long nucs;
+    private double value;
 
     @ManyToOne
     private Currency currency;
@@ -22,5 +18,31 @@ public class Amount {
     private double changeRate;
 
     private LocalDateTime date;
+
+
+
+    private double nucs;
+
+    private double changeRate0;
+
+    private double value0;
+
+    private double changeRate1;
+
+    private double value1;
+
+    private double changeRate2;
+
+    private double value2;
+
+    private double changeRate3;
+
+    private double value3;
+
+    private double changeRate4;
+
+    private double value4;
+
+
 
 }

@@ -1,11 +1,18 @@
 package io.mateu.erp.model.authentication;
 
+import com.Ostermiller.util.MD5;
+import com.Ostermiller.util.RandPass;
+import com.google.common.base.Strings;
 import io.mateu.erp.model.common.File;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.util.EmailHelper;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.annotations.Parameter;
+import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -97,5 +104,56 @@ public class User {
         t.setId(t.createId(this));
         System.out.println("token creado para el usuario " + getLogin() + " y el actor " + a.getName() + ": " + t.getId());
     }
+
+    @PrePersist
+    public void resetPassword() {
+        String password = new RandPass().getPass(6);
+        setPassword(MD5.getHashString(password));
+    }
+
+    public void sendForgottenPasswordEmail() throws Throwable {
+        if (Strings.isNullOrEmpty(getPassword())) throw new Exception("Missing password for user " + login);
+        if (Strings.isNullOrEmpty(getEmail())) throw new Exception("Missing email for user " + login);
+        if (USER_STATUS.INACTIVE.equals(getStatus())) throw new Exception("Deactivated user");
+        EmailHelper.sendEmail(getEmail(), "Your password", getPassword(), true);
+    }
+
+    public boolean validatePassword(String text) {
+        return getPassword().equals(MD5.getHashString(text)) || getPassword().equals(text);
+    }
+
+    @PostPersist
+    public void post() {
+        WorkflowEngine.add(new Runnable() {
+
+            String xid = getLogin();
+
+            @Override
+            public void run() {
+
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+                            em.find(User.class, xid).sendWelcomeEmail();
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            }
+        });
+    }
+
+    public void sendWelcomeEmail() throws Throwable {
+        if (Strings.isNullOrEmpty(getPassword())) throw new Exception("Missing password for user " + login);
+        if (Strings.isNullOrEmpty(getEmail())) throw new Exception("Missing email for user " + login);
+        if (USER_STATUS.INACTIVE.equals(getStatus())) throw new Exception("Deactivated user");
+        EmailHelper.sendEmail(getEmail(), "Welcome " + getName(), "Your password is " + getPassword(), true);
+    }
+
+
+
 
 }

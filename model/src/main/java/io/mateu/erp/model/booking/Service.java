@@ -233,6 +233,9 @@ public abstract class Service {
 
     private boolean alreadyPurchased;
 
+    @SameLine
+    private String providerReference;
+
 
     @Output
     @ListColumn

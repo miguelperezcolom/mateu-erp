@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 
 @Entity(name = "AccountingAccount")
 @Getter
@@ -16,6 +18,15 @@ public class Account {
 
     private String name;
 
+    private double debit;
+
+    private double credit;
+
     private double balance;
+
+    @PreUpdate@PrePersist
+    public void pre() {
+        setBalance(getCredit() - getDebit());
+    }
 
 }
