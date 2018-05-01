@@ -1096,6 +1096,6 @@ public abstract class Service {
         validate(em);
 
 
-        setVisibleInSummary(!isCancelled() || getSentToProvider() != null);
+        setVisibleInSummary(!isCancelled() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
     }
 }
