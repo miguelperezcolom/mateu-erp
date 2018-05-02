@@ -347,7 +347,7 @@ public class TransferService extends Service {
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
-                            if (TransferType.SHUTTLE.equals(s.getTransferType()) && s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForAnyTransfer())) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
@@ -777,7 +777,7 @@ public class TransferService extends Service {
         d.put("pax", getPax());
 
         TransferPoint p = getEffectivePickup();
-        if (p != null && TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+        if (p != null && p.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForAnyTransfer())) {
             p = p.getAlternatePointForShuttle();
             d.put("alternatePickup", "" + p.getName());
 
@@ -886,7 +886,7 @@ public class TransferService extends Service {
 
             if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
                 TransferPoint p = getEffectivePickup();
-                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                if (p.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForAnyTransfer())) {
                     p = p.getAlternatePointForShuttle();
                 }
                 SendEmailTask t = new SendEmailTask();
@@ -911,7 +911,7 @@ public class TransferService extends Service {
 
             if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
                 TransferPoint p = getEffectivePickup();
-                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                if (p.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForAnyTransfer())) {
                     p = p.getAlternatePointForShuttle();
                 }
                 SendEmailTask t = new SendEmailTask();
@@ -958,7 +958,7 @@ public class TransferService extends Service {
 
             if (getEffectivePickup() != null) {
                 TransferPoint p = getEffectivePickup();
-                if (TransferType.SHUTTLE.equals(getTransferType()) && p.getAlternatePointForShuttle() != null) {
+                if (p.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForAnyTransfer())) {
                     p = p.getAlternatePointForShuttle();
                 }
                 SendEmailTask t = new SendEmailTask();

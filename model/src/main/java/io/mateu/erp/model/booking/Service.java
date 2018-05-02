@@ -234,6 +234,10 @@ public abstract class Service {
     private boolean alreadyPurchased;
 
     @SameLine
+    @Output
+    private LocalDateTime alreadyPurchasedDate;
+
+    @SameLine
     private String providerReference;
 
 
@@ -387,7 +391,7 @@ public abstract class Service {
         });
     }
 
-    //@Action(name = "Repair bookings")
+    @Action(name = "Repair bookings")
     public static void repair(UserData user) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -395,32 +399,24 @@ public abstract class Service {
 
                 System.out.println("***REPARAR BOOKINGS*****");
 
-                Object[][] r = Helper.select("select purchaseorders_id from (select purchaseorders_id, count(*) from service_purchaseorder group by 1 having count(*) > 1) x");
+                /*
 
-                Helper.transact(new JPATransaction() {
-                    @Override
-                    public void run(EntityManager em) throws Throwable {
-                        for (Object[] l : r) {
-                            long id = new Long("" + l[0]);
-                            PurchaseOrder po = em.find(PurchaseOrder.class, id);
-                            System.out.println("***revisando po " + id + "*****");
-                            if (po.getServices().size() > 1) {
-                                System.out.println("***po " + id + " tiene más de 1 servicio*****");
-                                List<Service> x = new ArrayList<>();
-                                for (Service s : po.getServices()) {
-                                    if (s instanceof TransferService && TransferDirection.OUTBOUND.equals(((TransferService) s).getDirection())) {
-                                        x.add(s);
-                                    }
-                                }
-                                for (Service s : x) {
-                                    System.out.println("***corrigiendo servicio " + s.getId() + "*****");
-                                    po.getServices().remove(s);
-                                    s.getPurchaseOrders().remove(po);
-                                    s.checkPurchase(em, user);
-                                }
-                            }
-                        }
-                    }
+                ReadAllQuery query = new ReadAllQuery();
+                Employee employee = new Employee();
+                Address address = new Address();
+                address.setCity("Ottawa");
+                employee.setAddress(address);
+                query.setExampleObject(employee);
+                List results = (List) session.executeQuery(query);
+
+                */
+
+                Office of = em.find(Office.class, 1l);
+
+                em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing is null").getResultList().forEach((o) -> {
+                    Service s = (Service) o;
+                    if (s.getOffice() == null) s.setOffice(of);
+                    s.setServiceDateForInvoicing(s.getStart());
                 });
 
             }
@@ -667,7 +663,7 @@ public abstract class Service {
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
-                            if (TransferType.SHUTTLE.equals(s.getTransferType()) && s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null) {
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForAnyTransfer())) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
@@ -804,7 +800,11 @@ public abstract class Service {
     }
 
 
-    public static void main(String... args) {
+    public static void main(String... args) throws Throwable {
+
+        System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
+
+        Service.repair(null);
 
         /*
         Service s = new Service() {
@@ -1051,6 +1051,12 @@ public abstract class Service {
                 if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
                 else x.setServiceDateForInvoicing(x.getStart());
             }
+        }
+
+        if (isAlreadyPurchased() && getAlreadyPurchasedDate() == null) {
+            setAlreadyPurchasedDate(LocalDateTime.now());
+        } else if (!isAlreadyPurchased() && getAlreadyPurchasedDate() != null) {
+            setAlreadyPurchasedDate(null);
         }
 
         try {

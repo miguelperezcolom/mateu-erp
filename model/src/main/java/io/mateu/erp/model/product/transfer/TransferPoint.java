@@ -58,6 +58,8 @@ public class TransferPoint {
     @NotInList
     private TransferPoint alternatePointForShuttle;
 
+    private boolean alternatePointForAnyTransfer;
+
     @TextArea
     private String instructions;
 
@@ -85,7 +87,7 @@ public class TransferPoint {
         String s = getName();
         if (!Strings.isNullOrEmpty(getInstructions())) s += " / " + getInstructions();
         if (getAlternatePointForShuttle() != null) {
-            s += " (SHUTTLE: " + getAlternatePointForShuttle().getName();
+            s += " (" + ((isAlternatePointForAnyTransfer())?"SHUTTLE":"ANY TRANSFER") + ": " + getAlternatePointForShuttle().getName();
             if (!Strings.isNullOrEmpty(getAlternatePointForShuttle().getInstructions())) s += " / " + getAlternatePointForShuttle().getInstructions();
             s += ")";
         }
@@ -154,7 +156,7 @@ public class TransferPoint {
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Exception {
-                for (Country cou : (List<Country>) em.createQuery("select x from Country x order by x.name").getResultList()) {
+                for (Country cou : (List<Country>) em.createQuery("select x from " + Country.class.getName() + " x order by x.name").getResultList()) {
                     Element ecou;
                     xml.addContent(ecou = new Element("country").setAttribute("name", cou.getName()));
                     for (State s : cou.getStates()) {
@@ -168,6 +170,7 @@ public class TransferPoint {
                                 ec.addContent(ep = new Element("transferpoint").setAttribute("type", "" + p.getType()).setAttribute("name", p.getName()));
                                 if (p.getInstructions() != null) ep.setAttribute("instructions", p.getInstructions());
                                 if (p.getAlternatePointForShuttle() != null) ep.setAttribute("alternatepointforshuttle", p.getAlternatePointForShuttle().getName());
+                                if (p.isAlternatePointForAnyTransfer()) ep.setAttribute("alternatepointfornonshuttle", p.getAlternatePointForShuttle().getName());
                             }
                         }
                     }
