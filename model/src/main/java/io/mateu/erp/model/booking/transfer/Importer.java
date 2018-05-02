@@ -57,7 +57,7 @@ public class Importer {
                     else if (hora == null) pw.println("<span style='color: red;'>line " + nofila + ": missing pickup time</span>");
                     else {
 
-                        long id = (long) Double.parseDouble(ref.trim());
+                        long id = (long) Double.parseDouble(ref.replaceAll("[^0-9.]", ""));
                         PurchaseOrder po = em.find(PurchaseOrder.class, id);
 
                         if (po != null) {
