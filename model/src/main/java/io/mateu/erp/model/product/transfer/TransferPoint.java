@@ -58,7 +58,7 @@ public class TransferPoint {
     @NotInList
     private TransferPoint alternatePointForShuttle;
 
-    private boolean alternatePointForAnyTransfer;
+    private boolean alternatePointForNonExecutive;
 
     @TextArea
     private String instructions;
@@ -87,7 +87,7 @@ public class TransferPoint {
         String s = getName();
         if (!Strings.isNullOrEmpty(getInstructions())) s += " / " + getInstructions();
         if (getAlternatePointForShuttle() != null) {
-            s += " (" + ((isAlternatePointForAnyTransfer())?"SHUTTLE":"ANY TRANSFER") + ": " + getAlternatePointForShuttle().getName();
+            s += " (" + ((isAlternatePointForNonExecutive())?"SHUTTLE":"NON EXECUTIVE") + ": " + getAlternatePointForShuttle().getName();
             if (!Strings.isNullOrEmpty(getAlternatePointForShuttle().getInstructions())) s += " / " + getAlternatePointForShuttle().getInstructions();
             s += ")";
         }
@@ -170,7 +170,7 @@ public class TransferPoint {
                                 ec.addContent(ep = new Element("transferpoint").setAttribute("type", "" + p.getType()).setAttribute("name", p.getName()));
                                 if (p.getInstructions() != null) ep.setAttribute("instructions", p.getInstructions());
                                 if (p.getAlternatePointForShuttle() != null) ep.setAttribute("alternatepointforshuttle", p.getAlternatePointForShuttle().getName());
-                                if (p.isAlternatePointForAnyTransfer()) ep.setAttribute("alternatepointfornonshuttle", p.getAlternatePointForShuttle().getName());
+                                if (p.isAlternatePointForNonExecutive()) ep.setAttribute("alternatepointfornonshuttle", p.getAlternatePointForShuttle().getName());
                             }
                         }
                     }
