@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
@@ -1053,7 +1054,7 @@ public class TransferService extends Service {
                     @Override
                     public void run(EntityManager em) throws Throwable {
                         PurchaseOrder s = em.find(PurchaseOrder.class, id);
-                        if (s.getSignature() == null && s.getSentTime() != null) s.setSignature(s.createSignature());
+                        if (s.getSignature() == null && PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) s.setSignature(s.createSignature());
                     }
                 });
             } catch (Throwable throwable) {
