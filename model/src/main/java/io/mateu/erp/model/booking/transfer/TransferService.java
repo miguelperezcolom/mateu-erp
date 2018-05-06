@@ -519,38 +519,8 @@ public class TransferService extends Service {
 
     }
 
-    @PostUpdate@PostPersist
-    public void afterSet() throws Throwable {
-
-        long finalId = getId();
-
-        WorkflowEngine.add(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            em.find(TransferService.class, finalId).afterSet(em);
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-
-
-    }
-
-    public void afterSet(EntityManager em) throws Throwable {
-
-        System.out.println("transferservice " + getId() + ".afterset");
-
+    @PrePersist@PreUpdate
+    public void preSet() throws Exception {
         if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
         if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
 
@@ -558,7 +528,43 @@ public class TransferService extends Service {
         if (getFlightTime().getHour() < 6) s = s.minusDays(1);
         setStart(s);
         setFinish(s);
+    }
 
+    @PostUpdate@PostPersist
+    public void afterSet() throws Throwable {
+
+        System.out.println("transferservice.afterset()");
+
+        long finalId = getId();
+
+        if (!isPreventAfterSet()) {
+            WorkflowEngine.add(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        Helper.transact(new JPATransaction() {
+                            @Override
+                            public void run(EntityManager em) throws Throwable {
+
+                                em.find(TransferService.class, finalId).afterSet(em);
+
+                            }
+                        });
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+
+                }
+            });
+        }
+
+
+    }
+
+    public void afterSet(EntityManager em) throws Throwable {
+
+        System.out.println("transferservice " + getId() + ".afterset");
 
         setAndMapTransferPoints(em);
 
@@ -620,7 +626,7 @@ public class TransferService extends Service {
         try {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("leadName", getBooking().getLeadName());
-            m.put("flightTime", getFlightTime());
+            m.put("flightTime", (getFlightTime() != null)?getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")):"");
             m.put("flightNumber", getFlightNumber());
             m.put("pax", getPax());
             m.put("pickup", "" + getEffectivePickup());
@@ -629,7 +635,7 @@ public class TransferService extends Service {
             m.put("preferredVehicle", "" + getPreferredVehicle());
             //m.put("pickupTime", getPickupTime());
             m.put("comment", "" + getComment());
-            m.put("held", "" + isHeld());
+            //m.put("held", "" + isHeld());
             m.put("cancelled", "" + isCancelled());
             s = Helper.toJson(m);
         } catch (Exception e) {
@@ -1007,11 +1013,12 @@ public class TransferService extends Service {
 
         List<Long> ids = new ArrayList<>();
 
-/*        Helper.transact(new JPATransaction() {
+        Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.audit.created >= :f").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+//                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.audit.created >= :f").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
+                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
                     ids.add(s.getId());
                 }
             }
@@ -1024,13 +1031,14 @@ public class TransferService extends Service {
                     @Override
                     public void run(EntityManager em) throws Throwable {
                         TransferService s = em.find(TransferService.class, id);
-                        s.afterSet();
+                        s.setPreventAfterSet(true);
+                        s.setSignature(s.createSignature());
                     }
                 });
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
-        }*/
+        }
 
 
 
@@ -1054,7 +1062,10 @@ public class TransferService extends Service {
                     @Override
                     public void run(EntityManager em) throws Throwable {
                         PurchaseOrder s = em.find(PurchaseOrder.class, id);
-                        if (s.getSignature() == null && PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) s.setSignature(s.createSignature());
+                        if (s.getSignature() == null && PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) {
+                            s.setPreventAfterSet(true);
+                            s.setSignature(s.createSignature());
+                        }
                     }
                 });
             } catch (Throwable throwable) {
