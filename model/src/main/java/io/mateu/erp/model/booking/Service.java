@@ -272,7 +272,7 @@ public abstract class Service {
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
-    @Ignored
+    @Output
     private String signature;
 
     @Transient
