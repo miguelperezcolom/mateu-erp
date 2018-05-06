@@ -1062,7 +1062,7 @@ public class TransferService extends Service {
                     @Override
                     public void run(EntityManager em) throws Throwable {
                         PurchaseOrder s = em.find(PurchaseOrder.class, id);
-                        if (s.getSignature() == null && PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) {
+                        if (PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) {
                             s.setPreventAfterSet(true);
                             s.setSignature(s.createSignature());
                         }
