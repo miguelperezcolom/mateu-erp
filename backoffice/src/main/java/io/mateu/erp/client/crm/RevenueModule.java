@@ -3,6 +3,7 @@ package io.mateu.erp.client.crm;
 import io.mateu.erp.model.cms.Theme;
 import io.mateu.erp.model.cms.Website;
 import io.mateu.erp.model.financials.Abseiling;
+import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.CreditLimit;
 import io.mateu.erp.model.financials.PaymentTerms;
 import io.mateu.erp.model.partners.Actor;
@@ -74,6 +75,8 @@ public class RevenueModule extends AbstractModule {
         m.add(new MDDAction("CreditLimit", CreditLimit.class));
 
         m.add(new MDDAction("Abseiling", Abseiling.class));
+
+        m.add(new MDDAction("Commission terms", CommissionTerms.class));
 
         m.add(new MDDAction("Payment terms", PaymentTerms.class));
 
