@@ -1,8 +1,7 @@
 package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.revenue.Product;
@@ -109,6 +108,13 @@ public class AbstractContract {
 
     private LocalDate signatureDate;
 
+    @Tab("Commissions")
+    @ManyToOne
+    private CommissionTerms commissionTerms;
+
+    @Tab("Payment")
+    @ManyToOne
+    private PaymentTerms paymentTerms;
 
     @Ignored
     private double averagePrice;

@@ -57,6 +57,9 @@ public class Actor implements IActor {
     @SameLine
     private boolean hotelChain;
 
+    @SameLine
+    private boolean commissionAgent;
+
     @ManyToOne
     private ActorGroup group;
 

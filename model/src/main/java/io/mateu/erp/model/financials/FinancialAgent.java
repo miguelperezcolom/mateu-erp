@@ -74,6 +74,9 @@ public class FinancialAgent {
     private PaymentTerms paymentTerms;
 
     @ManyToOne
+    private RetentionTerms retention;
+
+    @ManyToOne
     private PaymentMethod paymentMethod;
 
     private boolean paymentsBlocked;
