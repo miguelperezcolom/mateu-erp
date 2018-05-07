@@ -46,6 +46,10 @@ import java.util.*;
 @Setter
 public class PurchaseOrder {
 
+    @Transient
+    @Ignored
+    private boolean preventAfterSet;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
@@ -76,12 +80,13 @@ public class PurchaseOrder {
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     private boolean cancelled;
 
+    private String comment;
+
+    @Tab("Delivering")
     @Output
     @ListColumn
     @CellStyleGenerator(SentCellStyleGenerator.class)
     private boolean sent;
-
-    private String comment;
 
     public void setSent(boolean v) {
         this.sent = v;
@@ -101,6 +106,10 @@ public class PurchaseOrder {
     private PurchaseOrderStatus status;
     @ListColumn
     private String providerComment;
+
+
+    @Output
+    private String signature;
 
     @Tab("Price")
     private boolean valueOverrided;
@@ -134,10 +143,6 @@ public class PurchaseOrder {
     @OneToMany(mappedBy = "purchaseOrder")
     @Output
     private List<Charge> charges = new ArrayList<>();
-
-
-    @Ignored
-    private String signature;
 
 
     @SearchFilter(value="Service Id", field = "id")
@@ -341,23 +346,25 @@ public class PurchaseOrder {
 
         long finalId = getId();
 
-        WorkflowEngine.add(new Runnable() {
-            @Override
-            public void run() {
+        if (!isPreventAfterSet()) {
+            WorkflowEngine.add(new Runnable() {
+                @Override
+                public void run() {
 
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-                            em.find(PurchaseOrder.class, finalId).afterSet(em);
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    try {
+                        Helper.transact(new JPATransaction() {
+                            @Override
+                            public void run(EntityManager em) throws Throwable {
+                                em.find(PurchaseOrder.class, finalId).afterSet(em);
+                            }
+                        });
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+
                 }
-
-            }
-        });
+            });
+        }
 
 
     }

@@ -53,6 +53,10 @@ import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 @Setter
 public abstract class Service {
 
+    @Transient
+    @Ignored
+    private boolean preventAfterSet;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
@@ -268,7 +272,7 @@ public abstract class Service {
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
-    @Ignored
+    @Output
     private String signature;
 
     @Transient
@@ -899,24 +903,29 @@ public abstract class Service {
     @PostUpdate
     public void postUpdate() throws Throwable {
 
-        WorkflowEngine.add(new Runnable() {
-            @Override
-            public void run() {
+        System.out.println("service.postupdate()");
 
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-                            em.find(Service.class, getId()).postUpdate(em);
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+        if (!isPreventAfterSet()) {
+
+            WorkflowEngine.add(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        Helper.transact(new JPATransaction() {
+                            @Override
+                            public void run(EntityManager em) throws Throwable {
+                                em.find(Service.class, getId()).postUpdate(em);
+                            }
+                        });
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+
                 }
+            });
 
-            }
-        });
-
+        }
 
     }
 
@@ -980,6 +989,8 @@ public abstract class Service {
     @PostPersist
     public void afterSet() throws Throwable {
 
+        System.out.println("service.afterset()");
+
         long finalId = getId();
 
         WorkflowEngine.add(new Runnable() {
@@ -1002,35 +1013,6 @@ public abstract class Service {
             }
         });
 
-
-
-        /*
-        WorkflowEngine.add(new Runnable() {
-
-            long serviceId = getId();
-
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            Service s = em.find(Service.class, serviceId);
-
-                            s.afterSetAsService(em);
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-
-            }
-        });
-        */
     }
 
     public void afterSetAsService(EntityManager em) {

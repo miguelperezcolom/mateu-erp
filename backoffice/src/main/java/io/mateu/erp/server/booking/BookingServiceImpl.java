@@ -222,10 +222,10 @@ public class BookingServiceImpl implements BookingService {
                 TransferService s = em.find(TransferService.class, serviceId);
                 s.setPickupConfirmedByTelephone(LocalDateTime.now());
                 if (!Strings.isNullOrEmpty(comments)) {
-                    String aux = s.getComment();
+                    String aux = s.getPrivateComment();
                     if (Strings.isNullOrEmpty(aux)) aux = "";
                     else aux += "\n";
-                    s.setComment(aux + ">>TELEPHONE (" + login + "): " + comments);
+                    s.setPrivateComment(aux + ">>TELEPHONE (" + login + "): " + comments);
                 }
             }
         });
@@ -257,5 +257,28 @@ public class BookingServiceImpl implements BookingService {
                 }
             }
         });
+    }
+
+
+    public static void main(String[] args) {
+
+        System.setProperty("appconf", "/Users/miguel/mateu.properties");
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+
+        try {
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
+                    Object[][] l = Helper.parseExcel(new File("/Users/miguel/Downloads/horas.xls"))[0];
+                    Importer.importPickupTimes(em, l, pw);
+                }
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+        System.out.println(sw.toString());
     }
 }

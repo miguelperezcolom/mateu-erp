@@ -13,8 +13,18 @@ import java.util.List;
  * Created by miguel on 28/4/17.
  */
 public class TaskRunnerRunnable implements Runnable {
+
+    long pausaMs = 100;
+
     @Override
     public void run() {
+
+        try {
+            pausaMs = Long.parseLong(System.getProperty("taskrunnerpausams", "100"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
         while (true) {
             iterate();
         }
@@ -33,7 +43,7 @@ public class TaskRunnerRunnable implements Runnable {
                         AbstractTask t = l.get(0);
                         t.execute(em, em.find(User.class, Constants.SYSTEM_USER_LOGIN));
                     } else {
-                        Thread.sleep(100);
+                        Thread.sleep(pausaMs);
                     }
 
                 }
