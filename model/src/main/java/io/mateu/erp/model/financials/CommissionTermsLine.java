@@ -18,7 +18,9 @@ public class CommissionTermsLine {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String name;
+    @ManyToOne
+    @NotNull
+    private CommissionTerms terms;
 
     @ManyToOne
     @NotNull
