@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking;
 
+import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Order;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
@@ -22,7 +23,10 @@ public class BookingPart {
     @ManyToOne
     private Booking booking;
 
+    private boolean directSale;
+
     @OneToMany(mappedBy = "bookingPart")
+    @Ignored
     private List<Service> services = new ArrayList<>();
 
     private boolean cancelled;

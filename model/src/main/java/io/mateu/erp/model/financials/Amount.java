@@ -17,15 +17,14 @@ public class Amount {
 
     private double changeRate;
 
-    private LocalDateTime date;
+    private LocalDateTime date = LocalDateTime.now();
 
 
-
-    private double nucs;
+    private double officeValue;
 
     private double changeRate0;
 
-    private double value0;
+    private double accountingValue;
 
     private double changeRate1;
 

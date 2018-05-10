@@ -41,6 +41,8 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> getEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
+                m.add(new MDDAction("Product types", ProductType.class));
+
                 m.add(new MDDAction("Products", Product.class));
 
                 m.add(new MDDAction("Extras", Extra.class));

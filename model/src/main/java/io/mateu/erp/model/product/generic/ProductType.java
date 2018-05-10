@@ -5,32 +5,23 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by miguel on 31/1/17.
  */
-@Entity(name = "GenericProduct")
+@Entity(name = "GenericProductType")
 @Getter
 @Setter
-public class Product {
+public class ProductType {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
-    @NotNull
-    private ProductType type;
-
     private String name;
 
     private boolean active = true;
-
-    @OneToMany(mappedBy = "product")
-    @Ignored
-    private List<Extra> extras = new ArrayList<>();
 
 }
