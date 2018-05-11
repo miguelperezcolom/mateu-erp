@@ -1,8 +1,9 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.common.model.authentication.Audit;
+import io.mateu.common.model.authentication.User;
+import io.mateu.common.model.util.Constants;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
@@ -12,7 +13,6 @@ import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Actor;
-import io.mateu.erp.model.util.Constants;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
@@ -171,7 +171,7 @@ public class PurchaseOrder {
 
     @Action(name = "Send")
     public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
-        send(em, em.find(User.class, user.getLogin()));
+        send(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
 
     @Action(name = "Send")
@@ -179,7 +179,7 @@ public class PurchaseOrder {
         SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setStatus(TaskStatus.PENDING);
         t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        t.setAudit(new Audit(em.find(User.class, Constants.SYSTEM_USER_LOGIN)));
+        t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, Constants.SYSTEM_USER_LOGIN)));
         String a = email;
         for (Data d : selection) {
             PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));
@@ -189,7 +189,7 @@ public class PurchaseOrder {
         }
         t.setTo(a);
         if (!Strings.isNullOrEmpty(a)) em.persist(t);
-        t.execute(em, em.find(User.class, Constants.SYSTEM_USER_LOGIN));
+        t.execute(em, em.find(io.mateu.erp.model.authentication.User.class, Constants.SYSTEM_USER_LOGIN));
     }
 
 

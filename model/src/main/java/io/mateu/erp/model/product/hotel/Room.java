@@ -1,7 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;

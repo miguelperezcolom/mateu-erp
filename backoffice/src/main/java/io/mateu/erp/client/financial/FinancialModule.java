@@ -1,5 +1,6 @@
 package io.mateu.erp.client.financial;
 
+import io.mateu.erp.client.financial.FinancialServiceAsync;
 import io.mateu.erp.model.accounting.AccountingEntry;
 import io.mateu.erp.model.accounting.LineItem;
 import io.mateu.erp.model.financials.*;

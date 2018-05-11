@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.common.model.util.XMLSerializable;
 import org.jdom2.Element;
 
 import java.io.Serializable;

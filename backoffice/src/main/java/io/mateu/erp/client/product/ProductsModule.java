@@ -6,6 +6,8 @@ import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.ui.core.client.app.AbstractMenu;
 import io.mateu.ui.core.client.app.AbstractModule;

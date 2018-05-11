@@ -1,6 +1,6 @@
 package io.mateu.erp.model.booking;
 
-import io.mateu.erp.model.authentication.Audit;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.ui.mdd.server.annotations.Ignored;

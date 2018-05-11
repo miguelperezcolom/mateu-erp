@@ -2,6 +2,7 @@ package io.mateu.erp.client.booking;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import io.mateu.erp.client.booking.BookingServiceAsync;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.transfer.TransferType;
@@ -19,7 +20,6 @@ import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
 import io.mateu.ui.mdd.client.AbstractJPAListView;
 import io.mateu.ui.mdd.client.JPAAutocompleteField;
-import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDOpenEditorAction;
 
 import java.time.LocalDate;
@@ -38,7 +38,7 @@ public class PickupConfirmationView extends AbstractJPAListView {
                         ") then ap.name else epu.name end" +
                 ", x.providers, x.sentToProvider " +
                 " from TransferService x left join x.effectivePickup epu " +
-                " left join epu.alternatePointForShuttle ap " +
+                "   left join epu.alternatePointForShuttle ap " +
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
                 " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";

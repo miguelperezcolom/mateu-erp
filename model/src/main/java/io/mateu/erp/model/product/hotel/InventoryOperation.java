@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +27,7 @@ public class InventoryOperation {
     private LocalDateTime created = LocalDateTime.now();
 
     @ManyToOne
-    private User createdBy;
+    private io.mateu.erp.model.authentication.User createdBy;
 
     private LocalDate start;
     @Column(name = "_end")

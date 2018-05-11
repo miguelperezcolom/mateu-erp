@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.interfaces.UseCalendarToEdit;

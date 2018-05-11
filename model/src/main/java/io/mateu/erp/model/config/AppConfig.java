@@ -1,6 +1,7 @@
 package io.mateu.erp.model.config;
 
-import io.mateu.erp.model.common.File;
+import io.mateu.common.model.common.File;
+import io.mateu.common.model.config.DummyDate;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.NotInEditor;
 import io.mateu.ui.mdd.server.annotations.Tab;

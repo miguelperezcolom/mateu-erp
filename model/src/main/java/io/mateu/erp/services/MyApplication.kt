@@ -18,7 +18,7 @@ class MyApplication : ResourceConfig() {
 
         //register(MyApplicationEventListener.class);
 
-        //packages("io.mateu.erp.services"); // no funciona si registramos las clases una a una
+        //packages("io.mateu.common.services"); // no funciona si registramos las clases una a una
         register(PickupConfirmationService::class.java)
         register(HotelBookingServiceImpl::class.java)
         register(StatsResource::class.java)

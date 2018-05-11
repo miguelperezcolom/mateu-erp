@@ -1,6 +1,6 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.erp.model.authentication.Audit;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Actor;

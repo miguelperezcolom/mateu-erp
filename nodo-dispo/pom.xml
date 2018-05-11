@@ -47,7 +47,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>io.mateu.erp.nododispo.ETAServer</mainClass>
+                            <mainClass>io.mateu.common.nododispo.ETAServer</mainClass>
                         </manifest>
                     </archive>
 

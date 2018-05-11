@@ -1,8 +1,7 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
@@ -885,7 +884,7 @@ public class TransferService extends Service {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
                 t.getServices().add(this);
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
@@ -898,7 +897,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
@@ -923,7 +922,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
@@ -949,7 +948,7 @@ public class TransferService extends Service {
             if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
@@ -970,7 +969,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
@@ -1000,7 +999,7 @@ public class TransferService extends Service {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 getTasks().add(t);
                 t.getServices().add(this);
-                t.setAudit(new Audit(em.find(User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 em.persist(t);
             } else throw new Exception("No telephone or clickatell api. Please set before sending the sms");

@@ -1,6 +1,6 @@
 package io.mateu.erp.model.workflow;
 
-import io.mateu.erp.model.authentication.Audit;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;

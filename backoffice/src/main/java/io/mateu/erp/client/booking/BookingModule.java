@@ -93,7 +93,7 @@ public class BookingModule extends AbstractModule {
                 m.add(new AbstractAction("Importing Queue") {
                     @Override
                     public void run() {
-                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.importing.TransferImportTask", "io.mateu.erp.model.importing.TransferImportTask", null, new MDDCallback(new Data("modified_from", LocalDate.now(), "modified_to", LocalDate.now()), isModifierPressed()));
+                        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.common.model.importing.TransferImportTask", "io.mateu.common.model.importing.TransferImportTask", null, new MDDCallback(new Data("modified_from", LocalDate.now(), "modified_to", LocalDate.now()), isModifierPressed()));
                     }
                 });
 

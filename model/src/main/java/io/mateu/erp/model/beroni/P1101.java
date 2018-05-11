@@ -2,7 +2,6 @@ package io.mateu.erp.model.beroni;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.config.AppConfig;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -89,7 +88,7 @@ public class P1101 extends BeroniRecord {
     private String codigoCampanyaEnBeroni;
 
 
-    public P1101(EntityManager em, AppConfig appconfig, Service s) {
+    public P1101(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Service s) {
 
         setNumeroReserva(s.getBooking().getId());
         setFechaReserva(s.getBooking().getAudit().getCreated().toLocalDate());

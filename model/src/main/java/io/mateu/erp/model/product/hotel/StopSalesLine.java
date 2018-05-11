@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;

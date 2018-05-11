@@ -2,30 +2,29 @@ package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
-import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.common.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.population.Populator;
-import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
+import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
+import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.DiscountOffer;
 import io.mateu.erp.model.product.hotel.offer.Per;
 import io.mateu.erp.model.product.hotel.offer.Scope;
 import io.mateu.erp.model.product.transfer.*;
-import io.mateu.erp.model.world.City;
-import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 
@@ -47,7 +46,7 @@ public class TestPopulator {
     public static void main(String... args) throws Throwable {
 
         System.setProperty("javax.persistence.jdbc.url", "jdbc:postgresql://localhost:5432/quotest");
-        System.setProperty("defaultpuname", "mateu-erp");
+        System.setProperty("defaultpuname", "mateu-common");
 
 
         populateAll(AppConfig.class, Actor.class, Hotel.class, true, HotelContract.class);
@@ -126,7 +125,7 @@ public class TestPopulator {
                     AuthToken t = new AuthToken();
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjM0IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiIn0");
                     t.setActive(true);
-                    t.setUser(em.find(User.class, "admin"));
+                    t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
                     t.setActor(em.find(Actor.class, 3l));
                     em.persist(t);
                 }
@@ -136,7 +135,7 @@ public class TestPopulator {
                     AuthToken t = new AuthToken();
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9");
                     t.setActive(true);
-                    t.setUser(em.find(User.class, "admin"));
+                    t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
                     t.setActor(em.find(Actor.class, 3l));
                     t.setHotel(em.find(Hotel.class, 12l));
                     em.persist(t);
@@ -155,7 +154,7 @@ public class TestPopulator {
 
                 Random random = new Random();
 
-                User u = em.find(User.class, Populator.USER_ADMIN);
+                io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, Populator.USER_ADMIN);
 
                 final Vehicle taxi = new Vehicle();
                 taxi.setMinPax(1);
@@ -338,7 +337,7 @@ public class TestPopulator {
                     if (a.getName().toLowerCase().contains("islandbus")) proveedor = a;
                 }
 
-                User u = em.find(User.class, Populator.USER_ADMIN);
+                io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, Populator.USER_ADMIN);
 
                 TransferPoint ibz = null;
                 TransferPoint hotel = null;
@@ -565,7 +564,7 @@ public class TestPopulator {
 
                 List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s order by s.name").getResultList();
 
-                User u = em.find(User.class, "admin");
+                io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
                 Actor prov = (Actor) em.createQuery("select s from " + Actor.class.getName() + " s").getResultList().get(0);
 
@@ -616,7 +615,7 @@ public class TestPopulator {
                 List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s order by s.name").getResultList();
                 List<Actor> actores = em.createQuery("select s from " + Actor.class.getName() + " s order by s.name").getResultList();
 
-                User u = em.find(User.class, "admin");
+                io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
                 Actor prov = em.find(Actor.class, 4l); // barceló
                 Currency eur = em.find(Currency.class, "EUR");

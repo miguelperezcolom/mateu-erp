@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.core.client.views.RPCView;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.GridData;
@@ -147,7 +147,7 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
         getInventory().getOperations().add(o = new InventoryOperation());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(User.class, user.getLogin()));
+        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
         o.setAction(action);
         o.setRoom(room);
         o.setStart(start);

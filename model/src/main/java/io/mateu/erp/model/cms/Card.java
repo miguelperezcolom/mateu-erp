@@ -1,6 +1,6 @@
 package io.mateu.erp.model.cms;
 
-import io.mateu.erp.model.common.File;
+import io.mateu.common.model.common.File;
 import lombok.Getter;
 import lombok.Setter;
 

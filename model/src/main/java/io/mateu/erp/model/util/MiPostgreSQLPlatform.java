@@ -2,6 +2,8 @@ package io.mateu.erp.model.util;
 
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
+import io.mateu.common.model.util.MiTopic;
+import io.mateu.common.model.util.MiTopicConnectionFactory;
 import org.eclipse.jetty.jndi.NamingUtil;
 import org.eclipse.persistence.internal.databaseaccess.FieldTypeDefinition;
 import org.eclipse.persistence.platform.database.PostgreSQLPlatform;

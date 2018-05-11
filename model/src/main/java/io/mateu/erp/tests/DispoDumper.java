@@ -1,13 +1,14 @@
 package io.mateu.erp.tests;
 
 import io.mateu.erp.dispo.model.portfolio.World;
-import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.partners.Actor;
-import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.dispo.model.portfolio.Resource;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 
@@ -132,13 +133,13 @@ public class DispoDumper {
 
 
 
-                        Map<Long, io.mateu.erp.dispo.model.portfolio.Resource> recursosEnDispo = new HashMap<>();
+                        Map<Long, Resource> recursosEnDispo = new HashMap<>();
                         List<Long> recursosVistos = new ArrayList<>();
                         for (Hotel c : (List<Hotel>) em.createQuery("select x from " + Hotel.class.getName() + " x").getResultList()) {
 
-                            io.mateu.erp.dispo.model.portfolio.Resource c2 = emd.find(io.mateu.erp.dispo.model.portfolio.Resource.class, c.getId());
+                            Resource c2 = emd.find(Resource.class, c.getId());
                             if (c2 == null) {
-                                c2 = new io.mateu.erp.dispo.model.portfolio.Resource();
+                                c2 = new Resource();
                                 c2.setId(c.getId());
                                 c2.setCity(localidadesEnDispo.get(c.getCity().getId()));
                                 c2.getCity().getResources().add(c2);
@@ -157,7 +158,7 @@ public class DispoDumper {
                             recursosVistos.add(c.getId());
                         }
 
-                        for (io.mateu.erp.dispo.model.portfolio.Resource c : (List<io.mateu.erp.dispo.model.portfolio.Resource>) emd.createQuery("select x from " + io.mateu.erp.dispo.model.portfolio.Resource.class.getName() + " x").getResultList())
+                        for (Resource c : (List<Resource>) emd.createQuery("select x from " + Resource.class.getName() + " x").getResultList())
                             if (!recursosVistos.contains(c.getId())) {
                                 localidadesEnDispo.get(c.getCity().getId()).getResources().remove(c);
                                 emd.remove(c);

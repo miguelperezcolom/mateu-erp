@@ -1,6 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.erp.model.authentication.Audit;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.OwnedList;

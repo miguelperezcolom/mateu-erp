@@ -1,5 +1,6 @@
 package io.mateu.erp.model.authentication;
 
+import io.mateu.common.model.authentication.Permission;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.Indelible;
@@ -26,7 +27,7 @@ public class AuthToken {
     private boolean active = true;
 
     @ManyToOne
-    private User user;
+    private io.mateu.erp.model.authentication.User user;
 
     @ManyToOne
     private Actor actor;

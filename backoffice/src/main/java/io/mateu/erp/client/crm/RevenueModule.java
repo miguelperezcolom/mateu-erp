@@ -1,7 +1,5 @@
 package io.mateu.erp.client.crm;
 
-import io.mateu.erp.model.cms.Theme;
-import io.mateu.erp.model.cms.Website;
 import io.mateu.erp.model.financials.Abseiling;
 import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.CreditLimit;

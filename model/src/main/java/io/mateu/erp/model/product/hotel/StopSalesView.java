@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.client.views.RPCView;
@@ -122,7 +122,7 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
         getHotel().getStopSales().getOperations().add(o = new StopSalesOperation());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(User.class, user.getLogin()));
+        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
         o.setAction(action);
         o.getActors().addAll(actors);
         o.getRooms().addAll(rooms);

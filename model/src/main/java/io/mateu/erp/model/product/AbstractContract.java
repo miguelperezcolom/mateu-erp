@@ -1,8 +1,11 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.erp.model.authentication.Audit;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.CommissionTerms;
+import io.mateu.erp.model.financials.PaymentTerms;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.revenue.Product;
 import io.mateu.ui.mdd.server.annotations.*;

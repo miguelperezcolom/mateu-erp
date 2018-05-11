@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IInventory;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -3,16 +3,15 @@ package io.mateu.erp.model.booking.hotel;
 import com.google.common.base.Strings;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
@@ -221,7 +220,7 @@ public class HotelService extends Service {
 
         Helper.transact((JPATransaction) (em) -> {
 
-            User u = em.find(User.class, user.getLogin());
+            io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
 
             Actor agencia = em.find(Actor.class, k.getAgencyId());
             Hotel hotel = em.find(Hotel.class, k.getHotelId());

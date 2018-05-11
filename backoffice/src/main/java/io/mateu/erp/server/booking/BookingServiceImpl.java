@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.config.DummyDate;
+import io.mateu.common.model.config.DummyDate;
 import io.mateu.erp.model.importing.TransferImportTask;
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.server.ServerSideHelper;

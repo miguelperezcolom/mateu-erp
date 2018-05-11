@@ -1,9 +1,9 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;

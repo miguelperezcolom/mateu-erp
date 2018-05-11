@@ -3,7 +3,7 @@ package io.mateu.erp.model.importing;
 //import okhttp3.*;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.util.Constants;
+import io.mateu.common.model.util.Constants;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;

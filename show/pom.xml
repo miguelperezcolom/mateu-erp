@@ -29,7 +29,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>io.mateu.erp.estresador.Main</mainClass>
+                            <mainClass>io.mateu.common.estresador.Main</mainClass>
                         </manifest>
                     </archive>
 

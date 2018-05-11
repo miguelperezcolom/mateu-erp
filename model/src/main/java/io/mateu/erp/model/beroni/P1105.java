@@ -3,7 +3,6 @@ package io.mateu.erp.model.beroni;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +50,7 @@ public class P1105 extends BeroniRecord {
     private double importeCuotaGestion;
 
 
-    public P1105(EntityManager em, AppConfig appconfig, Service s, PurchaseOrder po) {
+    public P1105(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Service s, PurchaseOrder po) {
 
         setNumeroReserva(s.getBooking().getId());
         setCodigoProveedorEnBeroni(po.getProvider().getIdInInvoicingApp());

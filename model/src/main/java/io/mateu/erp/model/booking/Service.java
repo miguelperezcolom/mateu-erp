@@ -1,11 +1,10 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.Audit;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.common.model.authentication.Audit;
+import io.mateu.common.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.mdd.*;
@@ -440,7 +439,7 @@ public abstract class Service {
             }
         }
         Map<Actor, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        User u = em.find(User.class, user.getLogin());
+        io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             if (!s.isCancelled() || s.getSentToProvider() != null) {
@@ -535,7 +534,7 @@ public abstract class Service {
 
     @Action(name = "Purchase")
     public void checkPurchase(EntityManager em, UserData user) throws Throwable {
-        checkPurchase(em, em.find(User.class, user.getLogin()));
+        checkPurchase(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
 
 
@@ -605,7 +604,7 @@ public abstract class Service {
 
     @Action(name = "Price")
     public void price(EntityManager em, UserData user) {
-        price(em, em.find(User.class, user.getLogin()));
+        price(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
 
     @Action(name = "Print POs")
@@ -619,7 +618,7 @@ public abstract class Service {
 
         String[] xslfo = {""};
 
-        AppConfig appconfig = AppConfig.get(em);
+        io.mateu.erp.model.config.AppConfig appconfig = io.mateu.erp.model.config.AppConfig.get(em);
 
         xslfo[0] = appconfig.getXslfoForPurchaseOrder();
 

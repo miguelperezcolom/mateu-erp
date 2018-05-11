@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.model.product.hotel.RoomType;
 import lombok.Getter;
 import lombok.Setter;
 

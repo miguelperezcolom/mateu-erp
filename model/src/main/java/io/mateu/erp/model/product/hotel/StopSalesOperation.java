@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -27,7 +27,7 @@ public class StopSalesOperation {
 
     @SearchFilter
     @ManyToOne
-    private User createdBy;
+    private io.mateu.erp.model.authentication.User createdBy;
 
     @SearchFilter
     @ManyToOne

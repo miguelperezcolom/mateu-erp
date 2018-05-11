@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.KeyClass;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
 import org.jdom2.Element;

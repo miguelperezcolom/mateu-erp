@@ -2,7 +2,6 @@ package io.mateu.erp.model.email;
 
 import com.sun.mail.pop3.POP3Folder;
 import io.mateu.erp.model.booking.transfer.Importer;
-import io.mateu.erp.model.config.AppConfig;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -42,7 +41,7 @@ public class Pop3Reader {
                     @Override
                     public void run(EntityManager em) throws Throwable {
 
-                        AppConfig appconfig = AppConfig.get(em);
+                        io.mateu.erp.model.config.AppConfig appconfig = io.mateu.erp.model.config.AppConfig.get(em);
 
 
                         // connect to my pop3 inbox
@@ -118,7 +117,7 @@ public class Pop3Reader {
 
     }
 
-    private static void procesarPickups(EntityManager em, AppConfig appconfig, Message m) throws Throwable {
+    private static void procesarPickups(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Message m) throws Throwable {
 
         Object o = m.getContent();
         //Si es Formato HTML lo procesamos...

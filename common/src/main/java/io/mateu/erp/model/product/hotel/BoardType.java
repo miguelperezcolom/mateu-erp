@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.multilanguage.Literal;
+import io.mateu.common.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 

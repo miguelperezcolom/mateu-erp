@@ -2,9 +2,9 @@ package io.mateu.erp.model.invoicing;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.taxes.VAT;
+import io.mateu.erp.model.financials.BillingConcept;
 import lombok.Getter;
 import lombok.Setter;
 

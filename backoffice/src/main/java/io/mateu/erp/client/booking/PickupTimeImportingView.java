@@ -1,5 +1,6 @@
 package io.mateu.erp.client.booking;
 
+import io.mateu.erp.client.booking.BookingServiceAsync;
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.Callback;

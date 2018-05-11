@@ -1,6 +1,6 @@
 package io.mateu.erp.model.world;
 
-import io.mateu.erp.model.common.File;
+import io.mateu.common.model.common.File;
 import io.mateu.ui.mdd.server.annotations.Action;
 import io.mateu.ui.mdd.server.annotations.Parameter;
 import io.mateu.ui.mdd.server.util.Helper;

@@ -3,27 +3,25 @@ package io.mateu.erp.model.population;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
-import io.mateu.erp.model.authentication.Permission;
-import io.mateu.erp.model.authentication.USER_STATUS;
-import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.common.File;
-import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.common.model.authentication.Permission;
+import io.mateu.common.model.authentication.USER_STATUS;
+import io.mateu.common.model.common.File;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.LocalizationRule;
-import io.mateu.erp.model.multilanguage.Literal;
-import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.common.model.multilanguage.Literal;
 import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.product.transfer.Contract;
-import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.product.transfer.TransferPointType;
-import io.mateu.erp.model.util.Constants;
+import io.mateu.common.model.util.Constants;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.transfer.Contract;
+import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.product.transfer.TransferPointType;
 import io.mateu.ui.core.server.BaseServiceImpl;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -39,7 +37,7 @@ public class Populator {
 
     public static void main(String... args) throws Throwable {
 
-        populate(AppConfig.class);
+        populate(io.mateu.erp.model.config.AppConfig.class);
 
     }
 
@@ -51,7 +49,7 @@ public class Populator {
         //authentication
         Helper.transact((JPATransaction) (em)->{
 
-            AppConfig c = (AppConfig) appConfigClass.newInstance();
+            io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
             c.setXslfoForTransferContract(Resources.toString(Resources.getResource(Contract.class, "contract.xsl"), Charsets.UTF_8));
             c.setXslfoForHotelContract(Resources.toString(Resources.getResource(Hotel.class, "contract.xsl"), Charsets.UTF_8));
@@ -71,7 +69,7 @@ public class Populator {
 
             {
                 // create user admin
-                User u = new User();
+                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
                 u.setLogin(USER_ADMIN);
                 u.setName("Admin");
                 //u.setPassword(Helper.md5("1"));
@@ -89,7 +87,7 @@ public class Populator {
 
             {
                 // create user admin
-                User u = new User();
+                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
                 u.setLogin(Constants.SYSTEM_USER_LOGIN);
                 u.setName("System");
                 //u.setPassword(Helper.md5("1"));
@@ -102,7 +100,7 @@ public class Populator {
 
             {
                 // create user admin
-                User u = new User();
+                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));

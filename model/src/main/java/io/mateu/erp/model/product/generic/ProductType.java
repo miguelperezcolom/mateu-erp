@@ -1,12 +1,12 @@
 package io.mateu.erp.model.product.generic;
 
-import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  * Created by miguel on 31/1/17.

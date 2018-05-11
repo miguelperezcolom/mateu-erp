@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.util.XMLSerializable;
+import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.core.shared.SupplementOrPositiveType;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import io.mateu.ui.mdd.server.interfaces.SupplementOrPositive;

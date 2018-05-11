@@ -1,5 +1,6 @@
 package io.mateu.erp.client.booking;
 
+import io.mateu.erp.client.booking.BookingServiceAsync;
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.client.app.AbstractAction;
 import io.mateu.ui.core.client.app.Callback;
@@ -175,7 +176,7 @@ public class TransfersSummaryView extends AbstractListView {
                 d.set("direction", new Pair("POINTTOPOINT", "POINTTOPOINT"));
                 break;
         }
-        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.booking.transfer.TransferService", "io.mateu.erp.model.booking.transfer.TransferService", null, new MDDCallback(d));
+        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.common.model.booking.transfer.TransferService", "io.mateu.common.model.booking.transfer.TransferService", null, new MDDCallback(d));
     }
 
     @Override

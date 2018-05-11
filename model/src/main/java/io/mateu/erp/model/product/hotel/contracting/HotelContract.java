@@ -2,14 +2,14 @@ package io.mateu.erp.model.product.hotel.contracting;
 
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.partners.Actor;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.interfaces.CalendarLimiter;

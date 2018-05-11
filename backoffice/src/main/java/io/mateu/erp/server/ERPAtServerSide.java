@@ -3,13 +3,13 @@ package io.mateu.erp.server;
 import com.google.common.base.Strings;
 import com.rabbitmq.jms.admin.RMQConnectionFactory;
 import com.rabbitmq.jms.admin.RMQDestination;
-import io.mateu.erp.model.authentication.Permission;
-import io.mateu.erp.model.authentication.USER_STATUS;
-import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.config.AppConfig;
+import io.mateu.common.model.authentication.Permission;
+import io.mateu.common.model.authentication.USER_STATUS;
+import io.mateu.common.model.authentication.User;
+import io.mateu.common.model.config.AppConfig;
 import io.mateu.erp.model.monitoring.Monitor;
 import io.mateu.erp.model.population.Populator;
-import io.mateu.erp.model.util.EmailHelper;
+import io.mateu.common.model.util.EmailHelper;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.server.SQLTransaction;
 import io.mateu.ui.core.server.ServerSideApp;
@@ -152,7 +152,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             @Override
             public void run(EntityManager em)throws Throwable {
 
-                if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
+                if (em.createQuery("select x.login from " + User.class.getName() + " x").getResultList().size() == 0) {
                     Populator.populate(AppConfig.class);
                 }
 
@@ -183,8 +183,11 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     d.setLogin(login);
                     u.setLastLogin(LocalDateTime.now());
                     u.setFailedLogins(0);
-                    if (u.getActor() != null) d.set("agencyId", u.getActor().getId());
-                    if (u.getOffice() != null) d.set("officeId", u.getOffice().getId());
+                    if (u instanceof io.mateu.erp.model.authentication.User) {
+                        io.mateu.erp.model.authentication.User u2 = (io.mateu.erp.model.authentication.User) u;
+                        if (u2.getActor() != null) d.set("agencyId", u2.getActor().getId());
+                        if (u2.getOffice() != null) d.set("officeId", u2.getOffice().getId());
+                    }
                     if (u.getPhoto() != null) d.setPhoto(u.getPhoto().toFileLocator().getUrl());
                     for (Permission p : u.getPermissions()) d.getPermissions().add(Math.toIntExact(p.getId()));
                 } else throw new Exception("No user with login " + login);
@@ -201,7 +204,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             @Override
             public void run(EntityManager em)throws Throwable {
 
-                if (em.createQuery("select x.login from User x").getResultList().size() == 0) {
+                if (em.createQuery("select x.login from " + User.class.getName() + " x").getResultList().size() == 0) {
                     Populator.populate(AppConfig.class);
                 }
 
@@ -274,9 +277,9 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
             public void run(EntityManager em)throws Throwable {
                 User u = em.find(User.class, login.toLowerCase().trim());
                 if (u != null) {
-                    io.mateu.erp.model.common.File p = u.getPhoto();
+                    io.mateu.common.model.common.File p = u.getPhoto();
                     if (p == null) {
-                        u.setPhoto(p = new io.mateu.erp.model.common.File());
+                        u.setPhoto(p = new io.mateu.common.model.common.File());
                         em.persist(p);
                     }
                     p.setName(fileLocator.getFileName());
