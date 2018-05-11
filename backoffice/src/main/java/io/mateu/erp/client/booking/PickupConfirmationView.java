@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.shared.booking.BookingService;
 import io.mateu.ui.core.client.app.Callback;
 import io.mateu.ui.core.client.app.MateuUI;
@@ -29,8 +30,15 @@ public class PickupConfirmationView extends AbstractJPAListView {
     @Override
     public String getSql() {
         String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone from TransferService x left join x.effectivePickup epu where 1 = 1 ";
-        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, x.providers, x.sentToProvider " +
+        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
+                "case when " +
+                        " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
+                        " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
+                        " or epu.alternatePointForNonExecutive = true " +
+                        ") then ap.name else epu.name end" +
+                ", x.providers, x.sentToProvider " +
                 " from TransferService x left join x.effectivePickup epu " +
+                " left join epu.alternatePointForShuttle ap " +
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
                 " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
