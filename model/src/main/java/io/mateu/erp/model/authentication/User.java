@@ -16,8 +16,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.io.IOException;
 
-@Entity
-@Table(name = "_USER")
+@Entity(name = "ERPUser")
 @Getter
 @Setter
 public class User extends io.mateu.common.model.authentication.User {

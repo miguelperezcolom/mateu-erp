@@ -2,8 +2,8 @@ package io.mateu.erp.client.admin;
 
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.common.model.config.AppConfig;
 import io.mateu.common.model.config.Template;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.common.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Office;
