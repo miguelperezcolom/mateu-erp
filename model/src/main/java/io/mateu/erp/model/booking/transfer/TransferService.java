@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.ContractType;
@@ -156,6 +157,10 @@ public class TransferService extends Service {
     @ManyToMany
     @Ignored
     private List<AbstractTask> tasks = new ArrayList<>();
+
+    @ManyToOne
+    @Ignored
+    private TransferBookingRequest transferBookingRequest;
 
 
     /*

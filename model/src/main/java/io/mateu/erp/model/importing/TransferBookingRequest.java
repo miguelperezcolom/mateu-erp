@@ -381,7 +381,7 @@ public class TransferBookingRequest {
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
                     nuevasEntidades.add(s);
-                    fillArrival(s);
+                    fillArrival(s, null);
                     this.getTask().increaseAdditions();
                 }
 
@@ -391,7 +391,7 @@ public class TransferBookingRequest {
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
                     nuevasEntidades.add(s);
-                    fillDeparture(s);
+                    fillDeparture(s, lastRequest);
                     this.getTask().increaseAdditions();
                 }
             }
@@ -401,24 +401,31 @@ public class TransferBookingRequest {
 
                 boolean hayBloqueos = false;
 
-                for (Service s : b.getServices()) hayBloqueos |= s.isLocked();
+                TransferBookingRequest lastRequest = null;
+                for (Service s : b.getServices()) {
+                    hayBloqueos |= s.isLocked();
+                    if (s instanceof TransferService) {
+                        TransferService ts = (TransferService) s;
+                        if (ts.getTransferBookingRequest() != null && (lastRequest == null || getWhen().isBefore(lastRequest.getWhen()))) lastRequest = ((TransferService) s).getTransferBookingRequest();
+                    }
+                }
 
                 if (!hayBloqueos) {
 
-                    if (!passengerName.equals(b.getLeadName())) {
+                    if (!passengerName.equals(b.getLeadName()) && (lastRequest == null || !passengerName.equals(lastRequest.getPassengerName()))) {
                         b.setLeadName(passengerName);
                         hayCambios=true;
                     }
-                    if (phone!=null && !phone.equals(b.getTelephone())) {
+                    if (phone!=null && !phone.equals(b.getTelephone()) && (lastRequest == null || !phone.equals(lastRequest.getPhone()))) {
                         b.setTelephone(phone);
                         hayCambios=true;
                     }
-                    if (email!=null && !email.equals(b.getEmail()))
+                    if (email!=null && !email.equals(b.getEmail()) && (lastRequest == null || !email.equals(lastRequest.getEmail())))
                     {
                         b.setEmail(email);
                         hayCambios=true;
                     }
-                    if (comments!=null && !b.getComments().contains(comments))
+                    if (comments!=null && !b.getComments().contains(comments) && (lastRequest == null || !comments.equals(lastRequest.getComments())))
                     {
                         b.setComments(b.getComments() + "--" + comments);
                         hayCambios=true;
@@ -436,11 +443,11 @@ public class TransferBookingRequest {
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
                         nuevasEntidades.add(s);
-                        fillArrival(s);
+                        fillArrival(s, null);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
-                    else if (changesInArrival(s))//si hay cambios
+                    else if (changesInArrival(s, lastRequest))//si hay cambios
                     {
                         if (s.isLocked())
                         {
@@ -455,7 +462,7 @@ public class TransferBookingRequest {
                         }
                         else
                         {
-                            fillArrival(s);
+                            fillArrival(s, lastRequest);
                             s.getAudit().touch(u);
                             hayCambios=true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
@@ -482,11 +489,11 @@ public class TransferBookingRequest {
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
                         nuevasEntidades.add(s);
-                        fillDeparture(s);
+                        fillDeparture(s, null);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
-                    else if (changesInDeparture(s))
+                    else if (changesInDeparture(s, lastRequest))
                     {
                         if (s.isLocked())
                         {
@@ -500,7 +507,7 @@ public class TransferBookingRequest {
                             this.getTask().increaseErrors();
                         }
                         else {
-                            fillDeparture(s);
+                            fillDeparture(s, lastRequest);
                             s.getAudit().touch(u);
                             hayCambios = true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
@@ -576,30 +583,35 @@ public class TransferBookingRequest {
         return null;
     }
 
-    private void fillArrival(TransferService s) {
-        s.setCancelled(arrivalStatus.equals(STATUS.CANCELLED));
+    private void fillArrival(TransferService s, TransferBookingRequest lastRequest) {
+        if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setCancelled(arrivalStatus.equals(STATUS.CANCELLED));
 
-        if (arrivalPickupDate!=null && arrivalPickupTime!=null)
-            s.setImportedPickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
-        else
-            s.setImportedPickupTime(null);
+        if (lastRequest == null || !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()) || !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime())) {
+            if (arrivalPickupDate!=null && arrivalPickupTime!=null)
+                s.setImportedPickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
+            else
+                s.setImportedPickupTime(null);
+        }
 
-        ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
-        if (arrivalConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
-        s.setAnswer(a);
+        if (lastRequest == null || arrivalConfirmed != lastRequest.isArrivalConfirmed()) {
+            ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
+            if (arrivalConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
+            s.setAnswer(a);
+        }
 
-        s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
-        s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
-        s.setFlightOriginOrDestination("" + arrivalOriginAirport);
-        s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
-        s.setPax(adults + children + babies);
+        if (lastRequest == null || !arrivalResort.equals(lastRequest.getArrivalResort()) || !arrivalAddress.equals(lastRequest.getArrivalAddress())) s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
+        if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
+        if (lastRequest == null || !arrivalOriginAirport.equals(lastRequest.getArrivalOriginAirport())) s.setFlightOriginOrDestination("" + arrivalOriginAirport);
+        if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
+        if (lastRequest == null || (adults + children + babies) != (lastRequest.getAdults() + lastRequest.getChildren() + lastRequest.getBabies())) s.setPax(adults + children + babies);
        // s.setAdults(adults);
         //s.setChildren(children);
 
 
-        s.setPickupText(arrivalAirport);
+        if (lastRequest == null || !arrivalAirport.equals(lastRequest.getArrivalAirport())) s.setPickupText(arrivalAirport);
 
-        s.setTransferType(serviceType);
+        if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
+
         s.setOffice(getTask().getOffice());
         s.setPos(getTask().getPointOfSale());
 
@@ -609,12 +621,21 @@ public class TransferBookingRequest {
             comm +=  getArrivalComments() + ". ";
         if (children>0) comm += (children + " CHILDREN. ");
         if (babies>0) comm += (babies + " BABIES. ");
-        if (extras>0) comm += (babies + " EXTRAS. ");
-        if (!s.getComment().contains(comm) )
+        if (extras>0) comm += (extras + " EXTRAS. ");
+        String comm0 = "";
+        if (lastRequest != null) {
+            comm0 = lastRequest.getVehicle() + ". ";
+            if (lastRequest.getArrivalComments()!=null && !lastRequest.getArrivalComments().isEmpty())
+                comm0 +=  lastRequest.getArrivalComments() + ". ";
+            if (lastRequest.getChildren()>0) comm0 += (lastRequest.getChildren() + " CHILDREN. ");
+            if (lastRequest.getBabies()>0) comm0 += (lastRequest.getBabies() + " BABIES. ");
+            if (lastRequest.getExtras()>0) comm0 += (lastRequest.getExtras() + " EXTRAS. ");
+        }
+        if (!s.getComment().contains(comm) && (lastRequest == null || !comm.equals(comm0)))
             s.setComment(comm + "\n" + s.getComment());
 
 
-        if (getValue() != 0) {
+        if (getValue() != 0 && getValue() != lastRequest.getValue()) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
             effectiveValue = 0;
@@ -622,37 +643,37 @@ public class TransferBookingRequest {
 
     }
 
-    private boolean changesInArrival(TransferService s) {
-       if ( s.isCancelled()!= (arrivalStatus.equals(STATUS.CANCELLED))) return true;
+    private boolean changesInArrival(TransferService s, TransferBookingRequest lastRequest) {
+       if (s.isCancelled()!= (arrivalStatus.equals(STATUS.CANCELLED))  && (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus()))) return true;
 
         ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
         if (arrivalConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
-        if (!a.equals(s.getAnswer())) return true;
+        if (!a.equals(s.getAnswer())  && (lastRequest == null || arrivalConfirmed != lastRequest.isArrivalConfirmed())) return true;
 
         String txt = "" + arrivalResort + " (" + arrivalAddress + ")";
-        if (!txt.equals(s.getDropoffText())) return true;
+        if (!txt.equals(s.getDropoffText())  && (lastRequest == null || !txt.equals("" + lastRequest.getArrivalResort() + " (" + lastRequest.getArrivalAddress() + ")"))) return true;
 
         txt = "" + arrivalFlightCompany + arrivalFlightNumber;
-        if (!s.getFlightNumber().equals(txt)) return true;
+        if (!s.getFlightNumber().equals(txt) && (lastRequest == null || !txt.equals("" + lastRequest.getArrivalFlightCompany() + lastRequest.getArrivalFlightNumber()))) return true;
 
         txt = "" + arrivalOriginAirport;
-        if (!s.getFlightOriginOrDestination().equals(txt)) return true;
+        if (!s.getFlightOriginOrDestination().equals(txt) && (lastRequest == null || !txt.equals("" + lastRequest.getArrivalOriginAirport()))) return true;
 
         LocalDateTime t = getTime(arrivalFlightDate + " " + arrivalFlightTime);
-        if (!s.getFlightTime().equals(t)) return true;
+        if (!s.getFlightTime().equals(t) && (lastRequest == null || !t.equals(getTime(lastRequest.getArrivalFlightDate() + " " + lastRequest.getArrivalFlightTime())))) return true;
 
         if (arrivalPickupDate!=null && arrivalPickupTime!=null) {
             t = getTime(arrivalPickupDate + " " + arrivalPickupTime);
-            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t)) return true;
+            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t) && (lastRequest == null || !t.equals(getTime(lastRequest.getArrivalPickupDate() + " " + lastRequest.getArrivalPickupTime())))) return true;
         }
-        else if (s.getImportedPickupTime()!=null) return true;
+        else if (s.getImportedPickupTime()!=null && (lastRequest == null || lastRequest.getArrivalPickupTime() != null)) return true;
 
         int p = adults + children + babies;
-        if (s.getPax()!=p) return true;
+        if (s.getPax()!=p&& (lastRequest == null || p != (lastRequest.getAdults() + lastRequest.getChildren() + lastRequest.getBabies()))) return true;
 
         //if (!s.getPickupText().equals(arrivalAirport); esto no lo comprobamos porque es la condicion para encontrar la entrada
 
-        if (!s.getTransferType().equals(serviceType)) return true;
+        if (!s.getTransferType().equals(serviceType) && (lastRequest == null || !serviceType.equals(lastRequest.getServiceType()))) return true;
 
         if (!s.getOffice().equals(getTask().getOffice())) return true;
         if (!s.getPos().equals(getTask().getPointOfSale())) return true;
@@ -664,10 +685,19 @@ public class TransferBookingRequest {
             comm +=  getArrivalComments() + ". ";
         if (children>0) comm += (children + " CHILDREN. ");
         if (babies>0) comm += (babies + " BABIES. ");
-        if (extras>0) comm += (babies + " EXTRAS. ");
-        if (!s.getComment().contains(comm) ) return true;
+        if (extras>0) comm += (extras + " EXTRAS. ");
+        String comm0 = "";
+        if (lastRequest != null) {
+            comm0 = lastRequest.getVehicle() + ". ";
+            if (lastRequest.getArrivalComments()!=null && !lastRequest.getArrivalComments().isEmpty())
+                comm0 +=  lastRequest.getArrivalComments() + ". ";
+            if (lastRequest.getChildren()>0) comm0 += (lastRequest.getChildren() + " CHILDREN. ");
+            if (lastRequest.getBabies()>0) comm0 += (lastRequest.getBabies() + " BABIES. ");
+            if (lastRequest.getExtras() >0) comm0 += (lastRequest.getExtras() + " EXTRAS. ");
+        }
+        if (!s.getComment().contains(comm) && (lastRequest == null || !comm.equals(comm0))) return true;
 
-        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue()) return true;
+        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue() && (lastRequest == null || effectiveValue != lastRequest.getEffectiveValue())) return true;
 
         return false;
     }
@@ -686,35 +716,37 @@ public class TransferBookingRequest {
         return null;
     }
 
-    private boolean changesInDeparture(TransferService s) {
-        if (s.isCancelled()!= (departureStatus.equals(STATUS.CANCELLED))) return true;
+    private boolean changesInDeparture(TransferService s, TransferBookingRequest lastRequest) {
+        if (s.isCancelled()!= (departureStatus.equals(STATUS.CANCELLED)) && (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus()))) return true;
 
         ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
         if (departureConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
-        if (!a.equals(s.getAnswer())) return true;
+        if (!a.equals(s.getAnswer()) && (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed())) return true;
 
         String txt = "" + departureResort + " (" + departureAddress + ")";
-        if (!txt.equals(s.getPickupText())) return true;
+        if (!txt.equals(s.getPickupText()) && (lastRequest == null || !txt.equals("" + lastRequest.getDepartureResort() + " (" + lastRequest.getDepartureAddress() + ")"))) return true;
         txt = "" + departureFlightCompany + departureFlightNumber;
-        if (!txt.equals(s.getFlightNumber())) return true;
+        if (!txt.equals(s.getFlightNumber()) && (lastRequest == null || !txt.equals("" + lastRequest.getDepartureFlightCompany() + lastRequest.getDepartureFlightNumber()))) return true;
         txt = "" + departureDestinationAirport;
-        if (!txt.equals(s.getFlightOriginOrDestination())) return true;
+        if (!txt.equals(s.getFlightOriginOrDestination()) && (lastRequest == null || !txt.equals("" + lastRequest.getDepartureDestinationAirport()))) return true;
 
         LocalDateTime t = getTime(departureFlightDate + " " + departureFlightTime);
-        if (!t.equals(s.getFlightTime())) return true;
+        if (!t.equals(s.getFlightTime()) && (lastRequest == null || !t.equals(getTime(lastRequest.getDepartureFlightDate() + " " + lastRequest.getDepartureFlightTime())))) return true;
+
+         // && (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus()))
 
         if (departurePickupDate!=null && departurePickupTime!=null) {
             t = getTime(departurePickupDate + " " + departurePickupTime);
-            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t)) return true;
+            if (s.getImportedPickupTime() != null && !s.getImportedPickupTime().equals(t) && (lastRequest == null || !t.equals(getTime(lastRequest.getDeparturePickupDate() + " " + lastRequest.getDeparturePickupTime())))) return true;
         }
-        else if (s.getImportedPickupTime()!=null) return true;
+        else if (s.getImportedPickupTime()!=null && (lastRequest == null || lastRequest.getDeparturePickupTime() != null)) return true;
 
         int p = adults + children + babies;
-        if (p!=s.getPax()) return true;
+        if (p!=s.getPax() && (lastRequest == null || p != lastRequest.getAdults() + lastRequest.getChildren() + lastRequest.getBabies())) return true;
 
        // s.setDropoffText(departureAirport);
 
-        if (!serviceType.equals(s.getTransferType()))return true;
+        if (!serviceType.equals(s.getTransferType()) && (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())))return true;
 
         if (!s.getOffice().equals(getTask().getOffice())) return true;
         if (!s.getPos().equals(getTask().getPointOfSale())) return true;
@@ -725,37 +757,51 @@ public class TransferBookingRequest {
             comm +=  getDepartureComments() + ". ";
         if (children>0) comm += (children + " CHILDREN. ");
         if (babies>0) comm += (babies + " BABIES. ");
-        if (extras>0) comm += (babies + " EXTRAS. ");
-        if (!s.getComment().contains(comm) ) return true;
+        if (extras>0) comm += (extras + " EXTRAS. ");
+        String comm0 = "";
+        if (lastRequest != null) {
+            comm0 = lastRequest.getVehicle() + ". ";
+            if (lastRequest.getDepartureComments()!=null && !lastRequest.getDepartureComments().isEmpty())
+                comm0 +=  lastRequest.getDepartureComments() + ". ";
+            if (lastRequest.getChildren()>0) comm0 += (lastRequest.getChildren() + " CHILDREN. ");
+            if (lastRequest.getBabies()>0) comm0 += (lastRequest.getBabies() + " BABIES. ");
+            if (lastRequest.getExtras()>0) comm0 += (lastRequest.getExtras() + " EXTRAS. ");
+        }
+        if (!s.getComment().contains(comm)  && (lastRequest == null || !comm.equals(comm0))) return true;
 
-        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue()) return true;
+        if (getValue() != 0 && effectiveValue != s.getOverridedNetValue() && (lastRequest == null || effectiveValue != lastRequest.getEffectiveValue())) return true;
 
         return false;
     }
 
-    private void fillDeparture(TransferService s) {
-        s.setCancelled(departureStatus.equals(STATUS.CANCELLED));
+    private void fillDeparture(TransferService s, TransferBookingRequest lastRequest) {
+        if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setCancelled(departureStatus.equals(STATUS.CANCELLED));
 
-        if (departurePickupDate!=null && departurePickupTime!=null)
-            s.setImportedPickupTime(getTime(departurePickupDate + " " + departurePickupTime));
-        else
-            s.setImportedPickupTime(null);
+        if (lastRequest == null || !departurePickupDate.equals(lastRequest.getDeparturePickupDate()) || !departurePickupTime.equals(lastRequest.getDeparturePickupTime())) {
+            if (departurePickupDate!=null && departurePickupTime!=null)
+                s.setImportedPickupTime(getTime(departurePickupDate + " " + departurePickupTime));
+            else
+                s.setImportedPickupTime(null);
+        }
 
-        ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
-        if (departureConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
-        s.setAnswer(a);
+        if (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed()) {
+            ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
+            if (departureConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
+            s.setAnswer(a);
+        }
 
-        s.setPickupText("" + departureResort + " (" + departureAddress + ")");
-        s.setFlightNumber("" + departureFlightCompany + departureFlightNumber);
-        s.setFlightOriginOrDestination("" + departureDestinationAirport);
-        s.setFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
-        s.setPax(adults + children + babies);
+        if (lastRequest == null || !departureResort.equals(lastRequest.getDepartureResort()) || !departureAddress.equals(lastRequest.getDepartureAddress())) s.setPickupText("" + departureResort + " (" + departureAddress + ")");
+        if (lastRequest == null || !departureFlightCompany.equals(lastRequest.getDepartureFlightCompany()) || !departureFlightNumber.equals(lastRequest.getDepartureFlightNumber())) s.setFlightNumber("" + departureFlightCompany + departureFlightNumber);
+        if (lastRequest == null || !departureDestinationAirport.equals(lastRequest.getDepartureDestinationAirport())) s.setFlightOriginOrDestination("" + departureDestinationAirport);
+        if (lastRequest == null || !departureFlightDate.equals(lastRequest.getDepartureFlightDate()) || !departureFlightTime.equals(lastRequest.getDepartureFlightTime())) s.setFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
+        if (lastRequest == null || (adults + children + babies) != (lastRequest.getAdults() + lastRequest.getChildren() + lastRequest.getBabies())) s.setPax(adults + children + babies);
        // s.setAdults(adults);
         //s.setChildren(children);
 
-        s.setDropoffText(departureAirport);
+        if (lastRequest == null || !departureAirport.equals(lastRequest.getDepartureAirport())) s.setDropoffText(departureAirport);
 
-        s.setTransferType(serviceType);
+        if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
+
         s.setOffice(getTask().getOffice());
         s.setPos(getTask().getPointOfSale());
 
@@ -766,10 +812,19 @@ public class TransferBookingRequest {
         if (children>0) comm += (children + " CHILDREN. ");
         if (babies>0) comm += (babies + " BABIES. ");
         if (extras>0) comm += (babies + " EXTRAS. ");
-        if (!s.getComment().contains(comm) )
+        String comm0 = "";
+        if (lastRequest != null) {
+            comm0 = lastRequest.getVehicle() + ". ";
+            if (lastRequest.getDepartureComments()!=null && !lastRequest.getDepartureComments().isEmpty())
+                comm0 +=  lastRequest.getDepartureComments() + ". ";
+            if (lastRequest.getChildren()>0) comm0 += (lastRequest.getChildren() + " CHILDREN. ");
+            if (lastRequest.getBabies()>0) comm0 += (lastRequest.getBabies() + " BABIES. ");
+            if (lastRequest.getExtras()>0) comm0 += (lastRequest.getExtras() + " EXTRAS. ");
+        }
+        if (!s.getComment().contains(comm) && (lastRequest == null || !comm.equals(comm0)))
             s.setComment(comm + "\n" + s.getComment());
 
-        if (getValue() != 0) {
+        if (getValue() != 0 && (lastRequest == null || getValue() != lastRequest.getValue())) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
             effectiveValue = 0;
