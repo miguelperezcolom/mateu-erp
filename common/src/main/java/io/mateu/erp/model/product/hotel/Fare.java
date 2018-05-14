@@ -1,11 +1,12 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.KeyClass;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
 import io.mateu.ui.mdd.server.interfaces.UseCalendarToEdit;
+import io.mateu.ui.mdd.server.util.DatesRange;
+import io.mateu.ui.mdd.server.util.XMLSerializable;
 import org.jdom2.Element;
 
 import javax.persistence.EntityManager;

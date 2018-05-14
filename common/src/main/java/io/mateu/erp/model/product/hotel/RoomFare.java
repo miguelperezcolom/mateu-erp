@@ -1,8 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.KeyClass;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.ui.mdd.server.util.XMLSerializable;
 import org.jdom2.Element;
 
 import java.util.HashMap;

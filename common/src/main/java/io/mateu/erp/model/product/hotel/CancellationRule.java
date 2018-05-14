@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.ValueClass;
+import io.mateu.ui.mdd.server.util.XMLSerializable;
 import org.jdom2.Element;
 
 import java.time.LocalDate;

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.ui.mdd.server.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;
 

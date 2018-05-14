@@ -1,9 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.mdd.server.annotations.FullWidth;
 import io.mateu.ui.mdd.server.annotations.StartTabs;
 import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.ui.mdd.server.util.DatesRange;
+import io.mateu.ui.mdd.server.util.XMLSerializable;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;

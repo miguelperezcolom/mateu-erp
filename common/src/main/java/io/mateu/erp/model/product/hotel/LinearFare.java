@@ -1,9 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.common.model.util.XMLSerializable;
 import io.mateu.ui.core.client.views.AbstractForm;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.interfaces.UseCalendarToEdit;
+import io.mateu.ui.mdd.server.util.DatesRange;
+import io.mateu.ui.mdd.server.util.XMLSerializable;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
