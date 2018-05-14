@@ -25,6 +25,7 @@ import io.mateu.erp.model.product.hotel.offer.Per;
 import io.mateu.erp.model.product.hotel.offer.Scope;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.ui.mdd.server.util.DatesRange;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 

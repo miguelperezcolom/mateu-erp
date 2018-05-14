@@ -6,6 +6,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.*;
+import io.mateu.ui.mdd.server.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.BoardPrice;

@@ -20,6 +20,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.*;
+import io.mateu.ui.mdd.server.util.DatesRange;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
