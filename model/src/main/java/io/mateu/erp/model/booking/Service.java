@@ -271,7 +271,7 @@ public abstract class Service {
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
-    @Output
+    @Output 
     private String signature;
 
     @Transient

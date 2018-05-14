@@ -473,6 +473,8 @@ public class TransferBookingRequest {
                         //sin cambios
                         this.getTask().increaseUnmodified();
 
+                        if (s.getTransferBookingRequest() == null) s.setTransferBookingRequest(this);
+
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
                         }
@@ -517,6 +519,8 @@ public class TransferBookingRequest {
                     else {
                         //sin cambios
                         this.getTask().increaseUnmodified();
+
+                        if (s.getTransferBookingRequest() == null) s.setTransferBookingRequest(this);
 
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
