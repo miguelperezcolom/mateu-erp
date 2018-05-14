@@ -381,7 +381,7 @@ public class TransferBookingRequest {
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
                     nuevasEntidades.add(s);
-                    fillArrival(s, null);
+                    fillArrival(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
                 }
 
@@ -391,7 +391,7 @@ public class TransferBookingRequest {
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
                     nuevasEntidades.add(s);
-                    fillDeparture(s, null);
+                    fillDeparture(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
                 }
             }
@@ -443,7 +443,7 @@ public class TransferBookingRequest {
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
                         nuevasEntidades.add(s);
-                        fillArrival(s, null);
+                        fillArrival(s, null, nuevasEntidades);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
@@ -462,7 +462,7 @@ public class TransferBookingRequest {
                         }
                         else
                         {
-                            fillArrival(s, lastRequest);
+                            fillArrival(s, lastRequest, nuevasEntidades);
                             s.getAudit().touch(u);
                             hayCambios=true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
@@ -473,7 +473,10 @@ public class TransferBookingRequest {
                         //sin cambios
                         this.getTask().increaseUnmodified();
 
-                        if (s.getTransferBookingRequest() == null) s.setTransferBookingRequest(this);
+                        if (s.getTransferBookingRequest() == null) {
+                            s.setTransferBookingRequest(this);
+                            nuevasEntidades.add(this);
+                        }
 
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
@@ -491,7 +494,7 @@ public class TransferBookingRequest {
                         s.setAudit(new Audit(u));
                         s.setBooking(b);
                         nuevasEntidades.add(s);
-                        fillDeparture(s, null);
+                        fillDeparture(s, null, nuevasEntidades);
                         hayCambios = true;
                         this.getTask().increaseAdditions();
                     }
@@ -509,7 +512,7 @@ public class TransferBookingRequest {
                             this.getTask().increaseErrors();
                         }
                         else {
-                            fillDeparture(s, lastRequest);
+                            fillDeparture(s, lastRequest, nuevasEntidades);
                             s.getAudit().touch(u);
                             hayCambios = true;
                             if (s.isCancelled()) this.getTask().increaseCancellations();
@@ -520,7 +523,10 @@ public class TransferBookingRequest {
                         //sin cambios
                         this.getTask().increaseUnmodified();
 
-                        if (s.getTransferBookingRequest() == null) s.setTransferBookingRequest(this);
+                        if (s.getTransferBookingRequest() == null) {
+                            s.setTransferBookingRequest(this);
+                            nuevasEntidades.add(this);
+                        }
 
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
@@ -587,7 +593,7 @@ public class TransferBookingRequest {
         return null;
     }
 
-    private void fillArrival(TransferService s, TransferBookingRequest lastRequest) {
+    private void fillArrival(TransferService s, TransferBookingRequest lastRequest, List<Object> nuevasEntidades) {
         if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setCancelled(arrivalStatus.equals(STATUS.CANCELLED));
 
         if (lastRequest == null || !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()) || !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime())) {
@@ -645,7 +651,10 @@ public class TransferBookingRequest {
             effectiveValue = 0;
         }
 
-        s.setTransferBookingRequest(this);
+        if (s.getTransferBookingRequest() == null) {
+            s.setTransferBookingRequest(this);
+            nuevasEntidades.add(this);
+        }
     }
 
     private boolean changesInArrival(TransferService s, TransferBookingRequest lastRequest) {
@@ -779,7 +788,7 @@ public class TransferBookingRequest {
         return false;
     }
 
-    private void fillDeparture(TransferService s, TransferBookingRequest lastRequest) {
+    private void fillDeparture(TransferService s, TransferBookingRequest lastRequest, List<Object> nuevasEntidades) {
         if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setCancelled(departureStatus.equals(STATUS.CANCELLED));
 
         if (lastRequest == null || !departurePickupDate.equals(lastRequest.getDeparturePickupDate()) || !departurePickupTime.equals(lastRequest.getDeparturePickupTime())) {
@@ -835,7 +844,10 @@ public class TransferBookingRequest {
             effectiveValue = 0;
         }
 
-        s.setTransferBookingRequest(this);
+        if (s.getTransferBookingRequest() == null) {
+            s.setTransferBookingRequest(this);
+            nuevasEntidades.add(this);
+        }
     }
 
 
