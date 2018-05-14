@@ -391,7 +391,7 @@ public class TransferBookingRequest {
                     s.setAudit(new Audit(u));
                     s.setBooking(b);
                     nuevasEntidades.add(s);
-                    fillDeparture(s, lastRequest);
+                    fillDeparture(s, null);
                     this.getTask().increaseAdditions();
                 }
             }
@@ -641,6 +641,7 @@ public class TransferBookingRequest {
             effectiveValue = 0;
         }
 
+        s.setTransferBookingRequest(this);
     }
 
     private boolean changesInArrival(TransferService s, TransferBookingRequest lastRequest) {
@@ -830,6 +831,7 @@ public class TransferBookingRequest {
             effectiveValue = 0;
         }
 
+        s.setTransferBookingRequest(this);
     }
 
 
