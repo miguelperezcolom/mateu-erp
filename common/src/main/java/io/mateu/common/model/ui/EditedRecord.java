@@ -1,5 +1,7 @@
 package io.mateu.common.model.ui;
 
+import com.google.common.base.Strings;
+import io.mateu.common.model.authentication.User;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.ERPServiceImpl;
 import io.mateu.ui.mdd.server.MemorizadorRegistroEditado;
@@ -22,8 +24,12 @@ public class EditedRecord {
 
     private String icon;
 
+    @ManyToOne
+    private User user;
+
     private String name;
 
+    @Column(name = "_when")
     private LocalDateTime when = LocalDateTime.now();
 
     private String uri;
@@ -46,14 +52,15 @@ public class EditedRecord {
 
                                     r.setIcon((isNew)?"new":"edit");
                                     r.setName(name);
+                                    if (userData != null && !Strings.isNullOrEmpty(userData.getLogin())) r.setUser(em.find(User.class, userData.getLogin()));
 
                                     String u = sourceUri;
 
                                     if (isNew) {
                                         u += "/";
-                                        if (id instanceof String) u = "s" + id;
-                                        else if (id instanceof Long) u = "l" + id;
-                                        else if (id instanceof Integer) u = "i" + id;
+                                        if (id instanceof String) u += "s" + id;
+                                        else if (id instanceof Long) u += "l" + id;
+                                        else if (id instanceof Integer) u += "i" + id;
                                     }
 
                                     r.setUri(u);

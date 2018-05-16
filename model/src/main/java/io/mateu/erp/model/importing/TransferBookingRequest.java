@@ -645,7 +645,7 @@ public class TransferBookingRequest {
             s.setComment(comm + "\n" + s.getComment());
 
 
-        if (getValue() != 0 && getValue() != lastRequest.getValue()) {
+        if (getValue() != 0 && (lastRequest == null || getValue() != lastRequest.getValue())) {
             s.setOverridedNetValue(effectiveValue);
             s.setValueOverrided(true);
             effectiveValue = 0;

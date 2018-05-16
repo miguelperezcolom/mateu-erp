@@ -1,5 +1,7 @@
 package io.mateu.common;
 
+import com.google.common.base.Strings;
+import io.mateu.common.model.authentication.User;
 import io.mateu.common.model.ui.EditedRecord;
 import io.mateu.ui.core.client.app.AbstractApplication;
 import io.mateu.ui.core.client.app.Callback;
@@ -28,15 +30,15 @@ public abstract class BaseMDDApp extends AbstractApplication {
 
             Data data = new Data();
 
-            DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/M HH:mm:ss");
+            DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MMM HH:mm:ss");
 
             List<Data> g = new ArrayList<>();
 
-            Helper.transact(new JPATransaction() {
+            if (user != null && !Strings.isNullOrEmpty(user.getLogin())) Helper.transact(new JPATransaction() {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
-                    List<EditedRecord> rs = em.createQuery("select x from " + EditedRecord.class.getName() + " where x.login == :s order by x.id desc").setMaxResults(100).getResultList();
+                    List<EditedRecord> rs = em.createQuery("select x from " + EditedRecord.class.getName() + " x where x.user = :u order by x.id desc").setParameter("u", em.find(User.class, user.getLogin())).setMaxResults(100).getResultList();
 
                     for (EditedRecord r : rs) {
                         g.add(new Data("id", r.getId(), "url", r.getUri(), "name", r.getName(), "when", r.getWhen().format(f), "icon", r.getIcon()));
