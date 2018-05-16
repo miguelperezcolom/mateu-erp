@@ -1,5 +1,6 @@
 package io.mateu.erp.client;
 
+import io.mateu.common.BaseMDDApp;
 import io.mateu.erp.client.admin.AdminArea;
 import io.mateu.erp.client.booking.BookingArea;
 import io.mateu.erp.client.cms.CMSArea;
@@ -18,7 +19,7 @@ import java.util.List;
 /**
  * Created by miguel on 3/1/17.
  */
-public class ERPApp extends AbstractApplication {
+public class ERPApp extends BaseMDDApp {
 
     static {
         Helper.loadProperties();
