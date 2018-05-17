@@ -51,7 +51,7 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new AbstractMenu("Invoicing") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new MDDAction("Issued invoices", Invoice.class));
@@ -71,7 +71,7 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new AbstractMenu("Payments") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new MDDAction("Accounts", Account.class));
@@ -94,7 +94,7 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new AbstractMenu("Viajes Ibiza") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
 

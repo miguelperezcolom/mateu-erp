@@ -40,7 +40,7 @@ public class ProductsModule extends AbstractModule {
     private AbstractMenu getGenericSubmenu() {
         AbstractMenu s = new AbstractMenu("Generic") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new MDDAction("Product types", ProductType.class));
@@ -64,7 +64,7 @@ public class ProductsModule extends AbstractModule {
     private AbstractMenu getTransferSubmenu() {
         AbstractMenu s = new AbstractMenu("Transfer") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new MDDAction("Transfer points", TransferPoint.class));
@@ -89,7 +89,7 @@ public class ProductsModule extends AbstractModule {
     private AbstractMenu getHotelSubmenu() {
         AbstractMenu s = new AbstractMenu("Hotel") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new MDDAction("Hotels", Hotel.class));

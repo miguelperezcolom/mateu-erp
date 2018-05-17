@@ -47,7 +47,7 @@ public class BookingModule extends AbstractModule {
 
         m.add(new AbstractMenu("Transfers") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new AbstractAction("Transfers summary") {
@@ -87,7 +87,7 @@ public class BookingModule extends AbstractModule {
 
         m.add(new AbstractMenu("Importing") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new AbstractAction("Importing Queue") {

@@ -34,12 +34,12 @@ public class RevenueModule extends AbstractModule {
 
         m.add(new AbstractMenu("Revenue") {
             @Override
-            public List<MenuEntry> getEntries() {
+            public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
                 m.add(new AbstractMenu("Markup") {
                     @Override
-                    public List<MenuEntry> getEntries() {
+                    public List<MenuEntry> buildEntries() {
                         List<MenuEntry> m = new ArrayList<>();
 
                         m.add(new MDDAction("Markups", Markup.class));
@@ -52,7 +52,7 @@ public class RevenueModule extends AbstractModule {
 
                 m.add(new AbstractMenu("Handling fee") {
                     @Override
-                    public List<MenuEntry> getEntries() {
+                    public List<MenuEntry> buildEntries() {
                         List<MenuEntry> m = new ArrayList<>();
 
                         m.add(new MDDAction("Handling fee", HandlingFee.class));
