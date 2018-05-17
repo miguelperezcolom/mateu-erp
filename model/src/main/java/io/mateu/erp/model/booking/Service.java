@@ -78,6 +78,8 @@ public abstract class Service {
     @ListColumn(field = "agency", width = 150)
     @SearchFilter(field = "leadName")
     @ListColumn(field = "leadName")
+    @SearchFilter(field = "telephone")
+    @ListColumn(field = "telephone")
     private Booking booking;
 
 
