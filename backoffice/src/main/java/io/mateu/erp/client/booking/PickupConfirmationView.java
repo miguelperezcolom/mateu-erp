@@ -43,7 +43,7 @@ public class PickupConfirmationView extends AbstractJPAListView {
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
                 " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
 
-        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, ap.name, " +
+        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, " +
                 "case when " +
                 " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
                 " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
