@@ -68,7 +68,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         try {
 
             SAXBuilder builder = new SAXBuilder();
-            Document doc = builder.build(new StringReader(this.getHtml()));
+            Document doc = builder.build(new StringReader(this.getHtml().trim()));
             Element root = doc.getRootElement();
 
             //recorre cada transfer del fichero
