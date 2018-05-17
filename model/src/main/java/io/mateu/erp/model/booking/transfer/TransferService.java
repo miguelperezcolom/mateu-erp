@@ -67,6 +67,7 @@ public class TransferService extends Service {
     @ListColumn
     private TransferType transferType;
 
+    @Sum
     @NotNull
     @ListColumn
     private int pax;

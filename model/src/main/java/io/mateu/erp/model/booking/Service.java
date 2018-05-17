@@ -199,6 +199,7 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
+    @Sum
     @Output
     @ListColumn
     private double totalNetValue;
@@ -222,6 +223,7 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean purchaseValued;
 
+    @Sum
     @Output
     @ListColumn
     private double totalCost;
