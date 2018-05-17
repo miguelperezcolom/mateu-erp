@@ -99,6 +99,9 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
         } catch (Exception ex) {
             ex.printStackTrace();
+
+            System.out.println("html=" + getHtml());
+
             result += "General exception: " + ex.getClass() + " - " + ex.getMessage();
             this.setStatus(STATUS.ERROR);//fichero no procesado
         }
