@@ -347,6 +347,11 @@ public class TransferService extends Service {
                             String comments = "";
                             if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
                             if (s.getComment() != null) comments += s.getComment();
+                            if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
+                                if (!"".equals(comments)) comments += " / ";
+                                comments += s.getOperationsComment();
+                            }
+
                             es.setAttribute("comments", comments);
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());

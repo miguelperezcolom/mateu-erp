@@ -277,6 +277,7 @@ public class Booking {
             allServicesAreValued &= s.isValued();
             allPurchasesAreValued &= s.isPurchaseValued();
             if (!Strings.isNullOrEmpty(s.getComment())) comentarios += s.getComment();
+            if (!Strings.isNullOrEmpty(s.getOperationsComment())) comentarios += s.getOperationsComment();
             totalCost += s.getTotalCost();
         }
 

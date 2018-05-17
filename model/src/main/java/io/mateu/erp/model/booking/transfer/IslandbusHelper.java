@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.transfer;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -99,7 +100,13 @@ public class IslandbusHelper {
                     punto.setAttribute("localizador", "" + po.getId());
                     punto.setAttribute("Vuelos", formatFlight(s.getFlightNumber()));
                     punto.setAttribute("HoraVuelo", s.getFlightTime().format(hf));
-                    punto.setAttribute("Observaciones", "" + (TransferDirection.INBOUND.equals(firstService.getDirection())?"LLEGADA":"SALIDA") + ". " + ((s.getComment() != null)?s.getComment():""));
+                    String c = s.getComment();
+                    if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getOperationsComment();
+                    }
+                    punto.setAttribute("Observaciones", "" + (TransferDirection.INBOUND.equals(firstService.getDirection())?"LLEGADA":"SALIDA") + ". " + ((c != null)?c:""));
 
                     //Vuelos
                     //<Vuelo1 Fecha="220411" RefVuelo="" Hora="" TTOO="JUMBOSH" FechaLlegadaVuelo="220411" EntSal="E"/>
@@ -199,7 +206,14 @@ public class IslandbusHelper {
                     if (routeN.length() > 10) routeN = routeN.substring(0, 10);
                     shut.addContent(new Element("zona").setText(routeN));
 
-                    shut.addContent(new Element("observaciones").setText((s.getComment() != null)?s.getComment():""));
+                    String c = s.getComment();
+                    if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getOperationsComment();
+                    }
+
+                    shut.addContent(new Element("observaciones").setText((c != null)?c:""));
 
                     shut.addContent(new Element("accion").setText("ALTA"));
 

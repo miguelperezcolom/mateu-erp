@@ -160,6 +160,10 @@ public abstract class Service {
 
     @TextArea
     @SameLine
+    private String operationsComment;
+
+    @TextArea
+    @SameLine
     private String privateComment;
 
     @Tab("Change log")
@@ -330,7 +334,13 @@ public abstract class Service {
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", isCancelled());
-        m.put("comment", getComment());
+        String c = getComment();
+        if (!Strings.isNullOrEmpty(getOperationsComment())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " / ";
+            c += getOperationsComment();
+        }
+        m.put("comment", c);
         if (getPreferredProvider() != null) m.put("preferredprovider", getPreferredProvider().getName());
         m.put("start", getStart());
         m.put("finish", getFinish());
@@ -662,6 +672,10 @@ public abstract class Service {
                             String comments = "";
                             if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
                             if (s.getComment() != null) comments += s.getComment();
+                            if (!Strings.isNullOrEmpty(getOperationsComment())) {
+                                if (!"".equals(comments)) comments += " / ";
+                                comments += getOperationsComment();
+                            }
                             es.setAttribute("comments", comments);
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.generic;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Actor;
 import io.mateu.erp.model.product.ContractType;
@@ -187,7 +188,13 @@ public class GenericService extends Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
-        d.put("comments", getComment());
+        String c = getComment();
+        if (!Strings.isNullOrEmpty(getOperationsComment())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " / ";
+            c += getOperationsComment();
+        }
+        d.put("comments", c);
 
         return d;
     }
