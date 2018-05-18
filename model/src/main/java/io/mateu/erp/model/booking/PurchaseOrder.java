@@ -270,7 +270,9 @@ public class PurchaseOrder {
         });
 
         for (Service s : ss) {
-            ls.add(s.getData());
+            Map<String, Object> ds = s.getData();
+            if (isCancelled()) ds.put("status", "CANCELLED");
+            ls.add(ds);
         }
 
         d.put("services", ls);
