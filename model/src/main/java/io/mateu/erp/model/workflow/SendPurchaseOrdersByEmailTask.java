@@ -5,6 +5,7 @@ import freemarker.template.TemplateException;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,9 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
     private String to;
     private String cc;
 
+    @Output
+    private String html;
+
 
     @Override
     public void runParticular(EntityManager em, User user) throws Throwable {
@@ -61,7 +65,9 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
         if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
 
         email.setSubject("Purchase Orders");
-        email.setMsg(getMessage(appconfig));
+        setHtml(getMessage(appconfig));
+        email.setMsg(getHtml());
+
         email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
 
         File attachment = createExcel();
