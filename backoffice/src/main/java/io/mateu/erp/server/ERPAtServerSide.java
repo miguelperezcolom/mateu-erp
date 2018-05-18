@@ -22,10 +22,12 @@ import io.mateu.ui.mdd.server.util.JPATransaction;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.sql.DataSource;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Created by miguel on 3/1/17.
@@ -288,5 +290,28 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                 } else throw new Exception("No user with login " + login);
             }
         });
+    }
+
+    @Override
+    public Object selectIdAtPos(String ql, int pos) throws Throwable {
+        Object[] id = new Object[1];
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+                Query q = em.createQuery(ql);
+                q.setFirstResult(pos);
+                q.setMaxResults(1);
+                List rs = q.getResultList();
+                for (Object o : rs) {
+                    if (o.getClass().isArray()) {
+                        Object[] l = (Object[]) o;
+                        id[0] = l[0];
+                    } else {
+                        id[0] = o;
+                    }
+                }
+            }
+        });
+        return id[0];
     }
 }
