@@ -84,6 +84,9 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         for (PurchaseOrder po : getPurchaseOrders()) {
             for (Service s : po.getServices()) {
                 Map<String, Object> ds = s.getData();
+
+                if (po.isCancelled()) ds.put("status", "CANCELLED");
+
                 ds.put("po", po.getId());
                 if (s instanceof TransferService) {
                     ds.put("orderby", ((TransferService) s).getFlightTime());
