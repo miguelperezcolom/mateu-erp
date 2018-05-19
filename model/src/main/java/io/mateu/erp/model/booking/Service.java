@@ -859,7 +859,7 @@ public abstract class Service {
         d.put("agencyReference", getBooking().getAgencyReference());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
-        d.put("office", getOffice().getName());
+        if (getOffice() != null) d.put("office", getOffice().getName());
 
         d.put("start", getStart());
         DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy");

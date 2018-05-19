@@ -190,6 +190,15 @@ public class TransferService extends Service {
         return _data;
     }
 
+    @Action(name = "Test miguel")
+    public void testMiguel(UserData user, Data _data) throws Throwable {
+        _data.set("office", null);
+        ERPServiceImpl s = new ERPServiceImpl();
+        Data data = (Data) s.set(user, TransferService.class.getName(), TransferService.class.getName(), _data);
+    }
+
+
+
     @Links
     public List<MDDLink> getLinks() {
         List<MDDLink> l = super.getLinks();
@@ -530,9 +539,9 @@ public class TransferService extends Service {
     }
 
     @PrePersist@PreUpdate
-    public void preSet() throws Exception {
-        if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Exception("Pickup is required");
-        if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Exception("Dropoff is required");
+    public void preSet() throws Error {
+        if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Error("Pickup is required");
+        if ((getDropoffText() == null || "".equals(getDropoffText().trim())) && getDropoff() == null) throw new Error("Dropoff is required");
 
         LocalDate s = getFlightTime().toLocalDate();
         if (getFlightTime().getHour() < 6) s = s.minusDays(1);
