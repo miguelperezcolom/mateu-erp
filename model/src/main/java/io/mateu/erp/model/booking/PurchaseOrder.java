@@ -215,30 +215,27 @@ public class PurchaseOrder {
 
         setSignature(createSignature());
 
+        if (!isCancelled() || getSendingTasks().size() > 0) {
 
-        SendPurchaseOrdersTask t = null;
+            SendPurchaseOrdersTask t = null;
 
-        t = getProvider().createTask(em, this);
+            t = getProvider().createTask(em, this);
 
-        t.setOffice(getOffice());
-        t.setProvider(getProvider());
-        t.setStatus(TaskStatus.PENDING);
-        t.setAudit(new Audit(u));
+            t.setOffice(getOffice());
+            t.setProvider(getProvider());
+            t.setStatus(TaskStatus.PENDING);
+            t.setAudit(new Audit(u));
 
-        t.setPostscript("");
+            t.setPostscript("");
 
 
-        t.getPurchaseOrders().add(this);
-        getSendingTasks().add(t);
+            t.getPurchaseOrders().add(this);
+            getSendingTasks().add(t);
 
-        em.persist(t);
+            em.persist(t);
 
-//        setSent(true);
-//        setSentTime(LocalDateTime.now());
-//
-//        if (getProvider().isAutomaticOrderConfirmation()) {
-//            setStatus(PurchaseOrderStatus.CONFIRMED);
-//        }
+        }
+
     }
 
     public Map<String,Object> getData() {
