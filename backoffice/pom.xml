@@ -4,7 +4,7 @@
 
     <groupId>io.mateu.erp</groupId>
     <artifactId>backoffice</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>${empaquetado}</packaging>
 
     <name>backoffice</name>
@@ -97,14 +97,14 @@
         <dependency>
             <groupId>io.mateu.erp</groupId>
             <artifactId>model</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>io.mateu.ui</groupId>
             <artifactId>mdd</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
             <scope>compile</scope>
         </dependency>
 
@@ -112,7 +112,7 @@
         <dependency>
             <groupId>io.mateu.ui</groupId>
             <artifactId>core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
 
 
@@ -196,7 +196,7 @@
                 <dependency>
                     <groupId>io.mateu.ui</groupId>
                     <artifactId>port-vaadin</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <version>0.0.1</version>
                     <type>war</type>
                     <scope>compile</scope>
                 </dependency>
@@ -259,7 +259,7 @@
                 <dependency>
                     <groupId>io.mateu.ui</groupId>
                     <artifactId>port-html5</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <version>0.0.1</version>
                     <type>war</type>
                     <scope>compile</scope>
                 </dependency>
@@ -267,7 +267,7 @@
                 <dependency>
                     <groupId>io.mateu.ui</groupId>
                     <artifactId>port-html5-core</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <version>0.0.1</version>
                     <scope>compile</scope>
                 </dependency>
             </dependencies>
@@ -364,7 +364,7 @@
                 <dependency>
                     <groupId>io.mateu.ui</groupId>
                     <artifactId>port-javafx</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <version>0.0.1</version>
                     <scope>compile</scope>
                 </dependency>
             </dependencies>
@@ -408,7 +408,7 @@
                 <dependency>
                     <groupId>io.mateu.ui</groupId>
                     <artifactId>port-javafx</artifactId>
-                    <version>1.0-SNAPSHOT</version>
+                    <version>0.0.1</version>
                     <scope>compile</scope>
                 </dependency>
             </dependencies>
