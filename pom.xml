@@ -14,14 +14,12 @@
         <module>dispo-model</module>
         <module>dispo-logic</module>
         <module>common</module>
-        <!--
         <module>traductor-caval-out</module>
         <module>dispo-tester</module>
         <module>show</module>
         <module>traductor-caval-in</module>
         <module>traductor-ota-in</module>
         <module>nodo-dispo</module>
-        -->
     </modules>
 
     <packaging>pom</packaging>
