@@ -864,6 +864,14 @@ public abstract class Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
 
+        String c = getComment();
+        if (!Strings.isNullOrEmpty(getOperationsComment())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " / ";
+            c += getOperationsComment();
+        }
+        d.put("comment", c);
+
         d.put("start", getStart());
         DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));

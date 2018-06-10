@@ -798,7 +798,6 @@ public class TransferService extends Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
-        d.put("comments", getComment());
         d.put("direction", "" + getDirection());
         d.put("pax", getPax());
 
