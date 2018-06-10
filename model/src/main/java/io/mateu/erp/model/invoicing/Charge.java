@@ -4,11 +4,13 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.TextArea;
+import io.mateu.ui.mdd.server.interfaces.AuditRecord;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,30 +26,12 @@ public class Charge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Embedded
+    @Output
+    private AuditRecord audit;
+
     @NotNull
     private ChargeType type;
-
-    @NotNull
-    private Currency currency;
-
-    @NotNull
-    @ManyToOne
-    private BillingConcept billingConcept;
-
-    @TextArea
-    private String text;
-
-    private double base;
-
-    @ManyToOne
-    private VAT vat;
-
-    private double vatPercent;
-
-    @Output
-    private double beforeTaxes;
-
-    private double total;
 
     @ManyToOne
     private Booking booking;
@@ -64,6 +48,52 @@ public class Charge {
 
     @ManyToOne
     private Invoice invoice;
+
+
+    @ManyToOne
+    @NotNull
+    private Office office;
+
+    @NotNull
+    @ManyToOne
+    private BillingConcept billingConcept;
+
+    @TextArea
+    private String text;
+
+    @NotNull
+    @ManyToOne
+    private Currency currency;
+
+    private double base;
+
+    @ManyToOne
+    private VAT vat;
+
+    private double vatPercent;
+
+    @Output
+    private double beforeTaxes;
+
+    private double total;
+
+    @NotNull
+    @ManyToOne
+    private Currency officeCurrency;
+
+    private double totalInOfficeCurrency;
+
+    private double officeCurrencyExchangeRate;
+
+    @NotNull
+    @ManyToOne
+    private Currency accountingCurrency;
+
+    private double totalInAccountingCurrency;
+
+    private double accountingCurrencyExchangeRate;
+
+
 
 
     @PrePersist@PreUpdate

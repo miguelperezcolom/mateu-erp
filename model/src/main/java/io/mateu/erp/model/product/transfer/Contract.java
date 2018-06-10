@@ -5,7 +5,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.City;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
@@ -174,7 +174,7 @@ public class Contract extends AbstractContract {
 
         Element ts;
         xml.addContent(ts = new Element("targets"));
-        for (Actor t : getTargets()) ts.addContent(t.toXml().setName("target"));
+        for (Partner t : getTargets()) ts.addContent(t.toXml().setName("target"));
 
         if (getCurrency() != null) xml.setAttribute("currencyCode", getCurrency().getIsoCode());
 

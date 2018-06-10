@@ -1,6 +1,6 @@
 package io.mateu.erp.dispo;
 
-import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
@@ -18,7 +18,7 @@ public class ContratosYOfertas {
 
     private List<IHotelOffer> ofertas = new ArrayList<>();
 
-    public ContratosYOfertas(IActor agency, IHotel hotel, LocalDate entrada, LocalDate salida, int release, int noches, List<LineaReserva> ocupaciones, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones, LocalDate formalizationDate) {
+    public ContratosYOfertas(IPartner agency, IHotel hotel, LocalDate entrada, LocalDate salida, int release, int noches, List<LineaReserva> ocupaciones, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones, LocalDate formalizationDate) {
 
         for (IHotelContract c : hotel.getContracts()) {
             if (Helper.cabe(c.getValidFrom(), c.getValidTo(), entrada, salida)) {

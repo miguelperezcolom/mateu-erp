@@ -37,12 +37,16 @@ public class User {
     private Audit audit = new Audit();
 
     /**
-     * login must always be uppercase. It is the primary key.
+     * login must always be lowercase. It is the primary key.
      */
     @Id
     @ListColumn("Login")
     @NotNull
     private String login;
+
+    public void setLogin(String login) {
+        this.login = (login != null)?login.toLowerCase().trim():null;
+    }
 
     @ListColumn("Name")
     @NotNull
@@ -54,6 +58,10 @@ public class User {
 
     @Ignored
     private String password = "1";
+
+    public void setPassword(String password) {
+        this.password = Helper.md5(password.toLowerCase().trim());
+    }
 
     @ListColumn("Status")
     @NotNull
@@ -82,7 +90,8 @@ public class User {
     @PrePersist
     public void resetPassword() {
         String password = new RandPass().getPass(6);
-        setPassword(MD5.getHashString(password));
+        //setPassword(MD5.getHashString(password));
+        setPassword(Helper.md5(password.toLowerCase().trim()));
     }
 
     public void sendForgottenPasswordEmail() throws Throwable {
@@ -93,7 +102,8 @@ public class User {
     }
 
     public boolean validatePassword(String text) {
-        return getPassword().equals(MD5.getHashString(text)) || getPassword().equals(text);
+        //return getPassword().equals(MD5.getHashString(text)) || getPassword().equals(text);
+        return getPassword().equals(Helper.md5(text.toLowerCase().trim()));
     }
 
     @PostPersist

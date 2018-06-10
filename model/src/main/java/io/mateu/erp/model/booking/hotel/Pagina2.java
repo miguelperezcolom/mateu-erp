@@ -5,7 +5,7 @@ import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.world.City;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.Data;
@@ -53,7 +53,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
             hoteles.addAll(c.getHotels());
         }
 
-        Actor agencia = p.getAgency();
+        Partner agencia = p.getAgency();
 
         //System.out.println("" + hoteles.size() + " hoteles encontrados");
 

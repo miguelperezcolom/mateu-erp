@@ -7,7 +7,7 @@ import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.State;
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -197,13 +197,13 @@ public class DispoDumper {
 
 
 
-                        Map<Long, io.mateu.erp.dispo.model.common.Actor> actoresEnDispo = new HashMap<>();
+                        Map<Long, io.mateu.erp.dispo.model.common.Partner> actoresEnDispo = new HashMap<>();
                         List<Long> actoresVistos = new ArrayList<>();
-                        for (Actor c : (List<Actor>) em.createQuery("select x from " + Actor.class.getName() + " x").getResultList()) {
+                        for (Partner c : (List<Partner>) em.createQuery("select x from " + Partner.class.getName() + " x").getResultList()) {
 
-                            io.mateu.erp.dispo.model.common.Actor c2 = emd.find(io.mateu.erp.dispo.model.common.Actor.class, c.getId());
+                            io.mateu.erp.dispo.model.common.Partner c2 = emd.find(io.mateu.erp.dispo.model.common.Partner.class, c.getId());
                             if (c2 == null) {
-                                c2 = new io.mateu.erp.dispo.model.common.Actor();
+                                c2 = new io.mateu.erp.dispo.model.common.Partner();
                                 c2.setId(c.getId());
                                 emd.persist(c2);
                             }
@@ -218,7 +218,7 @@ public class DispoDumper {
                             actoresVistos.add(c.getId());
                         }
 
-                        for (io.mateu.erp.dispo.model.common.Actor c : (List<io.mateu.erp.dispo.model.common.Actor>) emd.createQuery("select x from " + io.mateu.erp.dispo.model.common.Actor.class.getName() + " x").getResultList())
+                        for (io.mateu.erp.dispo.model.common.Partner c : (List<io.mateu.erp.dispo.model.common.Partner>) emd.createQuery("select x from " + io.mateu.erp.dispo.model.common.Partner.class.getName() + " x").getResultList())
                             if (!actoresVistos.contains(c.getId())) {
                                 emd.remove(c);
                             }

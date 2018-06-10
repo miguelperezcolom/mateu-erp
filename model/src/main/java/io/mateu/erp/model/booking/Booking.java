@@ -7,7 +7,7 @@ import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.Pair;
@@ -57,7 +57,7 @@ public class Booking {
     @NotNull
     @SearchFilter
     @QLFilter("x.agency = true")
-    private Actor agency;
+    private Partner agency;
 
     @NotNull
     @SearchFilter(exactMatch = true)
@@ -161,7 +161,7 @@ public class Booking {
         return l;
     }
 
-    public static Booking getByAgencyRef(EntityManager em, String agencyRef, Actor age)
+    public static Booking getByAgencyRef(EntityManager em, String agencyRef, Partner age)
     {
         try {
             String jpql = "select x from " + Booking.class.getName() + " x" +
@@ -179,7 +179,7 @@ public class Booking {
     }
 
     public static void main(String... args) throws Throwable {
-        Actor a = new Actor();
+        Partner a = new Partner();
         a.setId(1);
         Helper.transact(new JPATransaction() {
             @Override

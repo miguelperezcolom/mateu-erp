@@ -1,7 +1,7 @@
 package io.mateu.erp.model.authentication;
 
 import io.mateu.common.model.authentication.Permission;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.ui.mdd.server.annotations.Indelible;
 import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
@@ -30,18 +30,18 @@ public class AuthToken {
     private io.mateu.erp.model.authentication.User user;
 
     @ManyToOne
-    private Actor actor;
+    private Partner partner;
 
     @ManyToOne
     private Hotel hotel;
 
     public String createId(User u) {
-        Actor a = null;
+        Partner a = null;
         for (Permission p : u.getPermissions()) {
             //todo: relacinar con la agencia
         }
         //todo: utilizar jwt.io para encriptar
-        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getActor() != null)?", \"actorId\": \"" + getActor().getId():"") + "\"" + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId():"") + "\"}").getBytes());
+        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getPartner() != null)?", \"partnerId\": \"" + getPartner().getId():"") + "\"" + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId():"") + "\"}").getBytes());
     }
 
     public AuthToken renew(EntityManager em) {
@@ -49,7 +49,7 @@ public class AuthToken {
         t.setId(t.createId(getUser()));
         t.setActive(true);
         t.setUser(getUser());
-        t.setActor(getActor());
+        t.setPartner(getPartner());
         t.setHotel(getHotel());
         em.persist(t);
 

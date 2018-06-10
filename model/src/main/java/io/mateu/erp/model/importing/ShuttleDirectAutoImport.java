@@ -1,7 +1,7 @@
 package io.mateu.erp.model.importing;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.common.model.util.Constants;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
@@ -28,7 +28,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
     {
     }
 
-    public ShuttleDirectAutoImport(String url, String login, String pwd, Actor cus, String idtransportista) {
+    public ShuttleDirectAutoImport(String url, String login, String pwd, Partner cus, String idtransportista) {
         this.setLogin(login);
         this.setPassword(pwd);
         this.setUrl(url);

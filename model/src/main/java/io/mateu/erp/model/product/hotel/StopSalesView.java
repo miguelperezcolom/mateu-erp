@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.client.views.RPCView;
 import io.mateu.ui.core.shared.Data;
@@ -33,7 +32,7 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
 
     private RoomType room;
 
-    private Actor actor;
+    private Partner actor;
 
     private HotelContract contract;
 
@@ -115,7 +114,7 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
                     @Parameter(name = "Start") @NotNull LocalDate start,
                     @Parameter(name = "End") @NotNull LocalDate end,
                     @Tab("Rooms") @Parameter(name = "Rooms") List<RoomType> rooms,
-                    @Tab("Actors") @Parameter(name = "Actors") List<Actor> actors,
+                    @Tab("Actors") @Parameter(name = "Actors") List<Partner> actors,
                     @Tab("Contracts") @Parameter(name = "Contracts") List<HotelContract> contracts) throws Throwable {
 
         StopSalesOperation o;

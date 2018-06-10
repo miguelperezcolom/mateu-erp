@@ -5,7 +5,7 @@ import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -41,7 +41,7 @@ public class Hotel implements IHotel {
     private HotelCategory category;
 
     @ManyToOne
-    private Actor hotelChain;
+    private Partner hotelChain;
 
     @ManyToOne
     @NotNull

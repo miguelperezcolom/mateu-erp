@@ -11,7 +11,7 @@ import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.world.City;
 import io.mateu.erp.model.world.State;
 import io.mateu.erp.services.HotelAvailabilityStats;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.UserData;
@@ -109,7 +109,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
-                Actor a = em.find(Actor.class, finalIdAgencia);
+                Partner a = em.find(Partner.class, finalIdAgencia);
 
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 

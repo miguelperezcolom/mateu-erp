@@ -6,7 +6,7 @@ import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.common.model.config.AppConfig;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.tests.TestPopulator;
@@ -92,7 +92,7 @@ public class DispoTest {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
-                Actor a = em.find(Actor.class, 1l);
+                Partner a = em.find(Partner.class, 1l);
 
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 

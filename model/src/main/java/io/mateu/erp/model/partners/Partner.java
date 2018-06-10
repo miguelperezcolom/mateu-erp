@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.revenue.HandlingFee;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
@@ -33,7 +34,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Actor implements IActor {
+public class Partner implements IPartner {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,7 +48,7 @@ public class Actor implements IActor {
 
     private boolean active = true;
 
-    private ActorStatus status;
+    private PartnerStatus status;
 
     private boolean agency;
 
@@ -61,10 +62,10 @@ public class Actor implements IActor {
     private boolean commissionAgent;
 
     @ManyToOne
-    private ActorGroup group;
+    private PartnerGroup group;
 
     @ManyToOne
-    private Actor headQuater;
+    private Partner headQuater;
 
     @ManyToOne
     private Market market;
@@ -74,8 +75,10 @@ public class Actor implements IActor {
     private Currency currency;
 
     @ManyToOne
-    private FinancialAgent financialAGent;
+    private FinancialAgent financialAgent;
 
+    @ManyToOne
+    private Company company;
 
     @ListColumn
     private String email;

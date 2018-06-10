@@ -1,6 +1,6 @@
 package io.mateu.erp.server.admin;
 
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.mdd.server.JPAServerSideEditorViewController;
 
 /**
@@ -9,7 +9,7 @@ import io.mateu.ui.mdd.server.JPAServerSideEditorViewController;
 public class CustomerController extends JPAServerSideEditorViewController {
     @Override
     public Class getModelClass() {
-        return Actor.class;
+        return Partner.class;
     }
 
     @Override

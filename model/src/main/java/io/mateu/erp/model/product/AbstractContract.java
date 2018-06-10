@@ -6,7 +6,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.PaymentTerms;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.revenue.Product;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
@@ -88,7 +88,7 @@ public class AbstractContract {
     @NotNull
     @SearchFilter
     @ListColumn
-    private Actor supplier;
+    private Partner supplier;
 
     @ManyToOne
     @NotInEditor
@@ -97,7 +97,7 @@ public class AbstractContract {
     private Office office;
 
     @OneToMany
-    private List<Actor> targets = new ArrayList<>();
+    private List<Partner> targets = new ArrayList<>();
 
 
     @Tab("Signature")

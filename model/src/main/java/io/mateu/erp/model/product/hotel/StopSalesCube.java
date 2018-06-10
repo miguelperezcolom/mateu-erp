@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +23,7 @@ public class StopSalesCube {
     private LocalDate inicio = null;
     private LocalDate fin = null;
     private List<RoomType> rooms = new ArrayList<>();
-    private List<Actor> actors = new ArrayList<>();
+    private List<Partner> actors = new ArrayList<>();
     int maxdias = 0;
 
     public StopSalesCube(StopSales stopSales) {
@@ -67,8 +66,8 @@ public class StopSalesCube {
                     }
                 }
 
-                List<Actor> acts = (o.getActors().size() > 0)?o.getActors():actors;
-                for (Actor a : acts) {
+                List<Partner> acts = (o.getActors().size() > 0)?o.getActors():actors;
+                for (Partner a : acts) {
                     int posact = actors.indexOf(a);
                     switch (o.getAction()) {
                         case OPEN:
@@ -96,11 +95,11 @@ public class StopSalesCube {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             for (RoomType r : o.getRooms()) if (!rooms.contains(r)) rooms.add(r);
-            for (Actor r : o.getActors()) if (!actors.contains(r)) actors.add(r);
+            for (Partner r : o.getActors()) if (!actors.contains(r)) actors.add(r);
         }
 
         if (rooms.size() == 0) rooms.add(new RoomType()); // dummy room
-        if (actors.size() == 0) actors.add(new Actor()); // dummy actor
+        if (actors.size() == 0) actors.add(new Partner()); // dummy actor
 
         if (inicio != null && fin != null) maxdias = (int) ChronoUnit.DAYS.between(inicio, fin);
 

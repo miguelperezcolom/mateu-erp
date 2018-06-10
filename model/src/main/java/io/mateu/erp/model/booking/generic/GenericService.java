@@ -2,7 +2,7 @@ package io.mateu.erp.model.booking.generic;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
@@ -88,7 +88,7 @@ public class GenericService extends Service {
         return s;
     }
     @Override
-    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
@@ -115,7 +115,7 @@ public class GenericService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Actor provider = null;
+        Partner provider = null;
         long noches = DAYS.between(getStart(), getFinish());
         for (Price p : prices) {
             double v = 0;
@@ -131,7 +131,7 @@ public class GenericService extends Service {
     }
 
     @Override
-    public Actor findBestProvider(EntityManager em) throws Throwable {
+    public Partner findBestProvider(EntityManager em) throws Throwable {
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
@@ -158,7 +158,7 @@ public class GenericService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Actor provider = null;
+        Partner provider = null;
         long noches = DAYS.between(getStart(), getFinish());
         for (Price p : prices) {
             double v = 0;

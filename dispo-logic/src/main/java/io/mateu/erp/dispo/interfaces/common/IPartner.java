@@ -4,7 +4,7 @@ import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
 
 import java.util.List;
 
-public interface IActor {
+public interface IPartner {
 
     public long getId();
 

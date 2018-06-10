@@ -1,6 +1,6 @@
 package io.mateu.erp.dispo.interfaces.auth;
 
-import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.dispo.interfaces.common.IPartner;
 
 public interface IAuthToken {
 
@@ -8,6 +8,6 @@ public interface IAuthToken {
 
     public String getId();
 
-    public IActor getActor();
+    public IPartner getActor();
 
 }

@@ -4,7 +4,7 @@ import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.common.model.util.Constants;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, User user, Actor customer, String html, Office office, PointOfSale pos)
+    public ShuttleDirectImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos)
     {
        this.setCustomer(customer);
 
@@ -49,7 +49,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     }
 
-    public ShuttleDirectImportTask( User user, Actor customer, String xml, Office office, PointOfSale pos)
+    public ShuttleDirectImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos)
     {
         this("ShuttleDirect", user, customer,xml, office, pos);//guardamos el xml en el campo del html
     }

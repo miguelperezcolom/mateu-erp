@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking.hotel;
 
 import io.mateu.erp.model.world.State;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
 import io.mateu.ui.mdd.server.annotations.SameLine;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import java.util.List;
 public class Pagina1 extends AbstractServerSideWizardPage {
 
     @NotNull
-    private Actor agency;
+    private Partner agency;
 
     @NotNull
     private State state;

@@ -1,7 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
@@ -10,7 +9,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.core.shared.Data;
@@ -87,7 +86,7 @@ public class HotelService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
         AvailableHotel ah = new HotelAvailabilityRunner().check(getBooking().getAgency(), getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
             @Override
             public IHotelContract getHotelContract(long id) {
@@ -222,7 +221,7 @@ public class HotelService extends Service {
 
             io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
 
-            Actor agencia = em.find(Actor.class, k.getAgencyId());
+            Partner agencia = em.find(Partner.class, k.getAgencyId());
             Hotel hotel = em.find(Hotel.class, k.getHotelId());
             Office oficina = hotel.getOffice();
             PointOfSale pos = em.find(PointOfSale.class, k.getPointOfSaleId());
@@ -286,7 +285,7 @@ public class HotelService extends Service {
 
 
     @Override
-    public Actor findBestProvider(EntityManager em) throws Throwable {
+    public Partner findBestProvider(EntityManager em) throws Throwable {
         if (getPurchaseContract() != null) return getPurchaseContract().getSupplier();
         else if (getSaleContract() != null) return getSaleContract().getSupplier();
         else return null;

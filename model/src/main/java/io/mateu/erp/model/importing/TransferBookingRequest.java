@@ -7,7 +7,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.common.model.util.Constants;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -49,7 +49,7 @@ public class TransferBookingRequest {
     @SearchFilter
     @Output
     @ManyToOne
-    private Actor customer;
+    private Partner customer;
 
     @SearchFilter
     @Output

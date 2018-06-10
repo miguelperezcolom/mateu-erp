@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter@Setter
-public class Actor {
+public class Partner {
 
     @Id
     private long id;

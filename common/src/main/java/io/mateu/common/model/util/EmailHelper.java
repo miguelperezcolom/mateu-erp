@@ -21,21 +21,37 @@ public class EmailHelper {
 
                 AppConfig c = AppConfig.get(em);
 
-                Email email = new HtmlEmail();
-                email.setHostName(c.getAdminEmailSmtpHost());
-                email.setSmtpPort(c.getAdminEmailSmtpPort());
-                email.setAuthenticator(new DefaultAuthenticator(c.getAdminEmailUser(), c.getAdminEmailPassword()));
-                //email.setSSLOnConnect(true);
-                email.setFrom(c.getAdminEmailFrom());
-                if (!noCC && !Strings.isNullOrEmpty(c.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(c.getAdminEmailCC()));
+                if (checkAppConfigForSMTP(c)) {
+                    Email email = new HtmlEmail();
+                    email.setHostName(c.getAdminEmailSmtpHost());
+                    email.setSmtpPort(c.getAdminEmailSmtpPort());
+                    email.setAuthenticator(new DefaultAuthenticator(c.getAdminEmailUser(), c.getAdminEmailPassword()));
+                    //email.setSSLOnConnect(true);
+                    email.setFrom(c.getAdminEmailFrom());
+                    if (!noCC && !Strings.isNullOrEmpty(c.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(c.getAdminEmailCC()));
 
-                email.setSubject(subject);
-                //email.setMsg(io.mateu.ui.mdd.server.util.Helper.freemark(template, getData()));
-                email.setMsg(text);
-                email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):toEmail);
-                email.send();
+                    email.setSubject(subject);
+                    //email.setMsg(io.mateu.ui.mdd.server.util.Helper.freemark(template, getData()));
+                    email.setMsg(text);
+                    email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):toEmail);
+                    email.send();
+                } else {
+                    System.out.println("Missing SMTP confirguration. Please go to admin > Appconfig and fill");
+                }
             }
         });
+    }
+
+    private static boolean checkAppConfigForSMTP(AppConfig c) {
+
+        boolean ok = true;
+
+        ok &= c.getAdminEmailSmtpPort() > 0;
+        ok &= !Strings.isNullOrEmpty(c.getAdminEmailSmtpHost());
+        ok &= !Strings.isNullOrEmpty(c.getAdminEmailUser());
+
+        return ok;
+
     }
 
 

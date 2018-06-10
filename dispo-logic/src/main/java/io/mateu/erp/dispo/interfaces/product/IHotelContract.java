@@ -1,6 +1,6 @@
 package io.mateu.erp.dispo.interfaces.product;
 
-import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ public interface IHotelContract {
 
     public HotelContractPhoto getTerms();
 
-    public List<? extends IActor> getTargets();
+    public List<? extends IPartner> getTargets();
 
     long getId();
 }

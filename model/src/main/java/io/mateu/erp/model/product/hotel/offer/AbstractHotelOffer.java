@@ -10,7 +10,7 @@ import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.DatesRanges;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -88,7 +88,7 @@ public class AbstractHotelOffer implements IHotelOffer {
 
     @SearchFilter
     @OneToMany
-    private List<Actor> targets = new ArrayList<>();
+    private List<Partner> targets = new ArrayList<>();
 
     @SearchFilter
     @OneToMany

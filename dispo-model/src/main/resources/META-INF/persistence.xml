@@ -18,7 +18,7 @@
     <!-- otherwise they must be listed using <class>  -->
 
         <class>io.mateu.erp.dispo.model.auth.AuthToken</class>
-        <class>io.mateu.erp.dispo.model.common.Actor</class>
+        <class>io.mateu.erp.dispo.model.common.Partner</class>
         <class>io.mateu.erp.dispo.model.portfolio.City</class>
         <class>io.mateu.erp.dispo.model.portfolio.Country</class>
         <class>io.mateu.erp.dispo.model.integrations.Integration</class>

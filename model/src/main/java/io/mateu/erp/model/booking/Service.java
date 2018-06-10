@@ -10,7 +10,7 @@ import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
@@ -240,7 +240,7 @@ public abstract class Service {
     @Tab("Purchase")
     @ManyToOne
     @QLFilter("x.provider = true")
-    private Actor preferredProvider;
+    private Partner preferredProvider;
 
     private boolean alreadyPurchased;
 
@@ -441,7 +441,7 @@ public abstract class Service {
     }
 
     @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider")@QLFilter("x.provider = true") Actor provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
+    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider")@QLFilter("x.provider = true") Partner provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             s.setAlreadyPurchased(false);
@@ -452,7 +452,7 @@ public abstract class Service {
                 throwable.printStackTrace();
             }
         }
-        Map<Actor, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
+        Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
@@ -776,11 +776,11 @@ public abstract class Service {
         return rate(em, sale, null, report);
     }
 
-    public abstract double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable;
+    public abstract double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable;
 
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
-        Actor provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
+        Partner provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
         if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
         if (isCancelled() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
@@ -793,6 +793,9 @@ public abstract class Service {
                     po = null;
                 }
             }
+
+            //todo: comprobar si hay algún pedido que podamos reutilizar
+
             boolean nueva = false;
             if (po == null) {
                 nueva = true;
@@ -811,7 +814,7 @@ public abstract class Service {
         }
     }
 
-    public abstract Actor findBestProvider(EntityManager em) throws Throwable;
+    public abstract Partner findBestProvider(EntityManager em) throws Throwable;
 
 
     @Override

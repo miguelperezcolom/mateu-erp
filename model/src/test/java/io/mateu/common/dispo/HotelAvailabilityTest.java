@@ -15,7 +15,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.LocalizationRule;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -48,12 +48,12 @@ public class HotelAvailabilityTest
     Currency eur;
 
     private Hotel hotel;
-    private Actor agencia;
+    private Partner agencia;
     private ModeloDispo modelo;
     private HotelContract contratoVenta;
     private User u;
     private BillingConcept centroProduccion;
-    private Actor proveedor;
+    private Partner proveedor;
     private HotelContractPhoto condicionesContrato;
     private Map<Long, HotelContract> contratos;
     private LinearFare tarifaEnero;
@@ -86,13 +86,13 @@ public class HotelAvailabilityTest
         centroProduccion.setLocalizationRule(LocalizationRule.SERVICE);
 
         // creamos una agencia
-        agencia = new Actor();
+        agencia = new Partner();
         agencia.setId(1);
         agencia.setName("Muchoviaje");
         agencia.setActive(true);
 
         // creamos un proveedor
-        proveedor = new Actor();
+        proveedor = new Partner();
         proveedor.setId(2);
         proveedor.setName("Barcelo Hoteles");
         proveedor.setActive(true);

@@ -1,6 +1,6 @@
 package io.mateu.erp.dispo.model.auth;
 
-import io.mateu.erp.dispo.model.common.Actor;
+import io.mateu.erp.dispo.model.common.Partner;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +18,6 @@ public class AuthToken {
     private boolean active;
 
     @ManyToOne
-    private Actor actor;
+    private Partner partner;
 
 }

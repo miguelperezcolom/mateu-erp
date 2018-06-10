@@ -6,6 +6,7 @@ import io.mateu.common.model.config.Template;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.thirdParties.Integration;
@@ -41,7 +42,7 @@ public class AdminModule extends AbstractModule {
 
         m.add(new MDDAction("Auth tokens", AuthToken.class));
 
-        m.add(new MDDMenu("Organization", "Offices", Office.class, "POS", PointOfSale.class));
+        m.add(new MDDMenu("Organization", "Companies", Company.class, "Offices", Office.class, "POS", PointOfSale.class));
 
         m.add(new MDDAction("Currencies", Currency.class));
 

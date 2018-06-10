@@ -12,7 +12,7 @@ import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
 import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
@@ -74,7 +74,7 @@ public class PurchaseOrder {
     @ListColumn
     @SearchFilter
     @QLFilter("x.provider = true")
-    private Actor provider;
+    private Partner provider;
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
@@ -134,6 +134,22 @@ public class PurchaseOrder {
     @ManyToOne
     @NotNull
     Currency currency;
+
+    @NotNull
+    @ManyToOne
+    private Currency officeCurrency;
+
+    private double totalInOfficeCurrency;
+
+    private double officeCurrencyExchangeRate;
+
+    @NotNull
+    @ManyToOne
+    private Currency accountingCurrency;
+
+    private double totalInAccountingCurrency;
+
+    private double accountingCurrencyExchangeRate;
 
     @Output
     private String priceReport;

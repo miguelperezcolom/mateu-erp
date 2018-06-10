@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import io.mateu.common.model.authentication.Audit;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.Output;
@@ -41,7 +41,7 @@ public class QuotationRequest {
 
     @NotNull
     @ManyToOne
-    private Actor actor;
+    private Partner actor;
 
     private LocalDate expiryDate;
 

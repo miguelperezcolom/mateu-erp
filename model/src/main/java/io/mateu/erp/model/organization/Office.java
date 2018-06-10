@@ -28,6 +28,10 @@ public class Office {
     @NotNull
     private String name;
 
+    @NotNull
+    @ManyToOne
+    private Company company;
+
 
     @NotNull
     @ManyToOne

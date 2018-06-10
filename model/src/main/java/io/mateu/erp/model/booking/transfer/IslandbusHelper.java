@@ -8,6 +8,7 @@ import io.mateu.erp.model.product.transfer.TransferType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -87,7 +88,11 @@ public class IslandbusHelper {
 
                     punto.setAttribute("PuntoRecogida", "" + tp.getId());
                     punto.setAttribute("NombrePunto", tp.getName());
-                    punto.setAttribute("Hora", TransferDirection.INBOUND.equals(firstService.getDirection())?s.getFlightTime().format(hf):s.getPickupTime().format(hf));
+                    LocalDateTime t = null;
+                    if (TransferDirection.INBOUND.equals(firstService.getDirection())) t = s.getFlightTime();
+                    else if (TransferDirection.INBOUND.equals(firstService.getDirection())) t = s.getPickupTime();
+                    else if (TransferDirection.POINTTOPOINT.equals(firstService.getDirection())) t = (s.getPickupTime() != null)?s.getPickupTime():s.getFlightTime();
+                    punto.setAttribute("Hora", (t != null)?t.format(hf):"");
                     punto.setAttribute("TTOO",s.getBooking().getAgency().getName());
                     punto.setAttribute("ZonaFisica",tp.getCity().getName());
 

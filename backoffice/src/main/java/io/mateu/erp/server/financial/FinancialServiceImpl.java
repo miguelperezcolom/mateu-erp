@@ -8,7 +8,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.shared.financial.FinancialService;
 import io.mateu.ui.core.shared.Data;
@@ -574,11 +574,11 @@ public class FinancialServiceImpl implements FinancialService {
                 List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing >= :a and x.serviceDateForInvoicing <= :b and not x.cancelled order by x.serviceDateForInvoicing asc, x.start asc").setParameter("a", from).setParameter("b", to).getResultList();
 
 
-                Map<Actor, Data> dataPerAgency = new LinkedHashMap<>();
-                Map<Actor, Data> dataPerAgencyOnlyShuttle = new LinkedHashMap<>();
-                Map<Actor, Map<Actor, Data>> dataPerAgencyAndProvider = new LinkedHashMap<>();
-                Map<Actor, Map<Actor, Data>> dataPerAgencyAndProviderOnlyShuttle = new LinkedHashMap<>();
-                Map<Actor, Data> dataPerProvider = new LinkedHashMap<>();
+                Map<Partner, Data> dataPerAgency = new LinkedHashMap<>();
+                Map<Partner, Data> dataPerAgencyOnlyShuttle = new LinkedHashMap<>();
+                Map<Partner, Map<Partner, Data>> dataPerAgencyAndProvider = new LinkedHashMap<>();
+                Map<Partner, Map<Partner, Data>> dataPerAgencyAndProviderOnlyShuttle = new LinkedHashMap<>();
+                Map<Partner, Data> dataPerProvider = new LinkedHashMap<>();
 
                 double totalventa = 0;
                 double totalcompra = 0;
@@ -588,8 +588,8 @@ public class FinancialServiceImpl implements FinancialService {
 
                 for (Service s : l) {
 
-                    Map<Actor, Data> dpa = dataPerAgency;
-                    Map<Actor, Map<Actor, Data>> dpaap = dataPerAgencyAndProvider;
+                    Map<Partner, Data> dpa = dataPerAgency;
+                    Map<Partner, Map<Partner, Data>> dpaap = dataPerAgencyAndProvider;
 
                     if (s.getBooking().getAgency().isShuttleTransfersInOwnInvoice() && s instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) {
                         dpa = dataPerAgencyOnlyShuttle;
@@ -673,9 +673,9 @@ public class FinancialServiceImpl implements FinancialService {
 
                         // para esta agencia
                         {
-                            Map<Actor, Data> aux = dpaap.get(s.getBooking().getAgency());
+                            Map<Partner, Data> aux = dpaap.get(s.getBooking().getAgency());
                             if (aux == null) {
-                                dpaap.put(s.getBooking().getAgency(), aux = new HashMap<Actor, Data>());
+                                dpaap.put(s.getBooking().getAgency(), aux = new HashMap<Partner, Data>());
                             }
                             Data providerData = aux.get(po.getProvider());
                             if (providerData == null) {
@@ -736,16 +736,16 @@ public class FinancialServiceImpl implements FinancialService {
                 }
 
 
-                for (Actor a : dataPerAgency.keySet()) {
-                    Map<Actor, Data> aux = dataPerAgencyAndProvider.get(a);
+                for (Partner a : dataPerAgency.keySet()) {
+                    Map<Partner, Data> aux = dataPerAgencyAndProvider.get(a);
                     if (aux != null) {
                         Data d = dataPerAgency.get(a);
                         d.getList("providers").addAll(aux.values());
                     }
                 }
 
-                for (Actor a : dataPerAgencyOnlyShuttle.keySet()) {
-                    Map<Actor, Data> aux = dataPerAgencyAndProviderOnlyShuttle.get(a);
+                for (Partner a : dataPerAgencyOnlyShuttle.keySet()) {
+                    Map<Partner, Data> aux = dataPerAgencyAndProviderOnlyShuttle.get(a);
                     if (aux != null) {
                         Data d = dataPerAgencyOnlyShuttle.get(a);
                         d.getList("providers").addAll(aux.values());

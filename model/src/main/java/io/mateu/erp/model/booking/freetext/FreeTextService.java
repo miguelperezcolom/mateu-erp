@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking.freetext;
 
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.util.Helper;
 import lombok.Getter;
@@ -57,12 +57,12 @@ public class FreeTextService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
         return 0;
     }
 
     @Override
-    public Actor findBestProvider(EntityManager em) throws Throwable {
+    public Partner findBestProvider(EntityManager em) throws Throwable {
         return null;
     }
 }

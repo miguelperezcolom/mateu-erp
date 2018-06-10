@@ -2,7 +2,7 @@ package io.mateu.common.consolidador;
 
 import com.google.common.primitives.Ints;
 import io.mateu.erp.dispo.interfaces.auth.IAuthToken;
-import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
 import io.mateu.erp.dispo.interfaces.portfolio.IResource;
 import org.easytravelapi.common.Amount;
@@ -35,7 +35,7 @@ public class Logica {
 
             // tenemos agencia
 
-            IActor actor = token.getActor();
+            IPartner actor = token.getActor();
 
             if (actor == null) throw new Throwable("No actor for token " + rq.getToken() + "");
 

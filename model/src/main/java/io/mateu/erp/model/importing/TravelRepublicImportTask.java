@@ -5,7 +5,7 @@ import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.common.model.util.Constants;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -30,7 +30,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public TravelRepublicImportTask() {}
 
-    public TravelRepublicImportTask(String name, User user, Actor customer, String html, Office office, PointOfSale pos)
+    public TravelRepublicImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos)
     {
         this.setCustomer(customer);
 
@@ -50,7 +50,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     }
 
-    public TravelRepublicImportTask( User user, Actor customer, String xml, Office office, PointOfSale pos)
+    public TravelRepublicImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos)
     {
         this("TravelRepublic", user, customer,xml, office, pos);//guardamos el xml en el campo del html
     }
@@ -259,7 +259,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
                 TravelRepublicImportTask t = new TravelRepublicImportTask();
                 em.persist(t);
                 t.setAudit(new Audit());
-                t.setCustomer(em.find(Actor.class, 47l));
+                t.setCustomer(em.find(Partner.class, 47l));
                 t.setOffice(em.find(Office.class, 1l));
                 t.setPointOfSale(em.find(PointOfSale.class, 2l)); // importación
                 t.setHtml(Helper.leerFichero("/Users/miguel/Downloads/manifest.csv"));

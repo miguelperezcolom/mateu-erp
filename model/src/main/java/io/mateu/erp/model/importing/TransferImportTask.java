@@ -3,7 +3,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.core.shared.Data;
 import io.mateu.ui.core.shared.UserData;
 import io.mateu.ui.mdd.server.annotations.*;
@@ -54,7 +54,7 @@ public abstract class TransferImportTask {
 
 
     @ManyToOne
-    private Actor customer; //cliente de la reserva
+    private Partner customer; //cliente de la reserva
 
     @ManyToOne
     private Office office;

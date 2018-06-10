@@ -8,7 +8,7 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
     @ManyToOne
     @Output
-    private Actor provider;
+    private Partner provider;
 
     @Output
     private PurchaseOrderSendingMethod method;

@@ -9,7 +9,7 @@ import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
@@ -664,7 +664,7 @@ public class TransferService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Actor supplier, PrintWriter report) throws Throwable {
+    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
 
         if (isCancelled()) return 0;
 
@@ -733,7 +733,7 @@ public class TransferService extends Service {
     }
 
     @Override
-    public Actor findBestProvider(EntityManager em) throws Throwable {
+    public Partner findBestProvider(EntityManager em) throws Throwable {
         // verificamos que tenemos lo que necesitamos para valorar
 
         setAndMapTransferPoints(em);
@@ -773,7 +773,7 @@ public class TransferService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Actor provider = null;
+        Partner provider = null;
         for (Price p : prices) {
             double v = p.getPrice();
             if (PricePer.PAX.equals(p.getPricePer())) v = getPax() * p.getPrice();

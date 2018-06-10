@@ -17,7 +17,7 @@ import io.mateu.erp.model.world.State;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
-import io.mateu.erp.model.partners.Actor;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.DiscountOffer;
@@ -50,16 +50,16 @@ public class TestPopulator {
         System.setProperty("defaultpuname", "mateu-common");
 
 
-        populateAll(AppConfig.class, Actor.class, Hotel.class, true, HotelContract.class);
+        populateAll(AppConfig.class, Partner.class, Hotel.class, true, HotelContract.class);
 
     }
 
     public static void populateEverythingButContracts() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, Hotel.class, false, HotelContract.class);
+        populateAll(AppConfig.class, Partner.class, Hotel.class, false, HotelContract.class);
     }
 
     public static void populateEverything() throws Throwable {
-        populateAll(AppConfig.class, Actor.class, Hotel.class,true, HotelContract.class);
+        populateAll(AppConfig.class, Partner.class, Hotel.class,true, HotelContract.class);
     }
 
     public static void populateAll(Class appConfigClass, Class actorClass, Class hotelClass, boolean hotelContracts, Class hotelContractClass) throws Throwable {
@@ -127,7 +127,7 @@ public class TestPopulator {
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjM0IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiIn0");
                     t.setActive(true);
                     t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
-                    t.setActor(em.find(Actor.class, 3l));
+                    t.setActor(em.find(Partner.class, 3l));
                     em.persist(t);
                 }
 
@@ -137,7 +137,7 @@ public class TestPopulator {
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9");
                     t.setActive(true);
                     t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
-                    t.setActor(em.find(Actor.class, 3l));
+                    t.setActor(em.find(Partner.class, 3l));
                     t.setHotel(em.find(Hotel.class, 12l));
                     em.persist(t);
                 }
@@ -169,10 +169,10 @@ public class TestPopulator {
                 shuttle.setName("SHUTTLE BUS 1-99");
                 em.persist(shuttle);
 
-                Actor islandbus = null;
-                Actor nosotros = null;
+                Partner islandbus = null;
+                Partner nosotros = null;
 
-                for (Actor a : (List<Actor>) em.createQuery("select s from " + Actor.class.getName() + " s").getResultList()) {
+                for (Partner a : (List<Partner>) em.createQuery("select s from " + Partner.class.getName() + " s").getResultList()) {
                     if (a.getName().toLowerCase().contains("nosotros")) nosotros = a;
                     if (a.getName().toLowerCase().contains("islandbus")) islandbus = a;
                 }
@@ -329,11 +329,11 @@ public class TestPopulator {
 
                 Currency eur = em.find(Currency.class, "EUR");
 
-                Actor agencia = null;
-                Actor proveedor = null;
+                Partner agencia = null;
+                Partner proveedor = null;
 
 
-                for (Actor a : (List<Actor>) em.createQuery("select s from " + Actor.class.getName() + " s").getResultList()) {
+                for (Partner a : (List<Partner>) em.createQuery("select s from " + Partner.class.getName() + " s").getResultList()) {
                     if (a.getName().toLowerCase().contains("muchoviaje")) agencia = a;
                     if (a.getName().toLowerCase().contains("islandbus")) proveedor = a;
                 }
@@ -437,7 +437,7 @@ public class TestPopulator {
 
 
                 {
-                    Actor a = (Actor) actorClass.newInstance();
+                    Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -461,7 +461,7 @@ public class TestPopulator {
 
 
                 {
-                    Actor a = (Actor) actorClass.newInstance();
+                    Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -484,7 +484,7 @@ public class TestPopulator {
                 }
 
                 {
-                    Actor a = (Actor) actorClass.newInstance();
+                    Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -507,7 +507,7 @@ public class TestPopulator {
 
 
                 {
-                    Actor a = (Actor) actorClass.newInstance();
+                    Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -530,7 +530,7 @@ public class TestPopulator {
                 }
 
                 {
-                    Actor a = (Actor) actorClass.newInstance();
+                    Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
                     a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
@@ -567,7 +567,7 @@ public class TestPopulator {
 
                 io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
-                Actor prov = (Actor) em.createQuery("select s from " + Actor.class.getName() + " s").getResultList().get(0);
+                Partner prov = (Partner) em.createQuery("select s from " + Partner.class.getName() + " s").getResultList().get(0);
 
                 Random random = new Random();
 
@@ -614,17 +614,17 @@ public class TestPopulator {
             public void run(EntityManager em) throws Throwable {
 
                 List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s order by s.name").getResultList();
-                List<Actor> actores = em.createQuery("select s from " + Actor.class.getName() + " s order by s.name").getResultList();
+                List<Partner> actores = em.createQuery("select s from " + Partner.class.getName() + " s order by s.name").getResultList();
 
                 io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, "admin");
                 BillingConcept bc = (BillingConcept) em.createQuery("select s from " + BillingConcept.class.getName() + " s").getResultList().get(0);
-                Actor prov = em.find(Actor.class, 4l); // barceló
+                Partner prov = em.find(Partner.class, 4l); // barceló
                 Currency eur = em.find(Currency.class, "EUR");
 
                 for (Hotel h : hoteles) {
 
                     int i = 1;
-                    for (Actor a : actores) {
+                    for (Partner a : actores) {
 
                         HotelContract c = (HotelContract) hotelContractClass.newInstance();
                         h.getContracts().add(c);
@@ -1029,7 +1029,7 @@ public class TestPopulator {
 
                 List<Hotel> hoteles = em.createQuery("select s from " + hotelClass.getName() + " s").getResultList();
 
-                List<Actor> actores =  em.createQuery("select s from " + Actor.class.getName() + " s").getResultList();
+                List<Partner> actores =  em.createQuery("select s from " + Partner.class.getName() + " s").getResultList();
 
                 for (Hotel h : hoteles) {
 

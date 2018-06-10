@@ -4,8 +4,8 @@ import io.mateu.erp.model.financials.Abseiling;
 import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.CreditLimit;
 import io.mateu.erp.model.financials.PaymentTerms;
-import io.mateu.erp.model.partners.Actor;
-import io.mateu.erp.model.partners.ActorGroup;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.PartnerGroup;
 import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.revenue.*;
 import io.mateu.ui.core.client.app.AbstractMenu;
@@ -28,9 +28,9 @@ public class RevenueModule extends AbstractModule {
 
         m.add(new MDDAction("Products", Product.class));
 
-        m.add(new MDDAction("Actors", Actor.class));
+        m.add(new MDDAction("Partners", Partner.class));
 
-        m.add(new MDDAction("Actor groups", ActorGroup.class));
+        m.add(new MDDAction("Partner groups", PartnerGroup.class));
 
         m.add(new AbstractMenu("Revenue") {
             @Override
