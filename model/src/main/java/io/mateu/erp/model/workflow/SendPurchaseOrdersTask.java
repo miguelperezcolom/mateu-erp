@@ -71,6 +71,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
             po.setSent(true);
             if (po.getProvider().isAutomaticOrderConfirmation()) po.setStatus(PurchaseOrderStatus.CONFIRMED);
             po.setSentTime(LocalDateTime.now());
+            for (Service s : po.getServices()) s.setSentToProvider(LocalDateTime.now());
         }
     }
 
