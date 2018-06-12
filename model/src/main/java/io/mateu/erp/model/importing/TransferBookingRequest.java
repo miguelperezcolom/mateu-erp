@@ -613,7 +613,10 @@ public class TransferBookingRequest {
         if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
         if (lastRequest == null || !arrivalOriginAirport.equals(lastRequest.getArrivalOriginAirport())) s.setFlightOriginOrDestination("" + arrivalOriginAirport);
         if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
-        if (lastRequest == null || (adults + children + babies) != (lastRequest.getAdults() + lastRequest.getChildren() + lastRequest.getBabies())) s.setPax(adults + children + babies);
+        if (lastRequest == null || (adults + children) != (lastRequest.getAdults() + lastRequest.getChildren())) s.setPax(adults + children);
+
+        // arreglo porque antes incluíamos los bebes en los pax
+        if (s.getPax() != (adults + children)) s.setPax(adults + children);
        // s.setAdults(adults);
         //s.setChildren(children);
 

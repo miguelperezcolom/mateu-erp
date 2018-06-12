@@ -170,7 +170,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             try {
                 rq.setCurrency(nc.substring(0, 3));
                 rq.setValue(Helper.toDouble(nc.substring(3)));
-                if (rq.getValue() != 0 && TransferType.SHUTTLE.equals(rq.getServiceType())) rq.setValue(rq.getValue() * (rq.getAdults() + rq.getChildren() + rq.getBabies()));
+                if (rq.getValue() != 0 && TransferType.SHUTTLE.equals(rq.getServiceType())) rq.setValue(rq.getValue() * (rq.getAdults() + rq.getChildren()));
                 if (rq.getValue() != 0) rq.setValue(rq.getValue());
             } catch (Exception e) {
                 e.printStackTrace();
