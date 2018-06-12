@@ -615,8 +615,6 @@ public class TransferBookingRequest {
         if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
         if (lastRequest == null || (adults + children) != (lastRequest.getAdults() + lastRequest.getChildren())) s.setPax(adults + children);
 
-        // arreglo porque antes incluíamos los bebes en los pax
-        if (s.getPax() != adults + children) s.setPax(adults + children);
        // s.setAdults(adults);
         //s.setChildren(children);
 
