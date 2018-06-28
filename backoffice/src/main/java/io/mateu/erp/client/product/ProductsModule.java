@@ -1,6 +1,6 @@
 package io.mateu.erp.client.product;
 
-import io.mateu.erp.model.product.generic.Contract;
+import io.mateu.erp.model.product.Extra;
 import io.mateu.erp.model.product.generic.*;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.hotel.*;
@@ -61,7 +61,7 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDMenu("Definition", "Products", GenericProduct.class, "Extras", Extra.class));
+                m.add(new MDDMenu("Definition", "Products", GenericProduct.class));
 
                 m.add(new MDDMenu("AI", "Allotment", AllotmentOnGeneric.class, "Stop sales", StopSaleOnGeneric.class, "Release", ReleaseOnGeneric.class));
 

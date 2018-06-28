@@ -5,7 +5,7 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.generic.Contract;
-import io.mateu.erp.model.product.generic.Extra;
+import io.mateu.erp.model.product.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.ui.mdd.server.annotations.Subtitle;

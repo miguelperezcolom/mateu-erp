@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Extra;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,8 +30,10 @@ public class TourPrice {
     private TourVariant variant;
 
     @ManyToOne
-    @NotNull
     private TourPriceZone zone;
+
+    @ManyToOne
+    private Extra extra;
 
     @Column(name = "_start")
     private LocalDate start;

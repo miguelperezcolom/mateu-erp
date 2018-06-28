@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Extra;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.product.tour.TourDuration;
 import io.mateu.erp.model.product.tour.TourPriceZone;
@@ -8,10 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by miguel on 31/1/17.

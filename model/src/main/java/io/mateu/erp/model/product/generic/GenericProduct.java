@@ -1,12 +1,12 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.product.Extra;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
