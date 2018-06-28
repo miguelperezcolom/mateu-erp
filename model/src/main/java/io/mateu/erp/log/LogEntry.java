@@ -16,6 +16,7 @@ public class LogEntry {
     private long id;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "_when")
     private Date when = new Date();
 
     @Index

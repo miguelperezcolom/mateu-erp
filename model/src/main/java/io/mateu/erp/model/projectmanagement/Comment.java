@@ -20,6 +20,7 @@ public class Comment {
     private long id;
 
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "_when")
     private Date when;
 
     @ManyToOne
