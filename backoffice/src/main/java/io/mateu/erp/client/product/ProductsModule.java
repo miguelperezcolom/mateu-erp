@@ -1,6 +1,7 @@
 package io.mateu.erp.client.product;
 
 import io.mateu.erp.model.product.generic.*;
+import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -44,7 +45,7 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDMenu("Definition", "Excursions / Circuits", Tour.class, "Variants", TourVariant.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class, "Costs", TourCost.class));
+                m.add(new MDDMenu("Definition", "Excursions / Circuits", Tour.class, "Variants", TourVariant.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class, "Extras", TourExtra.class, "Costs", TourCost.class));
 
                 m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.tour.Contract.class, "Prices", TourPrice.class));
 
@@ -60,7 +61,7 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDMenu("Definition", "Products", GenericProduct.class));
+                m.add(new MDDMenu("Definition", "Products", GenericProduct.class, "Extras", Extra.class));
 
                 m.add(new MDDMenu("AI", "Allotment", AllotmentOnGeneric.class, "Stop sales", StopSaleOnGeneric.class, "Release", ReleaseOnGeneric.class));
 
@@ -78,7 +79,7 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDMenu("Definition", "Transfer points", TransferPoint.class, "Vehicles", Vehicle.class));
+                m.add(new MDDMenu("Definition", "Transfer points", TransferPoint.class, "Vehicles", Vehicle.class, "Extras", io.mateu.erp.model.product.transfer.Extra.class));
 
                 m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.transfer.Contract.class, "Prices", io.mateu.erp.model.product.transfer.Price.class, "Price zones", Zone.class));
 

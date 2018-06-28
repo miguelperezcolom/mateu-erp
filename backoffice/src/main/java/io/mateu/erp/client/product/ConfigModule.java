@@ -25,8 +25,6 @@ public class ConfigModule extends AbstractModule {
 
         m.add(new MDDAction("Product types", ProductType.class));
 
-        m.add(new MDDAction("Extras", Extra.class));
-
         m.add(new MDDMenu("Data sheets", "Features groups", FeatureGroup.class, "Features", Feature.class, "Data sheets", DataSheet.class, "Data sheet features", FeatureValue.class));
 
         m.add(new MDDMenu("Clauses", "Clauses groups", ContractClauseGroup.class, "Clauses", ContractClause.class));
