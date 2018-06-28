@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by miguel on 31/1/17.
  */
-@Entity(name = "GenericExtra")
+@Entity
 @Getter
 @Setter
 public class TourExtra {
