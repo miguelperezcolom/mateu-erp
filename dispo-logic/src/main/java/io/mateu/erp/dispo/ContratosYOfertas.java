@@ -23,7 +23,7 @@ public class ContratosYOfertas {
         for (IHotelContract c : hotel.getContracts()) {
             if (Helper.cabe(c.getValidFrom(), c.getValidTo(), entrada, salida)) {
 
-                if (c.getTargets().size() == 0 || c.getTargets().contains(agency)) {
+                if (c.getPartners().size() == 0 || c.getPartners().contains(agency)) {
 
                     for (CombinacionHabitaciones ch : combinacionesHabitaciones.getCombinaciones()) {
 

@@ -1,7 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.revenue.Product;
+import io.mateu.erp.model.revenue.ProductLine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +28,7 @@ public class CommissionTermsLine {
 
     @ManyToOne
     @NotNull
-    private Product product;
+    private ProductLine product;
 
     @Column(name = "_start")
     private LocalDate start;

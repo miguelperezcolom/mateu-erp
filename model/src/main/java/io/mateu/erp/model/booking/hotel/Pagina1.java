@@ -1,6 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
 import io.mateu.ui.mdd.server.annotations.SameLine;
@@ -20,7 +20,7 @@ public class Pagina1 extends AbstractServerSideWizardPage {
     private Partner agency;
 
     @NotNull
-    private State state;
+    private Destination state;
 
     @NotNull
     private LocalDate checkin = LocalDate.of(2018, 1, 15);

@@ -1,6 +1,6 @@
 package io.mateu.erp.model.financials;
 
-public enum AbseilingApplicationBasis {
+public enum RebateApplicationBasis {
 
     YEARLY, SEMIANNUALLY, QUARTERLY, MONTHLY, WEEKLY
 

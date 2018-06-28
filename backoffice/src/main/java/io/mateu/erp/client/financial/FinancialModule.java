@@ -1,11 +1,9 @@
 package io.mateu.erp.client.financial;
 
-import io.mateu.erp.client.financial.FinancialServiceAsync;
 import io.mateu.erp.model.accounting.AccountingEntry;
 import io.mateu.erp.model.accounting.LineItem;
 import io.mateu.erp.model.financials.*;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.Invoice;
+import io.mateu.erp.model.invoicing.*;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
@@ -42,27 +40,46 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new MDDAction("Billing concepts", BillingConcept.class));
 
-        m.add(new MDDAction("Abseiling settlements", Abseiling.class));
+        m.add(new MDDAction("Rebate settlements", Rebate.class));
 
         m.add(new MDDMenu("VAT", "VAT", VAT.class, "Percents", VATPercent.class, "Settlements", VATSettlement.class));
 
 
-        m.add(new MDDMenu("Accounting", "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
+        m.add(new MDDMenu("Accounting", "Plans", io.mateu.erp.model.accounting.AccountingPlan.class, "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
 
         m.add(new AbstractMenu("Invoicing") {
             @Override
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDAction("Issued invoices", Invoice.class));
+                m.add(new AbstractMenu("Issued") {
+                    @Override
+                    public List<MenuEntry> buildEntries() {
+                        List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDAction("Charges", Charge.class));
+                        m.add(new MDDAction("Invoices", IssuedInvoice.class));
 
-                m.add(new MDDAction("Commissions", Charge.class));
+                        m.add(new MDDAction("Charges", Charge.class, "x.type = " + ChargeType.class.getName() + "." + ChargeType.BOOKING));
 
-                m.add(new MDDAction("Litigations", Litigation.class));
+                        m.add(new MDDAction("Litigations", Litigation.class));
 
-                m.add(new MDDAction("Received invoices", Invoice.class));
+                        return m;
+                    }
+                });
+
+                m.add(new AbstractMenu("Received") {
+                    @Override
+                    public List<MenuEntry> buildEntries() {
+                        List<MenuEntry> m = new ArrayList<>();
+
+                        m.add(new MDDAction("Invoices", ReceivedInvoice.class));
+
+                        m.add(new MDDAction("Charges", Charge.class, "x.type = " + ChargeType.class.getName() + "." + ChargeType.PURCHASE));
+
+                        return m;
+                    }
+                });
+
 
                 return m;
             }
@@ -80,9 +97,9 @@ public class FinancialModule extends AbstractModule {
 
                 m.add(new MDDAction("VCC", VCC.class));
 
-                m.add(new MDDAction("Deposits", Deposit.class));
-
                 m.add(new MDDAction("Payments", Payment.class));
+
+                m.add(new MDDAction("Deposits", Deposit.class));
 
                 m.add(new MDDAction("Bank remittances", BankRemittance.class));
 

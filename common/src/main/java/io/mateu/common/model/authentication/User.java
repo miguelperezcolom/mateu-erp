@@ -91,7 +91,7 @@ public class User {
     public void resetPassword() {
         String password = new RandPass().getPass(6);
         //setPassword(MD5.getHashString(password));
-        setPassword(Helper.md5(password.toLowerCase().trim()));
+        if (!"admin".equals(login) && !"1".equals(password)) setPassword(Helper.md5(password.toLowerCase().trim()));
     }
 
     public void sendForgottenPasswordEmail() throws Throwable {

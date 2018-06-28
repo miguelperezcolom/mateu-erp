@@ -2,6 +2,7 @@ package io.mateu.erp.model.payments;
 
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
+import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,12 +28,16 @@ public class Account {
     @NotNull
     private Currency currency;
 
+    private String comments;
+
+    @Output
     private double input;
 
+    @Output
     private double balance;
 
+    @Output
     private double output;
 
-    private String comments;
 
 }

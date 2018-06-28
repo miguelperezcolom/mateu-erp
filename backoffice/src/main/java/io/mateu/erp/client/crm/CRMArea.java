@@ -10,7 +10,7 @@ public class CRMArea extends AbstractArea {
 
 
     public CRMArea() {
-        super("CRM");
+        super("Biz");
     }
 
     @Override

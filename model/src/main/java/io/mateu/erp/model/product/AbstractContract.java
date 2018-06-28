@@ -2,12 +2,15 @@ package io.mateu.erp.model.product;
 
 import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
+import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.PaymentTerms;
+import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.revenue.Product;
+import io.mateu.erp.model.product.tour.Tour;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.ui.mdd.server.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -54,7 +57,7 @@ public class AbstractContract {
 
     @ManyToOne
     @NotNull
-    private Product product;
+    private ProductLine product;
 
     private boolean VATIncluded;
 
@@ -96,9 +99,19 @@ public class AbstractContract {
     @ListColumn
     private Office office;
 
-    @OneToMany
-    private List<Partner> targets = new ArrayList<>();
 
+    @OneToMany
+    private List<Partner> partners = new ArrayList<>();
+
+    @OneToMany
+    private List<Market> markets = new ArrayList<>();
+
+    @OneToMany
+    private List<Company> companies = new ArrayList<>();
+
+    @Tab("Tour")
+    @OneToMany
+    private List<Tour> tours = new ArrayList<>();
 
     @Tab("Signature")
     private String signedAt;
@@ -119,8 +132,9 @@ public class AbstractContract {
     @ManyToOne
     private PaymentTerms paymentTerms;
 
-    @Ignored
+    @Output
     private double averagePrice;
 
-
+    @ManyToOne
+    private CancellationRules cancellationRules;
 }

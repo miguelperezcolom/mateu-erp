@@ -35,6 +35,10 @@ public class Price {
     @SearchFilter
     private Zone destination;
 
+    @NotNull
+    @SearchFilter
+    private TransferType transferType;
+
     @ManyToOne
     @NotNull
     @SearchFilter
@@ -42,6 +46,10 @@ public class Price {
 
     @NotNull
     private PricePer pricePer;
+
+    private int fromPax;
+
+    private int toPax;
 
     @NotNull
     private double price;

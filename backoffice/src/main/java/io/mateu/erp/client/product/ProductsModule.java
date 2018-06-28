@@ -8,11 +8,11 @@ import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.ui.core.client.app.AbstractMenu;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.MDDAction;
 import io.mateu.ui.mdd.client.MDDMenu;
 
 import java.util.ArrayList;
@@ -28,13 +28,31 @@ public class ProductsModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
+        m.add(getGenericSubmenu());
+
         m.add(getHotelSubmenu());
 
         m.add(getTransferSubmenu());
 
-        m.add(getGenericSubmenu());
+        m.add(getPackagesSubmenu());
 
         return m;
+    }
+
+    private AbstractMenu getPackagesSubmenu() {
+        AbstractMenu s = new AbstractMenu("Packages") {
+            @Override
+            public List<MenuEntry> buildEntries() {
+                List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new MDDMenu("Definition", "Excursions / Circuits", Tour.class, "Variants", TourVariant.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class, "Costs", TourCost.class));
+
+                m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.tour.Contract.class, "Prices", TourPrice.class));
+
+                return m;
+            }
+        };
+        return s;
     }
 
     private AbstractMenu getGenericSubmenu() {
@@ -43,17 +61,11 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDAction("Product types", ProductType.class));
+                m.add(new MDDMenu("Definition", "Products", GenericProduct.class, "Extras", Extra.class));
 
-                m.add(new MDDAction("Products", Product.class));
+                m.add(new MDDMenu("AI", "Allotment", AllotmentOnGeneric.class, "Stop sales", StopSaleOnGeneric.class, "Release", ReleaseOnGeneric.class));
 
-                m.add(new MDDAction("Extras", Extra.class));
-
-                m.add(new MDDAction("Contracts", Contract.class));
-
-                m.add(new MDDAction("Product prices", Price.class));
-
-                m.add(new MDDAction("Extra prices", ExtraPrice.class));
+                m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.generic.Contract.class, "Product prices", Price.class));
 
                 return m;
             }
@@ -67,15 +79,9 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDAction("Transfer points", TransferPoint.class));
+                m.add(new MDDMenu("Definition", "Transfer points", TransferPoint.class, "Vehicles", Vehicle.class));
 
-                m.add(new MDDAction("Contracts", io.mateu.erp.model.product.transfer.Contract.class));
-
-                m.add(new MDDAction("Prices", io.mateu.erp.model.product.transfer.Price.class));
-
-                m.add(new MDDAction("Vehicles", Vehicle.class));
-
-                m.add(new MDDAction("Price zones", Zone.class));
+                m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.transfer.Contract.class, "Prices", io.mateu.erp.model.product.transfer.Price.class, "Price zones", Zone.class));
 
                 m.add(new MDDMenu("Routes", "Routes", Route.class, "Stops", RouteStop.class, "Times", RouteTime.class));
 
@@ -92,25 +98,15 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDAction("Hotels", Hotel.class));
-
                 m.add(new MDDMenu("Coding", "Categories", HotelCategory.class, "Board codes", BoardType.class, "Room codes", RoomType.class));
 
-                m.add(new MDDAction("Rooms", Room.class));
+                m.add(new MDDMenu("Definition", "Hotels", Hotel.class, "Rooms", Room.class, "Boards", Board.class));
 
-                m.add(new MDDAction("Boards", Board.class));
+                m.add(new MDDMenu("AI", "Stop sales", StopSalesView.class, "Inventory", InventoryListView.class));
 
-                m.add(new MDDAction("Stop sales", StopSalesView.class));
+                m.add(new MDDMenu("Prices", "Contracts", HotelContract.class, "Offers", AbstractHotelOffer.class));
 
-                m.add(new MDDAction("Inventory", InventoryListView.class));
-
-                m.add(new MDDAction("Contracts", HotelContract.class));
-
-                m.add(new MDDAction("Offers", AbstractHotelOffer.class));
-
-                m.add(new MDDAction("Hotels without bookings", StopSalesView.class));
-
-                m.add(new MDDAction("Zone remarks", StopSalesView.class));
+                m.add(new MDDMenu("Operations", "Hotels without bookings", StopSalesView.class));
 
                 return m;
             }

@@ -1,11 +1,13 @@
 package io.mateu.erp.model.world;
 
+import io.mateu.erp.model.taxes.VAT;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -30,5 +32,8 @@ public class Country {
 
     @OneToMany(mappedBy = "country")
     @Ignored
-    private List<State> states = new ArrayList<>();
+    private List<Destination> destinations = new ArrayList<>();
+
+    @ManyToOne
+    private VAT vat;
 }

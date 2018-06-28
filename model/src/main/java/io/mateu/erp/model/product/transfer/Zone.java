@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.erp.model.world.City;
 import io.mateu.ui.mdd.server.annotations.QLForCombo;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
 import lombok.Getter;
@@ -36,5 +35,5 @@ public class Zone {
     private List<TransferPoint> points = new ArrayList<>();
 
     @OneToMany
-    private List<City> cities = new ArrayList<>();
+    private List<io.mateu.erp.model.world.Zone> cities = new ArrayList<>();
 }

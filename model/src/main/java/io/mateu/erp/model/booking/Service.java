@@ -684,12 +684,12 @@ public abstract class Service {
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getZone().getName());
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(s.getTransferType()) && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForNonExecutive())) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
-                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getCity().getName());
+                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getZone().getName());
                             if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
                             if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                             es.setAttribute("transferType", "" + s.getTransferType());

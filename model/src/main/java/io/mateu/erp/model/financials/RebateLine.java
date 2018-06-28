@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Getter
 @Setter
-public class AbseilingLine {
+public class RebateLine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +17,7 @@ public class AbseilingLine {
 
     @ManyToOne
     @NotNull
-    private Abseiling abseiling;
+    private Rebate rebate;
 
     @Column(name = "_from")
     private double from;

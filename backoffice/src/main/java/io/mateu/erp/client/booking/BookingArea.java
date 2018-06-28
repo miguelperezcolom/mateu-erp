@@ -19,6 +19,8 @@ public class BookingArea extends AbstractArea {
     public List<AbstractModule> buildModules() {
         List<AbstractModule> l = new ArrayList<>();
         l.add(new BookingModule());
+        l.add(new ImportingModule());
         return l;
     }
+
 }

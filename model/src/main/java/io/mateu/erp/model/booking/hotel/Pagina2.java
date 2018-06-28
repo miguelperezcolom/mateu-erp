@@ -4,7 +4,7 @@ import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -49,7 +49,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         long t0 = System.currentTimeMillis();
 
         List<Hotel> hoteles = new ArrayList<>();
-        for (City c : p.getState().getCities()) {
+        for (Zone c : p.getState().getZones()) {
             hoteles.addAll(c.getHotels());
         }
 
@@ -98,7 +98,7 @@ public class Pagina2 extends AbstractServerSideWizardPage {
 
         for (HotelOption o : options) {
             Hotel h = em.find(Hotel.class, Long.parseLong(o.getId()));
-            o.setCity(h.getCity().getName());
+            o.setCity(h.getZone().getName());
         }
 
         long t1 = System.currentTimeMillis();

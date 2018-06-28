@@ -24,7 +24,7 @@ public class MarkupLine {
     @ManyToOne
     @NotNull
     @SearchFilter
-    private Product product;
+    private ProductLine productLine;
 
     private boolean active;
 

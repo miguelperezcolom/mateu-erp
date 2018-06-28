@@ -366,12 +366,12 @@ public class TransferService extends Service {
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getCity().getName());
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getZone().getName());
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(s.getTransferType()) && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForNonExecutive())) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
-                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getCity().getName());
+                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getZone().getName());
                             if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
                             if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                             es.setAttribute("transferType", "" + s.getTransferType());
@@ -483,9 +483,9 @@ public class TransferService extends Service {
                         , s.getBooking().getLeadName()
                         , s.getPax()
                         , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
-                        , (s.getEffectivePickup() != null && s.getEffectivePickup().getCity().getName() != null)?s.getEffectivePickup().getCity().getName():""
+                        , (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null)?s.getEffectivePickup().getZone().getName():""
                         , (s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()
-                        , (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getCity().getName() != null)?s.getEffectiveDropoff().getCity().getName():""
+                        , (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null)?s.getEffectiveDropoff().getZone().getName():""
                         , "" + s.getTransferType()
                         , (s.getPreferredVehicle() != null)?s.getPreferredVehicle().getName():""
                         , s.getFlightNumber()
@@ -679,9 +679,8 @@ public class TransferService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
-            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
             ok &= supplier == null || supplier.equals(c.getSupplier());
-            ok &= getTransferType().equals(c.getTransferType());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -691,18 +690,19 @@ public class TransferService extends Service {
         }
         if (contracts.size() == 0) throw new Exception("No valid contract");
 
-        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getTargets().size() > 0).collect(Collectors.toList());
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
         List<Price> prices = new ArrayList<>();
         for (Contract c : contracts) for (Price p : c.getPrices()) {
             boolean ok = true;
-            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getCity()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
-                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getCity()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+            ok &= getTransferType().equals(p.getTransferType());
+            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getZone()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
+                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getZone()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
                     ||
-                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getCity()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
-                            && (p.getDestination().getCities().contains(getEffectivePickup().getCity()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getZone()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
+                            && (p.getDestination().getCities().contains(getEffectivePickup().getZone()) || p.getDestination().getPoints().contains(getEffectivePickup())));
             ok &= p.getVehicle().getMinPax() <= getPax();
             ok &= p.getVehicle().getMaxPax() >= getPax();
             if (ok) prices.add(p);
@@ -746,8 +746,7 @@ public class TransferService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
-            ok &= getTransferType().equals(c.getTransferType());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
             ok &= !c.getValidFrom().isAfter(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -760,11 +759,12 @@ public class TransferService extends Service {
         List<Price> prices = new ArrayList<>();
         for (Contract c : contracts) for (Price p : c.getPrices()) {
             boolean ok = true;
-            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getCity()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
-                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getCity()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+            ok &= getTransferType().equals(p.getTransferType());
+            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getZone()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
+                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getZone()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
                     ||
-                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getCity()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
-                            && (p.getDestination().getCities().contains(getEffectivePickup().getCity()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getZone()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
+                            && (p.getDestination().getCities().contains(getEffectivePickup().getZone()) || p.getDestination().getPoints().contains(getEffectivePickup())));
             ok &= p.getVehicle().getMinPax() <= getPax();
             ok &= p.getVehicle().getMaxPax() >= getPax();
             if (ok) prices.add(p);
@@ -812,9 +812,9 @@ public class TransferService extends Service {
         }
 
         d.put("pickup", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
-        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getCity().getName():""));
+        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getZone().getName():""));
         d.put("dropoff", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getName():getDropoffText()));
-        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getCity().getName():""));
+        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getZone().getName():""));
         d.put("providers", getProviders());
         d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
         d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");

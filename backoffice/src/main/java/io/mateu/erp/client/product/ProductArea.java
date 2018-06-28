@@ -12,7 +12,7 @@ import java.util.List;
 public class ProductArea extends AbstractArea {
 
     public ProductArea() {
-        super("Product");
+        super("Portfolio");
     }
 
     @Override

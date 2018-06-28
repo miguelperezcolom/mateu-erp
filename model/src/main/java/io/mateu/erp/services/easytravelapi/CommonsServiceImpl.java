@@ -5,6 +5,8 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.ui.mdd.server.util.Helper;
 import io.mateu.ui.mdd.server.util.JPATransaction;
 import org.easytravelapi.CommonsService;
@@ -45,7 +47,7 @@ public class CommonsServiceImpl implements CommonsService {
                     c.setUrlFriendlyName("spain");
 
 
-                    for (io.mateu.erp.model.world.State es : ec.getStates()) {
+                    for (Destination es : ec.getDestinations()) {
 
                         State s;
                         c.getStates().add(s = new State());
@@ -54,7 +56,7 @@ public class CommonsServiceImpl implements CommonsService {
                         s.setName(es.getName());
                         s.setUrlFriendlyName("majorca");
 
-                        for (io.mateu.erp.model.world.City el : es.getCities()) {
+                        for (Zone el : es.getZones()) {
 
                             City l;
                             s.getCities().add(l = new City());
@@ -134,22 +136,22 @@ public class CommonsServiceImpl implements CommonsService {
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("city/id");
-                    p.setValue("" + h.getCity().getId());
+                    p.setValue("" + h.getZone().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("city/name");
-                    p.setValue(h.getCity().getName());
+                    p.setValue(h.getZone().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getCity().getState().getId());
+                    p.setValue("" + h.getZone().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getCity().getState().getName());
+                    p.setValue(h.getZone().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getCity().getState().getCountry().getIsoCode());
+                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getCity().getState().getCountry().getName());
+                    p.setValue(h.getZone().getDestination().getCountry().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("category/code");
                     p.setValue(h.getCategory().getCode());
@@ -173,22 +175,22 @@ public class CommonsServiceImpl implements CommonsService {
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("city/id");
-                    p.setValue("" + h.getCity().getId());
+                    p.setValue("" + h.getZone().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("city/name");
-                    p.setValue(h.getCity().getName());
+                    p.setValue(h.getZone().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getCity().getState().getId());
+                    p.setValue("" + h.getZone().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getCity().getState().getName());
+                    p.setValue(h.getZone().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getCity().getState().getCountry().getIsoCode());
+                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getCity().getState().getCountry().getName());
+                    p.setValue(h.getZone().getDestination().getCountry().getName());
 
 
                 } else throw new Exception("Unknown resource"); // todo: devolver un 404

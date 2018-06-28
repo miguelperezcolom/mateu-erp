@@ -1,5 +1,7 @@
 package io.mateu.erp.model.taxes;
 
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import io.mateu.ui.mdd.server.annotations.ListColumn;
 import io.mateu.ui.mdd.server.annotations.SearchFilter;
@@ -30,4 +32,10 @@ public class VAT {
     @OneToMany(mappedBy = "vat")
     @Ignored
     private List<VATPercent> percents = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vat")
+    private List<Country> countries = new ArrayList<>();
+
+    @OneToMany(mappedBy = "vat")
+    private List<Destination> destinations = new ArrayList<>();
 }

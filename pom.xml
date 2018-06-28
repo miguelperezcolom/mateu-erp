@@ -6,7 +6,7 @@
 
     <groupId>io.mateu.erp</groupId>
     <artifactId>all</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.2-SNAPSHOT</version>
     <modules>
         <module>model</module>
         <module>backoffice</module>

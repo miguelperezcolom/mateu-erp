@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Abseiling {
+public class Rebate {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +21,7 @@ public class Abseiling {
 
     private String name;
 
-    private AbseilingApplicationBasis applicationBasis;
+    private RebateApplicationBasis applicationBasis;
 
     private LocalDate paymentDate;
 
@@ -32,8 +32,8 @@ public class Abseiling {
     private double percent;
 
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "abseiling")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "rebate")
     @OwnedList
-    private List<AbseilingLine> lines = new ArrayList<>();
+    private List<RebateLine> lines = new ArrayList<>();
 
 }

@@ -4,7 +4,7 @@
 
     <groupId>io.mateu.erp</groupId>
     <artifactId>backoffice</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>${empaquetado}</packaging>
 
     <name>backoffice</name>
@@ -97,14 +97,14 @@
         <dependency>
             <groupId>io.mateu.erp</groupId>
             <artifactId>model</artifactId>
-            <version>0.0.2</version>
+            <version>${version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>io.mateu.ui</groupId>
             <artifactId>mdd</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.1</version>
             <scope>compile</scope>
         </dependency>
 

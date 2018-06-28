@@ -10,10 +10,10 @@ import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.thirdParties.Integration;
-import io.mateu.erp.model.world.City;
-import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
 import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Area;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.MDDAction;
@@ -50,7 +50,7 @@ public class AdminModule extends AbstractModule {
 
         m.add(new MDDAction("Translations", Literal.class));
 
-        m.add(new MDDMenu("World", "Countries", Country.class, "States", State.class, "City", City.class, "Zone", Zone.class));
+        m.add(new MDDMenu("World", "Countries", Country.class, "Destinations", Destination.class, "Zones", Zone.class, "Areas", Area.class));
 
         m.add(new MDDAction("Third party integrations", Integration.class));
 

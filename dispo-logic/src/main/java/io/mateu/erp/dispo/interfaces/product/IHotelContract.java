@@ -12,7 +12,7 @@ public interface IHotelContract {
 
     public HotelContractPhoto getTerms();
 
-    public List<? extends IPartner> getTargets();
+    public List<? extends IPartner> getPartners();
 
     long getId();
 }

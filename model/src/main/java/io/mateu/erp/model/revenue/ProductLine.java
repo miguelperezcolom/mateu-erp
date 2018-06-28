@@ -11,10 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
-@Entity(name = "RevenueProduct")
+@Entity
 @Getter
 @Setter
-public class Product {
+public class ProductLine {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

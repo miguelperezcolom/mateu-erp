@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.hotel;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;

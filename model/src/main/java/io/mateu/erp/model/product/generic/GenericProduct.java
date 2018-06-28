@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.generic;
 
+import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,19 +16,7 @@ import java.util.List;
 @Entity(name = "GenericProduct")
 @Getter
 @Setter
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @ManyToOne
-    @NotNull
-    private ProductType type;
-
-    private String name;
-
-    private boolean active = true;
+public class GenericProduct extends AbstractProduct {
 
     @OneToMany(mappedBy = "product")
     @Ignored

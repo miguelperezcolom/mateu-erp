@@ -1,6 +1,8 @@
 package io.mateu.erp.model.product;
 
+import io.mateu.common.model.common.File;
 import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +25,10 @@ public class DataSheet {
     @ManyToOne
     private Literal description;
 
+    @ManyToOne
+    private File mainImage;
+
     @OneToMany(mappedBy = "dataSheet")
+    @Ignored
     private List<FeatureValue> features = new ArrayList<>();
 }

@@ -1,12 +1,11 @@
 package io.mateu.erp.model.accounting;
 
+import io.mateu.ui.mdd.server.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity(name = "AccountingAccount")
 @Getter
@@ -16,12 +15,19 @@ public class Account {
     @Id
     private String number;
 
+    @ManyToOne
+    @NotNull
+    private AccountingPlan plan;
+
     private String name;
 
+    @Output
     private double debit;
 
+    @Output
     private double credit;
 
+    @Output
     private double balance;
 
     @PreUpdate@PrePersist

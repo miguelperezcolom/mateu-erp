@@ -3,8 +3,14 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.financials.RebateSettlement;
+import io.mateu.erp.model.taxes.VATSettlement;
+import io.mateu.ui.core.shared.Data;
+import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
 import io.mateu.ui.mdd.server.annotations.Output;
 import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.ui.mdd.shared.ActionType;
+import io.mateu.ui.mdd.shared.MDDLink;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +26,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NewNotAllowed
 public class Invoice {
 
     @Id
@@ -29,6 +36,9 @@ public class Invoice {
     @Embedded
     @Output
     private Audit audit;
+
+    @NotNull
+    private InvoiceType type;
 
     private String number;
 
@@ -42,7 +52,6 @@ public class Invoice {
 
     @ManyToOne
     private FinancialAgent recipient;
-
 
     @OneToMany(mappedBy = "invoice")
     @OwnedList
@@ -63,6 +72,17 @@ public class Invoice {
     private double totalInAccountingCurrency;
 
     private double accountingCurrencyExchangeRate;
+
+    private double retainedPercent;
+
+    private double retainedTotal;
+
+
+    @ManyToOne
+    private RebateSettlement rebateSettlement;
+
+    @ManyToOne
+    private VATSettlement vatSettlement;
 
 
 

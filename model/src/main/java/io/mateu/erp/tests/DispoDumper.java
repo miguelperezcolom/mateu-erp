@@ -3,9 +3,9 @@ package io.mateu.erp.tests;
 import io.mateu.erp.dispo.model.portfolio.World;
 import io.mateu.erp.dispo.model.portfolio.Resource;
 import io.mateu.erp.model.thirdParties.Integration;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -70,7 +70,7 @@ public class DispoDumper {
 
                         Map<Long, io.mateu.erp.dispo.model.portfolio.State> estadosEnDispo = new HashMap<>();
                         List<Long> estadosVistos = new ArrayList<>();
-                        for (State c : (List<State>) em.createQuery("select x from " + State.class.getName() + " x").getResultList()) {
+                        for (Destination c : (List<Destination>) em.createQuery("select x from " + Destination.class.getName() + " x").getResultList()) {
 
                             io.mateu.erp.dispo.model.portfolio.State c2 = emd.find(io.mateu.erp.dispo.model.portfolio.State.class, c.getId());
                             if (c2 == null) {
@@ -102,21 +102,21 @@ public class DispoDumper {
 
                         Map<Long, io.mateu.erp.dispo.model.portfolio.City> localidadesEnDispo = new HashMap<>();
                         List<Long> localidadesVistos = new ArrayList<>();
-                        for (City c : (List<City>) em.createQuery("select x from " + City.class.getName() + " x").getResultList()) {
+                        for (Zone c : (List<Zone>) em.createQuery("select x from " + Zone.class.getName() + " x").getResultList()) {
 
                             io.mateu.erp.dispo.model.portfolio.City c2 = emd.find(io.mateu.erp.dispo.model.portfolio.City.class, c.getId());
                             if (c2 == null) {
                                 c2 = new io.mateu.erp.dispo.model.portfolio.City();
                                 c2.setId(c.getId());
-                                c2.setState(estadosEnDispo.get(c.getState().getId()));
+                                c2.setState(estadosEnDispo.get(c.getDestination().getId()));
                                 c2.getState().getCities().add(c2);
                                 emd.persist(c2);
                             }
                             c2.setName(c.getName());
 
-                            if (c2.getState().getId() != c.getState().getId()) {
+                            if (c2.getState().getId() != c.getDestination().getId()) {
                                 c2.getState().getCities().remove(c2);
-                                c2.setState(estadosEnDispo.get(c.getState().getId()));
+                                c2.setState(estadosEnDispo.get(c.getDestination().getId()));
                                 c2.getState().getCities().add(c2);
                             }
 
@@ -141,16 +141,16 @@ public class DispoDumper {
                             if (c2 == null) {
                                 c2 = new Resource();
                                 c2.setId(c.getId());
-                                c2.setCity(localidadesEnDispo.get(c.getCity().getId()));
+                                c2.setCity(localidadesEnDispo.get(c.getZone().getId()));
                                 c2.getCity().getResources().add(c2);
                                 emd.persist(c2);
                             }
                             c2.setName(c.getName());
 
 
-                            if (c2.getCity().getId() != c.getCity().getId()) {
+                            if (c2.getCity().getId() != c.getZone().getId()) {
                                 c2.getCity().getResources().remove(c2);
-                                c2.setCity(localidadesEnDispo.get(c.getCity().getId()));
+                                c2.setCity(localidadesEnDispo.get(c.getZone().getId()));
                                 c2.getCity().getResources().add(c2);
                             }
 
@@ -238,7 +238,7 @@ public class DispoDumper {
                                 emd.persist(c2);
                             }
                             c2.setActive(c.isActive());
-                            c2.setActor(actoresEnDispo.get(c.getActor().getId()));
+                            c2.setPartner(actoresEnDispo.get(c.getPartner().getId()));
 
                             tokensEnDispo.put(c2.getId(), c2);
                             tokensVistos.add(c.getId());

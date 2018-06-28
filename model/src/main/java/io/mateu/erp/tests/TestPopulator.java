@@ -11,9 +11,9 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.product.hotel.*;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
@@ -127,7 +127,7 @@ public class TestPopulator {
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjM0IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiIn0");
                     t.setActive(true);
                     t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
-                    t.setActor(em.find(Partner.class, 3l));
+                    t.setPartner(em.find(Partner.class, 3l));
                     em.persist(t);
                 }
 
@@ -137,7 +137,7 @@ public class TestPopulator {
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9");
                     t.setActive(true);
                     t.setUser(em.find(io.mateu.erp.model.authentication.User.class, "admin"));
-                    t.setActor(em.find(Partner.class, 3l));
+                    t.setPartner(em.find(Partner.class, 3l));
                     t.setHotel(em.find(Hotel.class, 12l));
                     em.persist(t);
                 }
@@ -182,11 +182,11 @@ public class TestPopulator {
 
                 for (Country cx : (List<Country>) em.createQuery("select c from " + Country.class.getName() + " c order by c.name").getResultList()) {
 
-                    for (State s : cx.getStates()) {
+                    for (Destination s : cx.getDestinations()) {
 
-                        List<Zone> zonas = new ArrayList<>();
-                        for (City l : s.getCities()) {
-                            Zone z = new Zone();
+                        List<io.mateu.erp.model.product.transfer.Zone> zonas = new ArrayList<>();
+                        for (Zone l : s.getZones()) {
+                            io.mateu.erp.model.product.transfer.Zone z = new io.mateu.erp.model.product.transfer.Zone();
                             em.persist(z);
                             z.setName(l.getName());
                             z.getCities().add(l);
@@ -203,19 +203,19 @@ public class TestPopulator {
                             c.setSupplier((compra)?islandbus:nosotros);
                             c.setTitle("CONTRATO TRASLADOS " + ((compra)?"COMPRA":"VENTA"));
                             c.setType((compra)?ContractType.PURCHASE:ContractType.SALE);
-                            c.setTransferType(tt);
                             c.setValidFrom(LocalDate.of(2017, 1, 1));
                             c.setValidTo(LocalDate.of(2020, 12, 31));
                             c.setVATIncluded(true);
                             c.setBillingConcept(bc);
 
-                            for (Zone de : zonas) for (Zone a : zonas) if (!de.equals(a)){
+                            for (io.mateu.erp.model.product.transfer.Zone de : zonas) for (io.mateu.erp.model.product.transfer.Zone a : zonas) if (!de.equals(a)){
                                 Price p = new Price();
                                 c.getPrices().add(p);
                                 em.persist(p);
                                 p.setContract(c);
                                 p.setDestination(a);
                                 p.setOrigin(de);
+                                p.setTransferType(tt);
                                 if (TransferType.PRIVATE.equals(tt)) {
                                     p.setPrice(Helper.roundEuros(30d + 20d * random.nextDouble()));
                                     p.setPricePer(PricePer.SERVICE);
@@ -264,9 +264,9 @@ public class TestPopulator {
 
                     for (Map<String, Object> ds : (List<Map<String, Object>>) dc.get("states")) {
 
-                        State s = new State();
+                        Destination s = new Destination();
                         s.setName((String) ds.get("name"));
-                        c.getStates().add(s);
+                        c.getDestinations().add(s);
                         s.setCountry(c);
                         em.persist(s);
 
@@ -274,10 +274,10 @@ public class TestPopulator {
 
                         for (Map<String, Object> dl : (List<Map<String, Object>>) ds.get("cities")) {
 
-                            City l = new City();
+                            Zone l = new Zone();
                             l.setName((String) dl.get("name"));
-                            s.getCities().add(l);
-                            l.setState(s);
+                            s.getZones().add(l);
+                            l.setDestination(s);
                             em.persist(l);
 
                             em.flush();
@@ -289,7 +289,7 @@ public class TestPopulator {
                                 p.setInstructions("---");
                                 p.setType(TransferPointType.valueOf((String) dtp.get("type")));
                                 l.getTransferPoints().add(p);
-                                p.setCity(l);
+                                p.setZone(l);
                                 em.persist(p);
 
                                 em.flush();
@@ -642,7 +642,7 @@ public class TestPopulator {
                         c.setValidTo(LocalDate.parse("2018-12-31"));
                         c.setVATIncluded(true);
                         c.setSupplier(prov);
-                        c.getTargets().add(a);
+                        c.getPartners().add(a);
 
                         c.setCurrency(eur);
 
@@ -900,7 +900,7 @@ public class TestPopulator {
             public void run(EntityManager em) throws Throwable {
 
 
-                City s = em.find(City.class, 1l);
+                Zone s = em.find(Zone.class, 1l);
                 Office o = em.find(Office.class, 1l);
 
 
@@ -948,7 +948,7 @@ public class TestPopulator {
                     Hotel h = (Hotel) hotelClass.newInstance();
                     em.persist(h);
                     h.setName(hn);
-                    h.setCity(s);
+                    h.setZone(s);
                     s.getHotels().add(h);
                     h.setOffice(o);
                     h.setActive(true);

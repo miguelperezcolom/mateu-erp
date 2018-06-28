@@ -3,7 +3,7 @@
     <parent>
         <artifactId>all</artifactId>
         <groupId>io.mateu.erp</groupId>
-        <version>0.0.2</version>
+        <version>0.0.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>io.mateu.jpa</groupId>
             <artifactId>common</artifactId>
-            <version>0.0.2</version>
+            <version>${version}</version>
         </dependency>
 
     </dependencies>

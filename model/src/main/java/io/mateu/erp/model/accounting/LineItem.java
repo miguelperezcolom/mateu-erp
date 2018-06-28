@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -19,9 +20,11 @@ public class LineItem {
     private long id;
 
     @ManyToOne
+    @NotNull
     private AccountingEntry entry;
 
     @ManyToOne
+    @NotNull
     private Account account;
 
 
@@ -32,12 +35,14 @@ public class LineItem {
 
     private double credit;
 
-    @PreUpdate@PreRemove
+    @PreUpdate@PreRemove@PrePersist
     public void pre() {
         if (getAccount() != null) {
             getAccount().setCredit(getAccount().getCredit() - getCredit());
             getAccount().setDebit(getAccount().getDebit() - getDebit());
         }
+
+        getEntry().update();
     }
 
     @PostUpdate@PostPersist

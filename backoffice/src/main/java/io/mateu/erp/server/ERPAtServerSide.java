@@ -6,7 +6,7 @@ import com.rabbitmq.jms.admin.RMQDestination;
 import io.mateu.common.model.authentication.Permission;
 import io.mateu.common.model.authentication.USER_STATUS;
 import io.mateu.common.model.authentication.User;
-import io.mateu.common.model.config.AppConfig;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.monitoring.Monitor;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.common.model.util.EmailHelper;
@@ -173,7 +173,7 @@ public class ERPAtServerSide extends BaseServerSideApp implements ServerSideApp 
                     if (USER_STATUS.EXPIRED.equals(u.getStatus())) throw new Exception("Expired user");
 
                     if (u.getPassword() == null) throw new Exception("Missing password for user " + login);
-                    if (!password.trim().equalsIgnoreCase(u.getPassword().trim())) {
+                    if (!Helper.md5(password.toLowerCase().trim()).equalsIgnoreCase(u.getPassword().trim())) {
                         u.setFailedLogins(u.getFailedLogins() + 1);
                         if (u.getFailedLogins() > 10) u.setStatus(USER_STATUS.BLOCKED);
                         em.getTransaction().commit();

@@ -1,6 +1,6 @@
 package io.mateu.erp.client.crm;
 
-import io.mateu.erp.model.financials.Abseiling;
+import io.mateu.erp.model.financials.Rebate;
 import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.CreditLimit;
 import io.mateu.erp.model.financials.PaymentTerms;
@@ -12,6 +12,7 @@ import io.mateu.ui.core.client.app.AbstractMenu;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.MDDAction;
+import io.mateu.ui.mdd.client.MDDMenu;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class RevenueModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("Products", Product.class));
+        m.add(new MDDAction("Products", ProductLine.class));
 
         m.add(new MDDAction("Partners", Partner.class));
 
@@ -72,11 +73,13 @@ public class RevenueModule extends AbstractModule {
 
         m.add(new MDDAction("CreditLimit", CreditLimit.class));
 
-        m.add(new MDDAction("Abseiling", Abseiling.class));
+        m.add(new MDDAction("Abseiling", Rebate.class));
 
         m.add(new MDDAction("Commission terms", CommissionTerms.class));
 
         m.add(new MDDAction("Payment terms", PaymentTerms.class));
+
+        m.add(new MDDMenu("Representatives"));
 
         return m;
     }

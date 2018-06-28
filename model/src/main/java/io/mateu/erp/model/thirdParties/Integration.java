@@ -1,7 +1,7 @@
 package io.mateu.erp.model.thirdParties;
 
 import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
-import io.mateu.erp.model.revenue.Product;
+import io.mateu.erp.model.revenue.ProductLine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +21,7 @@ public class Integration implements IIntegration {
 
     @NotNull
     @ManyToOne
-    private Product product;
+    private ProductLine product;
 
     private String baseUrl;
 

@@ -3,7 +3,8 @@ package io.mateu.erp.model.product.hotel;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -24,42 +25,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Hotel implements IHotel {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-
-    @Tab("General")
-    @ListColumn
-    @NotNull
-    @SearchFilter
-    private String name;
-
-    @ManyToOne
-    @NotNull
-    private HotelCategory category;
-
-    @ManyToOne
-    private Partner hotelChain;
-
-    @ManyToOne
-    @NotNull
-    @ListColumn
-    @SearchFilter
-    private Office office;
-
-
-    @ListColumn
-    @CellStyleGenerator(ActiveCellStyleGenerator.class)
-    private boolean active;
-
-    @Tab("Location")
-    @ManyToOne
-    @NotNull
-    @ListColumn
-    @SearchFilter
-    private City city;
+public class Hotel extends AbstractProduct implements IHotel {
 
     private String lon;
 
@@ -74,6 +40,15 @@ public class Hotel implements IHotel {
     private String fax;
 
     private String email;
+
+    @Tab("Hotel")
+    @ManyToOne
+    @NotNull
+    private HotelCategory category;
+
+    @ManyToOne
+    private Partner hotelChain;
+
 
     @Tab("Ages")
     /**

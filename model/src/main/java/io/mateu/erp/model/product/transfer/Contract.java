@@ -4,7 +4,7 @@ import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.AbstractContract;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.core.shared.Data;
@@ -43,10 +43,7 @@ import java.util.*;
 @QLForCombo(ql = "select x.id, x.title from io.mateu.erp.model.product.transfer.Contract x order by x.title")
 public class Contract extends AbstractContract {
 
-    @NotNull
-    @SearchFilter
-    private TransferType transferType;
-
+    @Tab("Transfers")
     private int minPaxPerBooking;
 
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
@@ -69,14 +66,13 @@ public class Contract extends AbstractContract {
     public Contract clone(EntityManager em, User u) {
         Contract c = new Contract();
         c.setAudit(new Audit());
-        c.setTransferType(getTransferType());
         c.setBillingConcept(getBillingConcept());
         c.setAveragePrice(getAveragePrice());
         c.setBookingWindowFrom(getBookingWindowFrom());
         c.setBookingWindowTo(getBookingWindowTo());
         c.setSpecialTerms(getSpecialTerms());
         c.setSupplier(getSupplier());
-        c.getTargets().addAll(getTargets());
+        c.getPartners().addAll(getPartners());
         c.setTitle("COPY OF " + getTitle());
         c.setType(getType());
         c.setValidFrom(getValidFrom());
@@ -167,14 +163,13 @@ public class Contract extends AbstractContract {
         if (getBookingWindowFrom() != null) xml.setAttribute("bookingWindowFrom", getBookingWindowFrom().toString());
         if (getBookingWindowTo() != null) xml.setAttribute("bookingWindowTo", getBookingWindowTo().toString());
         if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("supplier"));
-        xml.setAttribute("transferType", "" + getTransferType());
         if (getSpecialTerms() != null) xml.setAttribute("specialTerms", getSpecialTerms());
         xml.setAttribute("vat", (isVATIncluded())?"Included":"Not included");
         if (getAudit() != null) xml.setAttribute("audit", getAudit().toString());
 
         Element ts;
         xml.addContent(ts = new Element("targets"));
-        for (Partner t : getTargets()) ts.addContent(t.toXml().setName("target"));
+        for (Partner t : getPartners()) ts.addContent(t.toXml().setName("target"));
 
         if (getCurrency() != null) xml.setAttribute("currencyCode", getCurrency().getIsoCode());
 
@@ -185,8 +180,8 @@ public class Contract extends AbstractContract {
 
 
         List<Vehicle> vs = new ArrayList<>();
-        List<Zone> os = new ArrayList<>();
-        List<Zone> ds = new ArrayList<>();
+        List<io.mateu.erp.model.product.transfer.Zone> os = new ArrayList<>();
+        List<io.mateu.erp.model.product.transfer.Zone> ds = new ArrayList<>();
         for (Price p : getPrices()) {
             if (!vs.contains(p.getVehicle())) vs.add(p.getVehicle());
             if (!os.contains(p.getOrigin())) os.add(p.getOrigin());
@@ -200,21 +195,21 @@ public class Contract extends AbstractContract {
             }
         });
 
-        Collections.sort(os, new Comparator<Zone>() {
+        Collections.sort(os, new Comparator<io.mateu.erp.model.product.transfer.Zone>() {
             @Override
-            public int compare(Zone o1, Zone o2) {
+            public int compare(io.mateu.erp.model.product.transfer.Zone o1, io.mateu.erp.model.product.transfer.Zone o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
 
-        Collections.sort(ds, new Comparator<Zone>() {
+        Collections.sort(ds, new Comparator<io.mateu.erp.model.product.transfer.Zone>() {
             @Override
-            public int compare(Zone o1, Zone o2) {
+            public int compare(io.mateu.erp.model.product.transfer.Zone o1, io.mateu.erp.model.product.transfer.Zone o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
 
-        for (Zone o : os) for (Zone d : ds) {
+        for (io.mateu.erp.model.product.transfer.Zone o : os) for (io.mateu.erp.model.product.transfer.Zone d : ds) {
             Element xl;
             xml.addContent(xl = new Element("line"));
             xl.setAttribute("origin", o.getName());
@@ -227,12 +222,12 @@ public class Contract extends AbstractContract {
             }
         }
 
-        List<Zone> zs = new ArrayList<>(os);
-        for (Zone z : ds) if (!zs.contains(z)) zs.add(z);
-        for (Zone z : zs) {
+        List<io.mateu.erp.model.product.transfer.Zone> zs = new ArrayList<>(os);
+        for (io.mateu.erp.model.product.transfer.Zone z : ds) if (!zs.contains(z)) zs.add(z);
+        for (io.mateu.erp.model.product.transfer.Zone z : zs) {
             Element xz;
             xml.addContent(xz = new Element("zone").setAttribute("name", z.getName()));
-            for (City c : z.getCities()) {
+            for (Zone c : z.getCities()) {
                 xz.addContent(new Element("city").setAttribute("name", c.getName()));
             }
             for (TransferPoint p : z.getPoints()) {

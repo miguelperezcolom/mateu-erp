@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
@@ -28,7 +29,7 @@ public class Charge {
 
     @Embedded
     @Output
-    private AuditRecord audit;
+    private Audit audit;
 
     @NotNull
     private ChargeType type;

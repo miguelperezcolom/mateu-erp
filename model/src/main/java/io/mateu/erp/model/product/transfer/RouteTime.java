@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,11 +18,11 @@ public class RouteTime {
 
     @ManyToOne
     @NotNull
-    private City origin;
+    private Zone origin;
 
     @ManyToOne
     @NotNull
-    private City destination;
+    private Zone destination;
 
 
     private int minutes;

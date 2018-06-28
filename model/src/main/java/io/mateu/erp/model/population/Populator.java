@@ -6,16 +6,16 @@ import com.google.common.io.Resources;
 import io.mateu.common.model.authentication.Permission;
 import io.mateu.common.model.authentication.USER_STATUS;
 import io.mateu.common.model.common.File;
-import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.financials.LocalizationRule;
+import io.mateu.erp.model.accounting.AccountingPlan;
+import io.mateu.erp.model.financials.*;
 import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.common.model.util.Constants;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
-import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -61,10 +61,61 @@ public class Populator {
 
 
             // create super admin permission
+            int pid = 1;
             Permission p = new Permission();
-            p.setId(1);
+            p.setId(pid++);
             p.setName("Super admin");
             em.persist(p);
+
+
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Financial");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Booking");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Operations");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Portfolio");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Biz");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("CMS");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Management");
+                em.persist(px);
+            }
+            {
+                Permission px = new Permission();
+                px.setId(pid++);
+                px.setName("Utils");
+                em.persist(px);
+            }
 
 
             {
@@ -111,9 +162,9 @@ public class Populator {
                 em.persist(u);
             }
 
-
+            Currency eur;
             {
-                Currency eur = new Currency();
+                eur = new Currency();
                 eur.setIsoCode("EUR");
                 eur.setIso4217Code("978");
                 eur.setName("Euro");
@@ -144,7 +195,7 @@ public class Populator {
                 em.persist(bc);
             }
 
-            City ct;
+            Zone ct;
             TransferPoint apt;
             {
                 Country co = new Country();
@@ -152,19 +203,19 @@ public class Populator {
                 co.setName("UNMAPPED");
                 em.persist(co);
 
-                State s;
-                co.getStates().add(s = new State());
+                Destination s;
+                co.getDestinations().add(s = new Destination());
                 s.setCountry(co);
                 s.setName("UNMAPPED");
                 em.persist(s);
 
-                s.getCities().add(ct = new City());
-                ct.setState(s);
+                s.getZones().add(ct = new Zone());
+                ct.setDestination(s);
                 ct.setName("UNMAPPED");
                 em.persist(ct);
 
                 ct.getTransferPoints().add(apt = new TransferPoint());
-                apt.setCity(ct);
+                apt.setZone(ct);
                 apt.setName("DEFAULT AIRPORT");
                 apt.setType(TransferPointType.AIRPORT);
                 em.persist(apt);
@@ -184,10 +235,31 @@ public class Populator {
 
 
             {
+
+                AccountingPlan plan = new AccountingPlan();
+                plan.setName("Accounting plan");
+                em.persist(plan);
+
+                FinancialAgent a = new FinancialAgent();
+                a.setName("We.inc");
+                a.setAutomaticInvoiceBasis(AutomaticInvoiceBasis.NONE);
+                a.setInvoiceGrouping(InvoiceGrouping.BOOKING);
+                a.setRiskType(RiskType.CREDIT);
+                a.setCurrency(eur);
+                em.persist(a);
+
+                Company b = new Company();
+                b.setName("We");
+                b.setFinancialAgent(a);
+                b.setAccountingPlan(plan);
+                em.persist(b);
+
                 Office o = new Office();
                 o.setName("Head office");
                 o.setCity(ct);
+                o.setCurrency(eur);
                 o.setDefaultAirportForTransfers(apt);
+                o.setCompany(b);
                 em.persist(o);
             }
 

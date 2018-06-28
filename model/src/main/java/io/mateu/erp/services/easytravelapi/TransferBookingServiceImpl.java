@@ -64,9 +64,9 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                         for (Price p : c.getPrices()) {
 
-                            boolean precioOk = p.getOrigin().getPoints().contains(tp0) || p.getOrigin().getCities().contains(tp0.getCity());
+                            boolean precioOk = p.getOrigin().getPoints().contains(tp0) || p.getOrigin().getCities().contains(tp0.getZone());
 
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(tp1) || p.getDestination().getCities().contains(tp1.getCity()));
+                            precioOk = precioOk && (p.getDestination().getPoints().contains(tp1) || p.getDestination().getCities().contains(tp1.getZone()));
 
                             precioOk = precioOk && p.getVehicle().getMinPax() <= pax && p.getVehicle().getMaxPax() >= pax;
 
@@ -74,7 +74,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                                 AvailableTransfer t;
                                 rs.getAvailableTransfers().add(t = new AvailableTransfer());
-                                t.setType("" + c.getTransferType());
+                                t.setType("" + p.getTransferType());
                                 t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
                                 t.setVehicle(p.getVehicle().getName());
                                 Amount a;

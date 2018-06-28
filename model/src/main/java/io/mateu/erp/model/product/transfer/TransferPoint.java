@@ -2,9 +2,9 @@ package io.mateu.erp.model.product.transfer;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.ui.core.server.BaseServerSideApp;
 import io.mateu.ui.mdd.server.annotations.*;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -52,7 +52,7 @@ public class TransferPoint {
     @ManyToOne
     @NotNull
     @SearchFilter
-    private City city;
+    private Zone zone;
 
     @ManyToOne
     @NotInList
@@ -74,7 +74,7 @@ public class TransferPoint {
     private String fax;
 
     @ManyToOne
-    private State gatewayOf;
+    private Destination gatewayOf;
 
     @Tab("Needed time")
     private int minutesForNationalFlights;
@@ -159,10 +159,10 @@ public class TransferPoint {
                 for (Country cou : (List<Country>) em.createQuery("select x from " + Country.class.getName() + " x order by x.name").getResultList()) {
                     Element ecou;
                     xml.addContent(ecou = new Element("country").setAttribute("name", cou.getName()));
-                    for (State s : cou.getStates()) {
+                    for (Destination s : cou.getDestinations()) {
                         Element es;
                         ecou.addContent(es = new Element("state").setAttribute("name", s.getName()));
-                        for (City c : s.getCities()) {
+                        for (Zone c : s.getZones()) {
                             Element ec;
                             es.addContent(ec = new Element("city").setAttribute("name", c.getName()));
                             for (TransferPoint p : c.getTransferPoints()) {

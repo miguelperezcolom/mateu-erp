@@ -1,6 +1,7 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.taxes.VAT;
 import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-public class State {
+public class Destination {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,12 +31,15 @@ public class State {
     @NotNull
     private String name;
 
-    @OneToMany(mappedBy = "state")
+    @OneToMany(mappedBy = "destination")
     @Ignored
-    private List<City> cities = new ArrayList<>();
+    private List<Zone> zones = new ArrayList<>();
 
     @OneToMany(mappedBy = "gatewayOf")
     @Ignored
     private List<TransferPoint> gateways = new ArrayList<>();
+
+    @ManyToOne
+    private VAT vat;
 
 }

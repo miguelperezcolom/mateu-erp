@@ -7,6 +7,7 @@ import io.mateu.erp.client.cms.CMSArea;
 import io.mateu.erp.client.crm.CRMArea;
 import io.mateu.erp.client.financial.FinancialArea;
 import io.mateu.erp.client.management.ManagementArea;
+import io.mateu.erp.client.operations.OperationsArea;
 import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
 import io.mateu.ui.core.client.app.AbstractApplication;
@@ -39,6 +40,7 @@ public class ERPApp extends BaseMDDApp {
         l.add(new CRMArea());
         l.add(new ProductArea());
         l.add(new BookingArea());
+        l.add(new OperationsArea());
         l.add(new FinancialArea());
         l.add(new ManagementArea());
         l.add(new UtilsArea());

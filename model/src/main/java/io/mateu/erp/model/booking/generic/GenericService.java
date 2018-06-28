@@ -7,7 +7,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
-import io.mateu.erp.model.product.generic.Product;
+import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.ui.mdd.server.annotations.Subtitle;
 import io.mateu.ui.mdd.server.annotations.Tab;
 import io.mateu.ui.mdd.server.util.Helper;
@@ -37,7 +37,7 @@ public class GenericService extends Service {
     @Tab("Service")
     @NotNull
     @ManyToOne
-    private Product product;
+    private GenericProduct product;
 
     @OneToMany
     @OrderBy("id asc")
@@ -94,7 +94,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.SALE.equals(c.getType());
-            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -137,7 +137,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getTargets().size() == 0 || c.getTargets().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();

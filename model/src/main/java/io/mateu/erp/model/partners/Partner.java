@@ -1,16 +1,16 @@
 package io.mateu.erp.model.partners;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.dispo.interfaces.common.IActor;
+import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.revenue.HandlingFee;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
-import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.ui.mdd.server.annotations.ListColumn;

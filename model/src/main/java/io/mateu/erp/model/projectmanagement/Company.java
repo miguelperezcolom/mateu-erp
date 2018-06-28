@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "ProjectCompany")
 @Getter
 @Setter
 public class Company {

@@ -20,9 +20,9 @@ public class Extra {
 
     @ManyToOne
     @NotNull
-    private Product product;
+    private GenericProduct product;
 
     private String name;
 
-
+    private boolean internalUseOnly;
 }

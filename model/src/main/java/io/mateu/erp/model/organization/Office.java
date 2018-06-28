@@ -1,6 +1,7 @@
 package io.mateu.erp.model.organization;
 
-import io.mateu.erp.model.world.City;
+import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.ui.mdd.server.annotations.NotInList;
 import io.mateu.ui.mdd.server.annotations.SameLine;
@@ -32,11 +33,15 @@ public class Office {
     @ManyToOne
     private Company company;
 
+    @NotNull
+    @ManyToOne
+    private Currency currency;
+
 
     @NotNull
     @ManyToOne
     @NotInList
-    private City city;
+    private Zone city;
 
 
     @NotNull

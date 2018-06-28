@@ -209,11 +209,11 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
         Element ts;
         xml.addContent(ts = new Element("targets"));
-        for (Partner t : getTargets()) ts.addContent(t.toXml().setName("target"));
+        for (Partner t : getPartners()) ts.addContent(t.toXml().setName("target"));
 
         if (ContractType.SALE.equals(getType())) {
-            if (getTargets().size() > 0) {
-                Partner a = getTargets().get(0);
+            if (getPartners().size() > 0) {
+                Partner a = getPartners().get(0);
                 if (a.getName() != null && a.getBusinessName() != null) xml.addContent(new Element("contractor").setAttribute("name", a.getName()).setAttribute("bussinessName", a.getBusinessName()));
             }
             if (getOffice() != null && getOffice().getName() != null && c.getBusinessName() != null) xml.addContent(new Element("hired").setAttribute("name", getOffice().getName()).setAttribute("bussinessName", c.getBusinessName()));

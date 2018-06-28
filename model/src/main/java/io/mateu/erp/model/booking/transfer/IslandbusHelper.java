@@ -94,7 +94,7 @@ public class IslandbusHelper {
                     else if (TransferDirection.POINTTOPOINT.equals(firstService.getDirection())) t = (s.getPickupTime() != null)?s.getPickupTime():s.getFlightTime();
                     punto.setAttribute("Hora", (t != null)?t.format(hf):"");
                     punto.setAttribute("TTOO",s.getBooking().getAgency().getName());
-                    punto.setAttribute("ZonaFisica",tp.getCity().getName());
+                    punto.setAttribute("ZonaFisica",tp.getZone().getName());
 
                     punto.setAttribute("Adultos", ""+ s.getPax());
                     punto.setAttribute("Niños", ""+0);
@@ -207,7 +207,7 @@ public class IslandbusHelper {
                     if (hotel.length() > 50) hotel = hotel.substring(0, 50);
                     shut.addContent(new Element("hotel").setText(hotel));
 
-                    String routeN = tp.getCity().getName();
+                    String routeN = tp.getZone().getName();
                     if (routeN.length() > 10) routeN = routeN.substring(0, 10);
                     shut.addContent(new Element("zona").setText(routeN));
 

@@ -8,8 +8,8 @@ import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.hotel.HotelService;
-import io.mateu.erp.model.world.City;
-import io.mateu.erp.model.world.State;
+import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.services.HotelAvailabilityStats;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -69,19 +69,19 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
-                    List<State> l = new ArrayList<>();
+                    List<Destination> l = new ArrayList<>();
 
                     for (String s : Splitter.on(',')
                             .trimResults()
                             .omitEmptyStrings()
                             .split(resorts)) {
-                        l.add(em.find(State.class, Long.parseLong(s)));
+                        l.add(em.find(Destination.class, Long.parseLong(s)));
                     };
 
 
                     List<Hotel> hoteles = new ArrayList<>();
 
-                    for (State s : l) for (City c : s.getCities()) hoteles.addAll(c.getHotels());
+                    for (Destination s : l) for (Zone c : s.getZones()) hoteles.addAll(c.getHotels());
 
                     System.out.println("" + hoteles.size() + " hoteles encontrados");
 

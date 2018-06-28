@@ -41,6 +41,10 @@ public class FinancialAgent {
 
     private String email;
 
+    @NotNull
+    @ManyToOne
+    private Currency currency;
+
 
     @Tab("Taxes")
     private String vatIdentificationNumber;
