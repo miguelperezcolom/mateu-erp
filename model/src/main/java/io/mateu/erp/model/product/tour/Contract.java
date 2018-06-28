@@ -12,7 +12,7 @@ import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Entity(name = "TourContract")
 @Getter@Setter
 public class Contract extends AbstractContract {
 

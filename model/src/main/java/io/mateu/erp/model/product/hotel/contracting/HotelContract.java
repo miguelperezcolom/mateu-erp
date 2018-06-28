@@ -42,7 +42,6 @@ import java.util.List;
  * Created by miguel on 1/10/16.
  */
 @Entity
-@Table(name = "HOTELCONTRACT")
 @Getter
 @Setter
 public class HotelContract extends AbstractContract implements IHotelContract, CalendarLimiter {

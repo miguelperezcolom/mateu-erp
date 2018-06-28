@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.product.Extra;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.product.tour.TourDuration;
 import io.mateu.erp.model.product.tour.TourPriceZone;
@@ -47,7 +46,7 @@ public class Price {
 
     private LocalDate bookingWindowEnd;
 
-    private boolean percent;
+    private double percent;
 
     private double pricePerUnit;
     private double pricePerAdult;

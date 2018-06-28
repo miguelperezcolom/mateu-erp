@@ -15,7 +15,6 @@ import java.util.List;
  * Created by miguel on 31/1/17.
  */
 @Entity(name = "GenericContract")
-@Table(name = "GENERICCONTRACT")
 @Getter
 @Setter
 @QLForCombo(ql = "select x.id, x.title from io.mateu.erp.model.product.generic.Contract x order by x.title")

@@ -1,6 +1,7 @@
 package io.mateu.erp.client.product;
 
 import io.mateu.erp.model.product.*;
+import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.ui.core.client.app.AbstractModule;
 import io.mateu.ui.core.client.app.MenuEntry;
 import io.mateu.ui.mdd.client.MDDAction;

@@ -37,7 +37,6 @@ import java.util.*;
  * Created by miguel on 31/1/17.
  */
 @Entity(name = "TransferContract")
-@javax.persistence.Table(name = "TRANSFERCONTRACT")
 @Getter
 @Setter
 @QLForCombo(ql = "select x.id, x.title from io.mateu.erp.model.product.transfer.Contract x order by x.title")

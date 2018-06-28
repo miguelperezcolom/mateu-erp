@@ -1,6 +1,5 @@
 package io.mateu.erp.client.product;
 
-import io.mateu.erp.model.product.Extra;
 import io.mateu.erp.model.product.generic.*;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.hotel.*;

@@ -54,6 +54,8 @@ public class Price {
     @NotNull
     private double price;
 
+    private double returnPrice;
+
     public Price clone(EntityManager em, User u) {
         Price p = new Price();
         p.setPrice(getPrice());

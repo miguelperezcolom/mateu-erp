@@ -2,15 +2,13 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.ProductType;
-import io.mateu.ui.mdd.server.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter@Setter
@@ -27,6 +25,9 @@ public class TourCost {
     @ManyToOne
     @NotNull
     private TourVariant variant;
+
+    @ManyToOne
+    private Extra extra;
 
     @NotNull
     @ManyToOne
