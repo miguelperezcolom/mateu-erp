@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.tour;
 
-import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
+
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.ListColumn;
+import io.mateu.mdd.core.data.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,8 +12,12 @@ public class InventoryMonth {
 
     @ListColumn(width = 62)
     private int year;
+
     @ListColumn(width = 62)
-    private int month;
+    private String month;
+    @Ignored
+    private int monthValue;
+
     @ListColumn(width = 173)
     private String room;
 

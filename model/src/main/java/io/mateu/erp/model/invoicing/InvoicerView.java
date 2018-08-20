@@ -1,10 +1,12 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.interfaces.ListView;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+
+
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.interfaces.ListView;
 
 import javax.persistence.EntityManager;
 import java.util.List;

@@ -14,9 +14,9 @@ import io.mateu.erp.services.HotelAvailabilityStats;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.HotelBookingService;
 import org.easytravelapi.hotel.*;
 

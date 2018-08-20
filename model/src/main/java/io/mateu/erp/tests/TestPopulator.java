@@ -2,11 +2,11 @@ package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.population.Populator;
@@ -25,9 +25,9 @@ import io.mateu.erp.model.product.hotel.offer.Per;
 import io.mateu.erp.model.product.hotel.offer.Scope;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.ui.mdd.server.util.DatesRange;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.DatesRange;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 import javax.persistence.EntityManager;
 import javax.xml.bind.JAXBContext;

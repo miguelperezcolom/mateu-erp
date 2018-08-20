@@ -1,10 +1,12 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPAHelper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+
+
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -18,7 +20,7 @@ public class TransferImportQueue {
     public static void run() throws Throwable {
 //hace un select de las tareas en estado pending
         //por cada una llama a execute()
-        Object[] ids = JPAHelper.selectObjects("select x.id from TransferImportTask x " +
+        List<Object> ids = Helper.selectObjects("select x.id from TransferImportTask x " +
                 " where  x.status = io.mateu.erp.model.importing.TransferImportTask.STATUS.PENDING");
 
         for (Object id : ids) {

@@ -1,6 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.ui.mdd.server.annotations.CellStyleGenerator;
+import io.mateu.mdd.core.annotations.CellStyleGenerator;
 import lombok.Getter;
 import lombok.Setter;
 

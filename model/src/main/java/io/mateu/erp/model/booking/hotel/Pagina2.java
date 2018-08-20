@@ -8,12 +8,11 @@ import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
-import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.UseGridToSelect;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.UseGridToSelect;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.AvailableHotel;
@@ -110,7 +109,8 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         List<Data> l = new ArrayList<>();
         for (HotelOption o : options) {
             Data d = new Data();
-            ERPServiceImpl.fillData(user, em, d, o, null);
+            //todo: recuperar
+            //ERPServiceImpl.fillData(user, em, d, o, null);
             l.add(d);
         }
         out.set("hotel_data", l);

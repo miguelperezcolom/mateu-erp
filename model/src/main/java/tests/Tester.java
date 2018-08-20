@@ -3,8 +3,8 @@ package tests;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.tests.TestPopulator;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 import java.util.List;
 
@@ -42,7 +42,7 @@ public class Tester {
 
 
             if (true) {
-                List<Hotel> hs = em.createQuery("select h from Hotel h").getResultList();
+                List<Hotel> hs = em.createQuery("select h from " + Hotel.class.getName() + " h").getResultList();
 
                 for (Hotel h : hs) {
                     for (Inventory i : h.getInventories()) i.build(em);
@@ -61,7 +61,7 @@ public class Tester {
 
 
             if (true) {
-                List<Hotel> hs = em.createQuery("select h from Hotel h").getResultList();
+                List<Hotel> hs = em.createQuery("select h from " + Hotel.class.getName() + " h").getResultList();
 
                 for (Hotel h : hs) {
                     h.getStopSales().build(em);

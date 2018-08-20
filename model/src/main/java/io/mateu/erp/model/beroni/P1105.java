@@ -3,7 +3,7 @@ package io.mateu.erp.model.beroni;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 

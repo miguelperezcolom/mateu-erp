@@ -1,7 +1,7 @@
 package io.mateu.erp.servlets;
 
 import io.mateu.erp.model.tpv.TPVTransaction;
-import io.mateu.ui.core.server.Utils;
+import io.mateu.mdd.core.util.Utils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;

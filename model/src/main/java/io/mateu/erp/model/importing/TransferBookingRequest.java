@@ -1,7 +1,6 @@
 package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
-import io.mateu.common.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
@@ -9,8 +8,9 @@ import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.common.model.util.Constants;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.util.Constants;
 import lombok.Getter;
 import lombok.Setter;
 

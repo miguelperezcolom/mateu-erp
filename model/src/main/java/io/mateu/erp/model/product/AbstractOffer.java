@@ -1,20 +1,9 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.erp.dispo.Condiciones;
-import io.mateu.erp.dispo.LineaReserva;
-import io.mateu.erp.dispo.ValoracionLineaReserva;
-import io.mateu.erp.dispo.interfaces.product.IBoard;
-import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
-import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.DatesRanges;
-import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.ListColumn;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

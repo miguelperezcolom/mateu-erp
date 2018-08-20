@@ -4,7 +4,7 @@ import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.ui.mdd.server.util.DatesRange;
+import io.mateu.mdd.core.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
-import io.mateu.ui.mdd.server.annotations.OwnedList;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.OwnedList;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

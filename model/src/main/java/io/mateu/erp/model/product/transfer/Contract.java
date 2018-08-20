@@ -1,17 +1,16 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.Zone;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.core.server.BaseServerSideApp;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -23,7 +22,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
-import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -50,7 +48,7 @@ public class Contract extends AbstractContract {
     private List<Price> prices = new ArrayList<>();
 
 
-    @Action(name = "Clone contracts")
+    @Action
     public static void cloneContracts(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "% increment") double percent, @Parameter(name = "Value increment") double amount) throws CloneNotSupportedException {
         User u = em.find(User.class, user.getLogin());
         for (Data d : selection) {
@@ -93,7 +91,7 @@ public class Contract extends AbstractContract {
     }
 
 
-    @Action(name = "Pdf")
+    @Action("Pdf")
     public URL toPdf() throws Throwable {
         //String xslfo = "contract.xsl";
 
@@ -125,7 +123,7 @@ public class Contract extends AbstractContract {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForTransferContract())), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForTransferContract())), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");

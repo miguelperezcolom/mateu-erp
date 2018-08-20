@@ -1,11 +1,10 @@
 package io.mateu.erp.client.product;
 
 import io.mateu.erp.model.product.*;
-import io.mateu.erp.model.product.generic.Extra;
-import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDMenu;
+import io.mateu.mdd.core.app.AbstractModule;
+import io.mateu.mdd.core.app.MDDMenu;
+import io.mateu.mdd.core.app.MDDOpenCRUDAction;
+import io.mateu.mdd.core.app.MenuEntry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +22,7 @@ public class ConfigModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("Product types", ProductType.class));
+        m.add(new MDDOpenCRUDAction("Product types", ProductType.class));
 
         m.add(new MDDMenu("Data sheets", "Features groups", FeatureGroup.class, "Features", Feature.class, "Data sheets", DataSheet.class, "Data sheet features", FeatureValue.class));
 

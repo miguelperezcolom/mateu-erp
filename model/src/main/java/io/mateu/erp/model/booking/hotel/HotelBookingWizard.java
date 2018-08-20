@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.ui.mdd.server.BaseServerSideWizard;
+
+import io.mateu.mdd.core.views.BaseServerSideWizard;
 
 public class HotelBookingWizard extends BaseServerSideWizard {
 

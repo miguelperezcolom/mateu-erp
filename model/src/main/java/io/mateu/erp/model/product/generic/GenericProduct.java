@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 

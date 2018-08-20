@@ -10,11 +10,10 @@ import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.core.server.BaseServerSideApp;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.interfaces.CalendarLimiter;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.interfaces.CalendarLimiter;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -86,8 +85,8 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     private HotelContractPhoto terms;
 
 
-    @Action(name = "Pdf")
-    public URL toPdf() throws Throwable {
+    @Action()
+    public URL pdf() throws Throwable {
         //String xslfo = "contract.xsl";
 
         URL[] url = new URL[1];
@@ -119,7 +118,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
                         //fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForHotelContract())), new StreamSource(new StringReader(sxml))));
-                        fileOut.write(BaseServerSideApp.fop(new StreamSource(Hotel.class.getResourceAsStream("contract.xsl")), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(Hotel.class.getResourceAsStream("contract.xsl")), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");
@@ -232,7 +231,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
         System.setProperty("appconf", "/home/miguel/quonext/quoon.properties");
 
-        io.mateu.ui.mdd.server.util.Helper.loadProperties();
+        Helper.loadProperties();
 
 
         Helper.transact(new JPATransaction() {
@@ -247,7 +246,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
                 {
                     new Thread(() -> {
                         try {
-                            Desktop.getDesktop().browse( c.toPdf().toURI() );
+                            Desktop.getDesktop().browse( c.pdf().toURI() );
                         } catch (IOException | URISyntaxException e1) {
                             e1.printStackTrace();
                         } catch (Throwable throwable) {

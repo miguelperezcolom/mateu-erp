@@ -1,13 +1,7 @@
 package io.mateu.erp.model.config;
 
-import io.mateu.common.model.common.File;
-import io.mateu.common.model.config.DummyDate;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.NotInEditor;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.annotations.TextArea;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 @Entity(name = "ERPAppConfig")
 @Getter
 @Setter
-public class AppConfig extends io.mateu.common.model.config.AppConfig {
+public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @TextArea
     private String xslfoForHotelContract;

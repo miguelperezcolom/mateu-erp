@@ -8,11 +8,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.partners.PartnerGroup;
 import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.revenue.*;
-import io.mateu.ui.core.client.app.AbstractMenu;
-import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDMenu;
+import io.mateu.mdd.core.app.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +23,11 @@ public class RevenueModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("Products", ProductLine.class));
+        m.add(new MDDOpenCRUDAction("Products", ProductLine.class));
 
-        m.add(new MDDAction("Partners", Partner.class));
+        m.add(new MDDOpenCRUDAction("Partners", Partner.class));
 
-        m.add(new MDDAction("Partner groups", PartnerGroup.class));
+        m.add(new MDDOpenCRUDAction("Partner groups", PartnerGroup.class));
 
         m.add(new AbstractMenu("Revenue") {
             @Override
@@ -43,9 +39,9 @@ public class RevenueModule extends AbstractModule {
                     public List<MenuEntry> buildEntries() {
                         List<MenuEntry> m = new ArrayList<>();
 
-                        m.add(new MDDAction("Markups", Markup.class));
+                        m.add(new MDDOpenCRUDAction("Markups", Markup.class));
 
-                        m.add(new MDDAction("Markup lines", MarkupLine.class));
+                        m.add(new MDDOpenCRUDAction("Markup lines", MarkupLine.class));
 
                         return m;
                     }
@@ -56,9 +52,9 @@ public class RevenueModule extends AbstractModule {
                     public List<MenuEntry> buildEntries() {
                         List<MenuEntry> m = new ArrayList<>();
 
-                        m.add(new MDDAction("Handling fee", HandlingFee.class));
+                        m.add(new MDDOpenCRUDAction("Handling fee", HandlingFee.class));
 
-                        m.add(new MDDAction("Handling fee lines", HandlingFeeLine.class));
+                        m.add(new MDDOpenCRUDAction("Handling fee lines", HandlingFeeLine.class));
 
                         return m;
                     }
@@ -68,16 +64,16 @@ public class RevenueModule extends AbstractModule {
             }
         });
 
-        m.add(new MDDAction("Markets", Market.class));
+        m.add(new MDDOpenCRUDAction("Markets", Market.class));
 
 
-        m.add(new MDDAction("CreditLimit", CreditLimit.class));
+        m.add(new MDDOpenCRUDAction("CreditLimit", CreditLimit.class));
 
-        m.add(new MDDAction("Abseiling", Rebate.class));
+        m.add(new MDDOpenCRUDAction("Abseiling", Rebate.class));
 
-        m.add(new MDDAction("Commission terms", CommissionTerms.class));
+        m.add(new MDDOpenCRUDAction("Commission terms", CommissionTerms.class));
 
-        m.add(new MDDAction("Payment terms", PaymentTerms.class));
+        m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
 
         m.add(new MDDMenu("Representatives"));
 

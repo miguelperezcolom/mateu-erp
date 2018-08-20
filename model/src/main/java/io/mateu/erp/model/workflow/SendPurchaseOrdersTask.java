@@ -10,7 +10,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
-import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 

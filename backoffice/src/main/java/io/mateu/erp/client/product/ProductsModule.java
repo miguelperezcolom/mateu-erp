@@ -10,10 +10,10 @@ import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.product.transfer.*;
-import io.mateu.ui.core.client.app.AbstractMenu;
-import io.mateu.ui.core.client.app.AbstractModule;
-import io.mateu.ui.core.client.app.MenuEntry;
-import io.mateu.ui.mdd.client.MDDMenu;
+import io.mateu.mdd.core.app.AbstractMenu;
+import io.mateu.mdd.core.app.AbstractModule;
+import io.mateu.mdd.core.app.MDDMenu;
+import io.mateu.mdd.core.app.MenuEntry;
 
 import java.util.ArrayList;
 import java.util.List;

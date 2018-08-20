@@ -2,8 +2,8 @@ package io.mateu.erp.model.booking.hotel;
 
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
-import io.mateu.ui.mdd.server.annotations.SameLine;
+import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
 import lombok.Getter;
 import lombok.Setter;
 

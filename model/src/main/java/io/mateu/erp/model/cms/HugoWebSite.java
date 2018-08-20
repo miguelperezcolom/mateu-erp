@@ -2,7 +2,7 @@ package io.mateu.erp.model.cms;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.exec.CommandLine;

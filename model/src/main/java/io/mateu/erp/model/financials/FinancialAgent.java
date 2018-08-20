@@ -2,7 +2,7 @@ package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.payments.Deposit;
 import io.mateu.erp.model.taxes.VAT;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

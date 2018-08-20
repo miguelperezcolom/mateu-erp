@@ -5,10 +5,10 @@ import com.google.common.io.Files;
 import io.mateu.erp.model.product.hotel.Room;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.tpv.TPV;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.Owned;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.annotations.Owned;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 

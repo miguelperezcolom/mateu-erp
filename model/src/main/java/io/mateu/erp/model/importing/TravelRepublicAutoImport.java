@@ -3,10 +3,10 @@ package io.mateu.erp.model.importing;
 //import okhttp3.*;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.common.model.util.Constants;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.model.util.Constants;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpEntity;

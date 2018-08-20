@@ -1,10 +1,9 @@
 package io.mateu.erp.model.world;
 
-import io.mateu.common.model.common.File;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.persistence.annotations.Index;
@@ -45,8 +44,8 @@ public class PostalCode {
     private String accuracy;
 
 
-    @Action(name = "Import file")
-    public static void importFromFile(EntityManager em, @Parameter(name = "File") File file) {
+    @Action
+    public static void importFromFile(EntityManager em, File file) {
 
     }
 

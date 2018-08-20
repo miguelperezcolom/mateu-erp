@@ -3,7 +3,7 @@ package io.mateu.common.nododispo;
 import com.google.common.base.Strings;
 import io.mateu.erp.services.StatsResource;
 import io.mateu.erp.services.easytravelapi.*;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.util.Helper;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;

@@ -1,11 +1,13 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.ui.core.shared.CellStyleGenerator;
+import io.mateu.mdd.core.interfaces.ICellStyleGenerator;
 
-public class BestDealCellStyleGenerator implements CellStyleGenerator {
+public class BestDealCellStyleGenerator implements ICellStyleGenerator {
+
+
     @Override
-    public String getStyle(Object o) {
-        return "notavailable".equalsIgnoreCase("" + o)?"danger":null;
+    public String getStyles(Object row, Object value) {
+        return "notavailable".equalsIgnoreCase("" + value)?"danger":null;
     }
 
     @Override

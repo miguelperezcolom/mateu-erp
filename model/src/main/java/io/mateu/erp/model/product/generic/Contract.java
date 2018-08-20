@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.product.AbstractContract;
-import io.mateu.ui.mdd.server.annotations.QLForCombo;
+import io.mateu.mdd.core.annotations.QLForCombo;
 import lombok.Getter;
 import lombok.Setter;
 

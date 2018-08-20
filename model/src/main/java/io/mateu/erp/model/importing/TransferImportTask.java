@@ -1,14 +1,14 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -133,7 +133,7 @@ public abstract class TransferImportTask {
     }*/
 
 
-    @Action(name = "Retry")
+    @Action
     public static void retry(UserData _user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -148,7 +148,7 @@ public abstract class TransferImportTask {
         });
     }
 
-    @Action(name = "Cancel")
+    @Action
     public static void cancel(UserData _user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override

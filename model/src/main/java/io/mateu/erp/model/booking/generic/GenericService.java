@@ -8,9 +8,9 @@ import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.ui.mdd.server.annotations.Subtitle;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.annotations.Subtitle;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 

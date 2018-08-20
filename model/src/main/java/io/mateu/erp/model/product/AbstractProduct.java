@@ -3,10 +3,10 @@ package io.mateu.erp.model.product;
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.world.Zone;
-import io.mateu.ui.mdd.server.annotations.CellStyleGenerator;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.CellStyleGenerator;
+import io.mateu.mdd.core.annotations.ListColumn;
+import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

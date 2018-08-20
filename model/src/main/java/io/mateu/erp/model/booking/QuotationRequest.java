@@ -1,12 +1,12 @@
 package io.mateu.erp.model.booking;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.annotations.TextArea;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 

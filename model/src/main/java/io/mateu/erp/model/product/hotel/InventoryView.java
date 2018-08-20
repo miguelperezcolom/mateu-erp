@@ -1,12 +1,14 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.ui.core.client.views.RPCView;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.GridData;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Parameter;
+
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Caption;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.interfaces.RpcCrudView;
+import io.mateu.mdd.core.interfaces.RpcView;
+import io.mateu.mdd.core.reflection.ReflectionHelper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +22,11 @@ import java.time.format.TextStyle;
 import java.util.*;
 
 @Getter@Setter
-public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
+public class InventoryView implements RpcCrudView<InventoryView, InventoryMonth, InventoryLine> {
+
+    // caché del resultado
+    private static ThreadLocal<List<InventoryMonth>> result = new ThreadLocal<>();
+
 
     @NotNull
     private Inventory inventory;
@@ -29,7 +35,7 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
 
     @Override
-    public GridData rpc() throws Throwable {
+    public List<InventoryMonth> rpc(InventoryView filters, int offset, int limit) {
 
         LocalDate desde = LocalDate.now();
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
@@ -63,7 +69,7 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
 
 
-        GridData gd = new GridData();
+        List<InventoryMonth> list = new ArrayList<>();
 
         int mes = -1;
 
@@ -71,9 +77,9 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
 
         LocalDate hoy = LocalDate.now();
 
-        Map<RoomType, Data> mz = null;
+        Map<RoomType, InventoryMonth> mz = null;
 
-        List<Map<RoomType, Data>> mzd = new ArrayList<>();
+        List<Map<RoomType, InventoryMonth>> mzd = new ArrayList<>();
 
         for (LocalDate d = desde; !d.isAfter(hasta); d = d.plusDays(1)) {
             if (mes != d.getMonthValue()) {
@@ -85,12 +91,15 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
             Map<RoomType, InventoryLine> mx = m.get(d);
 
             if (mx != null) for (RoomType r : mx.keySet()) {
-                Data data = mz.get(r);
+                InventoryMonth data = mz.get(r);
                 if (data == null) {
-                    mz.put(r, data = new Data());
-                    data.set("year", d.getYear());
-                    data.set("month", d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-                    data.set("room", r.getName().getEs());
+                    mz.put(r, data = new InventoryMonth());
+                    data.setYear(d.getYear());
+
+                    data.setMonth(d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+                    data.setMonthValue(d.getMonthValue());
+
+                    data.setRoom(r.getName().getEs());
                 }
 
                 Data dx = new Data();
@@ -115,39 +124,51 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
                 else if (DayOfWeek.SATURDAY.equals(d.getDayOfWeek()) || DayOfWeek.SUNDAY.equals(d.getDayOfWeek())) css += " o-weekend";
 
                 dx.set("_css", css);
-                data.set("day_" + d.getDayOfMonth(), dx);
+                try {
+                    ReflectionHelper.setValue("day_" + d.getDayOfMonth(), data, dx);
+                } catch (Exception e) {
+                    MDD.alert(e);
+                }
 
             }
 
 
         }
 
-        for (Map<RoomType, Data> mzx : mzd) {
-            for (RoomType r : rooms) if (mzx.containsKey(r)) gd.getData().add(mzx.get(r));
+        for (Map<RoomType, InventoryMonth> mzx : mzd) {
+            for (RoomType r : rooms) if (mzx.containsKey(r)) {
+                list.add(mzx.get(r));
+            }
         }
 
 
-        gd.setOffset(0);
-        gd.setTotalLength(gd.getData().size());
+        result.set(list);
 
-        return gd;
+        return list;
+    }
+
+    @Override
+    public int gatherCount(InventoryView inventoryView) {
+        int count = 0;
+        if (result.get() != null) count = result.get().size();
+        return count;
     }
 
 
-    @Action(name = "Enter inventory")
-    public void add(EntityManager em, UserData user,
-                    @Parameter(name = "Action") @NotNull InventoryAction action,
-                    @Parameter(name = "Start") @NotNull LocalDate start,
-                    @Parameter(name = "End") @NotNull LocalDate end,
-                    @Parameter(name = "Room") @NotNull RoomType room,
-                    @Parameter(name = "Nr of rooms") @NotNull int quantity
+    @Action("Enter inventory")
+    public void add(EntityManager em,
+                    @NotNull InventoryAction action,
+                    @NotNull LocalDate start,
+                    @NotNull LocalDate end,
+                    @NotNull RoomType room,
+                    @Caption("Nr of rooms") @NotNull int quantity
                     ) throws Throwable {
 
         InventoryOperation o;
         getInventory().getOperations().add(o = new InventoryOperation());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
+        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));
         o.setAction(action);
         o.setRoom(room);
         o.setStart(start);
@@ -159,6 +180,13 @@ public class InventoryView implements RPCView<InventoryMonth, InventoryLine> {
     }
 
 
+    @Override
+    public Object deserializeId(String s) {
+        return null;
+    }
 
-
+    @Override
+    public boolean isAddEnabled() {
+        return false;
+    }
 }

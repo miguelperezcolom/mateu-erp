@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
@@ -11,7 +11,7 @@ import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.revenue.ProductLine;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 

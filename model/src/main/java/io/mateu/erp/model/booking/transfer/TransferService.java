@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
@@ -15,18 +15,15 @@ import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
-import io.mateu.ui.core.client.views.AbstractListView;
-import io.mateu.ui.core.shared.AsyncCallback;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.AsyncCallback;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -38,6 +35,7 @@ import org.jdom2.output.XMLOutputter;
 
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
+import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -50,8 +48,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 
 /**
  * Created by miguel on 25/2/17.
@@ -169,35 +165,6 @@ public class TransferService extends Service {
     private int golfBags;
     */
 
-    @Action(name = "Save and return")
-    public Data saveAndReturn(UserData user, Data _data) throws Throwable {
-        ERPServiceImpl s = new ERPServiceImpl();
-        Data data = (Data) s.set(user, TransferService.class.getName(), TransferService.class.getName(), _data);
-        Data aux = _data.get("pickupText");
-        _data.set("pickupText", _data.get("dropoffText"));
-        _data.set("dropoffText", aux);
-        aux = _data.get("pickup");
-        _data.set("pickup", _data.get("dropoff"));
-        _data.set("dropoff", aux);
-        _data.remover("flightNumber");
-        _data.remover("flightTime");
-        _data.remover("flightOriginOrDestination");
-        _data.remover("pickupTime");
-        _data.remover("pickupConfirmed");
-        _data.remover("pickupConfirmedThrough");
-        _data.remover("_id");
-        //_data.set("_id", null);
-        return _data;
-    }
-
-    @Action(name = "Test miguel")
-    public void testMiguel(UserData user, Data _data) throws Throwable {
-        _data.set("office", null);
-        ERPServiceImpl s = new ERPServiceImpl();
-        Data data = (Data) s.set(user, TransferService.class.getName(), TransferService.class.getName(), _data);
-    }
-
-
 
     @Links
     public List<MDDLink> getLinks() {
@@ -222,7 +189,7 @@ public class TransferService extends Service {
     }
 
 
-    @Action(name = "Price")
+    @Action
     public static void price(UserData user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -236,7 +203,10 @@ public class TransferService extends Service {
     }
 
 
-    @Action(name = "Work list")
+    //todo: recuperar
+
+    /*
+    @Action
     public static URL workList(UserData user, EntityManager em, Data parameters) throws Throwable {
         AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(user, em, TransferService.class, null));
 
@@ -416,8 +386,8 @@ public class TransferService extends Service {
         return new URL(baseUrl + "/" + temp.getName());
     }
 
-    @Action(name = "Send pickup times")
-    public static void sendPickupTimes(EntityManager em, Data parameters, @Parameter(name = "Email")@NotNull String toEmail, @Parameter(name = "Msg") String msg) throws Throwable {
+    @Action
+    public static void sendPickupTimes(EntityManager em, Data parameters, @NotNull String toEmail, String msg) throws Throwable {
         AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, em, TransferService.class, null));
 
         Office office = null;
@@ -537,6 +507,7 @@ public class TransferService extends Service {
         email.send();
 
     }
+    */
 
     @PrePersist@PreUpdate
     public void preSet() throws Error {
@@ -869,7 +840,7 @@ public class TransferService extends Service {
         return s;
     }
 
-    @Action(name = "Inform pickup time")
+    @Action("Inform pickup time")
     public static void informPickupTimeBatch(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
         for (Data d : selection) {
             TransferService s = em.find(TransferService.class, d.get("_id"));
@@ -880,7 +851,7 @@ public class TransferService extends Service {
     }
 
 
-    @Action(name = "Mark as purchased")
+    @Action("Mark as purchased")
     public static void markAsConfirmed(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
         for (Data d : selection) {
             TransferService s = em.find(TransferService.class, d.get("_id"));
@@ -890,7 +861,7 @@ public class TransferService extends Service {
         }
     }
 
-    @Action(name = "Inform pickup time")
+    @Action("Inform pickup time")
     public void informPickupTime(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
             long tel = 0;
@@ -930,7 +901,7 @@ public class TransferService extends Service {
         }
     }
 
-    @Action(name = "Send email to hotel")
+    @Action("Send email to hotel")
     public void sendEmailToHotel(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
 
@@ -955,7 +926,7 @@ public class TransferService extends Service {
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
-    @Action(name = "Send SMS")
+    @Action("Send SMS")
     public void sendSMS(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
             long tel = 0;
@@ -975,8 +946,8 @@ public class TransferService extends Service {
         } else throw new Exception("No pickup time. Please set before sending the sms");
     }
 
-    @Action(name = "Test Email")
-    public void testEmail(UserData user, EntityManager em, @Parameter(name = "your email") String email) throws Throwable {
+    @Action("Test Email")
+    public void testEmail(UserData user, EntityManager em, @Caption("your email") String email) throws Throwable {
         if (getPickupTime() != null) {
 
             AppConfig appconfig = AppConfig.get(em);
@@ -1002,8 +973,8 @@ public class TransferService extends Service {
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
-    @Action(name = "Test SMS")
-    public void testPickupTime(UserData user, EntityManager em, @Parameter(name = "mobile nr. (34628...)") String sms) throws Throwable {
+    @Action("Test SMS")
+    public void testPickupTime(UserData user, EntityManager em, @Caption("mobile nr. (34628...)") String sms) throws Throwable {
         if (getPickupTime() != null) {
 
             AppConfig appconfig = AppConfig.get(em);
@@ -1026,7 +997,7 @@ public class TransferService extends Service {
     }
 
 
-    @Action(name = "Solo miguel")
+    @Action("Solo miguel")
     public static void repair() throws Throwable {
 
         List<Long> ids = new ArrayList<>();

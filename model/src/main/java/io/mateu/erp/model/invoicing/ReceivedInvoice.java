@@ -1,11 +1,12 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Indelible;
-import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Indelible;
+import io.mateu.mdd.core.annotations.NewNotAllowed;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +19,7 @@ import javax.persistence.Entity;
 @Indelible
 public class ReceivedInvoice extends Invoice {
 
-    @Action(name = "Enter invoices")
+    @Action("Enter invoices")
     public static MDDLink enter(EnterInvoicesWizard wizard) {
         return new MDDLink(Invoice.class, ActionType.OPENLIST, new Data());
     }

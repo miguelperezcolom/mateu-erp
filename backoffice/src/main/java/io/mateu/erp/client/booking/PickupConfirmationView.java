@@ -1,37 +1,70 @@
 package io.mateu.erp.client.booking;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import io.mateu.erp.client.booking.BookingServiceAsync;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.shared.booking.BookingService;
-import io.mateu.ui.core.client.app.Callback;
-import io.mateu.ui.core.client.app.MateuUI;
-import io.mateu.ui.core.client.components.fields.DateField;
-import io.mateu.ui.core.client.components.fields.TextAreaField;
-import io.mateu.ui.core.client.components.fields.TextField;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.LinkColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.TextColumn;
-import io.mateu.ui.core.client.views.AbstractDialog;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.Pair;
-import io.mateu.ui.mdd.client.AbstractJPAListView;
-import io.mateu.ui.mdd.client.JPAAutocompleteField;
-import io.mateu.ui.mdd.client.MDDOpenEditorAction;
+import io.mateu.erp.server.booking.BookingServiceImpl;
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.interfaces.RpcCrudView;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
 
-public class PickupConfirmationView extends AbstractJPAListView {
+@Getter@Setter
+public class PickupConfirmationView implements RpcCrudView<PickupConfirmationView, PickupConfirmationView.Row, TransferService> {
+
+    private LocalDate date;
+    private TransferPoint hotel;
+    private String reference;
+    private String flightNumber;
+    private String leadName;
+
+
     @Override
-    public String getSql() {
-        String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.flightTime, x.flightNumber, x.flightOriginOrDestination, x.pickupTime, epu.name, x.providers, x.sentToProvider, x.pickupConfirmedByWeb, x.pickupConfirmedByEmailToHotel, x.pickupConfirmedBySMS, x.pickupConfirmedByTelephone from TransferService x left join x.effectivePickup epu where 1 = 1 ";
+    public List<Row> rpc(PickupConfirmationView pickupConfirmationView, int offset, int limit) throws Throwable {
+        return null;
+    }
 
-        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
+    @Override
+    public int gatherCount(PickupConfirmationView filters) throws Throwable {
+        return 0;
+    }
+
+    @Override
+    public Object deserializeId(String s) {
+        return null;
+    }
+
+    @Override
+    public boolean isAddEnabled() {
+        return false;
+    }
+
+    @Getter@Setter
+    public class Row {
+
+        private long id;
+
+    }
+
+    public static void confirm(Set<Row> selection, String comments) {
+        selection.forEach( r -> {
+            try {
+                new BookingServiceImpl().pickupTimeInformed(MDD.getUserData().getLogin(), r.getId(), comments);
+            } catch (Throwable throwable) {
+                MDD.alert(throwable);
+            }
+        });
+    }
+
+    public String getSql() {
+        String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
                 "case when " +
                         " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
                         " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
@@ -55,14 +88,16 @@ public class PickupConfirmationView extends AbstractJPAListView {
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
                 " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
 
-        if (getData().get("fecha") != null) jpql += " and x.start = {d '" + getData().getLocalDate("fecha").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
-        if (getData().get("hotel") != null) jpql += " and x.effectivePickup.id = " + ((Pair)getData().get("hotel")).getValue() + " ";
-        if (!Strings.isNullOrEmpty(getData().getString("nombre"))) jpql += " and lower(x.booking.leadName) like '%" + getData().getString("nombre").toLowerCase().replaceAll("'", "''")+ "%' ";
-        if (!Strings.isNullOrEmpty(getData().getString("ref"))) jpql += " and lower(x.booking.agencyReference) like '%" + getData().getString("ref").toLowerCase().replaceAll("'", "''")+ "%' ";
-        if (!Strings.isNullOrEmpty(getData().getString("vuelo"))) jpql += " and lower(x.flightNumber) like '%" + getData().getString("vuelo").toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (date != null) jpql += " and x.start = {d '" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
+        if (hotel != null) jpql += " and x.effectivePickup.id = " + hotel.getId() + " ";
+        if (!Strings.isNullOrEmpty(leadName)) jpql += " and lower(x.booking.leadName) like '%" + leadName.toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(reference)) jpql += " and lower(x.booking.agencyReference) like '%" + reference.toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(flightNumber)) jpql += " and lower(x.flightNumber) like '%" + flightNumber.toLowerCase().replaceAll("'", "''")+ "%' ";
         jpql += " order by x.start";
         return jpql;
     }
+
+    /*
 
     @Override
     public List<AbstractColumn> createColumns() {
@@ -104,36 +139,11 @@ public class PickupConfirmationView extends AbstractJPAListView {
                         });
                     }
                 }
-                /*
-                , new TextColumn("col" + col++, "F. date", 150, false)
-                , new TextColumn("col" + col++, "F. number", 150, false)
-                , new TextColumn("col" + col++, "Orig/Dest", 150, false)
-                */
                 , new TextColumn("col" + col++, "PU time", 150, false)
                 , new TextColumn("col" + col++, "PU point", 200, false)
                 , new TextColumn("col" + col++, "Alternate PU point", 200, false)
-                //, new TextColumn("col" + col++, "Provider", 150, false)
-                //, new TextColumn("col" + col++, "Sent to prov", 150, false)
-                /*
-                , new TextColumn("col" + col++, "Web", 150, false)
-                , new TextColumn("col" + col++, "Email", 150, false)
-                , new TextColumn("col" + col++, "SMS", 150, false)
-                , new TextColumn("col" + col++, "Telephone", 150, false)
-                */
         );
     }
+    */
 
-    @Override
-    public String getTitle() {
-        return "Pickup confirmation";
-    }
-
-    @Override
-    public void build() {
-        add(new DateField("fecha", "Date"));
-        add(new JPAAutocompleteField("hotel", "Pickup point", "select x.id, x.name from TransferPoint x order by x.name"));
-        add(new TextField("ref", "Reference"));
-        add(new TextField("vuelo", "Filght number"));
-        add(new TextField("nombre", "Lead name"));
-    }
 }

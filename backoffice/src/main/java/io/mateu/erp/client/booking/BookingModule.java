@@ -1,22 +1,13 @@
 package io.mateu.erp.client.booking;
 
-import io.mateu.erp.model.booking.*;
-import io.mateu.erp.model.booking.freetext.FreeTextService;
-import io.mateu.erp.model.booking.generic.GenericService;
-import io.mateu.erp.model.booking.hotel.HotelService;
-import io.mateu.erp.model.booking.transfer.TransferPointMapping;
-import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.importing.TransferAutoImport;
-import io.mateu.erp.model.importing.TransferBookingRequest;
-import io.mateu.ui.core.client.app.*;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
-import io.mateu.ui.mdd.client.MDDAction;
-import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.client.MDDMenu;
-import io.mateu.ui.mdd.shared.ERPService;
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.BookingPart;
+import io.mateu.erp.model.booking.QuotationRequest;
+import io.mateu.mdd.core.app.AbstractModule;
+import io.mateu.mdd.core.app.MDDOpenCRUDAction;
+import io.mateu.mdd.core.app.MDDOpenListViewAction;
+import io.mateu.mdd.core.app.MenuEntry;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,18 +24,13 @@ public class BookingModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDAction("Quotation requests", QuotationRequest.class));
+        m.add(new MDDOpenCRUDAction("Quotation requests", QuotationRequest.class));
 
-        m.add(new MDDAction("Bookings", Booking.class));
+        m.add(new MDDOpenCRUDAction("Bookings", Booking.class));
 
-        m.add(new MDDAction("Parts", BookingPart.class));
+        m.add(new MDDOpenCRUDAction("Parts", BookingPart.class));
 
-        m.add(new AbstractAction("Pickup confirmation") {
-            @Override
-            public void run() {
-                MateuUI.openView(new PickupConfirmationView(), isModifierPressed());
-            }
-        });
+        m.add(new MDDOpenListViewAction("Pickup confirmation", PickupConfirmationView.class));
 
         return m;
     }

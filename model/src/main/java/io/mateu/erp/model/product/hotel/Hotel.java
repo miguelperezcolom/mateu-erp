@@ -10,7 +10,10 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.ui.mdd.server.annotations.*;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -124,7 +127,7 @@ public class Hotel extends AbstractProduct implements IHotel {
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
-        EntityManager em = io.mateu.ui.mdd.server.util.Helper.getEMFromThreadLocal();
+        EntityManager em = Helper.getEMFromThreadLocal();
 
         if (getStopSales() == null) {
             setStopSales(new StopSales());

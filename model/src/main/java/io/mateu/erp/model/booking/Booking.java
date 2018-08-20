@@ -1,21 +1,21 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.common.model.authentication.Audit;
-import io.mateu.common.model.authentication.User;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.Pair;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.Pair;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 

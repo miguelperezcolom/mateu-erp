@@ -2,8 +2,8 @@ package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

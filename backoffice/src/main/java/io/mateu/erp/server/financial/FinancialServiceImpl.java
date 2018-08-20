@@ -10,11 +10,10 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.shared.financial.FinancialService;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.*;
 
 import javax.persistence.EntityManager;
@@ -29,8 +28,8 @@ import java.util.*;
 /**
  * Created by miguel on 20/5/17.
  */
-public class FinancialServiceImpl implements FinancialService {
-    @Override
+public class FinancialServiceImpl {
+
     public void reprice(UserData user, LocalDate from, LocalDate to) throws Throwable {
 
         Helper.transact(new JPATransaction() {
@@ -52,7 +51,6 @@ public class FinancialServiceImpl implements FinancialService {
 
     }
 
-    @Override
     public URL generalReport(LocalDate from, LocalDate to) throws Throwable {
 
         HSSFWorkbook workbook = new HSSFWorkbook();
@@ -93,7 +91,6 @@ public class FinancialServiceImpl implements FinancialService {
         return null;
     }
 
-    @Override
     public URL exportToBeroni(LocalDate from, LocalDate to) throws Throwable {
 
         URL[] u = new URL[1];

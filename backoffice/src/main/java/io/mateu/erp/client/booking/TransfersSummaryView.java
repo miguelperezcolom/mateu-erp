@@ -1,23 +1,13 @@
 package io.mateu.erp.client.booking;
 
-import io.mateu.erp.client.booking.BookingServiceAsync;
-import io.mateu.erp.shared.booking.BookingService;
-import io.mateu.ui.core.client.app.AbstractAction;
-import io.mateu.ui.core.client.app.Callback;
-import io.mateu.ui.core.client.app.MateuUI;
-import io.mateu.ui.core.client.components.fields.DateField;
-import io.mateu.ui.core.client.components.fields.grids.columns.AbstractColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.ColumnAlignment;
-import io.mateu.ui.core.client.components.fields.grids.columns.DataColumn;
-import io.mateu.ui.core.client.components.fields.grids.columns.OutputColumn;
-import io.mateu.ui.core.client.views.AbstractListView;
-import io.mateu.ui.core.shared.AsyncCallback;
-import io.mateu.ui.core.shared.CellStyleGenerator;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.Pair;
-import io.mateu.ui.mdd.client.ERPServiceAsync;
-import io.mateu.ui.mdd.client.MDDCallback;
-import io.mateu.ui.mdd.shared.ERPService;
+
+import io.mateu.erp.server.booking.BookingServiceImpl;
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.app.MDDCallback;
+import io.mateu.mdd.core.interfaces.RpcCrudView;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,38 +16,20 @@ import java.util.List;
 /**
  * Created by miguel on 15/4/17.
  */
-public class TransfersSummaryView extends AbstractListView {
+@Getter@Setter
+public class TransfersSummaryView implements RpcCrudView<TransfersSummaryView, TransfersSummaryDay, Void> {
 
-    @Override
-    public Data initializeData() {
-        Data d = super.initializeData();
-        d.set("start", LocalDate.now());
-        d.set("finish", LocalDate.now().plusMonths(6));
-        return d;
+    private LocalDate start = LocalDate.now();
+
+    private LocalDate finish = LocalDate.now().plusMonths(6);
+
+
+    @Action
+    public void informPickups(List<TransfersSummaryDay> selection) throws Throwable {
+        new BookingServiceImpl().informPickupTime(MDD.getUserData(), selection);
     }
 
-
-    @Override
-    public List<AbstractAction> createActions() {
-        List<AbstractAction> l = super.createActions();
-
-        l.add(new AbstractAction("Inform pickups") {
-            @Override
-            public void run() {
-                ((BookingServiceAsync)MateuUI.create(BookingService.class)).informPickupTime(MateuUI.getApp().getUserData(), getSelection(), new Callback<Void>() {
-                    @Override
-                    public void onSuccess(Void result) {
-                        super.onSuccess(result);
-                        search();
-                    }
-                });
-            }
-        });
-
-        return l;
-    }
-
-
+/*
     @Override
     public List<AbstractColumn> createColumns() {
         List<AbstractColumn> l = new ArrayList<>();
@@ -133,7 +105,9 @@ public class TransfersSummaryView extends AbstractListView {
         l.add(new OutputColumn("col12", "PU Infd.", 120));
         return l;
     }
+    */
 
+/*
     private void linkedOn(String id, Data data) {
         Data d = new Data();
         d.set("start_from", data.get("_id"));
@@ -178,19 +152,26 @@ public class TransfersSummaryView extends AbstractListView {
         }
         ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.booking.transfer.TransferService", "io.mateu.erp.model.booking.transfer.TransferService", null, new MDDCallback(d));
     }
+    */
+
 
     @Override
-    public void rpc(Data data, AsyncCallback<Data> callback) {
-        ((BookingServiceAsync)MateuUI.create(BookingService.class)).getTransferSummary(getForm().getData(), callback);
+    public Object deserializeId(String s) {
+        return null;
     }
 
     @Override
-    public String getTitle() {
-        return "Transfers summary";
+    public boolean isAddEnabled() {
+        return false;
     }
 
     @Override
-    public void build() {
-        add(new DateField("start", "From")).add(new DateField("finish", "To"));
+    public List<TransfersSummaryDay> rpc(TransfersSummaryView filters, int offset, int limit) throws Throwable {
+        return new BookingServiceImpl().getTransferSummary(filters, offset, limit);
+    }
+
+    @Override
+    public int gatherCount(TransfersSummaryView filters) throws Throwable {
+        return new BookingServiceImpl().getTransferSummaryCount(filters);
     }
 }

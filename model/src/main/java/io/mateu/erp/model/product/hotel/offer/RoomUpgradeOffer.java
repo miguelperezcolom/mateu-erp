@@ -6,7 +6,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.LinearFareLine;
 import io.mateu.erp.model.product.hotel.Room;
-import io.mateu.ui.mdd.server.util.DatesRange;
+import io.mateu.mdd.core.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;
 

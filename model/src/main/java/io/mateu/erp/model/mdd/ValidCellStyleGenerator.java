@@ -1,18 +1,18 @@
 package io.mateu.erp.model.mdd;
 
 import io.mateu.erp.model.booking.ValidationStatus;
-import io.mateu.ui.core.shared.CellStyleGenerator;
+import io.mateu.mdd.core.interfaces.ICellStyleGenerator;
 
 /**
  * Created by miguel on 24/4/17.
  */
-public class ValidCellStyleGenerator implements CellStyleGenerator {
+public class ValidCellStyleGenerator implements ICellStyleGenerator {
     @Override
-    public String getStyle(Object o) {
+    public String getStyles(Object row, Object value) {
         String s = null;
-        if (o != null && o instanceof ValidationStatus){
+        if (value != null && value instanceof ValidationStatus){
             s = "info";
-            switch ((ValidationStatus)o) {
+            switch ((ValidationStatus)value) {
                 case WARNING: s = "warning"; break;
                 case VALID: s = "success"; break;
                 case INVALID: s = "danger"; break;

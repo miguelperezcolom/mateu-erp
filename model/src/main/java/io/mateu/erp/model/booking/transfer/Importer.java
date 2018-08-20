@@ -1,7 +1,7 @@
 package io.mateu.erp.model.booking.transfer;
 
 import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.util.Helper;
 
 import javax.persistence.EntityManager;
 import java.io.PrintWriter;

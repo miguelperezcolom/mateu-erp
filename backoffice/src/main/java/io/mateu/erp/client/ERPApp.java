@@ -1,6 +1,5 @@
 package io.mateu.erp.client;
 
-import io.mateu.common.BaseMDDApp;
 import io.mateu.erp.client.admin.AdminArea;
 import io.mateu.erp.client.booking.BookingArea;
 import io.mateu.erp.client.cms.CMSArea;
@@ -10,9 +9,9 @@ import io.mateu.erp.client.management.ManagementArea;
 import io.mateu.erp.client.operations.OperationsArea;
 import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
-import io.mateu.ui.core.client.app.AbstractApplication;
-import io.mateu.ui.core.client.app.AbstractArea;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.app.AbstractArea;
+import io.mateu.mdd.core.app.BaseMDDApp;
+import io.mateu.mdd.core.util.Helper;
 
 import java.util.ArrayList;
 import java.util.List;

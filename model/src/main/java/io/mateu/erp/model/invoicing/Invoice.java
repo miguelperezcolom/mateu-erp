@@ -1,16 +1,13 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.taxes.VATSettlement;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.NewNotAllowed;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.OwnedList;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.NewNotAllowed;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 

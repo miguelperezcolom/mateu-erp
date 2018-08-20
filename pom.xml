@@ -10,10 +10,6 @@
     <modules>
         <module>model</module>
         <module>backoffice</module>
-        <module>consolidador</module>
-        <module>dispo-model</module>
-        <module>dispo-logic</module>
-        <module>common</module>
         <module>traductor-caval-out</module>
         <module>dispo-tester</module>
         <module>show</module>

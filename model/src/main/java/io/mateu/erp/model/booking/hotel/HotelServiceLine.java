@@ -2,7 +2,7 @@ package io.mateu.erp.model.booking.hotel;
 
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.common.model.util.IntArrayAttributeConverter;
+import io.mateu.mdd.core.model.util.IntArrayAttributeConverter;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,9 +1,9 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.common.model.authentication.Audit;
-import io.mateu.common.model.authentication.User;
-import io.mateu.common.model.util.Constants;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
@@ -17,19 +17,19 @@ import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -185,13 +185,13 @@ public class PurchaseOrder {
     }
 
 
-    @Action(name = "Send")
+    @Action("Send")
     public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
         send(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
 
-    @Action(name = "Send")
-    public static void sendFromList(EntityManager em, @Selection List<Data> selection, @Parameter(name = "Email") String email) throws Exception {
+    @Action("Send")
+    public static void sendFromList(EntityManager em, @Selection List<Data> selection, String email) throws Exception {
         SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setStatus(TaskStatus.PENDING);
         t.setMethod(PurchaseOrderSendingMethod.EMAIL);
@@ -342,7 +342,7 @@ public class PurchaseOrder {
     }
 
 
-    @Action(name = "Price")
+    @Action
     public static void price(EntityManager em, @Selection List<Data> selection) {
         for (Data d : selection) {
             PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));

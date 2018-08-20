@@ -1,15 +1,15 @@
 package io.mateu.erp.model.workflow;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -107,7 +107,7 @@ public abstract class AbstractTask {
 
 
 
-    @Action(name = "Run")
+    @Action("Run")
     public static void launch(EntityManager em, UserData _user, @Selection List<Data> selection) {
         User u = em.find(User.class, _user.getLogin());
         for (Data d : selection) {

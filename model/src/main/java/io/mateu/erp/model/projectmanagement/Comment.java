@@ -1,6 +1,6 @@
 package io.mateu.erp.model.projectmanagement;
 
-import io.mateu.common.model.common.File;
+import io.mateu.mdd.core.model.common.File;
 import lombok.Getter;
 import lombok.Setter;
 

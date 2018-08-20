@@ -1,11 +1,13 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.Pair;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.interfaces.CompositeView;
-import io.mateu.ui.mdd.shared.MDDLink;
+
+
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Caption;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.Pair;
+import io.mateu.mdd.core.interfaces.CompositeView;
 
 import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
@@ -37,8 +39,8 @@ public class InventoryListView implements CompositeView<Inventory, InventoryView
         return "Open inventory";
     }
 
-    @Action(name = "New")
-    public static MDDLink createInventory(EntityManager em, @Parameter(name = "Hotel")@NotNull Hotel hotel, @Parameter(name = "Inventory name")@NotNull String name) {
+    @Action("New")
+    public static MDDLink createInventory(EntityManager em, @NotNull Hotel hotel, @Caption("Inventory name")@NotNull String name) {
 
         Inventory i = new Inventory();
         em.persist(i);

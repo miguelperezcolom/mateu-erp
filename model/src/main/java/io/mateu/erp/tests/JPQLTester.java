@@ -1,8 +1,8 @@
 package io.mateu.erp.tests;
 
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;

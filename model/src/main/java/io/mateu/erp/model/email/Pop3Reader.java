@@ -2,8 +2,8 @@ package io.mateu.erp.model.email;
 
 import com.sun.mail.pop3.POP3Folder;
 import io.mateu.erp.model.booking.transfer.Importer;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;

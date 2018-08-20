@@ -211,7 +211,7 @@
 
 
 
-        <property name="eclipselink.target-database" value="io.mateu.common.model.util.MiPostgreSQLPlatform"/>
+        <property name="eclipselink.target-database" value="io.mateu.mdd.core.model.util.MiPostgreSQLPlatform"/>
     </properties>
 </persistence-unit>
 

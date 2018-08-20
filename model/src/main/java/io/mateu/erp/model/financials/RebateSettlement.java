@@ -1,6 +1,6 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
 

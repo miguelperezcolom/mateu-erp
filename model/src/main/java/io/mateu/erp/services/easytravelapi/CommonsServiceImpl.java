@@ -7,8 +7,8 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CommonsService;
 import org.easytravelapi.common.*;
 

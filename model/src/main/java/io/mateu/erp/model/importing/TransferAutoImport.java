@@ -3,8 +3,8 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,13 +60,13 @@ public abstract class TransferAutoImport {
         historial.add(txt);
     }
 
-    @Action(name = "Run Queue")
+    @Action
     public static void runQueue() throws Throwable {
         TransferImportQueue.run();
     }
 
-    @Action(name = "Execute")
-    public void execute(@io.mateu.ui.mdd.server.annotations.Parameter(name = "From") LocalDate from, @io.mateu.ui.mdd.server.annotations.Parameter(name = "Days") int days) {
+    @Action
+    public void execute(LocalDate from, int days) {
         getBookings(from, days);
     }
 

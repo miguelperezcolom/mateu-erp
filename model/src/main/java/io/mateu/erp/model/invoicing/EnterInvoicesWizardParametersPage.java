@@ -1,7 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
+import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,6 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
@@ -9,9 +9,8 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.TextArea;
-import io.mateu.ui.mdd.server.interfaces.AuditRecord;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 

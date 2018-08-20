@@ -4,7 +4,7 @@ import com.google.common.base.Joiner;
 import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.ui.core.shared.UserData;
+import io.mateu.mdd.core.data.UserData;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.BoardPrice;

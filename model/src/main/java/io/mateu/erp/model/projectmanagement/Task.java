@@ -1,7 +1,7 @@
 package io.mateu.erp.model.projectmanagement;
 
-import io.mateu.common.model.common.File;
-import io.mateu.ui.mdd.server.annotations.Output;
+import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 

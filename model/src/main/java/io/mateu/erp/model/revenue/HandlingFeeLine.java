@@ -1,7 +1,7 @@
 package io.mateu.erp.model.revenue;
 
-import io.mateu.ui.mdd.server.annotations.SameLine;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

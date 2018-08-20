@@ -5,12 +5,12 @@ import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.exec.CommandLine;
@@ -59,7 +59,7 @@ public class Website {
     }
 
 
-    @Action(name = "Publish")
+    @Action("Publish")
     public void publish() throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override

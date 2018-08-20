@@ -1,18 +1,19 @@
 package io.mateu.erp.server.booking;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.client.booking.DayServiceStatus;
+import io.mateu.erp.client.booking.TransfersSummaryDay;
+import io.mateu.erp.client.booking.TransfersSummaryView;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.common.model.config.DummyDate;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.FileLocator;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.config.DummyDate;
 import io.mateu.erp.model.importing.TransferImportTask;
-import io.mateu.erp.shared.booking.BookingService;
-import io.mateu.ui.core.server.ServerSideHelper;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.FileLocator;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 import javax.persistence.EntityManager;
 import java.io.File;
@@ -22,16 +23,17 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Created by miguel on 23/4/17.
  */
-public class BookingServiceImpl implements BookingService {
-    @Override
-    public Data getTransferSummary(Data parameters) throws Throwable {
-        Data d = new Data();
+public class BookingServiceImpl {
+
+    public String getTransferSummaryJPQL(TransfersSummaryView parameters) {
 
         //INCOMING, SHUTTLE, EXECUTIVE, PRIVATE
         //INBOUND, OUTBOUND, POINTTOPOINT
@@ -39,132 +41,118 @@ public class BookingServiceImpl implements BookingService {
 
 
                 ", sum(case when transfertype = 1 and direction = 0 then pax else 0 end)" +
-                ", sum(case when transfertype = 1 and direction = 1 then pax else 0 end)" +
-
-                ", sum(case when transfertype = 3 and direction = 0 then pax else 0 end)" +
-                ", sum(case when transfertype = 3 and direction = 1 then pax else 0 end)" +
-
-                ", sum(case when transfertype = 2 and direction = 0 then pax else 0 end)" +
-                ", sum(case when transfertype = 2 and direction = 1 then pax else 0 end)" +
-
-                ", sum(case when transfertype = 0 and direction = 0 then pax else 0 end)" +
-                ", sum(case when transfertype = 0 and direction = 1 then pax else 0 end)" +
-
-                ", sum(case when direction = 2 then pax else 0 end)" +
-
-                ", to_char(pickupTimeInformed, 'Mon-dd HH24:MI')" +
-
-
                 ", min(case when transfertype = 1 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
-                ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
-
-                ", min(case when transfertype = 3 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
-                ", min(case when transfertype = 3 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
-
-                ", min(case when transfertype = 2 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
-                ", min(case when transfertype = 2 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
-
-                ", min(case when transfertype = 0 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
-                ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
-
-                ", min(case when direction = 2 then effectiveprocessingstatus else 1000 end)" +
-
-
                 ", max(case when transfertype = 1 and direction = 0 then validationstatus else 0 end)" +
+
+                ", sum(case when transfertype = 1 and direction = 1 then pax else 0 end)" +
+                ", min(case when transfertype = 1 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 1 and direction = 1 then validationstatus else 0 end)" +
 
+                ", sum(case when transfertype = 3 and direction = 0 then pax else 0 end)" +
+                ", min(case when transfertype = 3 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 3 and direction = 0 then validationstatus else 0 end)" +
+
+                ", sum(case when transfertype = 3 and direction = 1 then pax else 0 end)" +
+                ", min(case when transfertype = 3 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 3 and direction = 1 then validationstatus else 0 end)" +
 
+                ", sum(case when transfertype = 2 and direction = 0 then pax else 0 end)" +
+                ", min(case when transfertype = 2 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 2 and direction = 0 then validationstatus else 0 end)" +
+
+                ", sum(case when transfertype = 2 and direction = 1 then pax else 0 end)" +
+                ", min(case when transfertype = 2 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 2 and direction = 1 then validationstatus else 0 end)" +
 
+                ", sum(case when transfertype = 0 and direction = 0 then pax else 0 end)" +
+                ", min(case when transfertype = 0 and direction = 0 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 0 and direction = 0 then validationstatus else 0 end)" +
+
+                ", sum(case when transfertype = 0 and direction = 1 then pax else 0 end)" +
+                ", min(case when transfertype = 0 and direction = 1 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when transfertype = 0 and direction = 1 then validationstatus else 0 end)" +
 
+                ", sum(case when direction = 2 then pax else 0 end)" +
+                ", min(case when direction = 2 then effectiveprocessingstatus else 1000 end)" +
                 ", max(case when direction = 2 then validationstatus else 0 end)" +
+
+                ", to_char(pickupTimeInformed, 'Mon-dd HH24:MI')" +
 
                 "from dummydate d left outer join service on d.value = start left outer join transferpoint a on a.id = airport_id " +
 
                 "where visibleinsummary ";
 
-        if (!parameters.isEmpty("start")) sql += " and d.value >= '" + parameters.getLocalDate("start").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
-        if (!parameters.isEmpty("finish")) sql += " and d.value <= '" + parameters.getLocalDate("finish").format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
+        if (parameters.getStart() != null) sql += " and d.value >= '" + parameters.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
+        if (parameters.getFinish() != null) sql += " and d.value <= '" + parameters.getFinish().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "' ";
 
         sql += " group by 1, 2, a.name order by 1, a.name";
 
+
+        return sql;
+    }
+
+    public int getTransferSummaryCount(TransfersSummaryView filters) throws Throwable {
+        return Helper.sqlCount(getTransferSummaryJPQL(filters));
+    }
+
+
+    public List<TransfersSummaryDay> getTransferSummary(TransfersSummaryView parameters, int offset, int limit) throws Throwable {
+
+        List<TransfersSummaryDay> list = new ArrayList<>();
+
+
         long t0 = new Date().getTime();
 
-        int rowsPerPage = 100;
-        int fromRow = 0;
+        int rowsPerPage = limit;
+        int fromRow = offset;
 
-        d.getList("_data");
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        for (Object[] l : ServerSideHelper.getServerSideApp().selectPage(sql, fromRow, rowsPerPage)) {
-            Data r;
-            d.getList("_data").add(r = new Data());
+        String sql = getTransferSummaryJPQL(parameters);
+
+        for (Object[] l : Helper.sqlSelectPage(sql, fromRow, rowsPerPage)) {
+            TransfersSummaryDay r;
+            list.add(r = new TransfersSummaryDay());
             if (l != null) {
-                for (int i = 0; i <= 2; i++) {
-                    r.set((i == 0)?"_id":"col" + i, l[i]);
-                }
 
-                for (int i = 0; i < 9; i++) {
-                    Data dx = new Data();
-                    dx.set("_id", LocalDate.parse(sdf.format(r.get("_id")), df));
-                    dx.set("_text", "" + l[3 + i]);
-                    dx.set("_status", l[3 + i + 9 + 1]);
-                    String css = "";
-                    Object o = l[3 + i + 9 + 1];
-                    int v = 0;
-                    if (o == null) v = 0;
-                    else if (o instanceof Integer) v = (Integer)o;
-                    else if (o instanceof Long) v = ((Long)o).intValue();
+                int col = 0;
+                r.setDate((LocalDate) l[col++]);
+                r.setDateText((String) l[col++]);
+                r.setAirport((String) l[col++]);
 
-                    o = l[3 + i + 9 + 1 + 9];
-                    int w = 0;
-                    if (o == null) w = 0;
-                    else if (o instanceof Integer) w = (Integer)o;
-                    else if (o instanceof Long) w = ((Long)o).intValue();
+                r.setShuttleIn(new DayServiceStatus(l, col));
+                col += 3;
+                r.setShuttleOut(new DayServiceStatus(l, col));
+                col += 3;
 
-                    if ("0".equals("" + l[3 + i])) {
-                        css = null;
-                    } else {
-                        if (v == 450) css = "rojo";
-                        else if (v < 500) css = "naranja";
-                        else if (v >= 500) css = "verdemarino";
+                r.setPrivateIn(new DayServiceStatus(l, col));
+                col += 3;
+                r.setPrivateOut(new DayServiceStatus(l, col));
+                col += 3;
 
-                        css += " ";
-                        if (w == 0) css += "cell-valid";
-                        else if (w < 2) css += "cell-warning";
-                        else if (w >= 2) css += "cell-invalid";
-                    }
-                    dx.set("_css", css);
-                    r.set("col" + (3 + i), dx);
-                }
-                int i = 12;
-                r.set("col" + i, l[i++]);
+                r.setExecutIn(new DayServiceStatus(l, col));
+                col += 3;
+                r.setExecutOut(new DayServiceStatus(l, col));
+                col += 3;
 
+                r.setIncomIn(new DayServiceStatus(l, col));
+                col += 3;
+                r.setIncomOut(new DayServiceStatus(l, col));
+                col += 3;
+
+                r.setPUInfd((Boolean) l[col++]);
             }
 
         }
 
-        int numRows = ServerSideHelper.getServerSideApp().getNumberOfRows(sql);
-        long t = new Date().getTime() - t0;
-        d.set("_subtitle", "" + numRows + " records found in " + t + "ms.");
-        d.set("_data_currentpageindex", fromRow / rowsPerPage);
-        d.set("_data_totalrows", numRows);
-        d.set("_data_pagecount", numRows / rowsPerPage + ((numRows % rowsPerPage == 0)?0:1));
-
-        return d;
+        return list;
     }
 
-    @Override
-    public void informPickupTime(UserData user, List<Data> selection) throws Throwable {
-        for (Data s : selection) {
-            LocalDate d = s.get("_id");
+    public void informPickupTime(UserData user, List<TransfersSummaryDay> selection) throws Throwable {
+        for (TransfersSummaryDay s : selection) {
+            LocalDate d = s.getDate();
 
             Helper.transact(new JPATransaction() {
                 @Override
@@ -191,17 +179,16 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    @Override
-    public String importPickupTimeExcel(Data data) throws Throwable {
-        System.out.println("" + data);
+
+    public String importPickupTimeExcel(io.mateu.mdd.core.model.common.File file) throws Throwable {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        if (data.isEmpty("file")) throw new Throwable("You must first upload an excel file");
+        if (file != null) throw new Throwable("You must first upload an excel file");
         else {
             Helper.transact(new JPATransaction() {
                 @Override
                 public void run(EntityManager em) throws Throwable {
-                    Object[][] l = Helper.parseExcel(new File(((FileLocator) data.get("file")).getTmpPath()))[0];
+                    Object[][] l = Helper.parseExcel(new File(file.toFileLocator().getTmpPath()))[0];
                     Importer.importPickupTimes(em, l, pw);
                 }
             });
@@ -209,12 +196,12 @@ public class BookingServiceImpl implements BookingService {
         return sw.toString();
     }
 
-    @Override
+
     public Data getAvailableHotels(Data parameters) throws Throwable {
         return new Data();
     }
 
-    @Override
+
     public void pickupTimeInformed(String login, long serviceId, String comments) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -231,7 +218,7 @@ public class BookingServiceImpl implements BookingService {
         });
     }
 
-    @Override
+
     public void retryImportationTasks(List<Data> selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -245,7 +232,7 @@ public class BookingServiceImpl implements BookingService {
         });
     }
 
-    @Override
+
     public void cancelImportationTasks(List<Data> selection) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -281,4 +268,5 @@ public class BookingServiceImpl implements BookingService {
 
         System.out.println(sw.toString());
     }
+
 }

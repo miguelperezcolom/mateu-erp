@@ -1,6 +1,6 @@
 package io.mateu.erp.model.cms;
 
-import io.mateu.ui.mdd.server.annotations.OwnedList;
+import io.mateu.mdd.core.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 

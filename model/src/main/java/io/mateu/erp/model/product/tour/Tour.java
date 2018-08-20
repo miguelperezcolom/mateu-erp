@@ -1,12 +1,8 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.erp.model.product.DataSheet;
-import io.mateu.erp.model.world.Zone;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.ListColumn;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,13 +1,12 @@
 package io.mateu.erp.model.booking.transfer;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.ERPServiceImpl;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,8 +54,10 @@ public class TransferPointMapping {
     }
 
 
-    @Action(name = "Save and next", callOnEnterKeyPressed = true, addAsButton = true)
+    @Action(callOnEnterKeyPressed = true, addAsButton = true)
     public Data saveAndNext(UserData user, EntityManager em, Data _data) throws Throwable {
+        //todo: recuperar
+        /*
         ERPServiceImpl s = new ERPServiceImpl();
         s.set(user, TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), _data);
 
@@ -70,6 +71,8 @@ public class TransferPointMapping {
         }
 
         return data[0];
+        */
+        return null;
     }
 
     public static TransferPoint getTransferPoint(EntityManager em, String text, TransferService transferService) {

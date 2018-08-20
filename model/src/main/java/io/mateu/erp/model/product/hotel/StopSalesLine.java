@@ -3,7 +3,7 @@ package io.mateu.erp.model.product.hotel;
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

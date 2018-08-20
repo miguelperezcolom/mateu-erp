@@ -1,7 +1,7 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.ui.mdd.server.annotations.QLForCombo;
-import io.mateu.ui.mdd.server.annotations.SameLine;
+import io.mateu.mdd.core.annotations.QLForCombo;
+import io.mateu.mdd.core.annotations.SameLine;
 import lombok.Getter;
 import lombok.Setter;
 

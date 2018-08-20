@@ -2,13 +2,12 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.ui.core.client.views.RPCView;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.GridData;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.interfaces.RpcCrudView;
+import io.mateu.mdd.core.reflection.ReflectionHelper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,13 +18,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @Getter@Setter
-public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
+public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth, StopSalesLine> {
+
+
+    // caché del resultado
+    private static ThreadLocal<List<StopSalesMonth>> result = new ThreadLocal<>();
+
+
 
     @NotNull
     private Hotel hotel;
@@ -37,9 +39,46 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
     private HotelContract contract;
 
 
-    @Override
-    public GridData rpc() throws Throwable {
+    @Action("Enter stop sales")
+    public void add(EntityManager em,
+                    @Tab("General") @NotNull StopSalesAction action,
+                    @NotNull LocalDate start,
+                    @NotNull LocalDate end,
+                    @Tab("Rooms") List<RoomType> rooms,
+                    @Tab("Actors") List<Partner> actors,
+                    @Tab("Contracts") List<HotelContract> contracts) throws Throwable {
 
+        StopSalesOperation o;
+        getHotel().getStopSales().getOperations().add(o = new StopSalesOperation());
+        em.persist(o);
+        o.setCreated(LocalDateTime.now());
+        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));
+        o.setAction(action);
+        o.getActors().addAll(actors);
+        o.getRooms().addAll(rooms);
+        o.getContracts().addAll(contracts);
+        o.setStart(start);
+        o.setEnd(end);
+        o.setOnNormalInventory(true);
+        o.setOnSecurityInventory(true);
+
+        getHotel().getStopSales().build(em);
+
+    }
+
+
+    @Override
+    public Object deserializeId(String s) {
+        return null;
+    }
+
+    @Override
+    public boolean isAddEnabled() {
+        return false;
+    }
+
+    @Override
+    public List<StopSalesMonth> rpc(StopSalesView filters, int offset, int limit) {
         LocalDate desde = LocalDate.now();
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
         hasta = LocalDate.of(hasta.getYear(), hasta.getMonth(), hasta.getDayOfMonth()).plusMonths(1).minusDays(1);
@@ -64,23 +103,24 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
 
 
 
-        GridData gd = new GridData();
-
-        int mes = -1;
 
         DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy/MM");
 
-        Data data = null;
+        List<StopSalesMonth> list = new ArrayList<>();
 
+        int mes = -1;
         LocalDate hoy = LocalDate.now();
+        StopSalesMonth data = null;
 
         for (LocalDate d = desde; !d.isAfter(hasta); d = d.plusDays(1)) {
             if (mes != d.getMonthValue()) {
-                gd.getData().add(data = new Data());
-                data.set("year", d.getYear());
-                data.set("month", d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+                list.add(data = new StopSalesMonth());
+                data.setYear(d.getYear());
+                data.setMonth(d.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()));
+                data.setMonthValue(d.getMonthValue());
                 mes = d.getMonthValue();
             }
+
             Data dx = new Data();
             dx.set("_text", "" + d.getDayOfMonth());
             DayClosingStatus s = DayClosingStatus.OPEN;
@@ -98,43 +138,23 @@ public class StopSalesView implements RPCView<StopSalesMonth, StopSalesLine> {
             else if (DayOfWeek.SATURDAY.equals(d.getDayOfWeek()) || DayOfWeek.SUNDAY.equals(d.getDayOfWeek())) css += " o-weekend";
 
             dx.set("_css", css);
-            data.set("day_" + d.getDayOfMonth(), dx);
+            try {
+                ReflectionHelper.setValue("day_" + d.getDayOfMonth(), data, dx);
+            } catch (Exception e) {
+                MDD.alert(e);
+            }
         }
 
-        gd.setOffset(0);
-        gd.setTotalLength(gd.getData().size());
 
-        return gd;
+        result.set(list);
+
+        return list;
     }
 
-
-    @Action(name = "Enter stop sales")
-    public void add(EntityManager em, UserData user,
-                    @Tab("General") @Parameter(name = "Action") @NotNull StopSalesAction action,
-                    @Parameter(name = "Start") @NotNull LocalDate start,
-                    @Parameter(name = "End") @NotNull LocalDate end,
-                    @Tab("Rooms") @Parameter(name = "Rooms") List<RoomType> rooms,
-                    @Tab("Actors") @Parameter(name = "Actors") List<Partner> actors,
-                    @Tab("Contracts") @Parameter(name = "Contracts") List<HotelContract> contracts) throws Throwable {
-
-        StopSalesOperation o;
-        getHotel().getStopSales().getOperations().add(o = new StopSalesOperation());
-        em.persist(o);
-        o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
-        o.setAction(action);
-        o.getActors().addAll(actors);
-        o.getRooms().addAll(rooms);
-        o.getContracts().addAll(contracts);
-        o.setStart(start);
-        o.setEnd(end);
-        o.setOnNormalInventory(true);
-        o.setOnSecurityInventory(true);
-
-        getHotel().getStopSales().build(em);
-
+    @Override
+    public int gatherCount(StopSalesView filters) {
+        int count = 0;
+        if (result.get() != null) count = result.get().size();
+        return count;
     }
-
-
-
 }

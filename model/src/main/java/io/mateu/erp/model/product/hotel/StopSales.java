@@ -1,9 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.ui.mdd.server.annotations.FullWidth;
-import io.mateu.ui.mdd.server.annotations.Ignored;
-import io.mateu.ui.mdd.server.annotations.Output;
-import io.mateu.ui.mdd.server.annotations.ShowAsHtml;
+import io.mateu.mdd.core.annotations.FullWidth;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.ShowAsHtml;
 import lombok.Getter;
 import lombok.Setter;
 

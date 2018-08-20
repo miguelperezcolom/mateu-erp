@@ -2,8 +2,8 @@ package io.mateu.erp.model.booking.freetext;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.ui.mdd.server.annotations.Tab;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,9 +1,10 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
-import io.mateu.ui.mdd.server.annotations.Output;
+
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
 import lombok.Getter;
 import lombok.Setter;
 

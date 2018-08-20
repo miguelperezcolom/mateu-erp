@@ -3,9 +3,9 @@ package io.mateu.erp.model.authentication;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.ui.mdd.server.annotations.Action;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Caption;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +18,7 @@ import java.io.IOException;
 @Entity(name = "ERPUser")
 @Getter
 @Setter
-public class User extends io.mateu.common.model.authentication.User {
+public class User extends io.mateu.mdd.core.model.authentication.User {
 
     @Tab("Segmentation")
     @ManyToOne
@@ -29,8 +29,8 @@ public class User extends io.mateu.common.model.authentication.User {
 
 
 
-    @Action(name = "Create token")
-    public void createToken(EntityManager em, @NotNull @Parameter(name = "Agency") Partner p, @Parameter(name = "Hotel") Hotel h) throws IOException {
+    @Action
+    public void createToken(EntityManager em, @NotNull @Caption("Agency") Partner p, @Caption("Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
         t.setPartner(p);
         t.setHotel(h);

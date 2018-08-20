@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product;
 
 
-import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;

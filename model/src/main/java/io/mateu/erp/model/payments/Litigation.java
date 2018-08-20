@@ -2,7 +2,7 @@ package io.mateu.erp.model.payments;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.invoicing.Invoice;
-import io.mateu.ui.mdd.server.annotations.TextArea;
+import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 

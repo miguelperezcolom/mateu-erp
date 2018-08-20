@@ -1,22 +1,23 @@
 package io.mateu.erp.model.mdd;
 
 import io.mateu.erp.model.booking.ProcessingStatus;
-import io.mateu.ui.core.shared.CellStyleGenerator;
+import io.mateu.mdd.core.interfaces.ICellStyleGenerator;
 
 /**
  * Created by miguel on 24/4/17.
  */
-public class ProcessingStatusCellStyleGenerator implements CellStyleGenerator {
+public class ProcessingStatusCellStyleGenerator implements ICellStyleGenerator {
+
     @Override
-    public String getStyle(Object o) {
+    public String getStyles(Object row, Object value) {
         String s = null;
-        if (o != null) {
-            ProcessingStatus v = (ProcessingStatus) o;
+        if (value != null) {
+            ProcessingStatus v = (ProcessingStatus) value;
             switch (v) {
                 case INITIAL:
-                    case DATA_OK: s = "info"; break;
+                case DATA_OK: s = "info"; break;
                 case PURCHASEORDERS_SENT:
-                    case PURCHASEORDERS_READY: s = "warning"; break;
+                case PURCHASEORDERS_READY: s = "warning"; break;
                 case PURCHASEORDERS_CONFIRMED: s = "success"; break;
                 case PURCHASEORDERS_REJECTED: s = "danger"; break;
             }

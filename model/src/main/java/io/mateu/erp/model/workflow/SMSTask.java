@@ -3,7 +3,7 @@ package io.mateu.erp.model.workflow;
 import com.google.common.net.UrlEscapers;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.ui.mdd.server.util.Helper;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 

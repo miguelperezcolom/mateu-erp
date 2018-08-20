@@ -3,28 +3,27 @@ package io.mateu.erp.model.population;
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Resources;
-import io.mateu.common.model.authentication.Permission;
-import io.mateu.common.model.authentication.USER_STATUS;
-import io.mateu.common.model.common.File;
+import io.mateu.mdd.core.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.financials.*;
-import io.mateu.common.model.multilanguage.Literal;
 import io.mateu.erp.model.organization.Company;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.common.model.util.Constants;
-import io.mateu.erp.model.world.Zone;
-import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.transfer.Contract;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferPointType;
-import io.mateu.ui.core.server.BaseServiceImpl;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Zone;
+import io.mateu.mdd.core.model.authentication.Permission;
+import io.mateu.mdd.core.model.authentication.USER_STATUS;
+import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 
 /**
  * used to populate a database with initial values
@@ -54,7 +53,7 @@ public class Populator {
             c.setXslfoForTransferContract(Resources.toString(Resources.getResource(Contract.class, "contract.xsl"), Charsets.UTF_8));
             c.setXslfoForHotelContract(Resources.toString(Resources.getResource(Hotel.class, "contract.xsl"), Charsets.UTF_8));
             c.setXslfoForWorld(Resources.toString(Resources.getResource(Contract.class, "portfolio.xsl"), Charsets.UTF_8));
-            c.setXslfoForList(Resources.toString(Resources.getResource(BaseServiceImpl.class, "listing.xsl"), Charsets.UTF_8));
+            c.setXslfoForList(Resources.toString(Resources.getResource("/xsl/listing.xsl"), Charsets.UTF_8));
             em.persist(c);
 
             c.createDummyDates();

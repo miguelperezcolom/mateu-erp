@@ -3,7 +3,7 @@ package io.mateu.erp.model.booking.hotel;
 import com.google.common.base.Strings;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.common.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.organization.Office;
@@ -13,13 +13,12 @@ import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.Allocation;
@@ -133,7 +132,7 @@ public class HotelService extends Service {
     @PostUpdate@PostPersist
     public void afterSet() throws Throwable {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
+        EntityManager em = io.mateu.mdd.core.util.Helper.getEMFromThreadLocal();
 
         LocalDate s = null, f = null;
         boolean algunaLineaActiva = false;
@@ -191,9 +190,9 @@ public class HotelService extends Service {
     }
 
 
-    @Action(name = "Price")
+    @Action
     public static void price(UserData user, @Selection List<Data> _selection) throws Throwable {
-        Helper.transact(new JPATransaction() {
+        io.mateu.mdd.core.util.Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
                 for (Data d : _selection) {
@@ -204,7 +203,7 @@ public class HotelService extends Service {
         });
     }
 
-    @Action(name = "Look for available")
+    @Action("Look for available")
     public static MDDLink book(UserData user, HotelBookingWizard wizard) throws Throwable {
         Pagina2 p2 = (Pagina2)wizard.getPages().get(1);
         Pagina2b p2b = (Pagina2b)wizard.getPages().get(2);
@@ -218,7 +217,7 @@ public class HotelService extends Service {
 
         if (Strings.isNullOrEmpty(leadName)) throw new Exception("Lead name is mandatory");
 
-        Helper.transact((JPATransaction) (em) -> {
+        io.mateu.mdd.core.util.Helper.transact((JPATransaction) (em) -> {
 
             io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
 

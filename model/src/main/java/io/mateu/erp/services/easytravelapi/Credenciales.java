@@ -1,6 +1,7 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.mateu.ui.mdd.server.util.Helper;
+
+import io.mateu.mdd.core.util.Helper;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -3,9 +3,9 @@ package io.mateu.erp.model.organization;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.ui.mdd.server.annotations.NotInList;
-import io.mateu.ui.mdd.server.annotations.SameLine;
-import io.mateu.ui.mdd.server.annotations.Tab;
+import io.mateu.mdd.core.annotations.NotInList;
+import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
 

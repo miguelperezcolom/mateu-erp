@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.ui.mdd.server.annotations.QLForCombo;
-import io.mateu.ui.mdd.server.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.QLForCombo;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

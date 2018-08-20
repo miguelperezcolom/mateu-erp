@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.common.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.generic.SupplementType;
 import lombok.Getter;

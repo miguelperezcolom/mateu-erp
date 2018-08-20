@@ -5,10 +5,9 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.ui.core.server.BaseServerSideApp;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -95,8 +94,8 @@ public class TransferPoint {
     }
 
 
-    @Action(name = "Print all")
-    public static URL dumpToPdf() throws Throwable {
+    @Action
+    public static URL printAll() throws Throwable {
         URL[] url = new URL[1];
 
 
@@ -125,7 +124,7 @@ public class TransferPoint {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForWorld())), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForWorld())), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");
@@ -183,6 +182,6 @@ public class TransferPoint {
 
     public static void main(String[] args) throws Throwable {
         System.out.println(new XMLOutputter(Format.getPrettyFormat()).outputString(dumpWholeTreeToXml()));
-        System.out.println(dumpToPdf());
+        System.out.println(printAll());
     }
 }

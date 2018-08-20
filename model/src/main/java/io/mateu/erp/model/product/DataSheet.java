@@ -1,8 +1,8 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.common.model.common.File;
-import io.mateu.common.model.multilanguage.Literal;
-import io.mateu.ui.mdd.server.annotations.Ignored;
+import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.model.multilanguage.Literal;
+import io.mateu.mdd.core.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 

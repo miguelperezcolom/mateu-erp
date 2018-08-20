@@ -1,8 +1,8 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.common.model.authentication.Audit;
-import io.mateu.common.model.authentication.User;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
@@ -16,15 +16,14 @@ import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
-import io.mateu.ui.core.shared.Data;
-import io.mateu.ui.core.shared.UserData;
-import io.mateu.ui.mdd.server.annotations.*;
-import io.mateu.ui.mdd.server.annotations.Parameter;
-import io.mateu.ui.mdd.server.util.Helper;
-import io.mateu.ui.mdd.server.util.JPATransaction;
-import io.mateu.ui.mdd.server.workflow.WorkflowEngine;
-import io.mateu.ui.mdd.shared.ActionType;
-import io.mateu.ui.mdd.shared.MDDLink;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.app.ActionType;
+import io.mateu.mdd.core.app.MDDLink;
+import io.mateu.mdd.core.data.Data;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -33,6 +32,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
+import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
@@ -42,7 +42,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static io.mateu.ui.core.server.BaseServerSideApp.fop;
 
 /**
  * Created by miguel on 31/1/17.
@@ -408,7 +407,7 @@ public abstract class Service {
         });
     }
 
-    @Action(name = "Repair bookings")
+    @Action("Repair bookings")
     public static void repair(UserData user) throws Throwable {
         Helper.transact(new JPATransaction() {
             @Override
@@ -440,8 +439,8 @@ public abstract class Service {
         });
     }
 
-    @Action(name = "Send to provider")
-    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "Provider")@QLFilter("x.provider = true") Partner provider, @Parameter(name = "Email") String email, @Parameter(name = "Postscript") @TextArea String postscript) {
+    @Action
+    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) {
         for (Data d : selection) {
             Service s = em.find(Service.class, d.get("_id"));
             s.setAlreadyPurchased(false);
@@ -546,7 +545,7 @@ public abstract class Service {
     }
 
 
-    @Action(name = "Purchase")
+    @Action("Purchase")
     public void checkPurchase(EntityManager em, UserData user) throws Throwable {
         checkPurchase(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
@@ -616,12 +615,12 @@ public abstract class Service {
 
     }
 
-    @Action(name = "Price")
+    @Action
     public void price(EntityManager em, UserData user) {
         price(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
 
-    @Action(name = "Print POs")
+    @Action("Print POs")
     public URL printOrders(EntityManager em) throws Throwable {
 
         Document xml = new Document();
@@ -725,7 +724,7 @@ public abstract class Service {
         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
         System.out.println("xslfo=" + xslfo[0]);
         System.out.println("xml=" + sxml);
-        fileOut.write(fop(new StreamSource(new StringReader(xslfo[0])), new StreamSource(new StringReader(sxml))));
+        fileOut.write(Helper.fop(new StreamSource(new StringReader(xslfo[0])), new StreamSource(new StringReader(sxml))));
         fileOut.close();
 
         String baseUrl = System.getProperty("tmpurl");
@@ -735,7 +734,7 @@ public abstract class Service {
         return new URL(baseUrl + "/" + temp.getName());
     }
 
-    @Action(name = "Show signature")
+    @Action
     public String showSignature(EntityManager em) throws Throwable {
         return getSignature();
     }

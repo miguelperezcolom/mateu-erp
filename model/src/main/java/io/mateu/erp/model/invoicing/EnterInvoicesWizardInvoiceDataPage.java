@@ -1,6 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.ui.mdd.server.AbstractServerSideWizardPage;
+
+import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
 
 public class EnterInvoicesWizardInvoiceDataPage extends AbstractServerSideWizardPage {
 

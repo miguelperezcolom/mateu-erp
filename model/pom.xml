@@ -64,31 +64,7 @@
             <version>4.12</version>
             <!-- <scope>test</scope> -->
         </dependency>
-        <dependency>
-            <groupId>io.mateu.jpa</groupId>
-            <artifactId>common</artifactId>
-            <version>${version}</version>
-        </dependency>
 
-        <dependency>
-            <groupId>io.mateu.ui</groupId>
-            <artifactId>core</artifactId>
-            <version>0.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.mateu.ui</groupId>
-            <artifactId>mdd-annotations</artifactId>
-            <version>0.0.1</version>
-            <scope>compile</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>io.mateu.erp</groupId>
-            <artifactId>dispo-model</artifactId>
-            <version>${version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
@@ -116,43 +92,43 @@
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-grizzly2-servlet</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-jdk-http</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-simple-http</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-jetty-http</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-jetty-servlet</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
         -->
@@ -165,6 +141,10 @@
                 <exclusion>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava-jdk5</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -223,12 +203,12 @@
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-grizzly2-http</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -238,7 +218,7 @@
         <dependency>
             <groupId>org.glassfish.jersey.inject</groupId>
             <artifactId>jersey-hk2</artifactId>
-            <version>2.26</version>
+            <version>2.27</version>
         </dependency>
 
 
@@ -249,11 +229,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>io.mateu.erp</groupId>
-            <artifactId>dispo-logic</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
 
 
 
@@ -285,6 +260,12 @@
             <version>1.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.mateu</groupId>
+            <artifactId>mdd-core</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-exec -->
         <dependency>
@@ -298,11 +279,28 @@
             <version>3.9.1</version>
         </dependency>
         <dependency>
-            <groupId>io.mateu.erp</groupId>
-            <artifactId>dispo-logic</artifactId>
-            <version>${version}</version>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <version>2.27</version>
             <scope>compile</scope>
         </dependency>
+
+
+
+        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava -->
+        <dependency>
+            <groupId>io.reactivex.rxjava2</groupId>
+            <artifactId>rxjava</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
 
 
     </dependencies>
