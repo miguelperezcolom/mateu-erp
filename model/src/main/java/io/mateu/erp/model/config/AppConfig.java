@@ -1,5 +1,6 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
@@ -52,11 +53,6 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @TextArea
     private String pickupSmsTemplateEs;
-
-    @Tab("CMS")
-    private String nginxConfigDirectory = "/etc/nginx/conf.d";
-
-    private String nginxReloadCommand = "service nginx reload";
 
     //@Tab("Currency exchange")
     //@Convert(converter = CurrencyExchangeConverter.class)

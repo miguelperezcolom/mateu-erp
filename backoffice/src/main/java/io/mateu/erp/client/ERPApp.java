@@ -11,6 +11,8 @@ import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.BaseMDDApp;
+import io.mateu.mdd.core.model.config.AppConfig;
+import io.mateu.mdd.core.model.population.Populator;
 import io.mateu.mdd.core.util.Helper;
 
 import java.util.ArrayList;
@@ -45,4 +47,15 @@ public class ERPApp extends BaseMDDApp {
         l.add(new UtilsArea());
         return l;
     }
+
+    @Override
+    public Class<? extends AppConfig> getAppConfigClass() {
+        return io.mateu.erp.model.config.AppConfig.class;
+    }
+
+    @Override
+    public Populator getPopulator() {
+        return new io.mateu.erp.model.population.Populator();
+    }
+
 }

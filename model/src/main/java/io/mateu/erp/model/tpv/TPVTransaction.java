@@ -72,7 +72,7 @@ public class TPVTransaction {
 
                 TPVTransaction t = em.find(TPVTransaction.class, transactionId);
 
-                h[0] = t.getForm(em, t.getLanguage(), t.getBooking().getId(), t.getId(), t.getAmount(), t.getCurrency().getIso4217Code(), t.getSubject());
+                h[0] = t.getForm(em, t.getLanguage(), t.getBooking().getId(), t.getId(), t.getAmount(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
 
             }
         });
@@ -185,7 +185,7 @@ public class TPVTransaction {
 
 
     private String getMerchantCurrency(EntityManager em, String currencyCode) {
-        return em.find(Currency.class, currencyCode).getIso4217Code();
+        return "" + em.find(Currency.class, currencyCode).getIsoNumericCode();
     }
 
     public static void main(String[] args) throws Throwable {
@@ -291,7 +291,7 @@ Para ambos protocolos:
 
 
     public String getBoton(EntityManager em) throws Exception {
-        return getBoton(em, getBooking().getId(), getAmount(), getCurrency().getIso4217Code());
+        return getBoton(em, getBooking().getId(), getAmount(), "" + getCurrency().getIsoNumericCode());
     }
 
     public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency) throws Exception {

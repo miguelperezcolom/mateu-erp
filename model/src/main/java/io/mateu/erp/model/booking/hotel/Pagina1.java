@@ -1,9 +1,9 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.world.Destination;
 import io.mateu.mdd.core.annotations.SameLine;
-import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
+import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class Pagina1 extends AbstractServerSideWizardPage {
+public class Pagina1 implements WizardPage {
 
     @NotNull
     private Partner agency;
@@ -37,7 +37,17 @@ public class Pagina1 extends AbstractServerSideWizardPage {
     private List<Occupation> occupations = Arrays.asList(new Occupation(1, 2, null));
 
     @Override
-    public String getTitle() {
+    public String toString() {
         return "Search filters";
+    }
+
+    @Override
+    public WizardPage getPrevious() {
+        return null;
+    }
+
+    @Override
+    public WizardPage getNext() {
+        return new Pagina2(this);
     }
 }

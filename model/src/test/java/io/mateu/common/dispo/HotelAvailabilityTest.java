@@ -76,7 +76,7 @@ public class HotelAvailabilityTest
         // creamos una divisa
         eur = new Currency();
         eur.setName("Euro");
-        eur.setIso4217Code("487");
+        eur.setIsoNumericCode(978);
         eur.setIsoCode("EUR");
 
         //creamos un centro de producción

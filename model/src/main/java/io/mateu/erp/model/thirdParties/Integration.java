@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -17,11 +18,12 @@ public class Integration implements IIntegration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotEmpty
     private String name;
 
     @NotNull
     @ManyToOne
-    private ProductLine product;
+    private ProductLine productLine;
 
     private String baseUrl;
 

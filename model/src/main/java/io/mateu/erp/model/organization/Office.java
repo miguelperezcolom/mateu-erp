@@ -3,9 +3,7 @@ package io.mateu.erp.model.organization;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.mdd.core.annotations.NotInList;
-import io.mateu.mdd.core.annotations.SameLine;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +23,7 @@ public class Office {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("Info")
+    @Section("Info")
     @NotNull
     private String name;
 
@@ -47,10 +45,11 @@ public class Office {
     @NotNull
     @ManyToOne
     @NotInList
+    @DataProvider(dataProvider = AirportDataProvider.class)
     private TransferPoint defaultAirportForTransfers;
 
 
-    @Tab("Email")
+    @Section("Email")
     @NotInList
     private String emailHost;
     @NotInList

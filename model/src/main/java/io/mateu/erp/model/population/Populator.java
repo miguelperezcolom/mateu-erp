@@ -30,17 +30,17 @@ import io.mateu.mdd.core.util.JPATransaction;
  *
  * Created by miguel on 13/9/16.
  */
-public class Populator {
+public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
     public static final String USER_ADMIN = "admin";
 
     public static void main(String... args) throws Throwable {
 
-        populate(io.mateu.erp.model.config.AppConfig.class);
+        new Populator().populate(io.mateu.erp.model.config.AppConfig.class);
 
     }
 
-    public static void populate(Class appConfigClass) throws Throwable {
+    public void populate(Class appConfigClass) throws Throwable {
 
         System.out.println("Populating database...");
 
@@ -123,7 +123,7 @@ public class Populator {
                 u.setLogin(USER_ADMIN);
                 u.setName("Admin");
                 //u.setPassword(Helper.md5("1"));
-                u.setEmail("miguelperezclom@gmail.com");
+                u.setEmail("miguelperezcolom@gmail.com");
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
@@ -141,10 +141,15 @@ public class Populator {
                 u.setLogin(Constants.SYSTEM_USER_LOGIN);
                 u.setName("System");
                 //u.setPassword(Helper.md5("1"));
-                u.setEmail("miguelperezclom@gmail.com");
+                u.setEmail("miguelperezcolom@gmail.com");
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
+                File f;
+                u.setPhoto(f = new File());
+                f.setName("foto-perfil-ejemplo.png");
+                f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
+                em.persist(f);
                 em.persist(u);
             }
 
@@ -154,39 +159,44 @@ public class Populator {
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));
-                u.setEmail("miguelperezclom@gmail.com");
+                u.setEmail("miguelperezcolom@gmail.com");
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
+                File f;
+                u.setPhoto(f = new File());
+                f.setName("foto-perfil-ejemplo.png");
+                f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
+                em.persist(f);
                 em.persist(u);
             }
 
             Currency eur;
-            {
+            if (false) {
                 eur = new Currency();
                 eur.setIsoCode("EUR");
-                eur.setIso4217Code("978");
+                eur.setIsoNumericCode(978);
                 eur.setName("Euro");
                 em.persist(eur);
             }
 
-            {
+            if (false) {
                 Currency usd = new Currency();
                 usd.setIsoCode("USD");
-                usd.setIso4217Code("840");
+                usd.setIsoNumericCode(840);
                 usd.setName("US Dollar");
                 em.persist(usd);
             }
 
 
 
-            {
+            if (false) {
                 PointOfSale pos = new PointOfSale();
                 pos.setName("Point of sale");
                 em.persist(pos);
             }
 
-            {
+            if (false) {
                 BillingConcept bc = new BillingConcept();
                 bc.setName("Anything");
                 bc.setCode("ANY");
@@ -194,6 +204,7 @@ public class Populator {
                 em.persist(bc);
             }
 
+            /*
             Zone ct;
             TransferPoint apt;
             {
@@ -231,12 +242,14 @@ public class Populator {
                 em.persist(b);
 
             }
+            */
 
 
-            {
+            if (false) {
 
                 AccountingPlan plan = new AccountingPlan();
                 plan.setName("Accounting plan");
+                plan.setCurrency(eur);
                 em.persist(plan);
 
                 FinancialAgent a = new FinancialAgent();
@@ -253,6 +266,7 @@ public class Populator {
                 b.setAccountingPlan(plan);
                 em.persist(b);
 
+                /*
                 Office o = new Office();
                 o.setName("Head office");
                 o.setCity(ct);
@@ -260,6 +274,8 @@ public class Populator {
                 o.setDefaultAirportForTransfers(apt);
                 o.setCompany(b);
                 em.persist(o);
+                */
+
             }
 
         });

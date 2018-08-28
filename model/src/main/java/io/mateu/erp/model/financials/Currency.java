@@ -26,14 +26,17 @@ public class Currency {
     @NotNull
     private String isoCode;
 
-    private String iso4217Code;
+    private int isoNumericCode;
 
     @NotNull
     private String name;
 
-    private String format;
-
     @OneToMany(mappedBy = "from")
     @Ignored
     private List<CurrencyExchange> exchanges = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

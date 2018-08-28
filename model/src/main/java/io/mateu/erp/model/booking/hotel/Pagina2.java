@@ -4,15 +4,15 @@ import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.UseGridToSelect;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
-import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
+import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
 import org.easytravelapi.hotel.AvailableHotel;
@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter@Setter
-public class Pagina2 extends AbstractServerSideWizardPage {
+public class Pagina2 implements WizardPage {
+
+    private final Pagina1 pagina1;
 
     @Output
     private String message;
@@ -32,27 +34,27 @@ public class Pagina2 extends AbstractServerSideWizardPage {
     @UseGridToSelect
     private HotelOption hotel;
 
-    @Override
-    public String getTitle() {
-        return "Choose an option";
+    public Pagina2(Pagina1 pagina1) {
+        this.pagina1 = pagina1;
     }
 
     @Override
+    public String toString() {
+        return "Choose an option";
+    }
+
     public Data getData(UserData user, EntityManager em, Data in) throws Throwable {
         Data out = new Data();
-
-        Pagina1 p = new Pagina1();
-        p.fill(em, user, in);
 
 
         long t0 = System.currentTimeMillis();
 
         List<Hotel> hoteles = new ArrayList<>();
-        for (Zone c : p.getState().getZones()) {
+        for (Zone c : pagina1.getState().getZones()) {
             hoteles.addAll(c.getHotels());
         }
 
-        Partner agencia = p.getAgency();
+        Partner agencia = pagina1.getAgency();
 
         //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
@@ -64,16 +66,16 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         };
 
         List<io.mateu.erp.dispo.Occupancy> os = new ArrayList<>();
-        for (Occupation o : p.getOccupations()) {
+        for (Occupation o : pagina1.getOccupations()) {
             os.add(new io.mateu.erp.dispo.Occupancy(o.getNumberOfRooms(), o.getPaxPerRoom(), o.getAges()));
         }
 
-        DispoRQ rq = new DispoRQ(p.getFormalizationDate(), io.mateu.erp.dispo.Helper.toInt(p.getCheckin()), io.mateu.erp.dispo.Helper.toInt(p.getCheckout()), os, false);
+        DispoRQ rq = new DispoRQ(pagina1.getFormalizationDate(), io.mateu.erp.dispo.Helper.toInt(pagina1.getCheckin()), io.mateu.erp.dispo.Helper.toInt(pagina1.getCheckout()), os, false);
 
 
         List<HotelOption> options = new ArrayList<>();
         for (Hotel h : hoteles) {
-            AvailableHotel ah = new HotelAvailabilityRunner().check(agencia, h, p.getAgency().getId(), 1, modelo, rq);
+            AvailableHotel ah = new HotelAvailabilityRunner().check(agencia, h, pagina1.getAgency().getId(), 1, modelo, rq);
             if (ah != null) {
 
                 HotelOption o = new HotelOption();
@@ -116,5 +118,15 @@ public class Pagina2 extends AbstractServerSideWizardPage {
         out.set("hotel_data", l);
 
         return out;
+    }
+
+    @Override
+    public WizardPage getPrevious() {
+        return pagina1;
+    }
+
+    @Override
+    public WizardPage getNext() {
+        return new Pagina2b(this);
     }
 }

@@ -23,7 +23,7 @@ public class RevenueModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new MDDOpenCRUDAction("Products", ProductLine.class));
+        m.add(new MDDOpenCRUDAction("Product lines", ProductLine.class));
 
         m.add(new MDDOpenCRUDAction("Partners", Partner.class));
 

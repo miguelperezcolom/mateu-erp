@@ -42,4 +42,9 @@ public class Destination {
     @ManyToOne
     private VAT vat;
 
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

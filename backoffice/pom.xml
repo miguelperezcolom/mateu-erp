@@ -2,12 +2,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.mateu.erp</groupId>
+    <parent>
+        <artifactId>all</artifactId>
+        <groupId>io.mateu.erp</groupId>
+        <version>0.0.2-SNAPSHOT</version>
+    </parent>
+
     <artifactId>backoffice</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
     <packaging>${empaquetado}</packaging>
 
-    <name>backoffice</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -95,9 +98,9 @@
                         <overlay></overlay>
                         <overlay>
                             <groupId>io.mateu</groupId>
-                            <artifactId>mdd-vaadin</artifactId>
+                            <artifactId>mdd-showcase</artifactId>
                             <excludes>
-                                <exclude>WEB-INF/lib/mdd-tester-0.0.2-SNAPSHOT.jar</exclude>
+                                <exclude>WEB-INF/lib/mdd-tester-0.0.5-SNAPSHOT.jar</exclude>
                             </excludes>
                         </overlay>
                     </overlays>
@@ -125,8 +128,8 @@
 
         <dependency>
             <groupId>io.mateu</groupId>
-            <artifactId>mdd-vaadin</artifactId>
-            <version>0.0.2-SNAPSHOT</version>
+            <artifactId>mdd-showcase</artifactId>
+            <version>0.0.5-SNAPSHOT</version>
             <type>war</type>
         </dependency>
 

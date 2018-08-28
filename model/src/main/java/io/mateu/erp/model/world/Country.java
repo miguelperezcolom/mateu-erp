@@ -5,10 +5,7 @@ import io.mateu.mdd.core.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,4 +33,25 @@ public class Country {
 
     @ManyToOne
     private VAT vat;
+
+    @ElementCollection
+    private List<String> nationalAirportsIATACodes;
+
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Country && isoCode == ((Country)obj).isoCode);
+    }
+
 }

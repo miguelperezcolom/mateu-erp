@@ -20,7 +20,6 @@ import java.io.IOException;
 @Setter
 public class User extends io.mateu.mdd.core.model.authentication.User {
 
-    @Tab("Segmentation")
     @ManyToOne
     private Partner actor;
 

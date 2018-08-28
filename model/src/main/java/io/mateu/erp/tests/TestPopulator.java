@@ -68,7 +68,7 @@ public class TestPopulator {
 
             int nomappconfigs = em.createQuery("select x from " + AppConfig.class.getName() + " x").getResultList().size();
 
-            if (nomappconfigs == 0) Populator.populate(appConfigClass);
+            if (nomappconfigs == 0) new Populator().populate(appConfigClass);
 
         });
 

@@ -1,10 +1,12 @@
 package io.mateu.erp.model.booking.hotel;
 
 
+import io.mateu.erp.dispo.KeyValue;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
-import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
+import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,8 +14,9 @@ import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 
 @Getter@Setter
-public class Pagina3 extends AbstractServerSideWizardPage {
+public class Pagina3 implements WizardPage {
 
+    private final Pagina2b pagina2b;
     @Output
     private String key;
 
@@ -28,32 +31,58 @@ public class Pagina3 extends AbstractServerSideWizardPage {
 
     private String comments;
 
+    public Pagina3(Pagina2b pagina2b) {
+        this.pagina2b = pagina2b;
+    }
+
 
     @Override
-    public String getTitle() {
+    public String toString() {
         return "Fill and confirm";
     }
 
-    @Override
     public Data getData(UserData user, EntityManager em, Data in) throws Throwable {
         Data out = new Data();
 
-        Pagina2 p2 = new Pagina2();
-        p2.fill(em, user, in);
-
-        Pagina2b p2b = new Pagina2b();
-        p2b.fill(em, user, in);
-
-        out.set("selectedOption", "" + p2.getHotel().getHotelName() + " " + p2.getHotel().getCategory()
-                        + "\n" + p2.getHotel().getCity()
-                        + "\n" + p2b.getOption().getRooms()
-                        + "\n" + p2b.getOption().getBoard()
-                        + "\n" + p2b.getOption().getPrice() + " " + p2b.getOption().getCurrency()
+        out.set("selectedOption", "" + pagina2b.getPagina2().getHotel().getHotelName()
+                + " " + pagina2b.getPagina2().getHotel().getCategory()
+                        + "\n" + pagina2b.getPagina2().getHotel().getCity()
+                        + "\n" + pagina2b.getOption().getRooms()
+                        + "\n" + pagina2b.getOption().getBoard()
+                        + "\n" + pagina2b.getOption().getPrice() + " " + pagina2b.getOption().getCurrency()
         );
 
-        out.set("key", p2b.getOption().getKey());
+        out.set("key", pagina2b.getOption().getKey());
 
 
         return out;
+    }
+
+    @Override
+    public WizardPage getPrevious() {
+        return pagina2b;
+    }
+
+    @Override
+    public WizardPage getNext() {
+        return null;
+    }
+
+    @Override
+    public void onOk() {
+        long serviceId = 0;
+        try {
+            serviceId = HotelService.createFromKey(
+                    MDD.getUserData()
+                    , new KeyValue(
+                            getPagina2b().getOption().getKey())
+                    , getAgencyReference()
+                    , getLeadName()
+                    , getComments());
+        } catch (Throwable throwable) {
+            MDD.alert(throwable);
+        }
+
+        //todo: abrir la reserva recién creada
     }
 }

@@ -26,4 +26,8 @@ public class Company {
     @ManyToOne
     private AccountingPlan accountingPlan;
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -14,8 +14,6 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -204,12 +202,8 @@ public class HotelService extends Service {
     }
 
     @Action("Look for available")
-    public static MDDLink book(UserData user, HotelBookingWizard wizard) throws Throwable {
-        Pagina2 p2 = (Pagina2)wizard.getPages().get(1);
-        Pagina2b p2b = (Pagina2b)wizard.getPages().get(2);
-        Pagina3 p3 = (Pagina3)wizard.getPages().get(3);
-        long serviceId = createFromKey(user, new KeyValue(p2b.getOption().getKey()), p3.getAgencyReference(), p3.getLeadName(), p3.getComments());
-        return new MDDLink(HotelService.class, ActionType.OPENEDITOR, new Data("_id", serviceId));
+    public static Pagina1 book() throws Throwable {
+        return new Pagina1();
     }
 
     public static long createFromKey(UserData user, KeyValue k, String agencyReference, String leadName, String comments) throws Throwable {

@@ -28,4 +28,9 @@ public class Area {
     @OneToMany
      private List<Zone> cities = new ArrayList<>();
 
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -1,11 +1,32 @@
 package io.mateu.erp.model.invoicing;
 
 
-import io.mateu.mdd.core.views.AbstractServerSideWizardPage;
+import io.mateu.mdd.core.interfaces.WizardPage;
 
-public class IssueInvoicesShowProformaPage extends AbstractServerSideWizardPage {
+public class IssueInvoicesShowProformaPage implements WizardPage {
+    private final IssueInvoicesParametersPage issueInvoicesParametersPage;
+
+    public IssueInvoicesShowProformaPage(IssueInvoicesParametersPage issueInvoicesParametersPage) {
+        this.issueInvoicesParametersPage = issueInvoicesParametersPage;
+    }
+
     @Override
-    public String getTitle() {
+    public String toString() {
         return "Proforma";
+    }
+
+    @Override
+    public WizardPage getPrevious() {
+        return issueInvoicesParametersPage;
+    }
+
+    @Override
+    public WizardPage getNext() {
+        return null;
+    }
+
+    @Override
+    public void onOk() {
+
     }
 }
