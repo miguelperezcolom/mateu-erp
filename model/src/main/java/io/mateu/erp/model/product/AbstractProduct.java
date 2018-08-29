@@ -51,4 +51,8 @@ public abstract class AbstractProduct {
     private Zone zone;
 
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

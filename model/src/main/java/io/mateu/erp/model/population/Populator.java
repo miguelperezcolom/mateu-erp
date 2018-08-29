@@ -2,7 +2,9 @@ package io.mateu.erp.model.population;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import io.mateu.mdd.core.model.config.TemplateUseCase;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.erp.model.accounting.AccountingPlan;
@@ -24,6 +26,9 @@ import io.mateu.mdd.core.model.authentication.USER_STATUS;
 import io.mateu.mdd.core.model.common.File;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+
+import java.nio.charset.Charset;
+import java.util.Map;
 
 /**
  * used to populate a database with initial values
@@ -48,12 +53,42 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
         //authentication
         Helper.transact((JPATransaction) (em)->{
 
+            Map<String, Object> initialData = null;
+            String initialDataPath = System.getProperty("initialdata", "/home/miguel/work/initialdata.yml");
+            try {
+                initialData = Helper.fromYaml(Files.toString(new java.io.File(initialDataPath), Charset.defaultCharset()));
+            } catch (Exception e) {
+                System.out.println("No initial data found at " + initialDataPath);
+            }
+
+
             io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
-            c.setXslfoForTransferContract(Resources.toString(Resources.getResource(Contract.class, "contract.xsl"), Charsets.UTF_8));
-            c.setXslfoForHotelContract(Resources.toString(Resources.getResource(Hotel.class, "contract.xsl"), Charsets.UTF_8));
-            c.setXslfoForWorld(Resources.toString(Resources.getResource(Contract.class, "portfolio.xsl"), Charsets.UTF_8));
+
+            c.setXslfoForTransferContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_transfer.xsl"), Charsets.UTF_8));
+            c.setXslfoForHotelContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_hotel.xsl"), Charsets.UTF_8));
+            c.setXslfoForWorld(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
             c.setXslfoForList(Resources.toString(Resources.getResource("/xsl/listing.xsl"), Charsets.UTF_8));
+            c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
+            c.setXslfoForPurchaseOrder(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/please_book.xsl"), Charsets.UTF_8));
+            c.setXslfoForTransfersList(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/transfers_list.xsl"), Charsets.UTF_8));
+            c.setXslfoForVoucher(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/voucher.xsl"), Charsets.UTF_8));
+            c.setXslfoForObject(Resources.toString(Resources.getResource("/xsl/object.xsl"), Charsets.UTF_8));
+
+            c.setPickupEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupemail.ftl"), Charsets.UTF_8));
+            c.setPickupSmsTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsms.ftl"), Charsets.UTF_8));
+            c.setPickupSmsTemplateEs(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsmses.ftl"), Charsets.UTF_8));
+            c.setPurchaseOrderTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
+
+
+            c.setAdminEmailSmtpHost((String) Helper.get(initialData, "smtp/host"));
+            c.setAdminEmailFrom((String) Helper.get(initialData, "smtp/user"));
+            c.setAdminEmailPassword((String) Helper.get(initialData, "smtp/password"));
+            c.setAdminEmailSmtpPort((Integer) Helper.get(initialData, "smtp/port", 0));
+            c.setAdminEmailUser((String) Helper.get(initialData, "smtp/user"));
+            c.setAdminEmailCC((String) Helper.get(initialData, "smtp/cc"));
+
+
             em.persist(c);
 
             c.createDummyDates();
@@ -170,6 +205,26 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 em.persist(f);
                 em.persist(u);
             }
+
+
+            {
+                TemplateUseCase tuc = new TemplateUseCase();
+                tuc.setName("User");
+                em.persist(tuc);
+            }
+
+            {
+                TemplateUseCase tuc = new TemplateUseCase();
+                tuc.setName("Partner");
+                em.persist(tuc);
+            }
+
+            {
+                TemplateUseCase tuc = new TemplateUseCase();
+                tuc.setName("Booking");
+                em.persist(tuc);
+            }
+
 
             Currency eur;
             if (false) {

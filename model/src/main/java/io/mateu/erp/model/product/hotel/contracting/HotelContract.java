@@ -117,8 +117,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        //fileOut.write(BaseServerSideApp.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForHotelContract())), new StreamSource(new StringReader(sxml))));
-                        fileOut.write(Helper.fop(new StreamSource(Hotel.class.getResourceAsStream("contract.xsl")), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForHotelContract())), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");
