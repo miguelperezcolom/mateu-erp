@@ -61,29 +61,7 @@ public class LinearFareLine implements XMLSerializable {
 
 
     public LinearFareLine(Element e) {
-        setRoomTypeCode(e.getAttributeValue("room"));
-        setBoardTypeCode(e.getAttributeValue("board"));
-
-
-        setLodgingPrice(Helper.toDouble(e.getAttributeValue("lodging")));
-
-        setAdultPrice(Helper.toDouble(e.getAttributeValue("adult")));
-
-        if (e.getAttribute("junior") != null) setJuniorPrice(new FareValue(e.getAttributeValue("junior")));
-        if (e.getAttribute("child") != null) setChildPrice(new FareValue(e.getAttributeValue("child")));
-        if (e.getAttribute("infant") != null) setInfantPrice(new FareValue(e.getAttributeValue("infant")));
-
-        if (e.getAttribute("mealadult") != null) setMealAdultPrice(Helper.toDouble(e.getAttributeValue("mealadult")));
-        if (e.getAttribute("mealjunior") != null) setMealJuniorPrice(new FareValue(e.getAttributeValue("mealjunior")));
-        if (e.getAttribute("mealchild") != null) setMealChildPrice(new FareValue(e.getAttributeValue("mealchild")));
-        if (e.getAttribute("mealinfant") != null) setMealInfantPrice(new FareValue(e.getAttributeValue("mealinfant")));
-
-        if (e.getAttribute("extraadult") != null) setExtraAdultPrice(new FareValue(e.getAttributeValue("extraadult")));
-        if (e.getAttribute("extrajunior") != null) setExtraJuniorPrice(new FareValue(e.getAttributeValue("extrajunior")));
-        if (e.getAttribute("extrachild") != null) setExtraChildPrice(new FareValue(e.getAttributeValue("extrachild")));
-        if (e.getAttribute("extrainfant") != null) setExtraInfantPrice(new FareValue(e.getAttributeValue("extrainfant")));
-
-        if (e.getAttribute("singleuse") != null) setSingleUsePrice(new FareValue(e.getAttributeValue("singleuse")));
+        fromXml(e);
     }
 
 
@@ -169,5 +147,32 @@ public class LinearFareLine implements XMLSerializable {
         if (getSingleUsePrice() != null) e.setAttribute("singleuse", "" + getSingleUsePrice());
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        setRoomTypeCode(e.getAttributeValue("room"));
+        setBoardTypeCode(e.getAttributeValue("board"));
+
+
+        setLodgingPrice(Helper.toDouble(e.getAttributeValue("lodging")));
+
+        setAdultPrice(Helper.toDouble(e.getAttributeValue("adult")));
+
+        if (e.getAttribute("junior") != null) setJuniorPrice(new FareValue(e.getAttributeValue("junior")));
+        if (e.getAttribute("child") != null) setChildPrice(new FareValue(e.getAttributeValue("child")));
+        if (e.getAttribute("infant") != null) setInfantPrice(new FareValue(e.getAttributeValue("infant")));
+
+        if (e.getAttribute("mealadult") != null) setMealAdultPrice(Helper.toDouble(e.getAttributeValue("mealadult")));
+        if (e.getAttribute("mealjunior") != null) setMealJuniorPrice(new FareValue(e.getAttributeValue("mealjunior")));
+        if (e.getAttribute("mealchild") != null) setMealChildPrice(new FareValue(e.getAttributeValue("mealchild")));
+        if (e.getAttribute("mealinfant") != null) setMealInfantPrice(new FareValue(e.getAttributeValue("mealinfant")));
+
+        if (e.getAttribute("extraadult") != null) setExtraAdultPrice(new FareValue(e.getAttributeValue("extraadult")));
+        if (e.getAttribute("extrajunior") != null) setExtraJuniorPrice(new FareValue(e.getAttributeValue("extrajunior")));
+        if (e.getAttribute("extrachild") != null) setExtraChildPrice(new FareValue(e.getAttributeValue("extrachild")));
+        if (e.getAttribute("extrainfant") != null) setExtraInfantPrice(new FareValue(e.getAttributeValue("extrainfant")));
+
+        if (e.getAttribute("singleuse") != null) setSingleUsePrice(new FareValue(e.getAttributeValue("singleuse")));
     }
 }

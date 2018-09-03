@@ -1,12 +1,12 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
-import io.mateu.mdd.core.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,12 +23,21 @@ public class DataSheet {
     private long id;
 
     @ManyToOne
+    @NotNull
     private Literal description;
 
     @ManyToOne
-    private File mainImage;
+    private Resource mainImage;
 
-    @OneToMany(mappedBy = "dataSheet")
-    @Ignored
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataSheet", orphanRemoval = true)
+    private List<DataSheetImage> images = new ArrayList<>();
+
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataSheet", orphanRemoval = true)
     private List<FeatureValue> features = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return (getDescription() != null)?getDescription().toString():"No description";
+    }
 }

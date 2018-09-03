@@ -1,12 +1,11 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.mdd.core.model.multilanguage.Literal;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 1/10/16.
@@ -14,22 +13,22 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class FeatureGroup {
+public class DataSheetImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @ManyToOne
-    private Literal name;
+    @NotNull
+    DataSheet dataSheet;
 
-    @OneToMany(mappedBy = "group")
-    private List<Feature> features = new ArrayList<>();
+    @ManyToOne
+    Resource image;
 
 
     @Override
     public String toString() {
-        return (getName() != null)?getName().toString():"No name";
+        return (image != null)?image.toString():"Empty image";
     }
-
 }

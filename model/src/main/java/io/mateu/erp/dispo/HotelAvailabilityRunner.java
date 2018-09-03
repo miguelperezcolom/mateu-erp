@@ -4,6 +4,7 @@ import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
+import io.mateu.erp.model.partners.PartnerStatus;
 import io.mateu.erp.model.product.hotel.CancellationRule;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.CancellationCost;
@@ -34,7 +35,7 @@ public class HotelAvailabilityRunner {
         Amount bestDeal = null;
 
 
-        if (agency.isActive() && hotel.isActive()) {
+        if (PartnerStatus.ACTIVE.equals(agency.getStatus()) && hotel.isActive()) {
 
             // comprobar paros de ventas
 

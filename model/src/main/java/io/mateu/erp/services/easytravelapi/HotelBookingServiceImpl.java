@@ -270,7 +270,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("Booking confirmed");
+        rs.setMsg("File confirmed");
 
         long idPos = Long.parseLong(System.getProperty("idpos", "1"));
 
@@ -298,7 +298,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             });
             long t = System.currentTimeMillis();
 
-            String msg = "Booking confirmed with id " + rs.getBookingId() + ". It consumed " + (t - t0) + " ms in the server.";
+            String msg = "File confirmed with id " + rs.getBookingId() + ". It consumed " + (t - t0) + " ms in the server.";
 
             System.out.println(msg);
 

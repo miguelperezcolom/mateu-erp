@@ -69,7 +69,7 @@ public class ChannelManagerServiceImpl implements ChannelManagerService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("120 bookings found.");
+        rs.setMsg("120 files found.");
 
 
         String[] nombres = {"Java", "Javascript", ".Net", "Scala", "Go", "Kotlin"};

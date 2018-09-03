@@ -3,8 +3,8 @@ package io.mateu.erp.model.booking.hotel;
 import com.google.common.base.Strings;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
+import io.mateu.erp.model.booking.File;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -85,7 +85,7 @@ public class HotelService extends Service {
 
     @Override
     public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-        AvailableHotel ah = new HotelAvailabilityRunner().check(getBooking().getAgency(), getHotel(), getBooking().getAgency().getId(), 1, new ModeloDispo() {
+        AvailableHotel ah = new HotelAvailabilityRunner().check(this.getFile().getAgency(), getHotel(), this.getFile().getAgency().getId(), 1, new ModeloDispo() {
             @Override
             public IHotelContract getHotelContract(long id) {
                 return em.find(HotelContract.class, id);
@@ -220,7 +220,7 @@ public class HotelService extends Service {
             Office oficina = hotel.getOffice();
             PointOfSale pos = em.find(PointOfSale.class, k.getPointOfSaleId());
 
-            Booking b = new Booking();
+            File b = new File();
             b.setAgency(agencia);
             b.setCurrency(agencia.getCurrency());
             b.setAgencyReference(agencyReference);
@@ -232,7 +232,7 @@ public class HotelService extends Service {
             HotelService s = new HotelService();
             em.persist(s);
             b.getServices().add(s);
-            s.setBooking(b);
+            s.setFile(b);
             s.setHotel(hotel);
             s.setOffice(oficina);
             s.setPos(pos);
@@ -274,7 +274,7 @@ public class HotelService extends Service {
 
     @Override
     public String toString() {
-        return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((getBooking() != null)?getBooking().getLeadName():"no booking");
+        return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((this.getFile() != null)? this.getFile().getLeadName():"no file");
     }
 
 

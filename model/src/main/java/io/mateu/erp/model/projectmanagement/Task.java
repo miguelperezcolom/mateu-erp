@@ -1,7 +1,7 @@
 package io.mateu.erp.model.projectmanagement;
 
-import io.mateu.mdd.core.model.common.File;
 import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,7 +32,7 @@ public class Task {
     private String requirements;
 
     @OneToMany
-    private List<File> attachments = new ArrayList<>();
+    private List<Resource> attachments = new ArrayList<>();
 
     private String aceptanceTests;
 

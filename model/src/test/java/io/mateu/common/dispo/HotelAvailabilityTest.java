@@ -3,6 +3,7 @@ package io.mateu.common.dispo;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.google.common.collect.Lists;
+import io.mateu.erp.model.partners.PartnerStatus;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.USER_STATUS;
 import io.mateu.mdd.core.model.authentication.User;
@@ -89,13 +90,13 @@ public class HotelAvailabilityTest
         agencia = new Partner();
         agencia.setId(1);
         agencia.setName("Muchoviaje");
-        agencia.setActive(true);
+        agencia.setStatus(PartnerStatus.ACTIVE);
 
         // creamos un proveedor
         proveedor = new Partner();
         proveedor.setId(2);
         proveedor.setName("Barcelo Hoteles");
-        proveedor.setActive(true);
+        proveedor.setStatus(PartnerStatus.ACTIVE);
 
         // creamos tipos de habitación
         roomTypes = new HashMap<>();
@@ -442,7 +443,7 @@ public class HotelAvailabilityTest
 
     public void testAgenciaActiva() {
 
-        agencia.setActive(false);
+        agencia.setStatus(PartnerStatus.INACTIVE);
 
         DispoRQ rq = new DispoRQ(LocalDate.now(), 21010101, 21010115, Lists.newArrayList(new Occupancy(1, 2, null)), false);
         AvailableHotel rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
@@ -450,7 +451,7 @@ public class HotelAvailabilityTest
         assertEquals("NOTAVAILABLE", rs.getBestDeal());
 
 
-        agencia.setActive(true);
+        agencia.setStatus(PartnerStatus.ACTIVE);
 
         rs = new HotelAvailabilityRunner().check(agencia, hotel, 1, 1, modelo, rq);
 
@@ -704,7 +705,7 @@ public class HotelAvailabilityTest
             hotel.getOffers().add(o = new EarlyBookingOffer());
             o.setHotel(hotel);
 
-            o.setName("Oferta early booking");
+            o.setName("Oferta early file");
             o.setId(1);
             o.setActive(true);
             o.getStayDates().getRanges().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));

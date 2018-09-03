@@ -23,7 +23,7 @@ public class RoomFare implements XMLSerializable {
     }
 
     public RoomFare(Element e) {
-        for (Element z : e.getChildren("boardFare")) getFarePerBoard().put(z.getAttributeValue("board"), new BoardFare(z));
+        fromXml(e);
     }
 
     public RoomFare() {
@@ -36,6 +36,11 @@ public class RoomFare implements XMLSerializable {
             e.addContent(getFarePerBoard().get(k).toXml().setAttribute("board", "" + k));
         }
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        for (Element z : e.getChildren("boardFare")) getFarePerBoard().put(z.getAttributeValue("board"), new BoardFare(z));
     }
 
     public RoomFare combineWith(RoomFare rf) {

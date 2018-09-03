@@ -28,6 +28,7 @@ public class TourExtra {
     @ManyToOne
     private Literal name;
 
+    @NotNull
     private SupplementType type;
 
     private boolean optional;
@@ -41,4 +42,10 @@ public class TourExtra {
     private Partner supplier;
 
 
+
+
+    @Override
+    public String toString() {
+        return (getName() != null)?getName().toString():"No name";
+    }
 }

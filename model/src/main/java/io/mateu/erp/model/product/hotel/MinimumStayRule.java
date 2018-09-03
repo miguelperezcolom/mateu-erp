@@ -105,17 +105,7 @@ public class MinimumStayRule implements XMLSerializable {
     }
 
     public MinimumStayRule(Element e) {
-
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("nights") != null) setNights(Integer.parseInt(e.getAttributeValue("nights")));
-        if (e.getAttribute("onRequest") != null) setOnRequest(true);
-        if (e.getAttribute("supplementPercent") != null) setSupplementPercent(Double.parseDouble(e.getAttributeValue("supplementPercent")));
-        if (e.getAttribute("supplementValue") != null) setSupplementValue(Double.parseDouble(e.getAttributeValue("supplementValue")));
-        if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
-        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
-        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
-
+        fromXml(e);
     }
 
     public MinimumStayRule() {
@@ -158,7 +148,7 @@ public class MinimumStayRule implements XMLSerializable {
         if (getSupplementPercent() != 0 || getSupplementValue() != 0) sb.append(" supplement will be applied");
         if (isOnRequest()) {
             if (sb.length() > 0) sb.append(" and ");
-            sb.append("the booking will be on request");
+            sb.append("the file will be on request");
         }
         if (getRooms().size() > 0) {
             if (sb.length() > 0) sb.append(". ");
@@ -181,5 +171,18 @@ public class MinimumStayRule implements XMLSerializable {
         if (sb.length() > 0) e.setAttribute("description", "For shorter stays " + sb.toString());
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("nights") != null) setNights(Integer.parseInt(e.getAttributeValue("nights")));
+        if (e.getAttribute("onRequest") != null) setOnRequest(true);
+        if (e.getAttribute("supplementPercent") != null) setSupplementPercent(Double.parseDouble(e.getAttributeValue("supplementPercent")));
+        if (e.getAttribute("supplementValue") != null) setSupplementValue(Double.parseDouble(e.getAttributeValue("supplementValue")));
+        if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
+        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
+        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
     }
 }

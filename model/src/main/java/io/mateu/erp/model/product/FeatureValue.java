@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 1/10/16.
@@ -18,9 +19,11 @@ public class FeatureValue {
     private long id;
 
     @ManyToOne
+    @NotNull
     DataSheet dataSheet;
 
     @ManyToOne
+    @NotNull
     Feature feature;
 
     private String value;

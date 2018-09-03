@@ -13,10 +13,7 @@ import io.mateu.erp.model.revenue.Markup;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.SameLine;
-import io.mateu.mdd.core.annotations.SearchFilter;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -40,14 +37,12 @@ public class Partner implements IPartner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("General")
+    @Section("General")
     @NotNull
-    @SearchFilter
     @ListColumn
     private String name;
 
-    private boolean active = true;
-
+    @NotNull
     private PartnerStatus status;
 
     private boolean agency;
@@ -86,22 +81,14 @@ public class Partner implements IPartner {
     @ListColumn
     private String comments;
 
-    @Tab("Deprecated")
-    @ListColumn
-    private String businessName;
-
-    private String address;
-
-    private String vatIdentificationNumber;
-
-    @Tab("Product filters")
+    @Section("Product filters")
     private boolean onRequestAllowed;
 
     private boolean PVPAllowed;
 
     private boolean thridPartyAllowed;
 
-    @Tab("Revenue")
+    @Section("Revenue")
     @ManyToOne
     private Markup markup;
 
@@ -111,20 +98,20 @@ public class Partner implements IPartner {
     @ManyToOne
     private CancellationRules cancellationRules;
 
-    @Tab("As supplier")
+    @Section("As supplier")
     private String payableByInVoucher;
 
     private double extraMarkupPercent;
 
 
-    @Tab("Invoicing")
+    @Section("Invoicing")
     private boolean exportableToinvoicingApp;
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;
     private boolean oneLinePerBooking;
 
 
-    @Tab("Orders sending")
+    @Section("Orders sending")
     private PurchaseOrderSendingMethod ordersSendingMethod;
     private String sendOrdersTo;
 
@@ -132,7 +119,7 @@ public class Partner implements IPartner {
     private boolean automaticOrderConfirmation;
 
 
-    @Tab("Integrations")
+    @Section("Integrations")
     @ManyToMany
     private List<Integration> integrations = new ArrayList<>();
 
@@ -145,9 +132,11 @@ public class Partner implements IPartner {
         Element xml = new Element("actor");
         xml.setAttribute("id", "" + getId());
         xml.setAttribute("name", getName());
-        if (getBusinessName() != null) xml.setAttribute("bussinessName", getBusinessName());
-        if (getAddress() != null) xml.setAttribute("address", getBusinessName());
-        if (getVatIdentificationNumber() != null) xml.setAttribute("vatIdentificationNumber", getVatIdentificationNumber());
+        if (getFinancialAgent() != null) {
+            if (getFinancialAgent().getBusinessName() != null) xml.setAttribute("bussinessName", getFinancialAgent().getBusinessName());
+            if (getFinancialAgent().getAddress() != null) xml.setAttribute("address", getFinancialAgent().getBusinessName());
+            if (getFinancialAgent().getVatIdentificationNumber() != null) xml.setAttribute("vatIdentificationNumber", getFinancialAgent().getVatIdentificationNumber());
+        }
         if (getEmail() != null) xml.setAttribute("email", getEmail());
         if (getComments() != null) xml.setAttribute("comments", getComments());
 

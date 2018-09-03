@@ -17,7 +17,6 @@ import java.util.List;
  */
 @Entity
 @Getter@Setter
-//@QLForCombo(ql = "select x.isoCode, x.name from io.mateu.erp.model.world.Country x order by x.name")
 public class Country {
 
     @Id

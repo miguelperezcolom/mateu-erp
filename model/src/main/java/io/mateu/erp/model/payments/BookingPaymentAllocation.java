@@ -1,6 +1,6 @@
 package io.mateu.erp.model.payments;
 
-import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.File;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +12,6 @@ import javax.persistence.ManyToOne;
 public class BookingPaymentAllocation extends AbstractPaymentAllocation {
 
     @ManyToOne
-    private Booking booking;
+    private File file;
 
 }

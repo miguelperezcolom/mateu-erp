@@ -73,18 +73,7 @@ public class WeekDaysRule implements XMLSerializable {
     }
 
     public WeekDaysRule(Element e) {
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("weekDays") != null) {
-            boolean[] a = new boolean[e.getAttributeValue("weekDays").length()];
-            int pos = 0;
-            for (char c : e.getAttributeValue("weekDays").toCharArray()) a[pos++] = '1' == c;
-            setWeekDays(a);
-        }
-        if (e.getAttribute("onRequest") != null) setOnRequest(true);
-        if (e.getAttribute("checkin") != null) setCheckin(true);
-        if (e.getAttribute("checkout") != null) setCheckout(true);
-        if (e.getAttribute("stay") != null) setStay(true);
+        fromXml(e);
     }
 
     public WeekDaysRule() {
@@ -117,6 +106,22 @@ public class WeekDaysRule implements XMLSerializable {
         if (isStay()) e.setAttribute("stay", "");
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("weekDays") != null) {
+            boolean[] a = new boolean[e.getAttributeValue("weekDays").length()];
+            int pos = 0;
+            for (char c : e.getAttributeValue("weekDays").toCharArray()) a[pos++] = '1' == c;
+            setWeekDays(a);
+        }
+        if (e.getAttribute("onRequest") != null) setOnRequest(true);
+        if (e.getAttribute("checkin") != null) setCheckin(true);
+        if (e.getAttribute("checkout") != null) setCheckout(true);
+        if (e.getAttribute("stay") != null) setStay(true);
     }
 
     public boolean isStay() {

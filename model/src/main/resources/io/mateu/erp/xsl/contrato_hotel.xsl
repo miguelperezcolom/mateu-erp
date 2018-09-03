@@ -21,7 +21,7 @@
 
             </fo:layout-master-set>
 
-            <xsl:for-each select="//contrato">
+            <xsl:for-each select="//contract">
 
                 <fo:page-sequence master-reference="dinA4">
 
@@ -126,7 +126,7 @@
                                 <fo:table-row>
                                     <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
                                         <fo:block>For stays from <xsl:value-of select="@del"/> to <xsl:value-of select="@al"/>.</fo:block>
-                                        <xsl:if test="@formalizaciondel or @formalizacional"><fo:block>For bookings done <xsl:if test="@formalizaciondel"> from <xsl:value-of select="@formalizaciondel"/></xsl:if> <xsl:if test="@formalizacional"> to <xsl:value-of select="@formalizacional"/></xsl:if>.</fo:block></xsl:if>
+                                        <xsl:if test="@formalizaciondel or @formalizacional"><fo:block>For files done <xsl:if test="@formalizaciondel"> from <xsl:value-of select="@formalizaciondel"/></xsl:if> <xsl:if test="@formalizacional"> to <xsl:value-of select="@formalizacional"/></xsl:if>.</fo:block></xsl:if>
                                     </fo:table-cell>
                                 </fo:table-row>
 
@@ -438,7 +438,7 @@
                                         <fo:table-row>
                                             <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
                                                 <fo:block>
-                                                    When no allotment is available bookings are allowed ON REQUEST.
+                                                    When no allotment is available files are allowed ON REQUEST.
                                                 </fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
@@ -557,7 +557,7 @@
                                                 <fo:block>
                                                     <xsl:choose>
                                                         <xsl:when test="cupogarantizado/@seguridad">This is SECURITY allotment (activated when stop sales applied)</xsl:when>
-                                                        <xsl:otherwise>This is MINIMUM allotment (activated when stop sales applied, but affected by existent bookings)</xsl:otherwise>
+                                                        <xsl:otherwise>This is MINIMUM allotment (activated when stop sales applied, but affected by existent files)</xsl:otherwise>
                                                     </xsl:choose>
                                                 </fo:block>
                                             </fo:table-cell>
@@ -818,7 +818,7 @@
                                         </fo:table-row>
                                         <fo:table-row>
                                             <fo:table-cell font-size="8pt" margin-left="54mm" padding="1mm">
-                                                <fo:block>The conditions apply when booking for a number of nights fewer than indicated</fo:block>
+                                                <fo:block>The conditions apply when file for a number of nights fewer than indicated</fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
                                     </fo:table-body>
@@ -1449,39 +1449,43 @@
                             Legends of the contract
                         </fo:block>
 
-                        <fo:list-block font-size="7.7pt" font-family="Liberation Sans Narrow" provisional-distance-between-starts="10mm" provisional-label-separation="1mm">
+                        <xsl:if test="habitaciones/habitacion or regimenes/regimen">
 
-                            <xsl:for-each select="habitaciones/habitacion">
-                                <fo:list-item  padding="1mm">
-                                    <fo:list-item-label end-indent="label-end()">
-                                        <fo:block font-weight="bold">
-                                            <xsl:value-of select="@id"></xsl:value-of>
-                                        </fo:block>
-                                    </fo:list-item-label>
-                                    <fo:list-item-body start-indent="body-start()">
-                                        <fo:block>
-                                            <xsl:value-of select="@nombre"></xsl:value-of>
-                                        </fo:block>
-                                    </fo:list-item-body>
-                                </fo:list-item>
-                            </xsl:for-each>
+                            <fo:list-block font-size="7.7pt" font-family="Liberation Sans Narrow" provisional-distance-between-starts="10mm" provisional-label-separation="1mm">
 
-                            <xsl:for-each select="regimenes/regimen">
-                                <fo:list-item  padding="1mm">
-                                    <fo:list-item-label end-indent="label-end()">
-                                        <fo:block font-weight="bold">
-                                            <xsl:value-of select="@codigo"></xsl:value-of>
-                                        </fo:block>
-                                    </fo:list-item-label>
-                                    <fo:list-item-body start-indent="body-start()">
-                                        <fo:block>
-                                            <xsl:value-of select="@nombre"></xsl:value-of>
-                                        </fo:block>
-                                    </fo:list-item-body>
-                                </fo:list-item>
-                            </xsl:for-each>
+                                <xsl:for-each select="habitaciones/habitacion">
+                                    <fo:list-item  padding="1mm">
+                                        <fo:list-item-label end-indent="label-end()">
+                                            <fo:block font-weight="bold">
+                                                <xsl:value-of select="@id"></xsl:value-of>
+                                            </fo:block>
+                                        </fo:list-item-label>
+                                        <fo:list-item-body start-indent="body-start()">
+                                            <fo:block>
+                                                <xsl:value-of select="@nombre"></xsl:value-of>
+                                            </fo:block>
+                                        </fo:list-item-body>
+                                    </fo:list-item>
+                                </xsl:for-each>
 
-                        </fo:list-block>
+                                <xsl:for-each select="regimenes/regimen">
+                                    <fo:list-item  padding="1mm">
+                                        <fo:list-item-label end-indent="label-end()">
+                                            <fo:block font-weight="bold">
+                                                <xsl:value-of select="@codigo"></xsl:value-of>
+                                            </fo:block>
+                                        </fo:list-item-label>
+                                        <fo:list-item-body start-indent="body-start()">
+                                            <fo:block>
+                                                <xsl:value-of select="@nombre"></xsl:value-of>
+                                            </fo:block>
+                                        </fo:list-item-body>
+                                    </fo:list-item>
+                                </xsl:for-each>
+
+                            </fo:list-block>
+
+                        </xsl:if>
 
                         <!-- Delegaciones -->
                         <fo:block font-size="7.7pt" font-family="Liberation Sans Narrow" font-weight="bold" space-before="5mm" space-after="1mm">Offices</fo:block>

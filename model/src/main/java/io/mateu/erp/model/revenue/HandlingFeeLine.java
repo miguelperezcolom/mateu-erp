@@ -1,6 +1,7 @@
 package io.mateu.erp.model.revenue;
 
 import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,11 +15,11 @@ import java.time.LocalDate;
 @Setter
 public class HandlingFeeLine {
 
+    @Section("Info")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("Info")
     @ManyToOne
     @NotNull
     private HandlingFee handlingFee;
@@ -47,7 +48,7 @@ public class HandlingFeeLine {
 
     private double percent;
 
-    @Tab("Individual bookings")
+    @Section("Individual files")
     private double individualBookingAmountPerAdult;
 
     private double individualBookingAmountPerChild;
@@ -57,7 +58,7 @@ public class HandlingFeeLine {
     private double individualBookingAmountPerBooking;
 
 
-    @Tab("Group bookings")
+    @Section("Group files")
     private double groupBookingAmountPerAdult;
 
     private double groupBookingAmountPerChild;

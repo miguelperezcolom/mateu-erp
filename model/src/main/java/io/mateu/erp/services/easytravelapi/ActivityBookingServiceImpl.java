@@ -192,7 +192,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("Booking confirmed ok");
+        rs.setMsg("File confirmed ok");
 
         rs.setBookingId("5643135431");
 

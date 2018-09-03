@@ -28,7 +28,7 @@ public class CommissionTermsLine {
 
     @ManyToOne
     @NotNull
-    private ProductLine product;
+    private ProductLine productLine;
 
     @Column(name = "_start")
     private LocalDate start;

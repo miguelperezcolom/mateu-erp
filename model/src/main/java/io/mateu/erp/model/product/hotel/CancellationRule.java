@@ -78,13 +78,7 @@ public class CancellationRule implements XMLSerializable, ICancellationRule {
 
 
     public CancellationRule(Element e) {
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("release") != null) setRelease(Integer.parseInt(e.getAttributeValue("release")));
-        if (e.getAttribute("amount") != null) setAmount(Double.parseDouble(e.getAttributeValue("amount")));
-        if (e.getAttribute("percent") != null) setPercent(Double.parseDouble(e.getAttributeValue("percent")));
-        if (e.getAttribute("firstNights") != null) setFirstNights(Integer.parseInt(e.getAttributeValue("firstNights")));
-        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
+        fromXml(e);
     }
 
     public CancellationRule() {
@@ -114,5 +108,16 @@ public class CancellationRule implements XMLSerializable, ICancellationRule {
         for (String k : getRooms()) e.addContent(new Element("room").setAttribute("id", "" + k));
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("release") != null) setRelease(Integer.parseInt(e.getAttributeValue("release")));
+        if (e.getAttribute("amount") != null) setAmount(Double.parseDouble(e.getAttributeValue("amount")));
+        if (e.getAttribute("percent") != null) setPercent(Double.parseDouble(e.getAttributeValue("percent")));
+        if (e.getAttribute("firstNights") != null) setFirstNights(Integer.parseInt(e.getAttributeValue("firstNights")));
+        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
     }
 }

@@ -26,7 +26,7 @@ public class ObjectFactory {
 
     private final static QName _CancelBooking_QNAME = new QName("http://caval.travel/20091127/commons", "cancelBooking");
     private final static QName _CancelBookingResponse_QNAME = new QName("http://caval.travel/20091127/commons", "cancelBookingResponse");
-    private final static QName _GetBooking_QNAME = new QName("http://caval.travel/20091127/commons", "getBooking");
+    private final static QName _GetBooking_QNAME = new QName("http://caval.travel/20091127/commons", "getFile");
     private final static QName _GetBookingResponse_QNAME = new QName("http://caval.travel/20091127/commons", "getBookingResponse");
     private final static QName _GetListOfBookings_QNAME = new QName("http://caval.travel/20091127/commons", "getListOfBookings");
     private final static QName _GetListOfBookingsResponse_QNAME = new QName("http://caval.travel/20091127/commons", "getListOfBookingsResponse");
@@ -326,7 +326,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GetBooking }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "http://caval.travel/20091127/commons", name = "getBooking")
+    @XmlElementDecl(namespace = "http://caval.travel/20091127/commons", name = "getFile")
     public JAXBElement<GetBooking> createGetBooking(GetBooking value) {
         return new JAXBElement<GetBooking>(_GetBooking_QNAME, GetBooking.class, null, value);
     }

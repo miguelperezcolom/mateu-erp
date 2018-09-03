@@ -19,7 +19,7 @@ import java.util.List;
  *   &lt;complexContent&gt;
  *     &lt;extension base="{http://caval.travel/20091127/commons}abstractRS"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="booking" type="{http://caval.travel/20091127/commons}booking" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="file" type="{http://caval.travel/20091127/commons}file" maxOccurs="unbounded" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/extension&gt;
  *   &lt;/complexContent&gt;
@@ -40,18 +40,18 @@ public class CavalGetListOfBookingsRS
     protected List<Booking> bookings;
 
     /**
-     * Gets the value of the booking property.
+     * Gets the value of the file property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the booking property.
+     * This is why there is not a <CODE>set</CODE> method for the file property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getBookings().add(newItem);
+     *    getFiles().add(newItem);
      * </pre>
      * 
      * 

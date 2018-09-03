@@ -33,7 +33,7 @@
         <class>io.mateu.commonmon.model.product.hotel.Board</class>
         <class>io.mateu.commonmon.model.product.hotel.BoardType</class>
         <class>io.mateu.commonmon.model.product.hotel.offer.BoardUpgradeOffer</class>
-        <class>io.mateu.commonmon.model.booking.Booking</class>
+        <class>io.mateu.commonmon.model.file.File</class>
         <class>io.mateu.commonmon.model.invoicing.BookingInvoiceLine</class>
         <class>io.mateu.commonmon.model.world.City</class>
         <class>io.mateu.commonmon.model.world.Country</class>
@@ -48,7 +48,7 @@
         <class>io.mateu.commonmon.model.product.hotel.offer.EarlyBookingOffer</class>
         <class>io.mateu.commonmon.model.product.generic.Extra</class>
         <class>io.mateu.commonmon.model.product.generic.ExtraPrice</class>
-        <class>io.mateu.commonmon.model.booking.generic.ExtraPriceDetail</class>
+        <class>io.mateu.commonmon.model.file.generic.ExtraPriceDetail</class>
         <class>io.mateu.commonmon.model.product.Feature</class>
         <class>io.mateu.commonmon.model.product.FeatureGroup</class>
         <class>io.mateu.commonmon.model.common.File</class>
@@ -57,7 +57,7 @@
         <class>io.mateu.commonmon.model.product.generic.Contract</class>
         <class>io.mateu.commonmon.model.product.generic.Price</class>
         <class>io.mateu.commonmon.model.invoicing.GenericInvoiceLine</class>
-        <class>io.mateu.commonmon.model.booking.generic.GenericService</class>
+        <class>io.mateu.commonmon.model.file.generic.GenericService</class>
         <class>Grant</class>
         <class>io.mateu.commonmon.model.invoicing.HeaderInvoiceLine</class>
         <class>io.mateu.commonmon.model.product.hotel.Hotel</class>
@@ -89,11 +89,11 @@
         <class>io.mateu.commonmon.model.cms.HotelBookingPage</class>
         <class>Permission</class>
         <class>io.mateu.commonmon.model.organization.PointOfSale</class>
-        <class>io.mateu.commonmon.model.booking.generic.PriceDetail</class>
-        <class>io.mateu.commonmon.model.booking.generic.PriceLine</class>
+        <class>io.mateu.commonmon.model.file.generic.PriceDetail</class>
+        <class>io.mateu.commonmon.model.file.generic.PriceLine</class>
         <class>io.mateu.commonmon.model.product.hotel.offer.PriceOffer</class>
         <class>io.mateu.commonmon.model.product.generic.Product</class>
-        <class>io.mateu.commonmon.model.booking.PurchaseOrder</class>
+        <class>io.mateu.commonmon.model.file.PurchaseOrder</class>
         <class>io.mateu.commonmon.model.product.generic.Release</class>
         <class>io.mateu.commonmon.model.product.hotel.Room</class>
         <class>io.mateu.commonmon.model.product.hotel.RoomType</class>
@@ -101,7 +101,7 @@
         <class>io.mateu.commonmon.model.workflow.SendEmailTask</class>
         <class>io.mateu.commonmon.model.workflow.SendPurchaseOrdersTask</class>
         <class>io.mateu.commonmon.model.workflow.SendPurchaseOrdersByEmailTask</class>
-        <class>io.mateu.commonmon.model.booking.Service</class>
+        <class>io.mateu.commonmon.model.file.Service</class>
         <class>io.mateu.commonmon.model.product.generic.Shop</class>
         <class>io.mateu.commonmon.model.importing.ShuttleDirectAutoImport</class>
         <class>io.mateu.commonmon.model.importing.ShuttleDirectImportTask</class>
@@ -122,10 +122,10 @@
         <class>io.mateu.commonmon.model.product.transfer.Zone</class>
         <class>io.mateu.commonmon.model.importing.TransferImportTask</class>
         <class>io.mateu.commonmon.model.product.transfer.TransferPoint</class>
-        <class>io.mateu.commonmon.model.booking.transfer.TransferPointMapping</class>
-        <class>io.mateu.commonmon.model.booking.transfer.TransferService</class>
-        <class>io.mateu.commonmon.model.booking.hotel.HotelService</class>
-        <class>io.mateu.commonmon.model.booking.hotel.HotelServiceLine</class>
+        <class>io.mateu.commonmon.model.file.transfer.TransferPointMapping</class>
+        <class>io.mateu.commonmon.model.file.transfer.TransferService</class>
+        <class>io.mateu.commonmon.model.file.hotel.HotelService</class>
+        <class>io.mateu.commonmon.model.file.hotel.HotelServiceLine</class>
         <class>User</class>
         <class>io.mateu.commonmon.model.product.transfer.Vehicle</class>
         <class>io.mateu.commonmon.model.cms.Website</class>

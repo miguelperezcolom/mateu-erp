@@ -2,8 +2,8 @@ package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import io.mateu.erp.model.booking.File;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.mdd.core.model.multilanguage.Literal;
@@ -353,7 +353,7 @@ public class TestPopulator {
 
                 for (int i = 0; i < 10; i++) {
 
-                    Booking b = new Booking();
+                    File b = new File();
                     em.persist(b);
                     b.setAgency(agencia);
                     b.setTelephone("629602085");
@@ -366,14 +366,14 @@ public class TestPopulator {
                     b.setAudit(new Audit(u));
                     b.setAgencyReference("AXS" + i);
                     b.setCancelled(false);
-                    b.setComments("Test booking created b test populator");
+                    b.setComments("Test file created b test populator");
 
                     //ida
                     {
                         TransferService s = new TransferService();
                         em.persist(s);
                         b.getServices().add(s);
-                        s.setBooking(b);
+                        s.setFile(b);
                         s.setStart(b.getStart());
                         s.setComment("Incoming transfer test");
                         //s.setOverridedValue();
@@ -400,7 +400,7 @@ public class TestPopulator {
                         TransferService s = new TransferService();
                         em.persist(s);
                         b.getServices().add(s);
-                        s.setBooking(b);
+                        s.setFile(b);
                         s.setStart(b.getFinish());
                         s.setComment("Outgoing transfer test");
                         //s.setOverridedValue();
@@ -439,10 +439,8 @@ public class TestPopulator {
                 {
                     Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
                     a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Nosotros SA");
                     a.setComments("For testing only");
                     a.setCurrency(em.find(Currency.class, "EUR"));
                     a.setEmail("miguelperezcolom@gmail.com");
@@ -452,7 +450,6 @@ public class TestPopulator {
                     a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("X16237816321");
                     a.setProvider(true);
 
                     em.flush();
@@ -463,10 +460,8 @@ public class TestPopulator {
                 {
                     Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
                     a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Islandbus SA");
                     a.setComments("For testing only");
                     a.setCurrency(em.find(Currency.class, "EUR"));
                     a.setEmail("miguelperezcolom@gmail.com");
@@ -476,7 +471,6 @@ public class TestPopulator {
                     a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("A1712386211");
                     a.setAutomaticOrderSending(true);
                     a.setProvider(true);
 
@@ -486,10 +480,8 @@ public class TestPopulator {
                 {
                     Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
                     a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Muchoviajes SA");
                     a.setComments("For testing only");
                     a.setCurrency(em.find(Currency.class, "EUR"));
                     a.setEmail("miguelperezcolom@gmail.com");
@@ -499,7 +491,6 @@ public class TestPopulator {
                     a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("A16237816321");
                     a.setAgency(true);
 
                     em.flush();
@@ -509,10 +500,8 @@ public class TestPopulator {
                 {
                     Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
                     a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Barceló hoteles SA");
                     a.setComments("For testing only");
                     a.setCurrency(em.find(Currency.class, "EUR"));
                     a.setEmail("miguelperezcolom@gmail.com");
@@ -522,7 +511,6 @@ public class TestPopulator {
                     a.setOrdersSendingMethod(PurchaseOrderSendingMethod.QUOONAGENT);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("A1623787777");
                     a.setAutomaticOrderSending(true);
                     a.setProvider(true);
 
@@ -532,10 +520,8 @@ public class TestPopulator {
                 {
                     Partner a = (Partner) actorClass.newInstance();
                     em.persist(a);
-                    a.setAddress("Gremi fusters, 11");
                     a.setAutomaticOrderConfirmation(false);
                     a.setAutomaticOrderSending(false);
-                    a.setBusinessName("Tourico International");
                     a.setComments("For testing only");
                     a.setCurrency(em.find(Currency.class, "EUR"));
                     a.setEmail("miguelperezcolom@gmail.com");
@@ -545,7 +531,6 @@ public class TestPopulator {
                     a.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
                     a.setSendOrdersTo("");
                     a.setShuttleTransfersInOwnInvoice(false);
-                    a.setVatIdentificationNumber("A1623787999");
                     a.setAutomaticOrderSending(true);
                     a.setProvider(true);
 

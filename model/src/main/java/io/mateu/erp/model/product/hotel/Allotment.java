@@ -66,11 +66,16 @@ public class Allotment implements XMLSerializable {
         return e;
     }
 
-    public Allotment(Element e) {
+    @Override
+    public void fromXml(Element e) {
         if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
         if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
         if (e.getAttribute("room") != null) setRoom(e.getAttributeValue("room"));
         if (e.getAttribute("quantity") != null) setQuantity(Integer.parseInt(e.getAttributeValue("quantity")));
+    }
+
+    public Allotment(Element e) {
+        fromXml(e);
     }
 
     public Allotment() {

@@ -20,7 +20,13 @@ public class RouteStop {
     private Route route;
 
     @NotNull
+    @ManyToOne
     private TransferPoint point;
 
     private int orderInRoute;
+
+    @Override
+    public String toString() {
+        return "" + (getRoute() != null?getRoute().getName():"No route") + " - " + (getPoint() != null?getPoint().getName():"No point");
+    }
 }

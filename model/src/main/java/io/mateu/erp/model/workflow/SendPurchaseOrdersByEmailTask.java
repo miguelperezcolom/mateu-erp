@@ -145,7 +145,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
 
         {
 
-            HSSFSheet sheet = workbook.createSheet("Generic services");
+            HSSFSheet sheet = workbook.createSheet("GenericBooking services");
 
             HSSFRow row = null;
             HSSFCell cell = null;

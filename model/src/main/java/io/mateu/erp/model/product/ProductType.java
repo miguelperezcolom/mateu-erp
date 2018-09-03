@@ -20,4 +20,9 @@ public class ProductType {
     @NotNull
     private String name;
 
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

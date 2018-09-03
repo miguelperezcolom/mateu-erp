@@ -36,4 +36,10 @@ public class Zone {
 
     @OneToMany
     private List<io.mateu.erp.model.world.Zone> cities = new ArrayList<>();
+
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

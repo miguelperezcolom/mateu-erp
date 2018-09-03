@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,15 +21,8 @@ public class Tour extends AbstractProduct {
     @Ignored
     private List<TourVariant> variants = new ArrayList<>();
 
-    @NotNull
-    private TourDuration duration;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
-    @Ignored
-    private List<TourShift> shifts = new ArrayList<>();
-
-
-    @Tab("Purchase")
+    @Section("Purchase")
     /**
      * no hay coste. Toda la venta es margen para nmosotros
      */
@@ -49,7 +43,7 @@ public class Tour extends AbstractProduct {
     private List<TourCost> costs = new ArrayList<>();
 
 
-    @Tab("Operation")
+    @Section("Operation")
     /**
      * transporte organizado por la agencia. la excursión es propia
      */
@@ -57,22 +51,9 @@ public class Tour extends AbstractProduct {
 
     private boolean freeSale;
 
-    /**
-     * si la comprobación de cupo debe ser por vehículo en lugar de por pax
-     */
-    private boolean salePerVehicle;
 
-    /**
-     * si es venta por vehículo
-     */
-    private double defaultVehicleCapacity;
-
-
-    @Tab("Ages")
     private int childFrom;
 
     private int adultFrom;
-
-
 
 }

@@ -151,7 +151,7 @@
                                     </fo:table-row>
                                     <fo:table-row font-weight="bold" border-bottom-style="solid" border-bottom-width="1px">
                                         <fo:table-cell padding="1mm" number-columns-spanned="2">
-                                            <fo:block>date and time of booking</fo:block>
+                                            <fo:block>date and time of file</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" number-columns-spanned="2">
                                             <fo:block>leader</fo:block>

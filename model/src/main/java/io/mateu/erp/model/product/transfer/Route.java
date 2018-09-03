@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class Route {
     private TransferPoint airport;
 
 
+    @NotEmpty
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "route")
@@ -30,4 +32,8 @@ public class Route {
     private List<RouteStop> stops = new ArrayList<>();
 
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -88,15 +88,15 @@ public class FinancialModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Accounts", Account.class));
+                m.add(new MDDOpenCRUDAction("Bank accounts", BankAccount.class));
+
+                m.add(new MDDOpenCRUDAction("Deposits", Deposit.class));
 
                 m.add(new MDDOpenCRUDAction("Payment gateways", TPV.class));
 
                 m.add(new MDDOpenCRUDAction("VCC", VCC.class));
 
                 m.add(new MDDOpenCRUDAction("Payments", Payment.class));
-
-                m.add(new MDDOpenCRUDAction("Deposits", Deposit.class));
 
                 m.add(new MDDOpenCRUDAction("Bank remittances", BankRemittance.class));
 

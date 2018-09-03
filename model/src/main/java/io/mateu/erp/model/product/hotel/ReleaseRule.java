@@ -54,10 +54,7 @@ public class ReleaseRule implements XMLSerializable {
     }
 
     public ReleaseRule(Element e) {
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("release") != null) setRelease(Integer.parseInt(e.getAttributeValue("release")));
-        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
+        fromXml(e);
     }
 
     public ReleaseRule() {
@@ -81,5 +78,13 @@ public class ReleaseRule implements XMLSerializable {
         e.setAttribute("release", "" + getRelease());
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("release") != null) setRelease(Integer.parseInt(e.getAttributeValue("release")));
+        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
     }
 }

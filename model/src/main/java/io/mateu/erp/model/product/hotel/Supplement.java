@@ -174,27 +174,7 @@ public class Supplement implements XMLSerializable {
     }
 
     public Supplement(Element e) {
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("optional") != null) setOptional(true);
-        if (e.getAttribute("affectedByOffers") != null) setAffectedByOffers(true);
-        if (e.getAttribute("description") != null) setDescription(e.getAttributeValue("description"));
-        if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
-        if (e.getAttribute("scope") != null) setScope(SupplementScope.valueOf(e.getAttributeValue("scope")));
-        if (e.getAttribute("onRequest") != null) setOnRequest(true);
-        if (e.getAttribute("percent") != null) setPercent(Double.parseDouble(e.getAttributeValue("percent")));
-
-
-        if (e.getAttribute("onStay") != null) setOnStay(true);
-        if (e.getAttribute("onMealplan") != null) setOnMealplan(true);
-        if (e.getAttribute("onAccumulated") != null) setOnAccumulated(true);
-        if (e.getAttribute("applicationOrder") != null) setApplicationOrder(Integer.parseInt(e.getAttributeValue("applicationOrder")));
-
-        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
-        if (e.getAttribute("providerId") != null) setProviderId(Integer.parseInt(e.getAttributeValue("providerId")));
-        if (e.getAttribute("invoicingKey") != null) setInvoicingKey(e.getAttributeValue("invoicingKey"));
-        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
-        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
+        fromXml(e);
     }
 
     public Supplement() {
@@ -309,6 +289,31 @@ public class Supplement implements XMLSerializable {
         e.setAttribute("descriptionforpdf", sb.toString());
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("optional") != null) setOptional(true);
+        if (e.getAttribute("affectedByOffers") != null) setAffectedByOffers(true);
+        if (e.getAttribute("description") != null) setDescription(e.getAttributeValue("description"));
+        if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
+        if (e.getAttribute("scope") != null) setScope(SupplementScope.valueOf(e.getAttributeValue("scope")));
+        if (e.getAttribute("onRequest") != null) setOnRequest(true);
+        if (e.getAttribute("percent") != null) setPercent(Double.parseDouble(e.getAttributeValue("percent")));
+
+
+        if (e.getAttribute("onStay") != null) setOnStay(true);
+        if (e.getAttribute("onMealplan") != null) setOnMealplan(true);
+        if (e.getAttribute("onAccumulated") != null) setOnAccumulated(true);
+        if (e.getAttribute("applicationOrder") != null) setApplicationOrder(Integer.parseInt(e.getAttributeValue("applicationOrder")));
+
+        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
+        if (e.getAttribute("providerId") != null) setProviderId(Integer.parseInt(e.getAttributeValue("providerId")));
+        if (e.getAttribute("invoicingKey") != null) setInvoicingKey(e.getAttributeValue("invoicingKey"));
+        for (Element z : e.getChildren("room")) getRooms().add(z.getAttributeValue("id"));
+        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
     }
 
     public boolean isOnStay() {

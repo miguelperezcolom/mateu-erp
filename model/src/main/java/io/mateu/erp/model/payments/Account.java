@@ -40,4 +40,8 @@ public class Account {
     private double output;
 
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

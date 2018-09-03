@@ -45,7 +45,11 @@ public class ProductsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDMenu("Definition", "Excursions / Circuits", Tour.class, "Variants", TourVariant.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class, "Extras", TourExtra.class, "Costs", TourCost.class));
+                m.add(new MDDMenu("Definition", "Variants", TourVariant.class, "Extras", TourExtra.class, "Costs", TourCost.class));
+
+                m.add(new MDDMenu("Excursions", "Excursions", Excursion.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class));
+
+                m.add(new MDDMenu("Circuits", "Circuits", Circuit.class));
 
                 m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.tour.Contract.class, "Prices", TourPrice.class));
 
@@ -102,11 +106,13 @@ public class ProductsModule extends AbstractModule {
 
                 m.add(new MDDMenu("Definition", "Hotels", Hotel.class, "Rooms", Room.class, "Boards", Board.class));
 
-                m.add(new MDDMenu("AI", "Stop sales", StopSalesView.class, "Inventory", InventoryListView.class));
+                m.add(new MDDMenu("AI", "Stop sales", StopSales.class, "Inventory", Inventory.class));
+
+                //m.add(new MDDMenu("AI", "Stop sales", StopSalesView.class, "Inventory", InventoryListView.class));
 
                 m.add(new MDDMenu("Prices", "Contracts", HotelContract.class, "Offers", AbstractHotelOffer.class));
 
-                m.add(new MDDMenu("Operations", "Hotels without bookings", StopSalesView.class));
+                m.add(new MDDMenu("Operations", "Hotels without files", StopSalesView.class));
 
                 return m;
             }

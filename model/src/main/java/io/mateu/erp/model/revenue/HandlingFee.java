@@ -1,6 +1,7 @@
 package io.mateu.erp.model.revenue;
 
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
@@ -28,7 +29,13 @@ public class HandlingFee {
     @NotNull
     private BillingConcept billingConcept;
 
+    @Ignored
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "handlingFee")
     private List<HandlingFeeLine> lines = new ArrayList<>();
 
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

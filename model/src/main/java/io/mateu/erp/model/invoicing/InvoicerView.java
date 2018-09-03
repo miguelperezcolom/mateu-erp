@@ -15,7 +15,7 @@ public class InvoicerView implements ListView<Charge> {
 
     @Override
     public String getParams() {
-        return "billingConcept, booking.id, booking.agency, booking.start, booking.finish";
+        return "billingConcept, file.id, file.agency, file.start, file.finish";
     }
 
     @Override
@@ -25,7 +25,7 @@ public class InvoicerView implements ListView<Charge> {
 
     @Override
     public String getCols() {
-        return "booking.agency.name, office.name, currency.isoCode, sum(total), sum(totalInAccountingCurrency)";
+        return "file.agency.name, office.name, currency.isoCode, sum(total), sum(totalInAccountingCurrency)";
     }
 
     @Override

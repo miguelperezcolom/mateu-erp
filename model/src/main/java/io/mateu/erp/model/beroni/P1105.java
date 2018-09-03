@@ -52,11 +52,11 @@ public class P1105 extends BeroniRecord {
 
     public P1105(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Service s, PurchaseOrder po) {
 
-        setNumeroReserva(s.getBooking().getId());
+        setNumeroReserva(s.getFile().getId());
         setCodigoProveedorEnBeroni(po.getProvider().getIdInInvoicingApp());
         setNombreProveedor(po.getProvider().getName());
         setFechaServicio(s.getStart());
-        setNombreViajeros(s.getBooking().getLeadName());
+        setNombreViajeros(s.getFile().getLeadName());
         setNumeroPersonas((s instanceof TransferService)?((TransferService) s).getPax():0);
         setNumeroBono("" + po.getId());
         setImporteNeto(po.getTotal());

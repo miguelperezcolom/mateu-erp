@@ -16,7 +16,6 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Getter@Setter
-@QLForCombo(ql = "select x.code, x.name from BillingConcept x order by x.name")
 public class BillingConcept {
 
     @Id
@@ -45,5 +44,8 @@ public class BillingConcept {
     private boolean handlingFee;
 
 
-
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

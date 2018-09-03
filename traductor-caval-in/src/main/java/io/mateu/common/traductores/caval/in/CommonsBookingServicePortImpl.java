@@ -47,7 +47,7 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
             // http://test.easytravelapi.com/rest/yourauthtoken/commons/booking/654541234
 
 
-            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/booking/" + parameters.getRq().getLocator());
+            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/file/" + parameters.getRq().getLocator());
 
             GetBookingRS rs = t.request("application/json")
                     .get(GetBookingRS.class);
@@ -134,7 +134,7 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
             // http://test.easytravelapi.com/rest/yourauthtoken/commons/booking/654541234
 
 
-            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/booking/" + parameters.getRq().getLocator());
+            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/file/" + parameters.getRq().getLocator());
 
             CancelBookingRS rs = t.request("application/json")
                     .delete(CancelBookingRS.class);
@@ -167,7 +167,7 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
 
             // http://test.easytravelapi.com/rest/yourauthtoken/commons/bookings?confirmedfrom=20170919
 
-            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/bookings");
+            WebTarget t = client.target("http://test.easytravelapi.com/rest/" + parameters.getRq().getAgentId() + "/commons/files");
 
             GetBookingsRS rs = t.request("application/json")
                     .get(GetBookingsRS.class);

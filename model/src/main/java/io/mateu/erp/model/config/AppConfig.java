@@ -28,6 +28,12 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     private String xslfoForTransferContract;
 
     @TextArea
+    private String xslfoForGenericContract;
+
+    @TextArea
+    private String xslfoForTourContract;
+
+    @TextArea
     private String xslfoForVoucher;
 
     @TextArea

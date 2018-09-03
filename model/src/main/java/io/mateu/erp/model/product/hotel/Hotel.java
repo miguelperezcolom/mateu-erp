@@ -84,7 +84,7 @@ public class Hotel extends AbstractProduct implements IHotel {
     @Ignored
     private List<Board> boards = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @Output
     private StopSales stopSales;
 
@@ -92,7 +92,7 @@ public class Hotel extends AbstractProduct implements IHotel {
     @Ignored
     private List<Inventory> inventories = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @Output
     private Inventory realInventory;
 
@@ -124,7 +124,7 @@ public class Hotel extends AbstractProduct implements IHotel {
 
 
 
-    @PostPersist@PostUpdate
+    @PrePersist@PreUpdate
     public void afterSet() throws Exception, Throwable {
 
         EntityManager em = Helper.getEMFromThreadLocal();
@@ -141,48 +141,6 @@ public class Hotel extends AbstractProduct implements IHotel {
             getRealInventory().setName("Real inventory");
             em.persist(getRealInventory());
         }
-        
-        /*
-
-        WorkflowEngine.add(new Runnable() {
-
-            long hotelId = getId();
-
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            Hotel h = em.find(Hotel.class, hotelId);
-
-
-                            if (h.getStopSales() == null) {
-                                h.setStopSales(new StopSales());
-                                h.getStopSales().setHotel(h);
-                                em.persist(h.getStopSales());
-                            }
-
-                            if (h.getRealInventory() == null) {
-                                h.setRealInventory(new Inventory());
-                                h.getRealInventory().setHotel(h);
-                                h.getRealInventory().setName("Real inventory");
-                                em.persist(h.getRealInventory());
-                            }
-
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-        
-        */
 
     }
 

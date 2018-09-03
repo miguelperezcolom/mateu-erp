@@ -8,7 +8,6 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferBookingRequest;
-import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
@@ -17,7 +16,6 @@ import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.AsyncCallback;
 import io.mateu.mdd.core.app.MDDLink;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
@@ -26,23 +24,10 @@ import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.HtmlEmail;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
-import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
-import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
-import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -170,10 +155,10 @@ public class TransferService extends Service {
     public List<MDDLink> getLinks() {
         List<MDDLink> l = super.getLinks();
 
-        if (getBooking() != null) {
+        if (this.getFile() != null) {
 
             TransferService r = null;
-            for (Service s : getBooking().getServices()) {
+            for (Service s : this.getFile().getServices()) {
                 if (s.getId() != getId() && s instanceof TransferService) {
                     r = (TransferService) s;
                     break;
@@ -321,11 +306,11 @@ public class TransferService extends Service {
                             eg.addContent(es = new Element("service"));
 
                             es.setAttribute("id", "" + s.getId());
-                            es.setAttribute("agency", "" + s.getBooking().getAgency().getName());
-                            if (s.getBooking().getAgencyReference() != null) es.setAttribute("agencyReference", s.getBooking().getAgencyReference());
-                            es.setAttribute("leadName", "" + s.getBooking().getLeadName());
+                            es.setAttribute("agency", "" + s.getFile().getAgency().getName());
+                            if (s.getFile().getAgencyReference() != null) es.setAttribute("agencyReference", s.getFile().getAgencyReference());
+                            es.setAttribute("leadName", "" + s.getFile().getLeadName());
                             String comments = "";
-                            if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
+                            if (s.getFile().getComments() != null) comments += s.getFile().getComments();
                             if (s.getComment() != null) comments += s.getComment();
                             if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
                                 if (!"".equals(comments)) comments += " / ";
@@ -450,7 +435,7 @@ public class TransferService extends Service {
                 hoja.add(new Object[] {
                         poId
                         , s.getId()
-                        , s.getBooking().getLeadName()
+                        , s.getFile().getLeadName()
                         , s.getPax()
                         , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
                         , (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null)?s.getEffectivePickup().getZone().getName():""
@@ -464,10 +449,10 @@ public class TransferService extends Service {
                         , s.getFlightOriginOrDestination()
                         , (s.getPickupTime() != null)?s.getPickupTime().toLocalDate():null
                         , (s.getPickupTime() != null)?s.getPickupTime().toLocalTime():null
-                        , s.getBooking().getComments()
+                        , s.getFile().getComments()
                         , s.getComment()
-                        , s.getBooking().getAgency().getName()
-                        , s.getBooking().getAgencyReference()
+                        , s.getFile().getAgency().getName()
+                        , s.getFile().getAgencyReference()
                 });
 
             }
@@ -615,7 +600,7 @@ public class TransferService extends Service {
         String s = "error when serializing";
         try {
             Map<String, Object> m = new LinkedHashMap<>();
-            m.put("leadName", getBooking().getLeadName());
+            m.put("leadName", this.getFile().getLeadName());
             m.put("flightTime", (getFlightTime() != null)?getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")):"");
             m.put("flightNumber", getFlightNumber());
             m.put("pax", getPax());
@@ -650,7 +635,7 @@ public class TransferService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
             ok &= supplier == null || supplier.equals(c.getSupplier());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
@@ -717,7 +702,7 @@ public class TransferService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
             ok &= !c.getValidFrom().isAfter(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -761,10 +746,10 @@ public class TransferService extends Service {
         Map<String, Object> d = super.getData();
 
         d.put("id", getId());
-        d.put("locator", getBooking().getId());
-        d.put("leadName", getBooking().getLeadName());
-        d.put("agency", getBooking().getAgency().getName());
-        d.put("agencyReference", getBooking().getAgencyReference());
+        d.put("locator", this.getFile().getId());
+        d.put("leadName", this.getFile().getLeadName());
+        d.put("agency", this.getFile().getAgency().getName());
+        d.put("agencyReference", this.getFile().getAgencyReference());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
@@ -823,7 +808,7 @@ public class TransferService extends Service {
     public String getSubitle() {
         String s = super.toString();
         TransferService r = null;
-        if (getBooking() != null) for (Service sv : getBooking().getServices()) {
+        if (this.getFile() != null) for (Service sv : this.getFile().getServices()) {
             if (sv.getId() != getId() && sv instanceof TransferService) {
                 r = (TransferService) sv;
                 break;
@@ -833,9 +818,9 @@ public class TransferService extends Service {
         if (r != null) {
             if (TransferDirection.OUTBOUND.equals(r.getDirection())) s += "Returns " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")) + ". ";
             else  s += "Arrives " + r.getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")) + ". ";
-        } else s += "This is the only service in this booking. ";
+        } else s += "This is the only service in this file. ";
         if (isArrivalNoShow()) {
-            s += "Arrival was no show. ";
+            s += "ArrivalBooking was no show. ";
         }
         return s;
     }
@@ -866,7 +851,7 @@ public class TransferService extends Service {
         if (getPickupTime() != null) {
             long tel = 0;
             try {
-                tel = Long.parseLong(getBooking().getTelephone().replaceAll("[\\(\\)\\+]", ""));
+                tel = Long.parseLong(this.getFile().getTelephone().replaceAll("[\\(\\)\\+]", ""));
             } catch (Exception e) {
 
             }
@@ -890,7 +875,7 @@ public class TransferService extends Service {
                 t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
-                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getFile().getLeadName());
                 t.setTo(getEffectivePickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
@@ -915,7 +900,7 @@ public class TransferService extends Service {
                 t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
-                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getFile().getLeadName());
                 t.setTo(getEffectivePickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
@@ -931,7 +916,7 @@ public class TransferService extends Service {
         if (getPickupTime() != null) {
             long tel = 0;
             try {
-                tel = Long.parseLong(getBooking().getTelephone().replaceAll("[\\(\\)\\+]", ""));
+                tel = Long.parseLong(this.getFile().getTelephone().replaceAll("[\\(\\)\\+]", ""));
             } catch (Exception e) {
 
             }
@@ -962,7 +947,7 @@ public class TransferService extends Service {
                 t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
-                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + getBooking().getLeadName());
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getFile().getLeadName());
                 t.setTo(email);
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);

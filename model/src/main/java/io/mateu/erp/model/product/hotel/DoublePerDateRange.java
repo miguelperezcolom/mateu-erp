@@ -25,9 +25,7 @@ public class DoublePerDateRange implements XMLSerializable {
     }
 
     public DoublePerDateRange(Element e) {
-        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
-        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
+        fromXml(e);
     }
 
     @Override
@@ -37,5 +35,12 @@ public class DoublePerDateRange implements XMLSerializable {
         if (getEnd() != null) e.setAttribute("end", getEnd().toString());
         e.setAttribute("value", "" + value);
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
+        if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
+        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
     }
 }

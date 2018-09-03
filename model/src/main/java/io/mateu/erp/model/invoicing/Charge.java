@@ -1,7 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.model.booking.File;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Currency;
@@ -34,7 +34,7 @@ public class Charge {
     private ChargeType type;
 
     @ManyToOne
-    private Booking booking;
+    private File file;
 
     @ManyToOne
     private Service service;
@@ -98,7 +98,7 @@ public class Charge {
 
     @PrePersist@PreUpdate
     public void validate() throws Exception {
-        if (getBooking() == null && getPurchaseOrder() == null) throw  new Exception("It must be related to a booking or to a purchase order");
+        if (this.getFile() == null && getPurchaseOrder() == null) throw  new Exception("It must be related to a file or to a purchase order");
     }
 
 

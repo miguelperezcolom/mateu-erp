@@ -22,7 +22,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@UseIdToSelect(ql="select x.id, concat(x.status, ' - ', x.agency.name, ' - ', x.id) as text from TransferImportTask x where x.id = xxxx")
+@UseIdToSelect
 public abstract class TransferImportTask {
     @Id
     @ListColumn(order = true)

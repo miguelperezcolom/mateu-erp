@@ -58,7 +58,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     contratoOk = contratoOk && c.getValidFrom().isAfter(llegada);
                     contratoOk = contratoOk && c.getValidTo().isBefore(salida);
 
-                    //todo: comprobar booking window y demás condiciones
+                    //todo: comprobar file window y demás condiciones
 
                     if (contratoOk) {
 
@@ -203,7 +203,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("Booking confirmed ok");
+        rs.setMsg("File confirmed ok");
 
 
         Helper.transact(new JPATransaction() {
@@ -211,7 +211,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             public void run(EntityManager em) throws Throwable {
 
                 /*
-                Booking b = new Booking();
+                File b = new File();
                 b.setAgency();
                 b.setAgencyReference();
                 b.setAudit();
@@ -237,7 +237,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                 s.setPreferredVehicle();
                 s.setTransferType();
                 s.setAudit();
-                s.setBooking();
+                s.setFile();
                 s.setFinish();
                 s.setOverridedValue();
                 s.setComment();

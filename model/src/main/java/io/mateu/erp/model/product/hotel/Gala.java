@@ -54,10 +54,7 @@ public class Gala implements XMLSerializable {
     }
 
     public Gala(Element e) {
-        if (e.getAttribute("date") != null) setDate(LocalDate.parse(e.getAttributeValue("date")));
-        if (e.getAttribute("pricePerPax") != null) setPricePerPax(Double.parseDouble(e.getAttributeValue("pricePerPax")));
-        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
-        for (Element z : e.getChildren("childDiscount")) getChildDiscounts().add(Double.parseDouble(z.getAttributeValue("percent")));
+        fromXml(e);
     }
 
     public Gala() {
@@ -82,5 +79,13 @@ public class Gala implements XMLSerializable {
 
 
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("date") != null) setDate(LocalDate.parse(e.getAttributeValue("date")));
+        if (e.getAttribute("pricePerPax") != null) setPricePerPax(Double.parseDouble(e.getAttributeValue("pricePerPax")));
+        for (Element z : e.getChildren("board")) getBoards().add(z.getAttributeValue("id"));
+        for (Element z : e.getChildren("childDiscount")) getChildDiscounts().add(Double.parseDouble(z.getAttributeValue("percent")));
     }
 }

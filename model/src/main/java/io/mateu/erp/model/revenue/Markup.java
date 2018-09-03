@@ -1,6 +1,7 @@
 package io.mateu.erp.model.revenue;
 
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.PartnerGroup;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
@@ -29,9 +30,19 @@ public class Markup {
     private boolean active;
 
     @OneToMany(mappedBy = "markup")
-    private List<Partner> actors = new ArrayList<>();
+    private List<PartnerGroup> partnerGroups = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "markup")
+    private List<Partner> partners = new ArrayList<>();
 
     @OneToMany(mappedBy = "markup")
     @Ignored
     private List<MarkupLine> lines = new ArrayList<>();
+
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

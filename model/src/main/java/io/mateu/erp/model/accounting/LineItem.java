@@ -31,6 +31,9 @@ public class LineItem {
 
     private int orderInsideEntry;
 
+    private String document;
+
+    private String text;
 
     private double debit;
 

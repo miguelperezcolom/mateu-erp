@@ -52,7 +52,7 @@ public class RevenueModule extends AbstractModule {
                     public List<MenuEntry> buildEntries() {
                         List<MenuEntry> m = new ArrayList<>();
 
-                        m.add(new MDDOpenCRUDAction("Handling fee", HandlingFee.class));
+                        m.add(new MDDOpenCRUDAction("Handling fees", HandlingFee.class));
 
                         m.add(new MDDOpenCRUDAction("Handling fee lines", HandlingFeeLine.class));
 
@@ -67,15 +67,13 @@ public class RevenueModule extends AbstractModule {
         m.add(new MDDOpenCRUDAction("Markets", Market.class));
 
 
-        m.add(new MDDOpenCRUDAction("CreditLimit", CreditLimit.class));
+        m.add(new MDDOpenCRUDAction("Credit limits", CreditLimit.class));
 
-        m.add(new MDDOpenCRUDAction("Abseiling", Rebate.class));
+        m.add(new MDDOpenCRUDAction("Rebates", Rebate.class));
 
         m.add(new MDDOpenCRUDAction("Commission terms", CommissionTerms.class));
 
         m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
-
-        m.add(new MDDMenu("Representatives"));
 
         return m;
     }

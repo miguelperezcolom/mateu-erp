@@ -10,6 +10,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.FileLocator;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.DummyDate;
 import io.mateu.erp.model.importing.TransferImportTask;
 import io.mateu.mdd.core.util.Helper;
@@ -180,7 +181,7 @@ public class BookingServiceImpl {
     }
 
 
-    public String importPickupTimeExcel(io.mateu.mdd.core.model.common.File file) throws Throwable {
+    public String importPickupTimeExcel(Resource file) throws Throwable {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         if (file != null) throw new Throwable("You must first upload an excel file");

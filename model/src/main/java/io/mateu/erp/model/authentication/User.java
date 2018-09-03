@@ -29,7 +29,7 @@ public class User extends io.mateu.mdd.core.model.authentication.User {
 
 
     @Action
-    public void createToken(EntityManager em, @NotNull @Caption("Agency") Partner p, @Caption("Hotel") Hotel h) throws IOException {
+    public void createToken(EntityManager em, @NotNull @Caption("Partner") Partner p, @Caption("Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
         t.setPartner(p);
         t.setHotel(h);

@@ -1,12 +1,9 @@
 package io.mateu.erp.model.booking;
 
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.Tab;
-import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,18 +23,17 @@ public class QuotationRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("Info")
+    @Section("Info")
     @Embedded
     @Output
     private Audit audit;
 
     @Output
     @ManyToOne
-    private Booking booking;
+    private File file;
 
     @NotNull
     private QuotationRequestDirection direction;
-
 
     @NotNull
     @ManyToOne
@@ -50,7 +46,16 @@ public class QuotationRequest {
     @TextArea
     private String text;
 
-    @Tab("Answer")
+
+    @Section("Contact")
+    private String name;
+
+    private String email;
+
+    private String telephone;
+
+
+    @Section("Answer")
     @NotNull
     private QuotationRequestAnswer answer = QuotationRequestAnswer.PENDING;
 

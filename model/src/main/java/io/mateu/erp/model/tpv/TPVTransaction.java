@@ -1,7 +1,7 @@
 package io.mateu.erp.model.tpv;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.webpay.Digest;
 import io.mateu.mdd.core.util.Helper;
@@ -56,7 +56,7 @@ public class TPVTransaction {
     private String language;
 
     @ManyToOne
-    private Booking booking;
+    private File file;
     private double amount;
     private String subject;
 
@@ -72,7 +72,7 @@ public class TPVTransaction {
 
                 TPVTransaction t = em.find(TPVTransaction.class, transactionId);
 
-                h[0] = t.getForm(em, t.getLanguage(), t.getBooking().getId(), t.getId(), t.getAmount(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
+                h[0] = t.getForm(em, t.getLanguage(), t.getFile().getId(), t.getId(), t.getAmount(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
 
             }
         });
@@ -291,7 +291,7 @@ Para ambos protocolos:
 
 
     public String getBoton(EntityManager em) throws Exception {
-        return getBoton(em, getBooking().getId(), getAmount(), "" + getCurrency().getIsoNumericCode());
+        return getBoton(em, this.getFile().getId(), getAmount(), "" + getCurrency().getIsoNumericCode());
     }
 
     public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency) throws Exception {
@@ -477,7 +477,7 @@ Para ambos protocolos:
 
 
                 TPVTransaction t = em.find(TPVTransaction.class, Long.parseLong(idtransaccion));
-                Booking r = t.getBooking();
+                File r = t.getFile();
 
                 //todo: registrar la notificación
                 //r.getLog().add(new Log(Helper.toJson(request.getParameterMap())));

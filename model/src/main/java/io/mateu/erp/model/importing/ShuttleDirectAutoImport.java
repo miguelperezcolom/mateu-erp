@@ -115,7 +115,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
 
             ShuttleDirectAutoImport auto = new ShuttleDirectAutoImport(url,login,pwd,null,idTrans );
             String s = auto.recuperarXml("01/01/2017", "01/12/2017");
-            auto.getBookings(LocalDate.now(), 10);
+            auto.getFiles(LocalDate.now(), 10);
             System.out.println(s);
         } catch (Exception e){
            e.printStackTrace();

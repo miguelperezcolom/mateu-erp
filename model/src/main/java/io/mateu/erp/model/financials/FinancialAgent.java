@@ -49,6 +49,7 @@ public class FinancialAgent {
     @Tab("Taxes")
     private String vatIdentificationNumber;
 
+    @ManyToOne
     private VAT vat;
 
     private boolean EU;

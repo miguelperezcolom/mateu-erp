@@ -38,4 +38,10 @@ public class VAT {
 
     @OneToMany(mappedBy = "vat")
     private List<Destination> destinations = new ArrayList<>();
+
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

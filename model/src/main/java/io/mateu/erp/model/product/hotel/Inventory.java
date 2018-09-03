@@ -25,7 +25,6 @@ public class Inventory implements IInventory {
 
     @SearchFilter
     @ManyToOne
-    @Output
     @NotNull
     private Hotel hotel;
 
@@ -131,5 +130,12 @@ public class Inventory implements IInventory {
 
         cube.save(em);
 
+    }
+
+
+
+    @Override
+    public String toString() {
+        return (getHotel() != null)?getHotel().getName():"No hotel";
     }
 }

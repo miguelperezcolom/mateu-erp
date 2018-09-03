@@ -21,7 +21,6 @@ public abstract class AbstractProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("General")
     @ListColumn
     @NotNull
     @SearchFilter
@@ -43,7 +42,6 @@ public abstract class AbstractProduct {
     private Office office;
 
 
-    @Tab("Location")
     @ManyToOne
     @NotNull
     @ListColumn

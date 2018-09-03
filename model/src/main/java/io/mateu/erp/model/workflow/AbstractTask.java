@@ -1,8 +1,8 @@
 package io.mateu.erp.model.workflow;
 
+import io.mateu.erp.model.booking.File;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.mdd.core.annotations.*;
@@ -62,9 +62,9 @@ public abstract class AbstractTask {
     @NotInEditor
     private List<Service> services = new ArrayList<>();
     @ManyToMany
-    @SearchFilter(value="Booking Id", field = "id")
+    @SearchFilter(value="File Id", field = "id")
     @NotInEditor
-    private List<Booking> bookings = new ArrayList<>();
+    private List<File> files = new ArrayList<>();
 
     @ManyToMany(mappedBy = "sendingTasks")
     @SearchFilter(value="Purchase Order Id", field = "id")

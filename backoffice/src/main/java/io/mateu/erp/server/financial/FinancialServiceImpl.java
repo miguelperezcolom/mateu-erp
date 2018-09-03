@@ -3,7 +3,6 @@ package io.mateu.erp.server.financial;
 import com.google.common.io.Files;
 import io.mateu.erp.model.beroni.P1101;
 import io.mateu.erp.model.beroni.P1105;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -67,7 +66,7 @@ public class FinancialServiceImpl {
         try {
             String archivo = UUID.randomUUID().toString();
 
-            File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".xls"):new File(new File(System.getProperty("tmpdir")), archivo + ".xls");
+            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".xls"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".xls");
 
 
             System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
@@ -108,7 +107,7 @@ public class FinancialServiceImpl {
 
                 String archivo = UUID.randomUUID().toString();
 
-                File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".xls"):new File(new File(System.getProperty("tmpdir")), archivo + ".xls");
+                java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".xls"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".xls");
 
 
                 System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
@@ -133,7 +132,7 @@ public class FinancialServiceImpl {
 
     private void writeBeroniTxt(PrintWriter pw, EntityManager em, AppConfig appConfig, List<Service> l) {
 
-        for (Service s : l) if (!s.isCancelled() && !s.getBooking().getAgency().isExportableToinvoicingApp()) {
+        for (Service s : l) if (!s.isCancelled() && !s.getFile().getAgency().isExportableToinvoicingApp()) {
             pw.println(new P1101(em, appConfig, s));
             for (PurchaseOrder po : s.getPurchaseOrders()) if (!po.isCancelled()) {
                 pw.println(new P1105(em, appConfig, s, po));
@@ -581,38 +580,38 @@ public class FinancialServiceImpl {
                 double totalcompra = 0;
 
 
-                Map<Booking, Data> dataPerBooking = new HashMap<>();
+                Map<io.mateu.erp.model.booking.File, Data> dataPerBooking = new HashMap<>();
 
                 for (Service s : l) {
 
                     Map<Partner, Data> dpa = dataPerAgency;
                     Map<Partner, Map<Partner, Data>> dpaap = dataPerAgencyAndProvider;
 
-                    if (s.getBooking().getAgency().isShuttleTransfersInOwnInvoice() && s instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) {
+                    if (s.getFile().getAgency().isShuttleTransfersInOwnInvoice() && s instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) {
                         dpa = dataPerAgencyOnlyShuttle;
                         dpaap = dataPerAgencyAndProviderOnlyShuttle;
                     }
 
-                    Data agencyData = dpa.get(s.getBooking().getAgency());
+                    Data agencyData = dpa.get(s.getFile().getAgency());
                     if (agencyData == null) {
-                        dpa.put(s.getBooking().getAgency(), agencyData = new Data());
-                        agencyData.set("name", s.getBooking().getAgency().getName());
+                        dpa.put(s.getFile().getAgency(), agencyData = new Data());
+                        agencyData.set("name", s.getFile().getAgency().getName());
                     }
 
                     List<PurchaseOrder> pos = s.getPurchaseOrders();
 
-                    if (s.getBooking().getAgency().isOneLinePerBooking()) {
+                    if (s.getFile().getAgency().isOneLinePerBooking()) {
 
                         pos = new ArrayList<>();
 
-                        if (!dataPerBooking.containsKey(s.getBooking())) {
+                        if (!dataPerBooking.containsKey(s.getFile())) {
                             int valoradas = agencyData.getInt("valued");
                             int novaloradas = agencyData.getInt("notvalued");
                             double total = agencyData.getDouble("total");
 
                             boolean valorada = true;
                             double totalReserva = 0;
-                            for (Service x : s.getBooking().getServices()) {
+                            for (Service x : s.getFile().getServices()) {
                                 valorada &= x.isValued();
                                 if (x.isValued()) {
                                     total += x.getTotalNetValue();
@@ -623,7 +622,7 @@ public class FinancialServiceImpl {
                                 pos.addAll(x.getPurchaseOrders());
                             }
 
-                            s.getBooking().setTotalNetValue(totalReserva);
+                            s.getFile().setTotalNetValue(totalReserva);
 
                             if (valorada) {
                                 valoradas++;
@@ -632,8 +631,8 @@ public class FinancialServiceImpl {
                             }
 
                             Data bookingData;
-                            agencyData.getList("services").add(bookingData = new Data(s.getBooking().getData()));
-                            dataPerBooking.put(s.getBooking(), bookingData);
+                            agencyData.getList("services").add(bookingData = new Data(s.getFile().getData()));
+                            dataPerBooking.put(s.getFile(), bookingData);
 
                             agencyData.set("valued", valoradas);
                             agencyData.set("notvalued", novaloradas);
@@ -670,9 +669,9 @@ public class FinancialServiceImpl {
 
                         // para esta agencia
                         {
-                            Map<Partner, Data> aux = dpaap.get(s.getBooking().getAgency());
+                            Map<Partner, Data> aux = dpaap.get(s.getFile().getAgency());
                             if (aux == null) {
-                                dpaap.put(s.getBooking().getAgency(), aux = new HashMap<Partner, Data>());
+                                dpaap.put(s.getFile().getAgency(), aux = new HashMap<Partner, Data>());
                             }
                             Data providerData = aux.get(po.getProvider());
                             if (providerData == null) {

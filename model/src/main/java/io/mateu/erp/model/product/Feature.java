@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 1/10/16.
@@ -22,6 +23,12 @@ public class Feature {
     private Literal name;
 
     @ManyToOne
+    @NotNull
     private FeatureGroup group;
+
+    @Override
+    public String toString() {
+        return (getName() != null)?getName().toString():"No name";
+    }
 
 }

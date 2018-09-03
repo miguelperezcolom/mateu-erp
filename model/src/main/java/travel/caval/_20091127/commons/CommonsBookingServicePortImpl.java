@@ -27,10 +27,10 @@ public class CommonsBookingServicePortImpl implements CommonsBookingService {
     private static final Logger LOG = Logger.getLogger(CommonsBookingServicePortImpl.class.getName());
 
     /* (non-Javadoc)
-     * @see travel.caval._20091127.commons.CommonsBookingService#getBooking(travel.caval._20091127.commons.CavalGetBookingRQ rq)*
+     * @see travel.caval._20091127.commons.CommonsBookingService#getFile(travel.caval._20091127.commons.CavalGetBookingRQ rq)*
      */
     public travel.caval._20091127.commons.CavalGetBookingRS getBooking(travel.caval._20091127.commons.CavalGetBookingRQ rq) { 
-        LOG.info("Executing operation getBooking");
+        LOG.info("Executing operation getFile");
         System.out.println(rq);
         try {
             travel.caval._20091127.commons.CavalGetBookingRS _return = null;

@@ -2,7 +2,7 @@ package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -109,7 +109,7 @@ public class TransferBookingRequest {
     public enum STATUS {OK, CANCELLED};
 
 
-    @Separator("Arrival")
+    @Separator("ArrivalBooking")
     @ListColumn
     @Output
     private STATUS arrivalStatus;
@@ -265,7 +265,7 @@ public class TransferBookingRequest {
 
     @Output
     @ManyToOne
-    private Booking booking;
+    private File file;
 
     @Output
     @ListColumn
@@ -355,11 +355,11 @@ public class TransferBookingRequest {
 
 
             //Si ok, actualizamos la reserva...
-            Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+            File b = File.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
             User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
             if (b==null)//Crear reserva nueva
             {
-                b = new Booking();
+                b = new File();
                 b.setAudit(new Audit(u));
                 nuevasEntidades.add(b);
 
@@ -370,7 +370,7 @@ public class TransferBookingRequest {
                 b.setEmail(email);
                 if (comments!=null) b.setComments(comments);
                //TODO: b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
-                setBooking(b);
+                this.setFile(b);
                 nuevasEntidades.add(this);
 
                 //ojo, si la reserva es nueva no comprobamos fechas ni el estado. La reserva se crea siempre
@@ -379,7 +379,7 @@ public class TransferBookingRequest {
                     TransferService s;
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
-                    s.setBooking(b);
+                    s.setFile(b);
                     nuevasEntidades.add(s);
                     fillArrival(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
@@ -389,7 +389,7 @@ public class TransferBookingRequest {
                     TransferService s;
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
-                    s.setBooking(b);
+                    s.setFile(b);
                     nuevasEntidades.add(s);
                     fillDeparture(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
@@ -441,7 +441,7 @@ public class TransferBookingRequest {
                     {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
-                        s.setBooking(b);
+                        s.setFile(b);
                         nuevasEntidades.add(s);
                         fillArrival(s, null, nuevasEntidades);
                         hayCambios = true;
@@ -492,7 +492,7 @@ public class TransferBookingRequest {
                     {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
-                        s.setBooking(b);
+                        s.setFile(b);
                         nuevasEntidades.add(s);
                         fillDeparture(s, null, nuevasEntidades);
                         hayCambios = true;
@@ -538,7 +538,7 @@ public class TransferBookingRequest {
                 if (hayCambios) {
                     //TODO:    b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
                     b.getAudit().touch(u);
-                    setBooking(b);
+                    this.setFile(b);
                     nuevasEntidades.add(this);
                 }
 
@@ -579,7 +579,7 @@ public class TransferBookingRequest {
     }
 
 
-    private TransferService getArrival(Booking b)  {
+    private TransferService getArrival(File b)  {
         if (b.getServices().size()==0) return null;
         for (Service s: b.getServices())
         {
@@ -717,7 +717,7 @@ public class TransferBookingRequest {
         return false;
     }
 
-    private TransferService getDeparture(Booking b)  {
+    private TransferService getDeparture(File b)  {
         if (b.getServices().size()==0) return null;
         for (Service s: b.getServices())
         {

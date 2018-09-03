@@ -75,16 +75,16 @@ public class Vertice extends AbstractVerticle {
 
         //commons
         router.get("/:authtoken/commons/portfolio").handler(this::portfolio);
-        router.delete("/:authtoken/commons/booking/:id").handler(this::cancel);
+        router.delete("/:authtoken/commons/file/:id").handler(this::cancel);
         router.get("/:authtoken/commons/datasheet/:id").handler(this::dataSheet);
-        router.get("/:authtoken/commons/bookings").handler(this::bookings);
+        router.get("/:authtoken/commons/files").handler(this::bookings);
 
 
 
         //hotel
         router.get("/:authtoken/hotel/available").handler(this::availableHotels);
         router.get("/:authtoken/hotel/pricedetails/:key").handler(this::hotelPriceDetails);
-        router.put("/:authtoken/hotel/booking").handler(this::bookHotel);
+        router.put("/:authtoken/hotel/file").handler(this::bookHotel);
 
 
 

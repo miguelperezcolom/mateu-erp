@@ -28,6 +28,7 @@ public class Extra {
     @ManyToOne
     private Literal name;
 
+    @NotNull
     private SupplementType type;
 
     private boolean optional;

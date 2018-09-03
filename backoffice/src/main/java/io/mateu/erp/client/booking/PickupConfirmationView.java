@@ -64,7 +64,7 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
     }
 
     public String getSql() {
-        String jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
+        String jpql = "select x.id, x.file.agencyReference, x.file.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
                 "case when " +
                         " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
                         " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
@@ -76,7 +76,7 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
                 " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
 
-        jpql = "select x.id, x.booking.agencyReference, x.booking.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, " +
+        jpql = "select x.id, x.file.agencyReference, x.file.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, " +
                 "case when " +
                 " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
                 " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
@@ -90,8 +90,8 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
 
         if (date != null) jpql += " and x.start = {d '" + date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
         if (hotel != null) jpql += " and x.effectivePickup.id = " + hotel.getId() + " ";
-        if (!Strings.isNullOrEmpty(leadName)) jpql += " and lower(x.booking.leadName) like '%" + leadName.toLowerCase().replaceAll("'", "''")+ "%' ";
-        if (!Strings.isNullOrEmpty(reference)) jpql += " and lower(x.booking.agencyReference) like '%" + reference.toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(leadName)) jpql += " and lower(x.file.leadName) like '%" + leadName.toLowerCase().replaceAll("'", "''")+ "%' ";
+        if (!Strings.isNullOrEmpty(reference)) jpql += " and lower(x.file.agencyReference) like '%" + reference.toLowerCase().replaceAll("'", "''")+ "%' ";
         if (!Strings.isNullOrEmpty(flightNumber)) jpql += " and lower(x.flightNumber) like '%" + flightNumber.toLowerCase().replaceAll("'", "''")+ "%' ";
         jpql += " order by x.start";
         return jpql;

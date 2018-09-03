@@ -26,7 +26,7 @@ public class TransferPointMapping {
     @Ignored
     static ThreadLocal<List<String>> persisted = new ThreadLocal<>();
 
-    //select x.id, x.text, y.name from io.mateu.erp.model.booking.transfer.TransferPointMapping x left outer join TransferPoint y on x.point = y order by x.text
+    //select x.id, x.text, y.name from io.mateu.erp.model.file.transfer.TransferPointMapping x left outer join TransferPoint y on x.point = y order by x.text
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

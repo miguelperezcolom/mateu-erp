@@ -1,7 +1,7 @@
 package io.mateu.erp.model.world;
 
-import io.mateu.mdd.core.model.common.File;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
@@ -45,7 +45,7 @@ public class PostalCode {
 
 
     @Action
-    public static void importFromFile(EntityManager em, File file) {
+    public static void importFromFile(EntityManager em, Resource file) {
 
     }
 

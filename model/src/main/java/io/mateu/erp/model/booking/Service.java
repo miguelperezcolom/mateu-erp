@@ -32,7 +32,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
-import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
@@ -69,7 +68,7 @@ public abstract class Service {
     @FullWidth
     @ManyToOne
     @NotNull
-    @SearchFilter(value="Booking Id", field = "id")
+    @SearchFilter(value="File Id", field = "id")
     @SearchFilter(field = "agencyReference")
     @SearchFilter(field = "agency")
     @ListColumn(value="Boking", field = "id")
@@ -79,12 +78,12 @@ public abstract class Service {
     @ListColumn(field = "leadName")
     @SearchFilter(field = "telephone")
     @ListColumn(field = "telephone")
-    private Booking booking;
+    private File file;
 
 
     @ManyToOne
     @Ignored
-    private BookingPart bookingPart;
+    private Booking booking;
 
     @Ignored
     @NotInEditor
@@ -351,94 +350,6 @@ public abstract class Service {
     }
 
 
-    //@Action(name = "Repair signature")
-    public static void repairSignature(@Selection List<Data> _selection) throws Throwable {
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                if (_selection != null && _selection.size() > 0) {
-
-                    for (Data d : _selection) {
-                        Service s = em.find(Service.class, d.get("_id"));
-                        //s.validate(em);
-
-//                    if (s instanceof TransferService) {
-//                        TransferService t = (TransferService) s;
-//                        LocalDate z = t.getFlightTime().toLocalDate();
-//                        if (t.getFlightTime().getHour() < 6) z = z.minusDays(1);
-//                        t.setStart(z);
-//                        t.setFinish(z);
-//                    }
-
-                        s.setSignature(s.createSignature());
-                    }
-
-                } else {
-
-
-                    List<Service> l = em.createQuery("select x from " + Service.class.getName() + " x order by x.id").getResultList();
-
-                    for (Service s : l) {
-                        //s.setSignature(s.createSignature());
-
-                        if (true || s.getBooking().getFinish() == null) {
-                            for (Service x : s.getBooking().getServices()) {
-                                if (x.getStart() != null) {
-                                    if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getStart())) s.getBooking().setStart(x.getStart());
-                                    if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getStart())) s.getBooking().setFinish(x.getStart());
-                                }
-
-                                if (x.getFinish() != null) {
-                                    if (s.getBooking().getStart() == null || s.getBooking().getStart().isAfter(x.getFinish())) s.getBooking().setStart(x.getFinish());
-                                    if (s.getBooking().getFinish() == null || s.getBooking().getFinish().isBefore(x.getFinish())) s.getBooking().setFinish(x.getFinish());
-                                }
-
-                                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
-                                else x.setServiceDateForInvoicing(x.getStart());
-                            }
-                        }
-
-                    }
-
-                }
-
-            }
-        });
-    }
-
-    @Action("Repair bookings")
-    public static void repair(UserData user) throws Throwable {
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                System.out.println("***REPARAR BOOKINGS*****");
-
-                /*
-
-                ReadAllQuery query = new ReadAllQuery();
-                Employee employee = new Employee();
-                Address address = new Address();
-                address.setCity("Ottawa");
-                employee.setAddress(address);
-                query.setExampleObject(employee);
-                List results = (List) session.executeQuery(query);
-
-                */
-
-                Office of = em.find(Office.class, 1l);
-
-                em.createQuery("select x from " + Service.class.getName() + " x where x.serviceDateForInvoicing is null").getResultList().forEach((o) -> {
-                    Service s = (Service) o;
-                    if (s.getOffice() == null) s.setOffice(of);
-                    s.setServiceDateForInvoicing(s.getStart());
-                });
-
-            }
-        });
-    }
-
     @Action
     public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) {
         for (Data d : selection) {
@@ -669,11 +580,11 @@ public abstract class Service {
                             eg.addContent(es = new Element("service"));
 
                             es.setAttribute("id", "" + s.getId());
-                            es.setAttribute("agency", "" + s.getBooking().getAgency().getName());
-                            if (s.getBooking().getAgencyReference() != null) es.setAttribute("agencyReference", s.getBooking().getAgencyReference());
-                            es.setAttribute("leadName", "" + s.getBooking().getLeadName());
+                            es.setAttribute("agency", "" + this.getFile().getAgency().getName());
+                            if (this.getFile().getAgencyReference() != null) es.setAttribute("agencyReference", this.getFile().getAgencyReference());
+                            es.setAttribute("leadName", "" + this.getFile().getLeadName());
                             String comments = "";
-                            if (s.getBooking().getComments() != null) comments += s.getBooking().getComments();
+                            if (this.getFile().getComments() != null) comments += this.getFile().getComments();
                             if (s.getComment() != null) comments += s.getComment();
                             if (!Strings.isNullOrEmpty(getOperationsComment())) {
                                 if (!"".equals(comments)) comments += " / ";
@@ -714,7 +625,7 @@ public abstract class Service {
 
         String archivo = UUID.randomUUID().toString();
 
-        File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".pdf"):new File(new File(System.getProperty("tmpdir")), archivo + ".pdf");
+        java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
 
 
         System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
@@ -762,8 +673,8 @@ public abstract class Service {
     @Links
     public List<MDDLink> getLinks() {
         List<MDDLink> l = new ArrayList<>();
-        if (getBooking() != null) {
-            l.add(new MDDLink("Booking", Booking.class, ActionType.OPENEDITOR, new Data("_id", getBooking().getId())));
+        if (this.getFile() != null) {
+            l.add(new MDDLink("File", File.class, ActionType.OPENEDITOR, new Data("_id", this.getFile().getId())));
             l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("services.id", getId())));
             l.add(new MDDLink("Purchase orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("services.id", getId())));
         }
@@ -828,7 +739,7 @@ public abstract class Service {
 
         System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
 
-        Service.repair(null);
+        //Service.repair(null);
 
         /*
         Service s = new Service() {
@@ -856,9 +767,9 @@ public abstract class Service {
         Map<String, Object> d = new HashMap<>();
 
         d.put("id", getId());
-        d.put("locator", getBooking().getId());
-        d.put("agency", getBooking().getAgency().getName());
-        d.put("agencyReference", getBooking().getAgencyReference());
+        d.put("locator", this.getFile().getId());
+        d.put("agency", this.getFile().getAgency().getName());
+        d.put("agencyReference", this.getFile().getAgencyReference());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
@@ -1046,19 +957,19 @@ public abstract class Service {
 
         System.out.println("service " + getId() + ".afterset");
 
-        if (true || getBooking().getFinish() == null) {
-            for (Service x : getBooking().getServices()) {
+        if (true || this.getFile().getFinish() == null) {
+            for (Service x : this.getFile().getServices()) {
                 if (x.getStart() != null) {
-                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getStart())) getBooking().setStart(x.getStart());
-                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getStart())) getBooking().setFinish(x.getStart());
+                    if (this.getFile().getStart() == null || this.getFile().getStart().isAfter(x.getStart())) this.getFile().setStart(x.getStart());
+                    if (this.getFile().getFinish() == null || this.getFile().getFinish().isBefore(x.getStart())) this.getFile().setFinish(x.getStart());
                 }
 
                 if (x.getFinish() != null) {
-                    if (getBooking().getStart() == null || getBooking().getStart().isAfter(x.getFinish())) getBooking().setStart(x.getFinish());
-                    if (getBooking().getFinish() == null || getBooking().getFinish().isBefore(x.getFinish())) getBooking().setFinish(x.getFinish());
+                    if (this.getFile().getStart() == null || this.getFile().getStart().isAfter(x.getFinish())) this.getFile().setStart(x.getFinish());
+                    if (this.getFile().getFinish() == null || this.getFile().getFinish().isBefore(x.getFinish())) this.getFile().setFinish(x.getFinish());
                 }
 
-                if (x.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(x.getBooking().getFinish());
+                if (this.getFile().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(this.getFile().getFinish());
                 else x.setServiceDateForInvoicing(x.getStart());
             }
         }

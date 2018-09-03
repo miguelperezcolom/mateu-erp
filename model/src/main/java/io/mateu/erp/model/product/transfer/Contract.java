@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
+import io.mateu.erp.model.product.tour.TourPrice;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
@@ -91,89 +92,14 @@ public class Contract extends AbstractContract {
     }
 
 
-    @Action("Pdf")
-    public URL toPdf() throws Throwable {
-        //String xslfo = "contract.xsl";
-
-        URL[] url = new URL[1];
 
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
+    @Override
+    public Document toXml(EntityManager em) {
+        Document doc = super.toXml(em);
 
-                long t0 = new Date().getTime();
+        Element xml = doc.getRootElement();
 
-
-                try {
-
-
-                    Document xml = toXml();
-
-                    try {
-                        String archivo = UUID.randomUUID().toString();
-
-                        File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".pdf"):new File(new File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-                        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-                        System.out.println("Temp file : " + temp.getAbsolutePath());
-
-                        FileOutputStream fileOut = new FileOutputStream(temp);
-                        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
-                        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-                        System.out.println("xml=" + sxml);
-                        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForTransferContract())), new StreamSource(new StringReader(sxml))));
-                        fileOut.close();
-
-                        String baseUrl = System.getProperty("tmpurl");
-                        if (baseUrl == null) {
-                            url[0] = temp.toURI().toURL();
-                        } else url[0] = new URL(baseUrl + "/" + temp.getName());
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-
-
-            }
-        });
-
-
-        return url[0];
-    }
-
-    private Document toXml() {
-        Element xml = new Element("contract");
-
-        xml.setAttribute("id", "" + getId());
-        if (getTitle() != null) xml.setAttribute("title", getTitle());
-        xml.setAttribute("type", "" + getType());
-        if (getBillingConcept() != null && getBillingConcept().getName() != null) xml.setAttribute("billingConcept", getBillingConcept().getName());
-        if (getValidFrom() != null) xml.setAttribute("validFrom", getValidFrom().toString());
-        if (getValidTo() != null) xml.setAttribute("validTo", getValidTo().toString());
-        if (getBookingWindowFrom() != null) xml.setAttribute("bookingWindowFrom", getBookingWindowFrom().toString());
-        if (getBookingWindowTo() != null) xml.setAttribute("bookingWindowTo", getBookingWindowTo().toString());
-        if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("supplier"));
-        if (getSpecialTerms() != null) xml.setAttribute("specialTerms", getSpecialTerms());
-        xml.setAttribute("vat", (isVATIncluded())?"Included":"Not included");
-        if (getAudit() != null) xml.setAttribute("audit", getAudit().toString());
-
-        Element ts;
-        xml.addContent(ts = new Element("targets"));
-        for (Partner t : getPartners()) ts.addContent(t.toXml().setName("target"));
-
-        if (getCurrency() != null) xml.setAttribute("currencyCode", getCurrency().getIsoCode());
-
-        if (getSignedAt() != null) xml.setAttribute("signedAt", getSignedAt());
-        if (getPartnerSignatory() != null) xml.setAttribute("partnerSignatory", getSignedAt());
-        if (getOwnSignatory() != null) xml.setAttribute("ownSignatory", getSignedAt());
-        if (getSignatureDate() != null) xml.setAttribute("signatureDate", getSignatureDate().format(DateTimeFormatter.BASIC_ISO_DATE));
 
 
         List<Vehicle> vs = new ArrayList<>();
@@ -239,7 +165,13 @@ public class Contract extends AbstractContract {
         }
 
 
-        return new Document(xml);
+
+        return doc;
+    }
+
+    @Override
+    public String getXslfo(EntityManager em) {
+        return AppConfig.get(em).getXslfoForTransferContract();
     }
 
 }

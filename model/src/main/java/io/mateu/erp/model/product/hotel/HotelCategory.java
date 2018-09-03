@@ -9,6 +9,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 1/10/16.
@@ -20,8 +22,15 @@ import javax.persistence.ManyToOne;
 public class HotelCategory {
 
     @Id
+    @NotEmpty
     private String code;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @NotNull
     private Literal name;
+
+    @Override
+    public String toString() {
+        return (getName() != null)?getName().toString():"No name";
+    }
 }

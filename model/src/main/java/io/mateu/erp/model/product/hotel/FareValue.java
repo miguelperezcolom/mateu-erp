@@ -61,10 +61,7 @@ public class FareValue implements XMLSerializable, ISupplementOrPositive {
     }
 
     public FareValue(Element e) {
-        if (e.getAttribute("supplement") != null) setSupplement(true);
-        if (e.getAttribute("discount") != null) setDiscount(true);
-        if (e.getAttribute("percent") != null) setPercent(true);
-        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
+        fromXml(e);
     }
 
     public FareValue() {
@@ -105,6 +102,14 @@ public class FareValue implements XMLSerializable, ISupplementOrPositive {
         if (isPercent()) e.setAttribute("percent", "");
         e.setAttribute("value","" + getValue());
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("supplement") != null) setSupplement(true);
+        if (e.getAttribute("discount") != null) setDiscount(true);
+        if (e.getAttribute("percent") != null) setPercent(true);
+        if (e.getAttribute("value") != null) setValue(Double.parseDouble(e.getAttributeValue("value")));
     }
 
     public double applicarA(double base) {

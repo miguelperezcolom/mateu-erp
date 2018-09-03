@@ -1,6 +1,6 @@
 package io.mateu.erp.model.projectmanagement;
 
-import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +30,7 @@ public class Comment {
     private String text;
 
     @OneToMany
-    private List<File> attachments = new ArrayList<>();
+    private List<Resource> attachments = new ArrayList<>();
 
     private TaskStatus newTaskStatus;
 

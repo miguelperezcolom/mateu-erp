@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.TemplateUseCase;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.model.util.Constants;
@@ -23,7 +24,6 @@ import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.model.authentication.Permission;
 import io.mateu.mdd.core.model.authentication.USER_STATUS;
-import io.mateu.mdd.core.model.common.File;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 
@@ -67,6 +67,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             c.setXslfoForTransferContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_transfer.xsl"), Charsets.UTF_8));
             c.setXslfoForHotelContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_hotel.xsl"), Charsets.UTF_8));
+            c.setXslfoForGenericContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_generico.xsl"), Charsets.UTF_8));
+            c.setXslfoForTourContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_tour.xsl"), Charsets.UTF_8));
             c.setXslfoForWorld(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
             c.setXslfoForList(Resources.toString(Resources.getResource("/xsl/listing.xsl"), Charsets.UTF_8));
             c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
@@ -162,8 +164,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
-                File f;
-                u.setPhoto(f = new File());
+                Resource f;
+                u.setPhoto(f = new Resource());
                 f.setName("foto-perfil-ejemplo.png");
                 f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
                 em.persist(f);
@@ -180,8 +182,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
-                File f;
-                u.setPhoto(f = new File());
+                Resource f;
+                u.setPhoto(f = new Resource());
                 f.setName("foto-perfil-ejemplo.png");
                 f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
                 em.persist(f);
@@ -198,8 +200,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 u.setPassword("1");
                 u.setStatus(USER_STATUS.ACTIVE);
                 u.getPermissions().add(p);
-                File f;
-                u.setPhoto(f = new File());
+                Resource f;
+                u.setPhoto(f = new Resource());
                 f.setName("foto-perfil-ejemplo.png");
                 f.setBytes(ByteStreams.toByteArray(Populator.class.getResourceAsStream("/images/" + f.getName())));
                 em.persist(f);

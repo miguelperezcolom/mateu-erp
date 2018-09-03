@@ -1,6 +1,6 @@
 package io.mateu.erp.model.payments;
 
-import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class Litigation {
 
     @ManyToOne
     @NotNull
-    private Booking booking;
+    private File file;
 
     private double amount;
 

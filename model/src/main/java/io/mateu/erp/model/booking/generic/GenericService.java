@@ -94,7 +94,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.SALE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -137,7 +137,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -180,10 +180,10 @@ public class GenericService extends Service {
         Map<String, Object> d = super.getData();
 
         d.put("id", getId());
-        d.put("locator", getBooking().getId());
-        d.put("leadName", getBooking().getLeadName());
-        d.put("agency", getBooking().getAgency().getName());
-        d.put("agencyReference", getBooking().getAgencyReference());
+        d.put("locator", this.getFile().getId());
+        d.put("leadName", this.getFile().getLeadName());
+        d.put("agency", this.getFile().getAgency().getName());
+        d.put("agencyReference", this.getFile().getAgencyReference());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());

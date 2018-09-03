@@ -30,12 +30,7 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
     }
 
     public LinearFare(Element e) {
-        if (e.getAttribute("name") != null) setName(e.getAttributeValue("name"));
-
-        if (e.getChild("dates") != null) for (Element z: e.getChild("dates").getChildren()) getDates().add(new DatesRange(z));
-
-        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("line")) getLines().add(new LinearFareLine(z));
-
+        fromXml(e);
     }
 
     @Override
@@ -54,6 +49,13 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
             els.addContent(l.toXml());
         }
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getAttribute("name") != null) setName(e.getAttributeValue("name"));
+        if (e.getChild("dates") != null) for (Element z: e.getChild("dates").getChildren()) getDates().add(new DatesRange(z));
+        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("line")) getLines().add(new LinearFareLine(z));
     }
 
     @Override

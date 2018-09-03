@@ -19,7 +19,7 @@ import javax.xml.ws.ResponseWrapper;
 public interface CommonsBookingService {
 
     @WebMethod
-    @RequestWrapper(localName = "getBooking", targetNamespace = "http://caval.travel/20091127/commons", className = "travel.caval._20091127.commons.GetBooking")
+    @RequestWrapper(localName = "getFile", targetNamespace = "http://caval.travel/20091127/commons", className = "travel.caval._20091127.commons.GetBooking")
     @ResponseWrapper(localName = "getBookingResponse", targetNamespace = "http://caval.travel/20091127/commons", className = "travel.caval._20091127.commons.GetBookingResponse")
     @WebResult(name = "return", targetNamespace = "")
     public travel.caval._20091127.commons.CavalGetBookingRS getBooking(

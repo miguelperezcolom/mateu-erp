@@ -150,7 +150,7 @@ public class TransfersSummaryView implements RpcCrudView<TransfersSummaryView, T
                 d.set("direction", new Pair("POINTTOPOINT", "POINTTOPOINT"));
                 break;
         }
-        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.booking.transfer.TransferService", "io.mateu.erp.model.booking.transfer.TransferService", null, new MDDCallback(d));
+        ((ERPServiceAsync) MateuUI.create(ERPService.class)).getMetaData(null, "io.mateu.erp.model.file.transfer.TransferService", "io.mateu.erp.model.file.transfer.TransferService", null, new MDDCallback(d));
     }
     */
 

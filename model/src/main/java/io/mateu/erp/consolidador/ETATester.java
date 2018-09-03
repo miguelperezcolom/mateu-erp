@@ -25,7 +25,7 @@ public class ETATester {
         {
             Client client = ClientBuilder.newClient();
             BookHotelRQ order = new BookHotelRQ();
-            WebTarget myResource = client.target("http://test.easytravelapi.com/rest").path("/yourauthtoken/hotel/booking");
+            WebTarget myResource = client.target("http://test.easytravelapi.com/rest").path("/yourauthtoken/hotel/file");
             BookHotelRS trackingNumber = myResource.request(MediaType.APPLICATION_JSON)
                     .put(Entity.json(order), BookHotelRS.class);
 

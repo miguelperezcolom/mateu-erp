@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contract id="1" title="contrato hotel 1" type="SALE" billingConcept="Handling fee" validFrom="2018-06-01" validTo="2018-06-30" vat="Not included" audit="Created by admin 2018-09-03 08:19:01, modified by admin 2018-09-03 09:51:58" bussinessName="Viajes Ibiza" logo="null" currencyCode="EUR">
+    <supplier id="1" name="Viajes Barceló" />
+    <hotel category="3 estrellas" name="Hotel Ibiza Playa" childStartAge="0" juniorStartAge="0" adultStartAge="0" />
+    <targets>
+        <target id="1" name="Viajes Barceló" />
+    </targets>
+    <contractor name="Viajes Barceló" bussinessName="" />
+    <terms>
+        <rooms />
+        <releases />
+        <allotment />
+        <supplements />
+        <minimumStays />
+        <weekDays />
+        <cancellation />
+    </terms>
+</contract>

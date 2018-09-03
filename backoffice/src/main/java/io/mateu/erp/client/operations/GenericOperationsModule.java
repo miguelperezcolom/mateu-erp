@@ -12,7 +12,7 @@ import java.util.List;
 public class GenericOperationsModule extends AbstractModule {
     @Override
     public String getName() {
-        return "Generic";
+        return "GenericBooking";
     }
 
     @Override

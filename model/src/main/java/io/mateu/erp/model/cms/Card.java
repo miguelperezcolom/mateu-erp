@@ -1,6 +1,6 @@
 package io.mateu.erp.model.cms;
 
-import io.mateu.mdd.core.model.common.File;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,12 +20,12 @@ public class Card {
     private String text;
 
     @ManyToOne
-    private File image;
+    private Resource image;
 
 
     public Card() {}
 
-    public Card(String header, String text, File image) {
+    public Card(String header, String text, Resource image) {
         this.header = header;
         this.text = text;
         this.image = image;

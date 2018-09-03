@@ -1,6 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.File;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -12,6 +12,6 @@ import javax.persistence.ManyToOne;
 public class BookingInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
-    private Booking booking;
+    private File file;
 
 }

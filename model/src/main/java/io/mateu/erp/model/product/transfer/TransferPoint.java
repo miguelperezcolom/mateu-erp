@@ -39,8 +39,7 @@ public class TransferPoint {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    @Tab("Info")
+    
     @NotNull
     private TransferPointType type;
 
@@ -75,10 +74,23 @@ public class TransferPoint {
     @ManyToOne
     private Destination gatewayOf;
 
-    @Tab("Needed time")
     private int minutesForNationalFlights;
 
     private int minutesForInternationalFlights;
+
+
+    public boolean isMinutesForNationalFlightsVisible() {
+        return isAirport();
+    }
+
+    public boolean isMinutesForInternationalFlightsVisible() {
+        return isAirport();
+    }
+
+    private boolean isAirport() {
+        return TransferPointType.AIRPORT.equals(getType()) || TransferPointType.PORT.equals(getType()) || TransferPointType.TRAINSTATION.equals(getType());
+    }
+
 
 
     @Override

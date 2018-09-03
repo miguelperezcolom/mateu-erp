@@ -7,6 +7,7 @@ import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
 import io.mateu.erp.dispo.interfaces.portfolio.IResource;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.PartnerStatus;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.hotel.*;
 
@@ -39,7 +40,7 @@ public class Logica {
 
             if (actor == null) throw new Throwable("No actor for token " + rq.getToken() + "");
 
-            if (!actor.isActive()) throw new Throwable("Actor " + actor.getId() + " - " + actor.getName() + " is not active");
+            if (!PartnerStatus.ACTIVE.equals(actor.getStatus())) throw new Throwable("Actor " + actor.getId() + " - " + actor.getName() + " is not active");
 
             // recorremos el mapa para obtener la lista de recursos (hoteles)
 

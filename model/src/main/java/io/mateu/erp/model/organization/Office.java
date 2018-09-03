@@ -53,18 +53,19 @@ public class Office {
     @NotInList
     private String emailHost;
     @NotInList
-    @SameLine
     private int emailPort;
     @NotInList
     private String emailUsuario;
     @NotInList
-    @SameLine
     private String emailPassword;
     @NotInList
     private String emailFrom;
     @NotInList
-    @SameLine
     private String emailCC;
 
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

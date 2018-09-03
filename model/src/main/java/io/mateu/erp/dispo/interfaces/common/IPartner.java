@@ -1,6 +1,7 @@
 package io.mateu.erp.dispo.interfaces.common;
 
 import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
+import io.mateu.erp.model.partners.PartnerStatus;
 
 import java.util.List;
 
@@ -10,8 +11,7 @@ public interface IPartner {
 
     public String getName();
 
-    public boolean isActive();
-
     public List<? extends IIntegration> getIntegrations();
 
+    PartnerStatus getStatus();
 }

@@ -26,4 +26,9 @@ public class TourVariant {
     @ManyToOne
     private Literal description;
 
+
+    @Override
+    public String toString() {
+        return (getName() != null)?getName().toString():"No name";
+    }
 }

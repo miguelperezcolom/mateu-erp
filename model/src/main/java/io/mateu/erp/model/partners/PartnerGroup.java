@@ -1,12 +1,10 @@
 package io.mateu.erp.model.partners;
 
+import io.mateu.erp.model.revenue.Markup;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -21,5 +19,12 @@ public class PartnerGroup {
     @NotNull
     private String name;
 
+    @ManyToOne
+    private Markup markup;
 
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class StopSales {
     private long id;
 
     @ManyToOne
-    @Output
+    @NotNull
     private Hotel hotel;
 
     @Ignored
@@ -101,4 +102,8 @@ public class StopSales {
 
     }
 
+    @Override
+    public String toString() {
+        return (getHotel() != null)?getHotel().getName():"No hotel";
+    }
 }

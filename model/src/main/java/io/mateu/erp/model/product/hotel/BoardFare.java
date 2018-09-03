@@ -70,13 +70,7 @@ public class BoardFare implements XMLSerializable {
     }
 
     public BoardFare(Element e) {
-
-        if (e.getChild("roomPrice") != null) setRoomPrice(new FareValue(e.getChild("roomPrice")));
-        if (e.getChild("paxPrice") != null) setPaxPrice(new FareValue(e.getChild("paxPrice")));
-        for (Element z : e.getChildren("paxDiscount")) getPaxDiscounts().put(Integer.parseInt(z.getAttributeValue("pax")), new FareValue(z));
-        for (Element z : e.getChildren("juniorDiscount")) getJuniorDiscounts().put(Integer.parseInt(z.getAttributeValue("junior")), new FareValue(z));
-        for (Element z : e.getChildren("childDiscount")) getChildDiscounts().put(Integer.parseInt(z.getAttributeValue("child")), new FareValue(z));
-        for (Element z : e.getChildren("infantDiscount")) getInfantDiscounts().put(Integer.parseInt(z.getAttributeValue("infant")), new FareValue(z));
+        fromXml(e);
     }
 
     public BoardFare() {
@@ -109,6 +103,16 @@ public class BoardFare implements XMLSerializable {
             e.addContent(getInfantDiscounts().get(k).toXml().setName("infantDiscount").setAttribute("infant", "" + k));
         }
         return e;
+    }
+
+    @Override
+    public void fromXml(Element e) {
+        if (e.getChild("roomPrice") != null) setRoomPrice(new FareValue(e.getChild("roomPrice")));
+        if (e.getChild("paxPrice") != null) setPaxPrice(new FareValue(e.getChild("paxPrice")));
+        for (Element z : e.getChildren("paxDiscount")) getPaxDiscounts().put(Integer.parseInt(z.getAttributeValue("pax")), new FareValue(z));
+        for (Element z : e.getChildren("juniorDiscount")) getJuniorDiscounts().put(Integer.parseInt(z.getAttributeValue("junior")), new FareValue(z));
+        for (Element z : e.getChildren("childDiscount")) getChildDiscounts().put(Integer.parseInt(z.getAttributeValue("child")), new FareValue(z));
+        for (Element z : e.getChildren("infantDiscount")) getInfantDiscounts().put(Integer.parseInt(z.getAttributeValue("infant")), new FareValue(z));
     }
 
     public Map<Integer, FareValue> getJuniorDiscounts() {
