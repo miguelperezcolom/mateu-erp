@@ -136,8 +136,6 @@ public abstract class AbstractContract {
     @Tab("Signature")
     private String signedAt;
 
-    private String signedBy;
-
     private String partnerSignatory;
 
     private String ownSignatory;
@@ -152,11 +150,15 @@ public abstract class AbstractContract {
     @ManyToOne
     private PaymentTerms paymentTerms;
 
-    @Output
-    private double averagePrice;
-
     @ManyToOne
+    @Tab("Cancellation")
     private CancellationRules cancellationRules;
+
+
+
+
+    @KPI
+    private double averagePrice;
 
 
 
@@ -208,8 +210,8 @@ public abstract class AbstractContract {
         if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("supplier"));
 
         if (getSignedAt() != null) xml.setAttribute("signedAt", getSignedAt());
-        if (getPartnerSignatory() != null) xml.setAttribute("partnerSignatory", getSignedAt());
-        if (getOwnSignatory() != null) xml.setAttribute("ownSignatory", getSignedAt());
+        if (getPartnerSignatory() != null) xml.setAttribute("partnerSignatory", getPartnerSignatory());
+        if (getOwnSignatory() != null) xml.setAttribute("ownSignatory", getOwnSignatory());
         if (getSignatureDate() != null) xml.setAttribute("signatureDate", getSignatureDate().format(DateTimeFormatter.BASIC_ISO_DATE));
 
 

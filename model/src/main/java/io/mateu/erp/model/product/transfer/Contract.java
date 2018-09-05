@@ -138,9 +138,10 @@ public class Contract extends AbstractContract {
             xl.setAttribute("origin", o.getName());
             xl.setAttribute("destination", d.getName());
             for (Vehicle v : vs) {
+                Element ep;
+                xl.addContent(ep = new Element("price").setAttribute("vehicle", v.getName() + " " + v.getMinPax() + "-" + v.getMaxPax()));
                 for (Price p : getPrices()) if (p.getOrigin().equals(o) && p.getDestination().equals(d) && p.getVehicle().equals(v)) {
-                    xl.addContent(new Element("price").setAttribute("vehicle", p.getVehicle().getName()).setAttribute("price", "" + p.getPrice())).setAttribute("per", "" + p.getPricePer());
-                    break;
+                    ep.addContent(new Element("line").setAttribute("transfertype", "" + p.getTransferType()).setAttribute("frompax", "" + p.getFromPax()).setAttribute("topax", "" + p.getToPax()).setAttribute("price", "" + p.getPrice() + ((p.getReturnPrice() != 0)?"/" + p.getReturnPrice():"")).setAttribute("per", "" + p.getPricePer()));
                 }
             }
         }

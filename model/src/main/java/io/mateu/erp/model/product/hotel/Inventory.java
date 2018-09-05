@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IInventory;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +27,7 @@ public class Inventory implements IInventory {
     @SearchFilter
     @ManyToOne
     @NotNull
+    @Unmodifiable
     private Hotel hotel;
 
     @SearchFilter
@@ -35,14 +37,13 @@ public class Inventory implements IInventory {
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
     private List<InventoryLine> lines = new ArrayList<>();
 
-    @Ignored
-    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
-    @OrderBy("created")
-    private List<InventoryOperation> operations = new ArrayList<>();
 
-    @ShowAsHtml("Calendar")
     @FullWidth
-    public String getHtmlCalendar() {
+    @Output
+    private transient String calendar;
+
+
+    public String getCalendar() {
         StringBuffer sb = new StringBuffer();
 
         LocalDate desde = LocalDate.now();
@@ -119,7 +120,7 @@ public class Inventory implements IInventory {
     }
 
 
-    public void build(EntityManager em) {
+    public void build(EntityManager em) throws Throwable {
 
         //creamos la estructura
 
@@ -137,5 +138,19 @@ public class Inventory implements IInventory {
     @Override
     public String toString() {
         return (getHotel() != null)?getHotel().getName():"No hotel";
+    }
+
+
+
+    @Action
+    public InventoryOperation modify() {
+        InventoryOperation o = new InventoryOperation();
+        o.setInventory(this);
+        return o;
+    }
+
+    @Action
+    public void rebuild() throws Throwable {
+        Helper.transact(em -> em.find(Inventory.class, getId()).build(em));
     }
 }

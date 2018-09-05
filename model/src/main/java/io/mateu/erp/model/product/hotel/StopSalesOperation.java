@@ -2,11 +2,17 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.mdd.core.annotations.Keep;
+import io.mateu.mdd.core.annotations.NotInEditor;
+import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,14 +28,19 @@ public class StopSalesOperation {
     private long id;
 
     @SearchFilter
+    @NotInEditor
     private LocalDateTime created = LocalDateTime.now();
 
     @SearchFilter
     @ManyToOne
+    @NotInEditor
+    @Keep
     private io.mateu.erp.model.authentication.User createdBy;
 
     @SearchFilter
     @ManyToOne
+    @Output
+    @Keep
     private StopSales stopSales;
 
     @SearchFilter
@@ -37,6 +48,11 @@ public class StopSalesOperation {
 
     @Column(name = "_end")
     private LocalDate end;
+
+    @SearchFilter
+    @NotNull
+    @Keep
+    private StopSalesAction action;
 
     private boolean onNormalInventory = true;
     private boolean onSecurityInventory;
@@ -53,7 +69,18 @@ public class StopSalesOperation {
     @OneToMany
     private List<HotelContract> contracts = new ArrayList<>();
 
-    @SearchFilter
-    private StopSalesAction action;
 
+    @PostPersist@PostUpdate@PostRemove
+    public void post() {
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Helper.transact(em -> em.find(StopSales.class, getStopSales().getId()).build(em));
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
+    }
 }

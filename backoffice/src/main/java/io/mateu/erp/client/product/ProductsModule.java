@@ -1,5 +1,7 @@
 package io.mateu.erp.client.product;
 
+import io.mateu.erp.model.booking.tickets.Ticket;
+import io.mateu.erp.model.booking.tickets.TicketBook;
 import io.mateu.erp.model.product.generic.*;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
@@ -53,6 +55,8 @@ public class ProductsModule extends AbstractModule {
 
                 m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.tour.Contract.class, "Prices", TourPrice.class));
 
+                m.add(new MDDMenu("Tickets", "Books", TicketBook.class, "Tickets", Ticket.class));
+
                 return m;
             }
         };
@@ -85,9 +89,9 @@ public class ProductsModule extends AbstractModule {
 
                 m.add(new MDDMenu("Definition", "Transfer points", TransferPoint.class, "Vehicles", Vehicle.class, "Extras", io.mateu.erp.model.product.transfer.Extra.class));
 
-                m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.transfer.Contract.class, "Prices", io.mateu.erp.model.product.transfer.Price.class, "Price zones", Zone.class));
-
                 m.add(new MDDMenu("Routes", "Routes", Route.class, "Stops", RouteStop.class, "Times", RouteTime.class));
+
+                m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.transfer.Contract.class, "Prices", io.mateu.erp.model.product.transfer.Price.class, "Price zones", Zone.class));
 
                 return m;
 
@@ -106,13 +110,13 @@ public class ProductsModule extends AbstractModule {
 
                 m.add(new MDDMenu("Definition", "Hotels", Hotel.class, "Rooms", Room.class, "Boards", Board.class));
 
-                m.add(new MDDMenu("AI", "Stop sales", StopSales.class, "Inventory", Inventory.class));
+                m.add(new MDDMenu("AI", "Stop sales", StopSales.class, "Operations on stop sales", StopSalesOperation.class, "Inventory", Inventory.class, "Operations on inventory", InventoryOperation.class));
 
                 //m.add(new MDDMenu("AI", "Stop sales", StopSalesView.class, "Inventory", InventoryListView.class));
 
                 m.add(new MDDMenu("Prices", "Contracts", HotelContract.class, "Offers", AbstractHotelOffer.class));
 
-                m.add(new MDDMenu("Operations", "Hotels without files", StopSalesView.class));
+                m.add(new MDDMenu("Operations", "Hotels without bookings", StopSalesView.class));
 
                 return m;
             }

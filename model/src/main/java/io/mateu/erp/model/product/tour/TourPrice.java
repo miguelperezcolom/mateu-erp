@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.tour;
 
 import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.mdd.core.annotations.DependsOn;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
@@ -17,7 +18,7 @@ import java.time.format.DateTimeFormatter;
 
 @Entity
 @Getter@Setter
-public class TourPrice {
+public class TourPrice implements Comparable<TourPrice> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,8 +69,6 @@ public class TourPrice {
 
     private double pricePerChild;
 
-    private double pricePerVehicle;
-
     @Column(name = "_order")
     private int order;
 
@@ -103,10 +102,92 @@ public class TourPrice {
 
         if (finalPrice) e.setAttribute("finalPrice", "");
 
-        e.setAttribute("pricePerVehicle", "" + pricePerVehicle);
         e.setAttribute("pricePerAdult", "" + pricePerAdult);
         e.setAttribute("pricePerChild", "" + pricePerChild);
 
+        e.setAttribute("pdftext", toString());
+
         return e;
     }
+
+    @Override
+    public String toString() {
+        String s = "";
+
+        s += (finalPrice)?"Final":"Add";
+
+        if (description != null) {
+            if (!"".equals(s)) s += " ";
+            s += description;
+        }
+
+        if (extra != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + extra.getName().toString();
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (start != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "from " + start.format(dtf);
+        }
+        if (end != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "to " + end.format(dtf);
+        }
+
+
+        if (bookingWindowStart != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "booked from " + bookingWindowStart.format(dtf);
+        }
+        if (bookingWindowEnd != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "booked to " + bookingWindowEnd.format(dtf);
+        }
+
+
+        if (pricePerAdult != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerAdult + " per adult";
+        }
+        if (pricePerChild != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerChild + " per child";
+        }
+
+
+        if (tour != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + tour.getName() + " tour";
+        }
+        if (variant != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + variant.getName().toString() + " variant";
+        }
+        if (zone != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for tours from " + zone.getName();
+        }
+        return s;
+    }
+
+    @Override
+    public int compareTo(@org.jetbrains.annotations.NotNull TourPrice o) {
+        int r = 0;
+        if (o == null) return 1;
+        r = getOrder() - o.getOrder();
+        if (r == 0) {
+            r = ((getTour() != null)?getTour().getName():"").compareTo(((o.getTour() != null)?o.getTour().getName():""));
+        }
+        if (r == 0) {
+            r = ((getVariant() != null)?getVariant().getName().toString():"").compareTo(((o.getVariant() != null)?o.getVariant().getName().toString():""));
+        }
+        if (r == 0) {
+            r = ((getExtra() != null)?getExtra().getName().toString():"").compareTo(((o.getExtra() != null)?o.getExtra().getName().toString():""));
+        }
+        return r;
+    }
+
 }

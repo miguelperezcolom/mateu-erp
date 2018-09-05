@@ -14,6 +14,7 @@ import io.mateu.mdd.core.app.ActionType;
 import io.mateu.mdd.core.app.MDDLink;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.Pair;
+import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
@@ -46,7 +47,7 @@ public class File {
     @Order(desc = true, priority = 10)
     private long id;
 
-    @Tab("Info")
+    @Section("Info")
     @Embedded
     @Output
     @SearchFilter(field="created")
@@ -69,7 +70,6 @@ public class File {
 
     private String email;
 
-    @SameLine
     private String telephone;
 
     private boolean confirmed;
@@ -87,22 +87,23 @@ public class File {
     @SameLine
     private LocalDate finish;
 
+    @TextArea
     private String comments;
 
 
-    @Output
+    @KPI
     private double totalNetValue;
 
-    @Output
+    @KPI
     @SameLine
     private double totalRetailValue;
 
-    @Output
+    @KPI
     @SameLine
     private double totalCommissionValue;
 
 
-    @Output
+    @KPI
     @SameLine
     private double balance;
 
@@ -112,39 +113,49 @@ public class File {
 
     @Transient
     @Ignored
-    private boolean wasCancelled = false;
+    private transient boolean alreadyCancelled = false;
 
 
-    @Tab("Quotation requests")
+
+    @Section("Quotation requests")
     @OneToMany(mappedBy = "file")
     @OrderColumn(name = "orderInBooking")
     @Output
     private List<QuotationRequest> quotationRequests = new ArrayList<>();
 
 
-    @Tab("Parts")
+    @Section("Bookings")
     @OneToMany(mappedBy = "file")
     @OrderColumn(name = "orderInBooking")
     @Output
-    private List<Booking> parts = new ArrayList<>();
+    private List<Booking> bookings = new ArrayList<>();
 
-    @Tab("Services")
+    @Section("Services")
     @OneToMany(mappedBy = "file")
     @OrderColumn(name = "orderInBooking")
     @Output
     private List<Service> services = new ArrayList<>();
 
-    @Tab("Charges")
+    @Section("Charges")
     @OneToMany(mappedBy = "file")
     @Output
     private List<Charge> charges = new ArrayList<>();
 
-    @Tab("Payments")
+    @Section("Payments")
     @OneToMany(mappedBy = "file")
     @OrderColumn(name = "id")
     @Output
     private List<BookingPaymentAllocation> payments = new ArrayList<>();
 
+
+    @Section("Invoicing")
+    private String companyName;
+    private String vatId;
+    private String address;
+    private String city;
+    private String state;
+    private String country;
+    private String postalCode;
 
 
     @Override
@@ -192,7 +203,7 @@ public class File {
 
     @PostLoad
     public void beforeSet() throws Throwable {
-        setWasCancelled(isCancelled());
+        setAlreadyCancelled(isCancelled());
     }
 
     @PostPersist@PostUpdate
@@ -200,7 +211,7 @@ public class File {
 
         EntityManager em = Helper.getEMFromThreadLocal();
         
-        if (isCancelled() && isCancelled() != isWasCancelled()) {
+        if (isCancelled() && isCancelled() != isAlreadyCancelled()) {
             cancel(em, getAudit().getModifiedBy());
         }
         
@@ -301,4 +312,29 @@ public class File {
 
         return d;
     }
+
+
+
+    @Action(order = 1)
+    public void sendEmail(Template template, @TextArea String postscript) {
+
+    }
+
+    @Action(order = 2)
+    public void sendPaymentEmail(String email) {
+
+    }
+
+
+    @Action(order = 3)
+    public void sendVouchers(String email) {
+
+    }
+
+    @Action(order = 4)
+    public void invoice(String email) {
+
+    }
+
+
 }

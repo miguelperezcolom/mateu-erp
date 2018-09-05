@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,23 +27,27 @@ public class StopSalesCube {
     private List<Partner> actors = new ArrayList<>();
     int maxdias = 0;
 
-    public StopSalesCube(StopSales stopSales) {
+    public StopSalesCube(StopSales stopSales) throws Throwable {
 
         this.stopSales = stopSales;
 
         init();
-        
+
         build();
     }
 
-    private void build() {
+    private void build() throws Throwable {
 
         // aplicamos las operaciones
 
-        for (StopSalesOperation o : getStopSales().getOperations()) {
+        for (StopSalesOperation o : getOperations()) {
             apply(o);
         }
         
+    }
+
+    private List<StopSalesOperation> getOperations() throws Throwable {
+        return Helper.selectObjects("select x from " + StopSalesOperation.class.getName() + " x where x.stopSales.id = " + stopSales.getId() + " order by x.id");
     }
 
     private void apply(StopSalesOperation o) {
@@ -85,13 +90,13 @@ public class StopSalesCube {
         }
     }
 
-    private void init() {
+    private void init() throws Throwable {
 
         // buscamos la fecha de inicio, final, habitaciones, etc para crear la estructura
 
         ayer = LocalDate.now().minusDays(1);
 
-        for (StopSalesOperation o : getStopSales().getOperations()) if (o.getEnd() != null && o.getEnd().isAfter(ayer)) {
+        for (StopSalesOperation o : getOperations()) if (o.getEnd() != null && o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             for (RoomType r : o.getRooms()) if (!rooms.contains(r)) rooms.add(r);

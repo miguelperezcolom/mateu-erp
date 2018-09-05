@@ -30,4 +30,15 @@ public class BoardType {
         return (getName() != null)?getName().toString():"No name";
     }
 
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof BoardType && code == ((BoardType)obj).code);
+    }
+
 }

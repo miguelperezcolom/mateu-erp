@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.WeekDays;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,13 +29,8 @@ public class TourShiftCalendar {
     @Column(name = "_end")
     private LocalDate end;
 
-    private boolean monday = true;
-    private boolean tuesday = true;
-    private boolean wednesday = true;
-    private boolean thursday = true;
-    private boolean friday = true;
-    private boolean saturday = true;
-    private boolean sunday = true;
+    @WeekDays
+    private boolean[] weekdays = {true, true, true, true, true, true, true};
 
     @ManyToOne
     private Partner agency;

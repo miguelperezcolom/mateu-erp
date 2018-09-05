@@ -52,9 +52,6 @@
                                             <fo:inline color="white">x</fo:inline>
                                         </fo:block>
                                         <fo:block>
-                                            <xsl:value-of select="@transferType"/>
-                                        </fo:block>
-                                        <fo:block>
                                             <fo:inline color="white">x</fo:inline>
                                         </fo:block>
                                         <fo:block>
@@ -105,22 +102,22 @@
                                                    display-align="after">
                                         <fo:block>And as proof of consent and acceptance of all the clauses , including
                                             those contained in page<fo:page-number-citation-last ref-id="end"/>, the two
-                                            sides signed in <xsl:value-of select="@firmadoen"/>,
-                                            <xsl:value-of select="@fecha"/>
+                                            sides signed in <xsl:value-of select="@signedAt"/>,
+                                            <xsl:value-of select="@signatureDate"/>
                                         </fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm"
                                                    display-align="after">
                                         <fo:block>Name and surname</fo:block>
                                         <fo:block>By
-                                            <xsl:value-of select="entre/@nombre"/>
+                                            <xsl:value-of select="@partnerSignatory"/>
                                         </fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm"
                                                    display-align="after">
                                         <fo:block>Name and surname</fo:block>
                                         <fo:block>By
-                                            <xsl:value-of select="y/@nombre"/>
+                                            <xsl:value-of select="@ownSignatory"/>
                                         </fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
@@ -130,6 +127,7 @@
                             <fo:page-number-citation-last ref-id="end"/>
                         </fo:block>
                     </fo:static-content>
+
 
                     <!-- Content -->
                     <fo:flow flow-name="xsl-region-body">
@@ -223,7 +221,7 @@
                                                                                padding="1mm" font-weight="bold"
                                                                                display-align="after">
                                                                     <fo:block>
-                                                                        <xsl:value-of select="@name"/>
+                                                                        <xsl:value-of select="@name"/>  <xsl:value-of select="@minpax"/>-<xsl:value-of select="@maxpax"/>
                                                                     </fo:block>
                                                                 </fo:table-cell>
                                                             </xsl:for-each>
@@ -271,10 +269,11 @@
                                                                                 0.3px
                                                                             </xsl:attribute>
                                                                         </xsl:if>
-                                                                        <fo:block>
-                                                                            <xsl:value-of select="@price"/> /
-                                                                            <xsl:value-of select="@per"/>
-                                                                        </fo:block>
+                                                                        <xsl:for-each select="line">
+                                                                            <fo:block>
+                                                                                <xsl:value-of select="@frompax"/> - <xsl:value-of select="@topax"/> : <xsl:value-of select="@price"/> (<xsl:value-of select="@transfertype"/> | <xsl:value-of select="@per"/>)
+                                                                            </fo:block>
+                                                                        </xsl:for-each>
                                                                     </fo:table-cell>
                                                                 </xsl:for-each>
                                                             </fo:table-row>

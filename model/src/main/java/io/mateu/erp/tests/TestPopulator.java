@@ -1024,8 +1024,7 @@ public class TestPopulator {
 
                     for (int i = 0; i < maxStopSales; i++) {
 
-                        StopSalesOperation l;
-                        s.getOperations().add(l = new StopSalesOperation());
+                        StopSalesOperation l = new StopSalesOperation();
                         em.persist(l);
                         l.setStopSales(s);
                         l.setOnNormalInventory(true);
@@ -1079,8 +1078,7 @@ public class TestPopulator {
                     int maxLines = 10 + random.nextInt(1000);
                     for (int j = 0; j < maxLines; j++) {
 
-                        InventoryOperation l;
-                        i.getOperations().add(l = new InventoryOperation());
+                        InventoryOperation l = new InventoryOperation();
                         em.persist(l);
                         l.setInventory(i);
                         l.setAction(InventoryAction.SET);

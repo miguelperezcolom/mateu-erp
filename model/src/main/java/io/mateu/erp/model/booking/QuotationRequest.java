@@ -6,6 +6,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -41,8 +42,6 @@ public class QuotationRequest {
 
     private LocalDate expiryDate;
 
-    private double price;
-
     @TextArea
     private String text;
 
@@ -74,5 +73,7 @@ public class QuotationRequest {
 
     @Output
     private String answerText;
+
+    private FastMoney answerPrice;
 
 }

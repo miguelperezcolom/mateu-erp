@@ -14,7 +14,7 @@ public class HotelContractPhotoConverter implements AttributeConverter<HotelCont
     @Override
     public String convertToDatabaseColumn(HotelContractPhoto hotelContractPhoto) {
         if (hotelContractPhoto == null) return null;
-        else return hotelContractPhoto.toString();
+        else return hotelContractPhoto.serialize();
     }
 
     @Override

@@ -38,65 +38,6 @@ public class Contract extends AbstractContract {
     @Ignored
     private List<TourPrice> prices = new ArrayList<>();
 
-
-    @Action
-    public URL pdf() throws Throwable {
-        //String xslfo = "contract.xsl";
-
-        URL[] url = new URL[1];
-
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
-
-                long t0 = new Date().getTime();
-
-
-                try {
-
-
-                    Document xml = toXml(em);
-
-                    try {
-                        String archivo = UUID.randomUUID().toString();
-
-                        File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".pdf"):new File(new File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-                        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-                        System.out.println("Temp file : " + temp.getAbsolutePath());
-
-                        FileOutputStream fileOut = new FileOutputStream(temp);
-                        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
-                        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-                        System.out.println("xml=" + sxml);
-                        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForTourContract())), new StreamSource(new StringReader(sxml))));
-                        fileOut.close();
-
-                        String baseUrl = System.getProperty("tmpurl");
-                        if (baseUrl == null) {
-                            url[0] = temp.toURI().toURL();
-                        } else url[0] = new URL(baseUrl + "/" + temp.getName());
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-
-
-            }
-        });
-
-
-        return url[0];
-    }
-
-
     @Override
     public Document toXml(EntityManager em) {
         Document xml = super.toXml(em);
@@ -104,7 +45,9 @@ public class Contract extends AbstractContract {
         Element eprices;
         xml.getRootElement().addContent(eprices = new Element("prices"));
 
-        for (TourPrice p : prices) eprices.addContent(p.toXml());
+        prices.stream().filter(p -> p.isActive())
+                .sorted()
+                .forEach(p -> eprices.addContent(p.toXml()));
 
         return xml;
     }

@@ -1,11 +1,16 @@
 package io.mateu.erp.model.product;
 
+import com.vaadin.ui.Component;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Html;
+import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +27,12 @@ public class DataSheet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotEmpty
+    private String name;
+
     @ManyToOne
     @NotNull
+    @TextArea
     private Literal description;
 
     @ManyToOne
@@ -38,6 +47,12 @@ public class DataSheet {
 
     @Override
     public String toString() {
-        return (getDescription() != null)?getDescription().toString():"No description";
+        return getName();
+    }
+
+
+    @Action
+    public Component preview() {
+        return new DataSheetComponent(this);
     }
 }

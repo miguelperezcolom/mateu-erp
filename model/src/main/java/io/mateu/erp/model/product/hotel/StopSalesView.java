@@ -48,8 +48,8 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
                     @Tab("Actors") List<Partner> actors,
                     @Tab("Contracts") List<HotelContract> contracts) throws Throwable {
 
-        StopSalesOperation o;
-        getHotel().getStopSales().getOperations().add(o = new StopSalesOperation());
+        StopSalesOperation o = new StopSalesOperation();
+        o.setStopSales(getHotel().getStopSales());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
         o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));

@@ -49,6 +49,9 @@ public abstract class AbstractProduct {
     private Zone zone;
 
 
+    @ManyToOne
+    private DataSheet dataSheet;
+
     @Override
     public String toString() {
         return getName();

@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 @Entity(name = "GenericContractPrice")
 @Getter
 @Setter
-public class Price {
+public class Price implements Comparable<Price> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -74,6 +74,8 @@ public class Price {
     @SameLine
     private double pricePerChildAndDay;
 
+    private boolean finalPrice;
+
     @ManyToOne
     private Tour tour;
     @SameLine
@@ -87,6 +89,7 @@ public class Price {
     private int toTourPax;
 
 
+
     public Element toXml() {
         Element e = new Element("price");
 
@@ -95,6 +98,7 @@ public class Price {
         e.setAttribute("order", "" + order);
 
         if (active) e.setAttribute("active", "");
+        if (finalPrice) e.setAttribute("finalPrice", "");
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -123,6 +127,115 @@ public class Price {
         e.setAttribute("fromTourPax", "" + fromTourPax);
         e.setAttribute("toTourPax", "" + toTourPax);
 
+
+        e.setAttribute("pdftext", toString());
+
         return e;
+    }
+
+
+    @Override
+    public String toString() {
+        String s = "";
+
+        s += (finalPrice)?"Final":"Add";
+
+        if (description != null) {
+            if (!"".equals(s)) s += " ";
+            s += description;
+        }
+
+        if (extra != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + extra.getName().toString();
+        }
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        if (start != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "from " + start.format(dtf);
+        }
+        if (end != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "to " + end.format(dtf);
+        }
+
+
+        if (bookingWindowStart != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "booked from " + bookingWindowStart.format(dtf);
+        }
+        if (bookingWindowEnd != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "booked to " + bookingWindowEnd.format(dtf);
+        }
+
+
+        if (percent != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += percent + "%";
+        }
+        if (pricePerUnit != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerUnit + " per unit";
+        }
+        if (pricePerAdult != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerAdult + " per adult";
+        }
+        if (pricePerChild != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerChild + " per child";
+        }
+        if (pricePerUnitAndDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerUnitAndDay + " per unit and day";
+        }
+        if (pricePerAdultAndDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerAdultAndDay + " per adult and day";
+        }
+        if (pricePerChildAndDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += pricePerChildAndDay + " per child and day";
+        }
+
+
+        if (tour != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + tour.getName() + " tour";
+        }
+        if (tourDuration != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for " + tourDuration + " tours";
+        }
+        if (tourPriceZone != null) {
+            if (!"".equals(s)) s += ", ";
+            s += "for tours from " + tourPriceZone.getName();
+        }
+        if (fromTourPax != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += "for tours from " + fromTourPax + " pax";
+        }
+        if (toTourPax != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += "for tours up to " + toTourPax + " pax";
+        }
+        return s;
+    }
+
+    @Override
+    public int compareTo(@org.jetbrains.annotations.NotNull Price o) {
+        int r = 0;
+        if (o == null) return 1;
+        r = getOrder() - o.getOrder();
+        if (r == 0) {
+            r = ((getProduct() != null)?getProduct().getName():"").compareTo(((o.getProduct() != null)?o.getProduct().getName():""));
+        }
+        if (r == 0) {
+            r = ((getExtra() != null)?getExtra().getName().toString():"").compareTo(((o.getExtra() != null)?o.getExtra().getName().toString():""));
+        }
+        return r;
     }
 }

@@ -44,7 +44,6 @@ public class Hotel extends AbstractProduct implements IHotel {
 
     private String email;
 
-    @Tab("Hotel")
     @ManyToOne
     @NotNull
     private HotelCategory category;
@@ -53,7 +52,6 @@ public class Hotel extends AbstractProduct implements IHotel {
     private Partner hotelChain;
 
 
-    @Tab("Ages")
     /**
      * inclusive
      */
@@ -70,7 +68,6 @@ public class Hotel extends AbstractProduct implements IHotel {
     private int adultStartAge;
 
 
-    @Tab("Transfers")
     @ManyToOne
     private TransferPoint transferPoint;
 

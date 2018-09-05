@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 
+import io.mateu.erp.model.world.Country;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,5 +31,16 @@ public class RoomType {
         return (getName() != null)?getName().toString():"No name";
     }
 
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof RoomType && code == ((RoomType)obj).code);
+    }
 
 }

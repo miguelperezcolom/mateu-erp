@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +26,7 @@ public class InventoryCube {
     private List<RoomType> rooms = new ArrayList<>();
     int maxdias = 0;
 
-    public InventoryCube(Inventory inventory) {
+    public InventoryCube(Inventory inventory) throws Throwable {
 
         this.inventory = inventory;
 
@@ -34,15 +35,20 @@ public class InventoryCube {
         build();
     }
 
-    private void build() {
+    private void build() throws Throwable {
 
         // aplicamos las operaciones
 
-        for (InventoryOperation o : getInventory().getOperations()) {
+        for (InventoryOperation o : getOperations()) {
             apply(o);
         }
         
     }
+
+    private List<InventoryOperation> getOperations() throws Throwable {
+        return Helper.selectObjects("select x from " + InventoryOperation.class.getName() + " x where x.inventory.id = " + inventory.getId() + " order by x.id");
+    }
+
 
     private void apply(InventoryOperation o) {
 
@@ -69,13 +75,13 @@ public class InventoryCube {
 
     }
 
-    private void init() {
+    private void init() throws Throwable {
 
         // buscamos la fecha de inicio, final, habitaciones, etc para crear la estructura
 
         ayer = LocalDate.now().minusDays(1);
 
-        for (InventoryOperation o : getInventory().getOperations()) if (o.getEnd().isAfter(ayer)) {
+        for (InventoryOperation o : getOperations()) if (o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             if (!rooms.contains(o.getRoom())) rooms.add(o.getRoom());

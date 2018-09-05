@@ -4,8 +4,7 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.QLForCombo;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
@@ -15,9 +14,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.persistence.Table;
 import javax.xml.transform.stream.StreamSource;
 import java.io.File;
@@ -40,7 +37,9 @@ import java.util.UUID;
 @QLForCombo(ql = "select x.id, x.title from io.mateu.erp.model.product.generic.Contract x order by x.title")
 public class Contract extends AbstractContract {
 
-    @OneToMany(mappedBy = "contract")
+    @Tab("Prices")
+    @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
+    @UseLinkToListView
     private List<Price> prices = new ArrayList<>();
 
 
@@ -54,7 +53,9 @@ public class Contract extends AbstractContract {
         Element eprices;
         xml.getRootElement().addContent(eprices = new Element("prices"));
 
-        for (Price p : prices) eprices.addContent(p.toXml());
+        prices.stream().filter(p -> p.isActive())
+                .sorted()
+                .forEach(p -> eprices.addContent(p.toXml()));
 
         return xml;
     }

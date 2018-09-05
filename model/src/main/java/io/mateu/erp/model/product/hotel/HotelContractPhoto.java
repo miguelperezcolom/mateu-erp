@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.google.common.base.Strings;
 import io.mateu.mdd.core.annotations.FullWidth;
 import io.mateu.mdd.core.annotations.StartTabs;
 import io.mateu.mdd.core.annotations.Tab;
@@ -289,8 +290,21 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.clauses = clauses;
     }
 
+
     @Override
     public String toString() {
+        StringBuffer html = new StringBuffer();
+
+        html.append("" + getRatesType() + " rates.<br/>");
+
+        if (getMaxPaxPerBooking() > 0) html.append("" + getMaxPaxPerBooking() + " max pax per booking.<br/>");
+
+        if (!Strings.isNullOrEmpty(getSpecialTerms())) html.append("<pre>" + getSpecialTerms() + "</pre>");
+
+        return html.toString();
+    }
+
+    public String serialize() {
         Element xml = new Element("terms");
 
         xml.setAttribute("adultStartAge", "" + getAdultStartAge());

@@ -1,9 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.mdd.core.annotations.FullWidth;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.ShowAsHtml;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +17,7 @@ import java.util.Map;
 @Entity(name = "HotelStopSales")
 @Getter
 @Setter
+@NewNotAllowed@Indelible
 public class StopSales {
 
     @Id
@@ -27,6 +26,7 @@ public class StopSales {
 
     @ManyToOne
     @NotNull
+    @Output
     private Hotel hotel;
 
     @Ignored
@@ -34,15 +34,11 @@ public class StopSales {
     private List<StopSalesLine> lines = new ArrayList<>();
 
 
-    @Ignored
-    @OneToMany(mappedBy = "stopSales")
-    @OrderBy("created")
-    private List<StopSalesOperation> operations = new ArrayList<>();
-
-
-    @ShowAsHtml("Calendar")
+    @Output
     @FullWidth
-    public String getHtmlCalendar() {
+    private transient String calendar;
+
+    public String getCalendar() {
         StringBuffer sb = new StringBuffer();
 
         LocalDate desde = LocalDate.now();
@@ -85,11 +81,13 @@ public class StopSales {
         sb.append("</table>");
 
 
+        sb.append("<p>" + getLines().size() + " lines.</p>");
+
         return sb.toString();
     }
 
 
-    public void build(EntityManager em) {
+    public void build(EntityManager em) throws Throwable {
 
         //creamos la estructura
 
@@ -105,5 +103,17 @@ public class StopSales {
     @Override
     public String toString() {
         return (getHotel() != null)?getHotel().getName():"No hotel";
+    }
+
+    @Action
+    public StopSalesOperation openOrClose() {
+        StopSalesOperation o = new StopSalesOperation();
+        o.setStopSales(this);
+        return o;
+    }
+
+    @Action
+    public void rebuild() throws Throwable {
+        Helper.transact(em -> em.find(StopSales.class, getId()).build(em));
     }
 }

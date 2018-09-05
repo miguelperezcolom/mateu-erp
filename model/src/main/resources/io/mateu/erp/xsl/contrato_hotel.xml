@@ -1,18 +1,214 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<contract id="1" title="contrato hotel 1" type="SALE" billingConcept="Handling fee" validFrom="2018-06-01" validTo="2018-06-30" vat="Not included" audit="Created by admin 2018-09-03 08:19:01, modified by admin 2018-09-03 09:51:58" bussinessName="Viajes Ibiza" logo="null" currencyCode="EUR">
-    <supplier id="1" name="Viajes Barceló" />
-    <hotel category="3 estrellas" name="Hotel Ibiza Playa" childStartAge="0" juniorStartAge="0" adultStartAge="0" />
-    <targets>
-        <target id="1" name="Viajes Barceló" />
-    </targets>
-    <contractor name="Viajes Barceló" bussinessName="" />
+<contract id="1" title="contrato prueba 1" type="SALE" billingConcept="Rent a car" validFrom="2018-06-01" validTo="2018-06-30" vat="Not included" audit="Created by admin 2018-09-04 12:15:52, modified by admin 2018-09-05 07:40:35" currencyCode="EUR">
+    <targets />
+    <hotel category="3 estrellas" name="Hotel Valparaiso" childStartAge="0" juniorStartAge="0" adultStartAge="0" youngestFirst="" />
     <terms>
-        <rooms />
-        <releases />
-        <allotment />
-        <supplements />
-        <minimumStays />
-        <weekDays />
-        <cancellation />
+        <rooms>
+            <room id="DBL" name="DBL" board="BB">
+                <row>
+                    <dates>
+                        <ranges>
+                            <range start="20180601" end="20180610" />
+                            <range start="20180701" end="20180710" />
+                        </ranges>
+                        <ranges>
+                            <range start="20180801" end="20180815" />
+                            <range start="20180901" end="20180910" />
+                        </ranges>
+                    </dates>
+                    <line tipo="base" description="Room">
+                        <price>12.6</price>
+                        <price>12.6</price>
+                    </line>
+                    <line tipo="base" description="Adult">
+                        <price>20.0</price>
+                        <price>20.0</price>
+                    </line>
+                    <line tipo="base" description="Meal">
+                        <price>3.0</price>
+                        <price>3.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Junior">
+                        <price>10.0</price>
+                        <price>10.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Junior meal">
+                        <price>40.0</price>
+                        <price>40.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Child">
+                        <price>20.0</price>
+                        <price>20.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Child meal">
+                        <price>50.0</price>
+                        <price>50.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Infant">
+                        <price>30.0</price>
+                        <price>30.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Infant meal">
+                        <price>60.0</price>
+                        <price>60.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Extra adult">
+                        <price>70.0</price>
+                        <price>70.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Extra meal" />
+                    <line tipo="suplemento" description="Extra junior">
+                        <price>80.0</price>
+                        <price>80.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Extra junior meal" />
+                    <line tipo="suplemento" description="Extra child">
+                        <price>90.0</price>
+                        <price>90.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Extra child meal" />
+                    <line tipo="suplemento" description="Extra infant">
+                        <price>100.0</price>
+                        <price>100.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Extra infant meal" />
+                </row>
+            </room>
+            <room id="DBL" name="DBL" board="HB">
+                <row>
+                    <dates>
+                        <ranges>
+                            <range start="20180601" end="20180610" />
+                            <range start="20180701" end="20180710" />
+                        </ranges>
+                        <ranges>
+                            <range start="20180801" end="20180815" />
+                            <range start="20180901" end="20180910" />
+                        </ranges>
+                    </dates>
+                    <line tipo="base" description="Room">
+                        <price>200.0</price>
+                        <price>200.0</price>
+                    </line>
+                    <line tipo="base" description="Adult">
+                        <price>0.0</price>
+                        <price>0.0</price>
+                    </line>
+                    <line tipo="base" description="Meal">
+                        <price>0.0</price>
+                        <price>0.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Junior" />
+                    <line tipo="suplemento" description="Junior meal" />
+                    <line tipo="suplemento" description="Child" />
+                    <line tipo="suplemento" description="Child meal" />
+                    <line tipo="suplemento" description="Infant">
+                        <price>0.0</price>
+                        <price>0.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Infant meal" />
+                    <line tipo="suplemento" description="Extra adult" />
+                    <line tipo="suplemento" description="Extra meal" />
+                    <line tipo="suplemento" description="Extra junior" />
+                    <line tipo="suplemento" description="Extra junior meal" />
+                    <line tipo="suplemento" description="Extra child" />
+                    <line tipo="suplemento" description="Extra child meal" />
+                    <line tipo="suplemento" description="Extra infant" />
+                    <line tipo="suplemento" description="Extra infant meal" />
+                </row>
+            </room>
+            <room id="DUI" name="DUI" board="BB">
+                <row>
+                    <dates>
+                        <ranges>
+                            <range start="20180601" end="20180610" />
+                            <range start="20180701" end="20180710" />
+                        </ranges>
+                        <ranges>
+                            <range start="20180801" end="20180815" />
+                            <range start="20180901" end="20180910" />
+                        </ranges>
+                    </dates>
+                    <line tipo="base" description="Room">
+                        <price>300.0</price>
+                        <price>300.0</price>
+                    </line>
+                    <line tipo="base" description="Adult">
+                        <price>15.0</price>
+                        <price>15.0</price>
+                    </line>
+                    <line tipo="base" description="Meal">
+                        <price>20.0</price>
+                        <price>20.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Junior" />
+                    <line tipo="suplemento" description="Junior meal" />
+                    <line tipo="suplemento" description="Child" />
+                    <line tipo="suplemento" description="Child meal" />
+                    <line tipo="suplemento" description="Infant">
+                        <price>0.0</price>
+                        <price>0.0</price>
+                    </line>
+                    <line tipo="suplemento" description="Infant meal" />
+                    <line tipo="suplemento" description="Extra adult" />
+                    <line tipo="suplemento" description="Extra meal" />
+                    <line tipo="suplemento" description="Extra junior" />
+                    <line tipo="suplemento" description="Extra junior meal" />
+                    <line tipo="suplemento" description="Extra child" />
+                    <line tipo="suplemento" description="Extra child meal" />
+                    <line tipo="suplemento" description="Extra infant" />
+                    <line tipo="suplemento" description="Extra infant meal" />
+                </row>
+            </room>
+            <room id="DUI" name="DUI" board="HB">
+                <row>
+                    <dates>
+                        <ranges>
+                            <range start="20180601" end="20180610" />
+                            <range start="20180701" end="20180710" />
+                        </ranges>
+                        <ranges>
+                            <range start="20180801" end="20180815" />
+                            <range start="20180901" end="20180910" />
+                        </ranges>
+                    </dates>
+                    <line tipo="base" description="Room" />
+                    <line tipo="base" description="Adult" />
+                    <line tipo="base" description="Meal" />
+                    <line tipo="suplemento" description="Junior" />
+                    <line tipo="suplemento" description="Junior meal" />
+                    <line tipo="suplemento" description="Child" />
+                    <line tipo="suplemento" description="Child meal" />
+                    <line tipo="suplemento" description="Infant" />
+                    <line tipo="suplemento" description="Infant meal" />
+                    <line tipo="suplemento" description="Extra adult" />
+                    <line tipo="suplemento" description="Extra meal" />
+                    <line tipo="suplemento" description="Extra junior" />
+                    <line tipo="suplemento" description="Extra junior meal" />
+                    <line tipo="suplemento" description="Extra child" />
+                    <line tipo="suplemento" description="Extra child meal" />
+                    <line tipo="suplemento" description="Extra infant" />
+                    <line tipo="suplemento" description="Extra infant meal" />
+                </row>
+            </room>
+        </rooms>
+        <releases>
+            <rule start="2018-06-01" end="2018-06-30" release="7" />
+        </releases>
+        <allotment>
+            <allotment start="2018-06-01" end="2018-06-30" room="DBL" quantity="3" />
+        </allotment>
+        <supplements>
+            <supplement start="2018-06-01" end="2018-06-30" optional="" affectedByOffers="" description="suplemento fórmula 1" per="PAX" scope="NIGHT" percent="0.0" applicationOrder="0" value="30.0" providerId="0" descriptionforpdf="suplemento fórmula 1 (optional),  for stays from 2018-06-01 to 2018-06-30, affected by offers, 30.0 per PAX for each NIGHT. Application order: 0" />
+        </supplements>
+        <minimumStays>
+            <rule start="2018-06-01" end="2018-06-30" nights="3" supplementPercent="0.0" supplementValue="0.0" per="null" />
+        </minimumStays>
+        <weekDays>
+            <rule start="2018-06-01" end="2018-06-30" weekDays="1110000" checkin="" stay="" />
+        </weekDays>
+        <cancellation>
+            <rule start="2018-06-01" end="2018-06-30" release="7" amount="20.0" percent="0.0" firstNights="0" />
+        </cancellation>
     </terms>
 </contract>

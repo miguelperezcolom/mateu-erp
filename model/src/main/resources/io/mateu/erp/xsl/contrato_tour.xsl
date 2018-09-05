@@ -52,9 +52,6 @@
                                             <fo:inline color="white">x</fo:inline>
                                         </fo:block>
                                         <fo:block>
-                                            <xsl:value-of select="@transferType"/>
-                                        </fo:block>
-                                        <fo:block>
                                             <fo:inline color="white">x</fo:inline>
                                         </fo:block>
                                         <fo:block>
@@ -105,22 +102,22 @@
                                                    display-align="after">
                                         <fo:block>And as proof of consent and acceptance of all the clauses , including
                                             those contained in page<fo:page-number-citation-last ref-id="end"/>, the two
-                                            sides signed in <xsl:value-of select="@firmadoen"/>,
-                                            <xsl:value-of select="@fecha"/>
+                                            sides signed in <xsl:value-of select="@signedAt"/>,
+                                            <xsl:value-of select="@signatureDate"/>
                                         </fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm"
                                                    display-align="after">
                                         <fo:block>Name and surname</fo:block>
                                         <fo:block>By
-                                            <xsl:value-of select="entre/@nombre"/>
+                                            <xsl:value-of select="@partnerSignatory"/>
                                         </fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell text-align="right" font-size="8pt" font-weight="bold" padding="1mm"
                                                    display-align="after">
                                         <fo:block>Name and surname</fo:block>
                                         <fo:block>By
-                                            <xsl:value-of select="y/@nombre"/>
+                                            <xsl:value-of select="@ownSignatory"/>
                                         </fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
@@ -143,18 +140,18 @@
                                     <fo:table-row>
                                         <fo:table-cell font-size="8pt" padding="1mm">
                                             <fo:block>
-                                                <fo:block>For transfers from
+                                                <fo:block>For services from
                                                     <xsl:value-of select="@validFrom"/> to <xsl:value-of select="@validTo"/>.
                                                 </fo:block>
                                                 <xsl:choose>
                                                     <xsl:when test="target">For
-                                                        <xsl:for-each select="target">
+                                                        <xsl:for-each select="targets/target">
                                                             <xsl:if test="position() > 1">,</xsl:if>
                                                             <xsl:value-of select="@name"/>
                                                         </xsl:for-each>
                                                         .
                                                     </xsl:when>
-                                                    <xsl:otherwise>Valid for all markets</xsl:otherwise>
+                                                    <xsl:otherwise>Valid for all</xsl:otherwise>
                                                 </xsl:choose>
                                             </fo:block>
                                         </fo:table-cell>
@@ -198,11 +195,7 @@
                                             <fo:table-cell text-align="right" font-size="8pt" padding="1mm">
                                                 <fo:table font-family="Liberation Sans Narrow"
                                                           border-collapse="separate">
-                                                    <fo:table-column column-width="3cm"></fo:table-column>
-                                                    <fo:table-column column-width="3cm"></fo:table-column>
-                                                    <xsl:for-each select="vehicle">
-                                                        <fo:table-column column-width="2cm"></fo:table-column>
-                                                    </xsl:for-each>
+                                                    <fo:table-column column-width="174mm"></fo:table-column>
                                                     <fo:table-body>
                                                         <fo:table-row>
                                                             <fo:table-cell padding="1mm">
@@ -212,23 +205,10 @@
                                                         <fo:table-row>
                                                             <fo:table-cell text-align="right" font-size="8pt" padding="1mm"
                                                                            font-weight="bold" display-align="after">
-                                                                <fo:block>between</fo:block>
+                                                                <fo:block>Lines</fo:block>
                                                             </fo:table-cell>
-                                                            <fo:table-cell text-align="right" font-size="8pt" padding="1mm"
-                                                                           font-weight="bold" display-align="after">
-                                                                <fo:block>and</fo:block>
-                                                            </fo:table-cell>
-                                                            <xsl:for-each select="vehicle">
-                                                                <fo:table-cell text-align="right" font-size="8pt"
-                                                                               padding="1mm" font-weight="bold"
-                                                                               display-align="after">
-                                                                    <fo:block>
-                                                                        <xsl:value-of select="@name"/>
-                                                                    </fo:block>
-                                                                </fo:table-cell>
-                                                            </xsl:for-each>
                                                         </fo:table-row>
-                                                        <xsl:for-each select="line">
+                                                        <xsl:for-each select="prices/price">
                                                             <fo:table-row>
                                                                 <xsl:variable name="pos" select="position()"></xsl:variable>
                                                                 <fo:table-cell text-align="right" font-size="8pt"
@@ -242,41 +222,9 @@
                                                                         </xsl:attribute>
                                                                     </xsl:if>
                                                                     <fo:block>
-                                                                        <xsl:value-of select="@origin"/>
+                                                                        <xsl:value-of select="@pdftext"/>
                                                                     </fo:block>
                                                                 </fo:table-cell>
-                                                                <fo:table-cell text-align="right" font-size="8pt"
-                                                                               padding="1mm" font-weight="bold"
-                                                                               border-right-style="solid"
-                                                                               border-right-width="0.3px">
-                                                                    <xsl:if test="$pos = 1">
-                                                                        <xsl:attribute name="border-before-style">solid
-                                                                        </xsl:attribute>
-                                                                        <xsl:attribute name="border-before-width">0.3px
-                                                                        </xsl:attribute>
-                                                                    </xsl:if>
-                                                                    <fo:block>
-                                                                        <xsl:value-of select="@destination"/>
-                                                                    </fo:block>
-                                                                </fo:table-cell>
-                                                                <xsl:for-each select="price">
-                                                                    <fo:table-cell text-align="right" font-size="8pt"
-                                                                                   padding="1mm" border-right-style="solid"
-                                                                                   border-right-width="0.3px">
-                                                                        <xsl:if test="$pos = 1">
-                                                                            <xsl:attribute name="border-before-style">
-                                                                                solid
-                                                                            </xsl:attribute>
-                                                                            <xsl:attribute name="border-before-width">
-                                                                                0.3px
-                                                                            </xsl:attribute>
-                                                                        </xsl:if>
-                                                                        <fo:block>
-                                                                            <xsl:value-of select="@price"/> /
-                                                                            <xsl:value-of select="@per"/>
-                                                                        </fo:block>
-                                                                    </fo:table-cell>
-                                                                </xsl:for-each>
                                                             </fo:table-row>
                                                         </xsl:for-each>
                                                     </fo:table-body>
@@ -289,43 +237,6 @@
 
 
                         </fo:block>
-
-
-
-
-                        <!-- LEYENDA ZONAS -->
-
-                        <xsl:if test="zone">
-                            <fo:block>
-                                <fo:table>
-                                    <fo:table-body font-size="7.7pt" font-family="Liberation Sans Narrow"
-                                                   space-before="5mm">
-                                        <xsl:for-each select="zone">
-                                            <fo:table-row>
-                                                <fo:table-cell padding-before="4mm">
-                                                    <fo:block page-break-inside="avoid">
-                                                        <fo:block font-weight="bold">
-                                                            <xsl:value-of select="@name"/>
-                                                        </fo:block>
-                                                        <xsl:for-each select="city">
-                                                            <fo:block>
-                                                                <xsl:value-of select="@name"/>
-                                                            </fo:block>
-                                                        </xsl:for-each>
-                                                        <xsl:for-each select="point">
-                                                            <fo:block>
-                                                                <xsl:value-of select="@name"/>
-                                                            </fo:block>
-                                                        </xsl:for-each>                                                    <!--                                                    <fo:block>Tel <xsl:value-of select="@tel"/></fo:block>                                                    <fo:block>Fax <xsl:value-of select="@fax"/></fo:block>                                                    <fo:block><xsl:value-of select="@email"/></fo:block>                                                    -->
-                                                    </fo:block>
-                                                </fo:table-cell>
-                                            </fo:table-row>
-                                        </xsl:for-each>
-                                    </fo:table-body>
-                                </fo:table>
-                            </fo:block>
-                        </xsl:if>
-
 
 
                         <!-- FIN -->
