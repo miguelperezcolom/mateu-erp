@@ -81,6 +81,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setPickupSmsTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsms.ftl"), Charsets.UTF_8));
             c.setPickupSmsTemplateEs(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsmses.ftl"), Charsets.UTF_8));
             c.setPurchaseOrderTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
+            c.setVouchersEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/voucheremail.ftl"), Charsets.UTF_8));
+            c.setPaymentEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/paymentemail.ftl"), Charsets.UTF_8));
 
 
             c.setAdminEmailSmtpHost((String) Helper.get(initialData, "smtp/host"));

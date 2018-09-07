@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.freetext;
 
+import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.Tab;
@@ -29,6 +30,10 @@ public class FreeTextService extends Service {
 
     @NotNull
     private LocalDate returnDate;
+
+    public FreeTextService() {
+        setIcon(FontAwesome.EDIT.getHtml());
+    }
 
 
     @PrePersist
@@ -64,5 +69,10 @@ public class FreeTextService extends Service {
     @Override
     public Partner findBestProvider(EntityManager em) throws Throwable {
         return null;
+    }
+
+    @Override
+    protected String getDescription() {
+        return text;
     }
 }

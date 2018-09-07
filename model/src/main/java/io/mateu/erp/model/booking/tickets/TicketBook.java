@@ -51,6 +51,11 @@ public class TicketBook {
     private boolean ticketsGenerated;
 
 
+    @Override
+    public String toString() {
+        return product.getName() + " " + serie + " " + fromNumber + " to " + toNumber;
+    }
+
     @Action
     public static void generateTickets(EntityManager em, Set<TicketBook> selected) {
 

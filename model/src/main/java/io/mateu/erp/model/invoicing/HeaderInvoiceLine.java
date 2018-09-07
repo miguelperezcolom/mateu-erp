@@ -7,4 +7,13 @@ import javax.persistence.Entity;
  */
 @Entity
 public class HeaderInvoiceLine extends AbstractInvoiceLine {
+
+    public HeaderInvoiceLine() {
+        super();
+    }
+
+    public HeaderInvoiceLine(Invoice invoice) {
+        super(invoice);
+    }
+
 }

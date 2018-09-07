@@ -12,6 +12,7 @@ import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
 import io.mateu.erp.model.taxes.VATSettlement;
 import io.mateu.erp.model.tpv.TPV;
+import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.server.financial.FinancialServiceImpl;
 import io.mateu.mdd.core.app.*;
 
@@ -93,6 +94,8 @@ public class FinancialModule extends AbstractModule {
                 m.add(new MDDOpenCRUDAction("Deposits", Deposit.class));
 
                 m.add(new MDDOpenCRUDAction("Payment gateways", TPV.class));
+
+                m.add(new MDDOpenCRUDAction("TPV transactions", TPVTransaction.class));
 
                 m.add(new MDDOpenCRUDAction("VCC", VCC.class));
 

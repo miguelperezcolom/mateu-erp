@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.parts;
 
+import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.product.transfer.TransferType;
 import lombok.Getter;
@@ -34,4 +35,8 @@ public class HotelAndTransferBooking extends HotelBooking {
 
     private String departureFlightDestination;
 
+
+    public HotelAndTransferBooking() {
+        setIcons(FontAwesome.HOTEL.getHtml() + " " + FontAwesome.BUS.getHtml());
+    }
 }

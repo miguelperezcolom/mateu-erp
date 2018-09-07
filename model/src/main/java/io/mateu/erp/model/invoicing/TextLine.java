@@ -7,4 +7,12 @@ import javax.persistence.Entity;
  */
 @Entity
 public class TextLine extends AbstractInvoiceLine {
+
+    public TextLine() {
+        super();
+    }
+
+    public TextLine(Invoice invoice) {
+        super(invoice);
+    }
 }

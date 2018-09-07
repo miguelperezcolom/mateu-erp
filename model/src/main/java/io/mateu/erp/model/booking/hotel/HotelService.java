@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.hotel;
 
 import com.google.common.base.Strings;
+import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.File;
@@ -53,6 +54,10 @@ public class HotelService extends Service {
     @OwnedList
     private List<HotelServiceLine> lines = new ArrayList<>();
 
+
+    public HotelService() {
+        setIcon(FontAwesome.HOTEL.getHtml());
+    }
 
     @Override
     public String createSignature() {
@@ -185,6 +190,11 @@ public class HotelService extends Service {
         */
 
 
+    }
+
+    @Override
+    protected String getDescription() {
+        return "Stay at " + ((getHotel() != null)?getHotel().getName():"");
     }
 
 

@@ -45,7 +45,7 @@ public class TPVTransaction {
 
     private double value;
 
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
 
     private String log;
 
@@ -57,7 +57,7 @@ public class TPVTransaction {
 
     @ManyToOne
     private File file;
-    private double amount;
+
     private String subject;
 
 
@@ -72,7 +72,7 @@ public class TPVTransaction {
 
                 TPVTransaction t = em.find(TPVTransaction.class, transactionId);
 
-                h[0] = t.getForm(em, t.getLanguage(), t.getFile().getId(), t.getId(), t.getAmount(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
+                h[0] = t.getForm(em, t.getLanguage(), t.getFile().getId(), t.getId(), t.getValue(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
 
             }
         });
@@ -291,7 +291,7 @@ Para ambos protocolos:
 
 
     public String getBoton(EntityManager em) throws Exception {
-        return getBoton(em, this.getFile().getId(), getAmount(), "" + getCurrency().getIsoNumericCode());
+        return getBoton(em, this.getFile().getId(), getValue(), "" + getCurrency().getIsoNumericCode());
     }
 
     public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency) throws Exception {
@@ -571,4 +571,13 @@ Para ambos protocolos:
 
     }
 
+
+    @Override
+    public String toString() {
+        DecimalFormat df = new DecimalFormat("##,###,###,###,###.00");
+        return "<div style='text-align:right; width: 120px;display: inline-block;margin-right:10px;'>" + currency.getIsoCode() + " " + df.format(value) + "</div>" +
+                "<div style='text-align:center; width: 100px;display: inline-block;margin-right:10px;'>" + status + "</div>" +
+                "<div style='display: inline-block;'>" + subject + "</div>";
+
+    }
 }

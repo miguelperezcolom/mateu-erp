@@ -1,5 +1,6 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.TextArea;
@@ -10,6 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -52,6 +54,12 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     private String purchaseOrderTemplate;
 
     @TextArea
+    private String vouchersEmailTemplate;
+
+    @TextArea
+    private String paymentEmailTemplate;
+
+    @TextArea
     private String pickupSmsTemplate;
 
     @TextArea
@@ -59,6 +67,13 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @TextArea
     private String pickupSmsTemplateEs;
+
+
+    @Section("Currency")
+    @NotNull
+    @ManyToOne
+    private Currency nucCurrency;
+
 
     //@Tab("Currency exchange")
     //@Convert(converter = CurrencyExchangeConverter.class)

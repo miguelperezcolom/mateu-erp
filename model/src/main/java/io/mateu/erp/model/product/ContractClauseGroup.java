@@ -22,4 +22,10 @@ public class ContractClauseGroup {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "group")
     private List<ContractClause> clauses = new ArrayList<>();
+
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -51,7 +51,7 @@ public class ProductsModule extends AbstractModule {
 
                 m.add(new MDDMenu("Excursions", "Excursions", Excursion.class, "Zones", TourPriceZone.class, "Shifts", TourShift.class));
 
-                m.add(new MDDMenu("Circuits", "Circuits", Circuit.class));
+                m.add(new MDDMenu("Circuits", "Circuits", Circuit.class, "Schedule", CircuitCalendar.class));
 
                 m.add(new MDDMenu("Rates", "Contracts", io.mateu.erp.model.product.tour.Contract.class, "Prices", TourPrice.class));
 

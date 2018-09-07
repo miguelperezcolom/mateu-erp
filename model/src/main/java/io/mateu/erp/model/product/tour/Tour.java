@@ -1,16 +1,19 @@
 package io.mateu.erp.model.product.tour;
 
+import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Section;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter@Setter
@@ -55,5 +58,28 @@ public class Tour extends AbstractProduct {
     private int childFrom;
 
     private int adultFrom;
+
+
+    @OneToMany(mappedBy = "tour")
+    @UseLinkToListView
+    private List<ManagedEvent> events = new ArrayList<>();
+
+
+
+    @Action(order = 1)
+    public URL sharedPlaning() {
+        return null;
+    }
+
+    @Action(order = 2)
+    public URL planing() {
+        return null;
+    }
+
+    @Action(order = 3)
+    public URL status() {
+        return null;
+    }
+
 
 }

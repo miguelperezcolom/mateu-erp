@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
+import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
@@ -149,6 +150,11 @@ public class TransferService extends Service {
     private int bikes;
     private int golfBags;
     */
+
+
+    public TransferService() {
+        setIcon(FontAwesome.BUS.getHtml());
+    }
 
 
     @Links
@@ -535,6 +541,12 @@ public class TransferService extends Service {
         }
 
 
+    }
+
+    @Override
+    protected String getDescription() {
+        String d = "" + getTransferType() + " transfer";
+        return d;
     }
 
     public void afterSet(EntityManager em) throws Throwable {

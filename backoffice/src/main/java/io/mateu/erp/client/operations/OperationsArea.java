@@ -18,6 +18,8 @@ public class OperationsArea extends AbstractArea {
         l.add(new HotelOperationsModule());
         l.add(new TransferOperationsModule());
         l.add(new GenericOperationsModule());
+        l.add(new ExcursionOperationsModule());
+        l.add(new CircuitOperationsModule());
         return l;
     }
 }

@@ -1,7 +1,11 @@
 package io.mateu.erp.model.product.tour;
 
+import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.OwnedList;
 import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.WeekDays;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,10 +37,20 @@ public class TourShift {
     @Column(name = "_end")
     private LocalDate end;
 
+    @WeekDays
+    private boolean[] weekdays = {true, true, true, true, true, true, true};
+
     /**
      * hora de inicio
      */
     private int startTime;
+
+
+    @ManyToOne
+    private Partner agency;
+
+
+    private int maxPax;
 
     /**
      * en días
@@ -49,16 +63,20 @@ public class TourShift {
     private String languages;
 
 
-    @Tab("Allotment")
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "shift")
-    @OwnedList
-    private List<TourShiftCalendar> allotments = new ArrayList<>();
-
-
     @Tab("Pickup times")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "shift")
     @OwnedList
     private List<TourPickupTime> pickupTimes = new ArrayList<>();
 
 
+
+    @OneToMany
+    @Ignored
+    private List<ManagedEvent> events = new ArrayList<>();
+
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

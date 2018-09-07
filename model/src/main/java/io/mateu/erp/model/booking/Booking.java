@@ -1,18 +1,49 @@
 package io.mateu.erp.model.booking;
 
+import com.google.common.base.Strings;
+import com.vaadin.icons.VaadinIcons;
+import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.booking.transfer.IslandbusHelper;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.config.Template;
+import io.mateu.mdd.core.model.util.EmailHelper;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.HtmlEmail;
+import org.javamoney.moneta.FastMoney;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
+import javax.mail.internet.InternetAddress;
+import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.xml.transform.stream.StreamSource;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter@Setter
-public class Booking {
+public abstract class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,34 +52,101 @@ public class Booking {
     private long id;
 
     @ManyToOne
+    @NotNull
     private File file;
+
+    @Output
+    @HtmlCol
+    @ColumnWidth(100)
+    private String icons;
+
 
     private boolean directSale;
 
+    @ManyToOne
+    @NotNull
+    private PointOfSale pos;
+
     @OneToMany(mappedBy = "booking")
-    @Ignored
+    @Output
+    @NotWhenCreating
     private List<Service> services = new ArrayList<>();
 
-    private boolean cancelled;
+    @KPI
+    private boolean confirmed = true;
 
+    @NotWhenCreating
+    @KPI
+    private boolean active = true;
+
+    @NotNull
     private LocalDate start;
     @Column(name = "_end")
+    @SameLine
+    @NotNull
     private LocalDate end;
 
     private int adults;
+    @SameLine
     private int children;
+    @SameLine
     private int[] ages;
 
     @TextArea
     private String specialRequests;
 
     @TextArea
+    @SameLine
     private String privateComments;
+
+
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="value", column=@Column(name="value_value"))
+            , @AttributeOverride(name="date", column=@Column(name="value_date"))
+            , @AttributeOverride(name="officeChangeRate", column=@Column(name="value_offchangerate"))
+            , @AttributeOverride(name="officeValue", column=@Column(name="value_offvalue"))
+            , @AttributeOverride(name="nucChangeRate", column=@Column(name="value_nuchangerate"))
+            , @AttributeOverride(name="nucValue", column=@Column(name="value_nucvalue"))
+    })
+    @AssociationOverrides({
+            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "value_currency"))
+    })
+    @KPI
+    @NotWhenCreating
+    private Amount value;
+
+
+    private boolean valueOverrided;
+    @SameLine
+    private FastMoney overridedValue;
+
+    public boolean isOverridedNetValueVisible() {
+        return valueOverrided;
+    }
+
+    @SameLine
+    @ManyToOne
+    private BillingConcept overridedBillingConcept;
+
+    public boolean isOverridedBillingConceptVisible() {
+        return valueOverrided;
+    }
+
+
+    @KPI
+    private boolean valued;
+
+
+    @NotWhenCreating
+    @UseLinkToListView
+    @OneToMany(mappedBy = "booking")
+    private List<Charge> charges = new ArrayList<>();
 
 
     @Override
     public String toString() {
-
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return getClass().getSimpleName() + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
     }
@@ -57,6 +155,274 @@ public class Booking {
 
     @Action(order = 1)
     public static void searchAvailable() {
+
+    }
+
+    @Action(order = 1, icon = VaadinIcons.ENVELOPES)
+    @NotWhenCreating
+    public void sendVouchers(String changeEmail, String postscript) throws Throwable {
+
+
+        Helper.transact(em ->{
+
+            long t0 = new Date().getTime();
+
+
+
+            String to = changeEmail;
+            if (Strings.isNullOrEmpty(to)) {
+                to = getFile().getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) {
+                to = getFile().getAgency().getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getFile().getAgency().getName() + " and fill the email field.");
+
+
+
+            Document xml = new Document(new Element("services"));
+
+            for (Service s : services) {
+                xml.getRootElement().addContent(s.toXml());
+            }
+
+            System.out.println(Helper.toString(xml.getRootElement()));
+
+
+            String archivo = UUID.randomUUID().toString();
+
+            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+            System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+            System.out.println("Temp file : " + temp.getAbsolutePath());
+
+            FileOutputStream fileOut = new FileOutputStream(temp);
+            //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+            String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+            System.out.println("xml=" + sxml);
+            fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForVoucher())), new StreamSource(new StringReader(sxml))));
+            fileOut.close();
+
+
+            AppConfig appconfig = AppConfig.get(em);
+
+
+            // Create the email message
+            HtmlEmail email = new HtmlEmail();
+            //Email email = new HtmlEmail();
+            email.setHostName(appconfig.getAdminEmailSmtpHost());
+            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
+            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
+            //email.setSSLOnConnect(true);
+            email.setFrom(appconfig.getAdminEmailFrom());
+            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
+
+            email.setSubject("Booking " + getId() + " vouchers");
+
+
+            String msg = postscript;
+
+            String freemark = appconfig.getVouchersEmailTemplate();
+
+            if (!Strings.isNullOrEmpty(freemark)) {
+                Map<String, Object> data = Helper.getGeneralData();
+                data.put("postscript", postscript);
+                data.put("leadname", getFile().getLeadName());
+                msg = Helper.freemark(freemark, data);
+            }
+
+            email.setMsg(msg);
+
+            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
+
+            java.io.File attachment = temp;
+            if (attachment != null) email.attach(attachment);
+
+            email.send();
+
+
+        });
+
+
+    }
+
+    @Action(order = 2, icon = VaadinIcons.ENVELOPE)
+    @NotWhenCreating
+    public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) throws Throwable {
+
+        String to = changeEmail;
+        if (Strings.isNullOrEmpty(to)) {
+            to = getFile().getEmail();
+        }
+        if (Strings.isNullOrEmpty(to)) {
+            to = getFile().getAgency().getEmail();
+        }
+        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getFile().getAgency().getName() + " and fill the email field.");
+
+        if (template != null) {
+            Map<String, Object> data = Helper.getGeneralData();
+            data.put("postscript", postscript);
+            EmailHelper.sendEmail(to, !Strings.isNullOrEmpty(subject) ? subject : template.getSubject(), Helper.freemark(template.getFreemarker(), data), false);
+        } else {
+            EmailHelper.sendEmail(to, subject, postscript, false);
+        }
+
+    }
+
+    @Action(order = 5, confirmationMessage = "Are you sure you want to confirm this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @NotWhenCreating
+    public void confirm(EntityManager em) {
+        setConfirmed(true);
+        em.merge(this);
+    }
+
+    public boolean isConfirmVisible() {
+        return !isConfirmed();
+    }
+
+
+    @Action(order = 5, confirmationMessage = "Are you sure you want to unconfirm this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @NotWhenCreating
+    public void unconfirm(EntityManager em) {
+        setConfirmed(false);
+        em.merge(this);
+    }
+
+    public boolean isUnconfirmVisible() {
+        return isConfirmed();
+    }
+
+
+    @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @NotWhenCreating
+    public void cancel(EntityManager em) {
+        cancel(em, em.find(User.class, MDD.getUserData().getLogin()));
+    }
+
+    public void cancel(EntityManager em, User u) {
+
+        services.forEach(s -> s.cancel(em, u));
+
+        setActive(false);
+
+        boolean allCancelled = true;
+        for (Booking b : getFile().getBookings()) if (b.isActive()) {
+            allCancelled = false;
+            break;
+        }
+        if (allCancelled) {
+            getFile().setCancelled(true);
+            em.merge(getFile());
+        }
+
+        em.merge(this);
+    }
+
+    public boolean isCancelVisible() {
+        return isActive();
+    }
+
+
+    @Action(order = 6, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @NotWhenCreating
+    public void uncancel(EntityManager em) throws Exception {
+        User u = em.find(User.class, MDD.getUserData().getLogin());
+
+        if (services.size() > 0) throw new Exception("Sorry. At this moment You can not uncancel a booking with cancelled services.");
+
+        setActive(false);
+
+        boolean allCancelled = true;
+        for (Booking b : getFile().getBookings()) if (b.isActive()) {
+            allCancelled = false;
+            break;
+        }
+        if (allCancelled) {
+            getFile().setCancelled(true);
+            em.merge(getFile());
+        }
+
+        em.merge(this);
+    }
+
+    public boolean isUncancelVisible() {
+        return !isActive();
+    }
+
+
+
+    @PrePersist@PreUpdate
+    public void pre() throws Exception {
+        if (isValueOverrided()) {
+            if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
+        }
+        validate();
+    }
+
+
+
+
+    @Action(order = 8, icon = VaadinIcons.SPLIT)
+    @NotWhenCreating
+    public void build(EntityManager em) {
+        generateServices(em);
+    }
+
+    public abstract void validate() throws Exception;
+
+    protected abstract void generateServices(EntityManager em);
+
+
+    @Action(order = 7, icon = VaadinIcons.EURO)
+    @NotWhenCreating
+    public void price(EntityManager em) throws Throwable {
+
+        if (isValueOverrided()) {
+            if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
+            setValue(new Amount(overridedValue));
+            setValued(true);
+            updateCharges(em);
+        } else {
+            priceServices();
+        }
+
+        em.merge(this);
+    }
+
+    public abstract void priceServices();
+
+
+    private void updateCharges(EntityManager em) {
+        for (Charge c : getCharges()) {
+            c.getFile().getCharges().remove(c);
+            em.remove(c);
+        }
+        getCharges().clear();
+
+        Charge c;
+        getCharges().add(c = new Charge());
+        c.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+        c.setTotal(getValue());
+
+        c.setText("Booking " + getId());
+
+        c.setType(ChargeType.BOOKING);
+        c.setBooking(this);
+        c.setFile(getFile());
+        getFile().getCharges().add(c);
+
+        c.setHotelContract(null);
+        c.setInvoice(null);
+        c.setPurchaseOrder(null);
+        c.setService(null);
+
+
+        c.setBillingConcept(getOverridedBillingConcept());
+
+        c.applyTaxes();
+
+        em.persist(c);
 
     }
 

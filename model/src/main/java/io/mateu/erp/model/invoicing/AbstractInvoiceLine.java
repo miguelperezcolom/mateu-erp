@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.text.DecimalFormat;
 
 /**
  * Created by miguel on 1/10/16.
@@ -31,4 +32,18 @@ public abstract class AbstractInvoiceLine {
     private double total;
 
 
+    public AbstractInvoiceLine(Invoice invoice) {
+        this.invoice = invoice;
+    }
+
+    public AbstractInvoiceLine() {
+
+    }
+
+
+    @Override
+    public String toString() {
+        DecimalFormat df = new DecimalFormat("##,###,###,###,###.00");
+        return "<div style='min-width: 300px;display: inline-block;'>" + subject + "</div><div style='text-align:right; width: 200px;display: inline-block;'>" + df.format(total) + "</div>";
+    }
 }

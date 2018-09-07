@@ -1,7 +1,9 @@
 package io.mateu.erp.model.booking.generic;
 
 import com.google.common.base.Strings;
+import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.generic.Contract;
@@ -54,6 +56,11 @@ public class GenericService extends Service {
 
     @NotNull
     private LocalDate returnDate;
+
+
+    public GenericService() {
+        setIcon(FontAwesome.GIFT.getHtml());
+    }
 
 
     @PrePersist@PreUpdate
@@ -197,6 +204,11 @@ public class GenericService extends Service {
         d.put("comments", c);
 
         return d;
+    }
+
+    @Override
+    protected String getDescription() {
+        return "" + ((getProduct() != null)?getProduct().getName():"");
     }
 
 

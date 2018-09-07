@@ -64,6 +64,11 @@ public abstract class Service {
     @Ignored
     private Audit audit;
 
+    @Output
+    @HtmlCol
+    @ColumnWidth(100)
+    private String icons;
+
     @Tab("General")
     @FullWidth
     @ManyToOne
@@ -84,6 +89,11 @@ public abstract class Service {
     @ManyToOne
     @Ignored
     private Booking booking;
+
+    @ManyToOne
+    @NotWhenCreating
+    @KPI
+    private ManagedEvent managedEvent;
 
     @Ignored
     @NotInEditor
@@ -1025,4 +1035,21 @@ public abstract class Service {
 
         setVisibleInSummary(!isCancelled() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
     }
+
+
+    public Element toXml() {
+        Element xml = new Element("service");
+        xml.setAttribute("id", "" + getId());
+        xml.setAttribute("status", !isCancelled()?"OK":"CANCELLED");
+        xml.setAttribute("description", getDescription());
+
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (getStart() != null) xml.setAttribute("start", getStart().format(dtf));
+        if (getFinish() != null) xml.setAttribute("finish", getFinish().format(dtf));
+
+        return xml;
+    }
+
+    protected abstract String getDescription();
+
 }
