@@ -2,16 +2,21 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.config.Template;
@@ -51,10 +56,14 @@ public abstract class Booking {
     @Order(desc = true, priority = 10)
     private long id;
 
+    @ListColumn(width = 60)
     @ManyToOne
     @NotNull
+    @ColumnWidth(350)
+    @NoChart
     private File file;
 
+    @ListColumn(width = 60)
     @Output
     @HtmlCol
     @ColumnWidth(100)
@@ -65,6 +74,8 @@ public abstract class Booking {
 
     @ManyToOne
     @NotNull
+    @ListColumn(width = 60)
+    @ColumnWidth(156)
     private PointOfSale pos;
 
     @OneToMany(mappedBy = "booking")
@@ -72,18 +83,24 @@ public abstract class Booking {
     @NotWhenCreating
     private List<Service> services = new ArrayList<>();
 
+
     @KPI
+    @ListColumn(width = 100)
+    @ColumnWidth(102)
     private boolean confirmed = true;
 
     @NotWhenCreating
     @KPI
+    @ListColumn(width = 80)
     private boolean active = true;
 
     @NotNull
+    @ListColumn(width = 60)
     private LocalDate start;
     @Column(name = "_end")
     @SameLine
     @NotNull
+    @ListColumn(width = 60)
     private LocalDate end;
 
     private int adults;
@@ -134,15 +151,28 @@ public abstract class Booking {
         return valueOverrided;
     }
 
+    @Output
+    private String priceReport;
+
+    @ListColumn(width = 60)
+    @CellStyleGenerator(ValidCellStyleGenerator.class)
+    @Output
+    @ColumnWidth(120)
+    private ValidationStatus validationStatus = ValidationStatus.VALID;
+
+    @Output
+    @SameLine
+    private String validationMessage;
 
     @KPI
     private boolean valued;
 
+    private boolean alreadyInvoiced;
 
     @NotWhenCreating
     @UseLinkToListView
     @OneToMany(mappedBy = "booking")
-    private List<Charge> charges = new ArrayList<>();
+    private List<BookingCharge> charges = new ArrayList<>();
 
 
     @Override
@@ -312,7 +342,7 @@ public abstract class Booking {
             break;
         }
         if (allCancelled) {
-            getFile().setCancelled(true);
+            getFile().setActive(false);
             em.merge(getFile());
         }
 
@@ -339,7 +369,7 @@ public abstract class Booking {
             break;
         }
         if (allCancelled) {
-            getFile().setCancelled(true);
+            getFile().setActive(false);
             em.merge(getFile());
         }
 
@@ -394,36 +424,58 @@ public abstract class Booking {
 
 
     private void updateCharges(EntityManager em) {
-        for (Charge c : getCharges()) {
+        for (BookingCharge c : getCharges()) {
             c.getFile().getCharges().remove(c);
             em.remove(c);
         }
         getCharges().clear();
 
-        Charge c;
-        getCharges().add(c = new Charge());
+        BookingCharge c;
+        getCharges().add(c = new BookingCharge());
         c.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
         c.setTotal(getValue());
 
         c.setText("Booking " + getId());
 
-        c.setType(ChargeType.BOOKING);
+        c.setPartner(getFile().getAgency());
+
+        c.setType(ChargeType.SALE);
         c.setBooking(this);
         c.setFile(getFile());
         getFile().getCharges().add(c);
 
-        c.setHotelContract(null);
         c.setInvoice(null);
-        c.setPurchaseOrder(null);
         c.setService(null);
 
 
         c.setBillingConcept(getOverridedBillingConcept());
 
-        c.applyTaxes();
-
         em.persist(c);
 
+    }
+
+    public static GridDecorator getGridDecorator() {
+        return new GridDecorator() {
+            @Override
+            public void decorateGrid(Grid grid) {
+                grid.getColumns().forEach(col -> {
+
+                    StyleGenerator old = ((Grid.Column) col).getStyleGenerator();
+
+                    ((Grid.Column)col).setStyleGenerator(new StyleGenerator() {
+                        @Override
+                        public String apply(Object o) {
+                            String s = null;
+                            if (old != null) s = old.apply(o);
+                            if (!((Boolean)((Object[])o)[6])) {
+                                s = (s != null)?s + " cancelled":"cancelled";
+                            }
+                            return s;
+                        }
+                    });
+                });
+            }
+        };
     }
 
 

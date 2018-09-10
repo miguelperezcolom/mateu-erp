@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -16,6 +17,7 @@ public class RetentionTerms {
     private long id;
 
     @Tab("Info")
+    @NotEmpty
     private String name;
 
     //todo: convertir en enumeración????

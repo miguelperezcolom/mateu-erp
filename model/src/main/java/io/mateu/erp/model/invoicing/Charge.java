@@ -3,6 +3,7 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.PurchaseOrder;
@@ -14,6 +15,7 @@ import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.financials.BillingConcept;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -23,6 +25,13 @@ import java.text.DecimalFormat;
 @Getter
 @Setter
 public class Charge {
+
+    @KPI
+    private transient Amount value;
+
+    public Amount getValue() {
+        return total;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,46 +46,8 @@ public class Charge {
     private ChargeType type;
 
     @ManyToOne
-    @Output
-    private File file;
-
-    public boolean isFileVisible() {
-        return file != null;
-    }
-
-    @ManyToOne
-    @Output
-    private Booking booking;
-
-    public boolean isBookingVisible() {
-        return booking != null;
-    }
-
-
-    @ManyToOne
-    @Output
-    private Service service;
-
-    public boolean isServiceVisible() {
-        return booking != null;
-    }
-
-    @ManyToOne
-    @Output
-    private HotelContract hotelContract;
-
-    public boolean isHotelContractVisible() {
-        return hotelContract != null;
-    }
-
-
-    @ManyToOne
-    @Output
-    private PurchaseOrder purchaseOrder;
-
-    public boolean isPurchaseOrderVisible() {
-        return purchaseOrder != null;
-    }
+    @NotNull
+    private Partner partner;
 
 
     @ManyToOne
@@ -85,38 +56,15 @@ public class Charge {
 
 
     @ManyToOne
-    @Output
     private Office office;
-
-    public boolean isOfficeVisible() {
-        return office != null;
-    }
 
     @NotNull
     @ManyToOne
-    @Output
     private BillingConcept billingConcept;
 
     @TextArea
-    @Output
     private String text;
 
-
-    @ManyToOne
-    @Output
-    private VAT vat;
-
-    @Output
-    @SameLine
-    private double vatPercent;
-
-    @Output
-    @SameLine
-    private double vatValue;
-
-    @Output
-    @SameLine
-    private double beforeTaxes;
 
     @Embedded
     @AttributeOverrides({
@@ -130,30 +78,18 @@ public class Charge {
     @AssociationOverrides({
             @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "total_currency"))
     })
-    @KPI
-    @NotWhenCreating
     private Amount total;
 
-
-
-
-    @PrePersist@PreUpdate
-    public void validate() throws Exception {
-        if (this.getFile() == null && getPurchaseOrder() == null) throw  new Exception("It must be related to a file or to a purchase order");
-    }
-
-
-    public void applyTaxes() {
-        setVat(null);
-        setBeforeTaxes(getTotal().getNucValue());
-        setVatValue(0);
-        setVatPercent(0);
-    }
 
 
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("##,###,###,###,###.00");
         return "<div style='text-align:right;width:100px;display:inline-block;margin-right:10px;'>" + df.format(total.getValue()) + "</div><div style='display: inline-block;'>" + text + "</div>";
+    }
+
+
+    public boolean isModifiable() {
+        return invoice == null;
     }
 }

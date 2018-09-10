@@ -96,7 +96,7 @@ public class P1101 extends BeroniRecord {
         setCodigoClienteEnBeroni(s.getFile().getAgency().getIdInInvoicingApp());
         setNombre(s.getFile().getAgency().getName());
         setObservaciones(s.getPrivateComment());
-        setObservacionesCliente(s.getComment());
+        setObservacionesCliente(s.getBooking().getSpecialRequests());
         setNombreViajeros(s.getFile().getLeadName());
         setFechaViaje(s.getStart());
         setDiasViaje((int)DAYS.between(s.getStart(), s.getFinish()));

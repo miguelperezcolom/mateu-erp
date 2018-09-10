@@ -1,6 +1,7 @@
 package io.mateu.erp.client.product;
 
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.AbstractModule;
 
@@ -13,8 +14,8 @@ import java.util.List;
 public class ProductArea extends AbstractArea {
 
     public ProductArea() {
-        super("Portfolio");
-    }
+        super(VaadinIcons.COMPILE, "Portfolio");
+    } // VaadinIcons.FOLDER_OPEN
 
     @Override
     public List<AbstractModule> buildModules() {

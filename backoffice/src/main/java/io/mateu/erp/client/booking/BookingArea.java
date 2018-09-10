@@ -1,6 +1,7 @@
 package io.mateu.erp.client.booking;
 
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.AbstractModule;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class BookingArea extends AbstractArea {
 
     public BookingArea() {
-        super("Booking");
+        super(VaadinIcons.CART, "Booking");
     }
 
     @Override

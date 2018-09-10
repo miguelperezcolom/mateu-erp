@@ -1,5 +1,6 @@
 package io.mateu.erp.client.crm;
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.AbstractModule;
 
@@ -10,7 +11,7 @@ public class CRMArea extends AbstractArea {
 
 
     public CRMArea() {
-        super("Biz");
+        super(VaadinIcons.HANDSHAKE, "Biz");
     }
 
     @Override

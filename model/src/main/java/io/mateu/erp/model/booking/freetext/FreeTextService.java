@@ -32,7 +32,7 @@ public class FreeTextService extends Service {
     private LocalDate returnDate;
 
     public FreeTextService() {
-        setIcon(FontAwesome.EDIT.getHtml());
+        setIcons(FontAwesome.EDIT.getHtml());
     }
 
 

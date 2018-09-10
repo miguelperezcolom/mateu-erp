@@ -73,8 +73,6 @@ public class RevenueModule extends AbstractModule {
 
         m.add(new MDDOpenCRUDAction("Commission terms", CommissionTerms.class));
 
-        m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
-
         return m;
     }
 }

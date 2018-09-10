@@ -2,12 +2,16 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.payments.Payment;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.financials.Currency;
@@ -63,6 +67,7 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
     @Order(desc = true, priority = 10)
+    @ListColumn
     private long id;
 
     @Section("Info")
@@ -76,14 +81,17 @@ public class File {
     @NotNull
     @SearchFilter
     @QLFilter("x.agency = true")
+    @ListColumn
     private Partner agency;
 
     @NotNull
     @SearchFilter(exactMatch = true)
+    @ListColumn
     private String agencyReference;
 
     @NotNull
     @SearchFilter
+    @ListColumn
     private String leadName;
 
     private String email;
@@ -93,12 +101,16 @@ public class File {
     private boolean confirmed;
 
     @SameLine
-    private boolean cancelled;
+    @ListColumn(width = 60)
+    @ColumnWidth(80)
+    private boolean active = true;
+
 
 
 
     @Ignored
     @SearchFilter
+    @ListColumn
     private LocalDate start;
 
     @Ignored
@@ -110,6 +122,7 @@ public class File {
 
 
     @KPI
+    @ListColumn
     private double totalNetValue;
 
     @KPI
@@ -157,7 +170,7 @@ public class File {
     @Section("Charges")
     @OneToMany(mappedBy = "file")
     @Output
-    private List<Charge> charges = new ArrayList<>();
+    private List<BookingCharge> charges = new ArrayList<>();
 
     @Section("Payments")
     @OneToMany(mappedBy = "file")
@@ -225,7 +238,7 @@ public class File {
 
     @PostLoad
     public void beforeSet() throws Throwable {
-        setAlreadyCancelled(isCancelled());
+        setAlreadyCancelled(!isActive());
     }
 
     @PostPersist@PostUpdate
@@ -233,7 +246,7 @@ public class File {
 
         EntityManager em = Helper.getEMFromThreadLocal();
         
-        if (isCancelled() && isCancelled() != isAlreadyCancelled()) {
+        if (!isActive() && (!isActive()) != isAlreadyCancelled()) {
             cancel(em, getAudit().getModifiedBy());
         }
         
@@ -318,7 +331,7 @@ public class File {
             todoCancelado &= s.isCancelled();
             allServicesAreValued &= s.isValued();
             allPurchasesAreValued &= s.isPurchaseValued();
-            if (!Strings.isNullOrEmpty(s.getComment())) comentarios += s.getComment();
+            if (!Strings.isNullOrEmpty(s.getBooking().getSpecialRequests())) comentarios += s.getBooking().getSpecialRequests();
             if (!Strings.isNullOrEmpty(s.getOperationsComment())) comentarios += s.getOperationsComment();
             totalCost += s.getTotalCost();
         }
@@ -527,5 +540,32 @@ public class File {
         return new FileInvoiceForm(this);
     }
 
+
+
+
+
+    public static GridDecorator getGridDecorator() {
+        return new GridDecorator() {
+            @Override
+            public void decorateGrid(Grid grid) {
+                grid.getColumns().forEach(col -> {
+
+                    StyleGenerator old = ((Grid.Column) col).getStyleGenerator();
+
+                    ((Grid.Column)col).setStyleGenerator(new StyleGenerator() {
+                        @Override
+                        public String apply(Object o) {
+                            String s = null;
+                            if (old != null) s = old.apply(o);
+                            if (!((Boolean)((Object[])o)[6])) {
+                                s = (s != null)?s + " cancelled":"cancelled";
+                            }
+                            return s;
+                        }
+                    });
+                });
+            }
+        };
+    }
 
 }

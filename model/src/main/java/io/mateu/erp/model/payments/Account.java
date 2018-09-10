@@ -39,6 +39,8 @@ public class Account {
     @Output
     private double output;
 
+    @Output
+    private boolean markedForUpdate;
 
     @Override
     public String toString() {

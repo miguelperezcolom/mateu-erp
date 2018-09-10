@@ -1,5 +1,6 @@
 package io.mateu.erp.client.financial;
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.AbstractModule;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public class FinancialArea extends AbstractArea {
 
     public FinancialArea() {
-        super("Financial");
+        super(VaadinIcons.EURO, "Financial");
     }
 
     @Override

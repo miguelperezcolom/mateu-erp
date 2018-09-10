@@ -38,11 +38,11 @@ public class IssuedInvoice extends Invoice {
     }
 
 
-    public IssuedInvoice(User u, List<Charge> charges) throws Throwable {
+    public IssuedInvoice(User u, List<? extends Charge> charges) throws Throwable {
         super(u, charges);
     }
 
-    public IssuedInvoice(User u, List<Charge> charges, boolean proforma) throws Throwable {
+    public IssuedInvoice(User u, List<? extends Charge> charges, boolean proforma) throws Throwable {
         super(u, charges, proforma);
     }
 

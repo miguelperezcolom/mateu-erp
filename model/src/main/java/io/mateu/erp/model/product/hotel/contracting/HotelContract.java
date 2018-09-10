@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.hotel.contracting;
 import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.WarrantySettlementCharge;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -83,7 +84,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     private double extrasIncludedInWarranty;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "hotelContract")
-    private List<Charge> warrantySettlements = new ArrayList<>();
+    private List<WarrantySettlementCharge> warrantySettlements = new ArrayList<>();
 
 
     @Tab("Terms")

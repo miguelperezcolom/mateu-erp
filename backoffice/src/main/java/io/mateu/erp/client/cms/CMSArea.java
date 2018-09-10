@@ -1,6 +1,7 @@
 package io.mateu.erp.client.cms;
 
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.AbstractModule;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public class CMSArea extends AbstractArea {
 
     public CMSArea() {
-        super("CMS");
+        super(VaadinIcons.MOBILE_BROWSER, "CMS");
     }
 
     @Override

@@ -478,9 +478,12 @@ public class TransferBookingRequest {
                             nuevasEntidades.add(this);
                         }
 
+                        //todo: se ha movido a la reserva
+                        /*
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
                         }
+                        */
 
                     }
 
@@ -528,9 +531,12 @@ public class TransferBookingRequest {
                             nuevasEntidades.add(this);
                         }
 
+                        //todo: se ha movido a la reserva
+                        /*
                         if (effectiveValue != 0) {
                             effectiveValue -= s.getOverridedNetValue();
                         }
+                        */
 
                     }
 
@@ -603,11 +609,14 @@ public class TransferBookingRequest {
                 s.setImportedPickupTime(null);
         }
 
+        //todo: se ha movido a la reserva
+        /*
         if (lastRequest == null || arrivalConfirmed != lastRequest.isArrivalConfirmed()) {
             ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
             if (arrivalConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
             s.setAnswer(a);
         }
+        */
 
         if (lastRequest == null || !arrivalResort.equals(lastRequest.getArrivalResort()) || !arrivalAddress.equals(lastRequest.getArrivalAddress())) s.setDropoffText("" + arrivalResort + " (" + arrivalAddress + ")");
         if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
@@ -624,8 +633,11 @@ public class TransferBookingRequest {
         if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
 
         s.setOffice(getTask().getOffice());
-        s.setPos(getTask().getPointOfSale());
+        //s.setPos(getTask().getPointOfSale());
 
+
+        //todo: se ha movido a la reserva
+        /*
         if (s.getComment()==null) s.setComment("");
         String comm = vehicle + ". ";
         if (getArrivalComments()!=null && !getArrivalComments().isEmpty())
@@ -651,6 +663,7 @@ public class TransferBookingRequest {
             s.setValueOverrided(true);
             effectiveValue = 0;
         }
+        */
 
         if (s.getTransferBookingRequest() == null) {
             s.setTransferBookingRequest(this);
@@ -661,9 +674,12 @@ public class TransferBookingRequest {
     private boolean changesInArrival(TransferService s, TransferBookingRequest lastRequest) {
        if (s.isCancelled()!= (arrivalStatus.equals(STATUS.CANCELLED))  && (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus()))) return true;
 
+       //todo: se ha movido a la reserva
+        /*
         ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
         if (arrivalConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
         if (!a.equals(s.getAnswer())  && (lastRequest == null || arrivalConfirmed != lastRequest.isArrivalConfirmed())) return true;
+        */
 
         String txt = "" + arrivalResort + " (" + arrivalAddress + ")";
         if (!txt.equals(s.getDropoffText())  && (lastRequest == null || !txt.equals("" + lastRequest.getArrivalResort() + " (" + lastRequest.getArrivalAddress() + ")"))) return true;
@@ -691,9 +707,11 @@ public class TransferBookingRequest {
         if (!s.getTransferType().equals(serviceType) && (lastRequest == null || !serviceType.equals(lastRequest.getServiceType()))) return true;
 
         if (!s.getOffice().equals(getTask().getOffice())) return true;
-        if (!s.getPos().equals(getTask().getPointOfSale())) return true;
+        //if (!s.getPos().equals(getTask().getPointOfSale())) return true;
 
 
+        //todo: se ha movido a la reserva
+        /*
         if (s.getComment()==null) s.setComment("");
         String comm = vehicle + ". ";
         if (getArrivalComments()!=null && !getArrivalComments().isEmpty())
@@ -713,6 +731,7 @@ public class TransferBookingRequest {
         if (!s.getComment().contains(comm) && (lastRequest == null || !comm.equals(comm0))) return true;
 
         if (getValue() != 0 && effectiveValue != s.getOverridedNetValue() && (lastRequest == null || effectiveValue != lastRequest.getEffectiveValue())) return true;
+        */
 
         return false;
     }
@@ -734,9 +753,12 @@ public class TransferBookingRequest {
     private boolean changesInDeparture(TransferService s, TransferBookingRequest lastRequest) {
         if (s.isCancelled()!= (departureStatus.equals(STATUS.CANCELLED)) && (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus()))) return true;
 
+        //todo: se ha movido a la reserva
+        /*
         ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
         if (departureConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
         if (!a.equals(s.getAnswer()) && (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed())) return true;
+        */
 
         String txt = "" + departureResort + " (" + departureAddress + ")";
         if (!txt.equals(s.getPickupText()) && (lastRequest == null || !txt.equals("" + lastRequest.getDepartureResort() + " (" + lastRequest.getDepartureAddress() + ")"))) return true;
@@ -764,8 +786,10 @@ public class TransferBookingRequest {
         if (!serviceType.equals(s.getTransferType()) && (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())))return true;
 
         if (!s.getOffice().equals(getTask().getOffice())) return true;
-        if (!s.getPos().equals(getTask().getPointOfSale())) return true;
+        //if (!s.getPos().equals(getTask().getPointOfSale())) return true;
 
+        //todo: recuperar
+        /*
         if (s.getComment()==null) s.setComment("");
         String comm = vehicle + ". ";
         if (getDepartureComments()!=null && !getDepartureComments().isEmpty())
@@ -785,6 +809,7 @@ public class TransferBookingRequest {
         if (!s.getComment().contains(comm)  && (lastRequest == null || !comm.equals(comm0))) return true;
 
         if (getValue() != 0 && effectiveValue != s.getOverridedNetValue() && (lastRequest == null || effectiveValue != lastRequest.getEffectiveValue())) return true;
+        */
 
         return false;
     }
@@ -802,7 +827,8 @@ public class TransferBookingRequest {
         if (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed()) {
             ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
             if (departureConfirmed) a = ServiceConfirmationStatus.CONFIRMED;
-            s.setAnswer(a);
+            //todo: se ha movido a la reserva
+            //s.setAnswer(a);
         }
 
         if (lastRequest == null || !departureResort.equals(lastRequest.getDepartureResort()) || !departureAddress.equals(lastRequest.getDepartureAddress())) s.setPickupText("" + departureResort + " (" + departureAddress + ")");
@@ -818,8 +844,10 @@ public class TransferBookingRequest {
         if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
 
         s.setOffice(getTask().getOffice());
-        s.setPos(getTask().getPointOfSale());
+        //s.setPos(getTask().getPointOfSale());
 
+        //todo: se ha movido a la reserva
+        /*
         if (s.getComment()==null) s.setComment("");
         String comm = vehicle + ". ";
         if (getDepartureComments()!=null && !getDepartureComments().isEmpty())
@@ -844,6 +872,7 @@ public class TransferBookingRequest {
             s.setValueOverrided(true);
             effectiveValue = 0;
         }
+        */
 
         if (s.getTransferBookingRequest() == null) {
             s.setTransferBookingRequest(this);

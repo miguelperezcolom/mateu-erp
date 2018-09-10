@@ -19,4 +19,10 @@ public abstract class AbstractPaymentAllocation {
     private Payment payment;
 
     private double value;
+
+
+    public void setValue(double value) {
+        this.value = value;
+        if (payment != null) payment.updateBalance();
+    }
 }

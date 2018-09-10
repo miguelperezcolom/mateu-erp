@@ -2,6 +2,9 @@ package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.payments.Deposit;
 import io.mateu.erp.model.taxes.VAT;
+import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.annotations.ListColumn;
+import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Tab;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +30,7 @@ public class FinancialAgent {
     private long id;
 
     @Tab("Info")
+    @ListColumn
     private String name;
 
     private String businessName;
@@ -43,6 +47,7 @@ public class FinancialAgent {
 
     @NotNull
     @ManyToOne
+    @ListColumn
     private Currency currency;
 
 
@@ -95,6 +100,7 @@ public class FinancialAgent {
 
     @Tab("Credit")
     @NotNull
+    @ListColumn
     private RiskType riskType;
 
     @ManyToMany
@@ -102,6 +108,19 @@ public class FinancialAgent {
 
     @Tab("Voxel")
     private String voxelId;
+
+
+    @ListColumn
+    @KPI
+    private double invoiced;
+
+    @ListColumn
+    @KPI
+    private double balance;
+
+
+    @Output
+    private boolean markedForUpdate;
 
 
     @Override

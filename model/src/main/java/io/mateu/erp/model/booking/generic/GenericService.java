@@ -41,9 +41,8 @@ public class GenericService extends Service {
     @ManyToOne
     private GenericProduct product;
 
-    @OneToMany
-    @OrderBy("id asc")
-    private List<Extra> extras = new ArrayList<>();
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    private List<GenericServiceExtra> extras = new ArrayList<>();
 
     private int units;
 
@@ -59,7 +58,7 @@ public class GenericService extends Service {
 
 
     public GenericService() {
-        setIcon(FontAwesome.GIFT.getHtml());
+        setIcons(FontAwesome.GIFT.getHtml());
     }
 
 
@@ -78,10 +77,11 @@ public class GenericService extends Service {
             Map<String, Object> m = toMap();
             m.put("product", getProduct().getName());
             List<Map<String, Object>> ls = new ArrayList<>();
-            for (Extra l : getExtras()) {
+            for (GenericServiceExtra l : getExtras()) {
                 Map<String, Object> x;
                 ls.add(x = new HashMap<>());
-                x.put("description", l.getName());
+                x.put("description", l.getExtra().getName().toString());
+                x.put("units", l.getUnits());
             }
 
             m.put("units", getUnits());
@@ -195,7 +195,7 @@ public class GenericService extends Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
-        String c = getComment();
+        String c = getBooking().getSpecialRequests();
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
             else if (!"".equals(c)) c += " / ";

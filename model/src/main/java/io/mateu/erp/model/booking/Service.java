@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
@@ -40,6 +41,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -57,11 +59,10 @@ public abstract class Service {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
-    @ListColumn(width = 70)
     private long id;
 
     @Embedded
-    @Ignored
+    @Output
     private Audit audit;
 
     @Output
@@ -95,31 +96,11 @@ public abstract class Service {
     @KPI
     private ManagedEvent managedEvent;
 
-    @Ignored
-    @NotInEditor
-    @ListColumn
-    @CellStyleGenerator(IconCellStyleGenerator.class)
-    private String icon;
-
-    @ListColumn(width = 60)
-    @CellStyleGenerator(ConfirmedCellStyleGenerator.class)
-    private ServiceConfirmationStatus answer = ServiceConfirmationStatus.CONFIRMED;
-    @SameLine
-    private String answerText;
-
-    @ListColumn(width = 60)
-    @CellStyleGenerator(ValidCellStyleGenerator.class)
-    @Output
-    private ValidationStatus validationStatus = ValidationStatus.VALID;
-
-    @Output
-    @SameLine
-    private String validationMessage;
-
     @ListColumn
     @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
     @SearchFilter
     @NotInEditor
+    @ColumnWidth(130)
     private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 
     public void setProcessingStatus(ProcessingStatus processingStatus) {
@@ -137,36 +118,32 @@ public abstract class Service {
 
     @ListColumn(value = "Active")
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
+    @ColumnWidth(106)
     private boolean cancelled;
 
     @ListColumn
     @CellStyleGenerator(NoShowCellStyleGenerator.class)
     @SameLine
+    @ColumnWidth(106)
     private boolean noShow;
 
     @ListColumn
     @CellStyleGenerator(LockedCellStyleGenerator.class)
     @SameLine
+    @ColumnWidth(106)
     private boolean locked;
 
     @ListColumn
     @CellStyleGenerator(HeldCellStyleGenerator.class)
     @SameLine
+    @ColumnWidth(106)
     private boolean held;
 
 
-    private boolean alreadyInvoiced;
 
     @NotNull
     @ManyToOne
     private Office office;
-
-    @NotNull
-    @ManyToOne
-    private PointOfSale pos;
-
-    @TextArea
-    private String comment;
 
     @TextArea
     @SameLine
@@ -182,19 +159,6 @@ public abstract class Service {
 
 
     @Tab("Price")
-    private boolean valueOverrided;
-    @SameLine
-    private double overridedNetValue;
-    @Ignored
-    private String overridedNetValueCalculator;
-    @SameLine
-    private double overridedRetailValue;
-    @Ignored
-    private String overridedRetailValueCalculator;
-    @SameLine
-    private double overridedCommissionValue;
-
-
     private boolean costOverrided;
     @SameLine
     private double overridedCostValue;
@@ -203,13 +167,10 @@ public abstract class Service {
 
 
     @Output
-    @ListColumn
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
-    @Sum
     @Output
-    @ListColumn
     private double totalNetValue;
 
     @Output
@@ -220,26 +181,22 @@ public abstract class Service {
     @SameLine
     private double totalCommissionValue;
 
-    @Output
-    private String priceReport;
+
 
     @Output
     private double currentCancellationCost;
 
     @Output
-    @ListColumn
-    @CellStyleGenerator(ValuedCellStyleGenerator.class)
+    //@CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean purchaseValued;
 
-    @Sum
     @Output
-    @ListColumn
     private double totalCost;
 
     @Tab("Charges")
     @OneToMany(mappedBy = "service")
     @Output
-    private List<Charge> charges = new ArrayList<>();
+    private List<BookingCharge> charges = new ArrayList<>();
 
     @Tab("Handling")
     @Ignored
@@ -346,7 +303,7 @@ public abstract class Service {
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", isCancelled());
-        String c = getComment();
+        String c = getBooking().getSpecialRequests();
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
             else if (!"".equals(c)) c += " / ";
@@ -361,9 +318,9 @@ public abstract class Service {
 
 
     @Action
-    public static void sendToProvider(EntityManager em, UserData user, @Selection List<Data> selection, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) {
-        for (Data d : selection) {
-            Service s = em.find(Service.class, d.get("_id"));
+    public static void sendToProvider(EntityManager em, UserData user, Set<Service> selection, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) {
+        Set services = selection.stream().map(s -> em.merge(s)).collect(Collectors.toSet());
+        for (Service s : selection) {
             s.setAlreadyPurchased(false);
             if (provider != null) s.setPreferredProvider(provider);
             try {
@@ -374,8 +331,7 @@ public abstract class Service {
         }
         Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
-        for (Data d : selection) {
-            Service s = em.find(Service.class, d.get("_id"));
+        for (Service s : selection) {
             if (!s.isCancelled() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
                 for (PurchaseOrder po : s.getPurchaseOrders()) {
@@ -475,6 +431,9 @@ public abstract class Service {
     public void price(EntityManager em, User u) {
         setValued(false);
         setTotalNetValue(0);
+
+        //todo: ver si lo llevamos a la reserva
+        /*
         if (!isCancelled() && isValueOverrided()) {
             setTotalNetValue(getOverridedNetValue());
             setValued(true);
@@ -495,6 +454,7 @@ public abstract class Service {
                 throwable.printStackTrace();
             }
         }
+        */
 
         try {
             checkPurchase(em, u);
@@ -595,7 +555,7 @@ public abstract class Service {
                             es.setAttribute("leadName", "" + this.getFile().getLeadName());
                             String comments = "";
                             if (this.getFile().getComments() != null) comments += this.getFile().getComments();
-                            if (s.getComment() != null) comments += s.getComment();
+                            if (s.getBooking().getSpecialRequests() != null) comments += s.getBooking().getSpecialRequests();
                             if (!Strings.isNullOrEmpty(getOperationsComment())) {
                                 if (!"".equals(comments)) comments += " / ";
                                 comments += getOperationsComment();
@@ -784,7 +744,7 @@ public abstract class Service {
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
 
-        String c = getComment();
+        String c = getBooking().getSpecialRequests();
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
             else if (!"".equals(c)) c += " / ";
@@ -844,8 +804,11 @@ public abstract class Service {
 
 
     public void validate(EntityManager em) {
+        // todo: esto lo hemos llevado a la reserva
+        /*
         setValidationStatus(ValidationStatus.VALID);
         setValidationMessage("");
+        */
     }
 
     @PostUpdate

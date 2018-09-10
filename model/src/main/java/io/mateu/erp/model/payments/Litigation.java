@@ -2,6 +2,7 @@ package io.mateu.erp.model.payments;
 
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.invoicing.Invoice;
+import io.mateu.mdd.core.annotations.NotInList;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,8 +22,6 @@ public class Litigation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    private String name;
-
     @ManyToOne
     @NotNull
     private Invoice invoice;
@@ -37,6 +36,7 @@ public class Litigation {
 
     private double taken;
 
+    @NotInList
     private LocalDate reminder;
 
     @TextArea

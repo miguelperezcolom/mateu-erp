@@ -1,6 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
 import io.mateu.erp.model.booking.File;
+import io.mateu.erp.model.booking.PurchaseOrder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,21 +14,21 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Getter@Setter
-public class BookingInvoiceLine extends AbstractInvoiceLine {
+public class PurchaseOrderInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
     @NotNull
-    private File file;
+    private PurchaseOrder purchaseOrder;
 
 
-    public BookingInvoiceLine() {
+    public PurchaseOrderInvoiceLine() {
         super();
     }
 
-    public BookingInvoiceLine(Invoice invoice, BookingCharge c) {
+    public PurchaseOrderInvoiceLine(Invoice invoice, PurchaseCharge c) {
         super(invoice);
 
-        file = c.getFile();
+        purchaseOrder = c.getPurchaseOrder();
 
         setPrice(c.getTotal().getValue());
         setQuantity(1);

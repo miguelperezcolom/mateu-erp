@@ -70,6 +70,6 @@ public class Amount {
 
     @Override
     public String toString() {
-        return currency.getIsoCode() + " " + value;
+        return (currency != null?currency.getIsoCode():"No currency") + " " + value;
     }
 }

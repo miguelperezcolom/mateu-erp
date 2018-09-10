@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public class Rebate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotEmpty
     private String name;
 
     @NotNull
@@ -35,7 +37,6 @@ public class Rebate {
 
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rebate")
-    @OwnedList
     private List<RebateLine> lines = new ArrayList<>();
 
 }

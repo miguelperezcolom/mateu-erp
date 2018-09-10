@@ -56,7 +56,7 @@ public class HotelService extends Service {
 
 
     public HotelService() {
-        setIcon(FontAwesome.HOTEL.getHtml());
+        setIcons(FontAwesome.HOTEL.getHtml());
     }
 
     @Override
@@ -245,9 +245,9 @@ public class HotelService extends Service {
             s.setFile(b);
             s.setHotel(hotel);
             s.setOffice(oficina);
-            s.setPos(pos);
+            //s.setPos(pos);
             s.setAudit(new Audit(u));
-            s.setComment(comments);
+            //s.setComment(comments);
             if (k.getSaleContractId() > 0) s.setSaleContract(em.find(HotelContract.class, k.getSaleContractId()));
             if (s.getSaleContract() != null) {
                 //todo: corregir!!!!

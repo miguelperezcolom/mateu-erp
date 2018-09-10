@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.invoicing.PurchaseCharge;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.util.Constants;
@@ -54,6 +55,8 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
     private long id;
+
+    private String reference;
 
     @Tab("Info")
     @Embedded
@@ -158,7 +161,7 @@ public class PurchaseOrder {
     @Tab("Charges")
     @OneToMany(mappedBy = "purchaseOrder")
     @Output
-    private List<Charge> charges = new ArrayList<>();
+    private List<PurchaseCharge> charges = new ArrayList<>();
 
 
     @SearchFilter(value="Service Id", field = "id")
@@ -258,6 +261,7 @@ public class PurchaseOrder {
         Map<String, Object> d = new HashMap<>();
 
         d.put("id", getId());
+        d.put("reference", getReference());
         d.put("provider", getProvider().getName());
         d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));

@@ -153,7 +153,7 @@ public class TransferService extends Service {
 
 
     public TransferService() {
-        setIcon(FontAwesome.BUS.getHtml());
+        setIcons(FontAwesome.BUS.getHtml());
     }
 
 
@@ -577,6 +577,8 @@ public class TransferService extends Service {
     @Override
     public void validate(EntityManager em) {
         super.validate(em);
+        //todo: hay que moverlo a la reserva
+        /*
         if (ValidationStatus.VALID.equals(getValidationStatus())) {
             if (getEffectivePickup() == null) {
                 addValidationMessage("Missing pickup or not mapped");
@@ -591,15 +593,19 @@ public class TransferService extends Service {
                 if (ValidationStatus.VALID.equals(getValidationStatus())) setValidationStatus(ValidationStatus.WARNING);
             }
         }
+        */
     }
 
     private void addValidationMessage(String s) {
+        //todo: hay que moverlo a la reserva
+        /*
         if (!Strings.isNullOrEmpty(s)) {
             String x = getValidationMessage();
             if (x == null) x = "";
             if (!"".equals(x)) x += ". ";
             setValidationMessage(x + s);
         }
+        */
     }
 
     @Override
@@ -621,7 +627,7 @@ public class TransferService extends Service {
             m.put("transferType", getTransferType());
             m.put("preferredVehicle", "" + getPreferredVehicle());
             //m.put("pickupTime", getPickupTime());
-            m.put("comment", "" + getComment());
+            m.put("comment", "" + getBooking().getSpecialRequests());
             //m.put("held", "" + isHeld());
             m.put("cancelled", "" + isCancelled());
             s = Helper.toJson(m);

@@ -9,7 +9,6 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.UseGridToSelect;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.interfaces.WizardPage;
@@ -31,7 +30,6 @@ public class Pagina2 implements WizardPage {
     private String message;
 
     @NotNull
-    @UseGridToSelect
     private HotelOption hotel;
 
     public Pagina2(Pagina1 pagina1) {
@@ -123,6 +121,11 @@ public class Pagina2 implements WizardPage {
     @Override
     public WizardPage getPrevious() {
         return pagina1;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return true;
     }
 
     @Override

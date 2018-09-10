@@ -43,20 +43,37 @@ public class Partner implements IPartner {
     private String name;
 
     @NotNull
+    @ListColumn
+    @ColumnWidth(100)
     private PartnerStatus status;
 
+    @ListColumn
+    @ColumnWidth(100)
+    @NoChart
     private boolean agency;
 
     @SameLine
+    @ListColumn
+    @ColumnWidth(100)
+    @NoChart
     private boolean provider;
 
     @SameLine
+    @ListColumn
+    @ColumnWidth(100)
+    @NoChart
     private boolean hotelChain;
 
     @SameLine
+    @ListColumn
+    @ColumnWidth(100)
+    @NoChart
     private boolean commissionAgent;
 
     @ManyToOne
+    @ListColumn
+    @ColumnWidth(150)
+    @NoChart
     private PartnerGroup group;
 
     @ManyToOne
@@ -67,6 +84,9 @@ public class Partner implements IPartner {
 
     @ManyToOne
     @NotNull
+    @ListColumn
+    @ColumnWidth(100)
+    @NoChart
     private Currency currency;
 
     @ManyToOne
@@ -75,10 +95,8 @@ public class Partner implements IPartner {
     @ManyToOne
     private Company company;
 
-    @ListColumn
     private String email;
 
-    @ListColumn
     private String comments;
 
     @Section("Product filters")
@@ -122,6 +140,21 @@ public class Partner implements IPartner {
     @Section("Integrations")
     @ManyToMany
     private List<Integration> integrations = new ArrayList<>();
+
+
+
+    @ListColumn
+    @KPI
+    private double bookings;
+
+    @ListColumn
+    @KPI
+    private double invoiced;
+
+    @ListColumn
+    @KPI
+    private double balance;
+
 
     @Override
     public String toString() {

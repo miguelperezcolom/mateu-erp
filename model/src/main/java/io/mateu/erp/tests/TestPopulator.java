@@ -365,7 +365,7 @@ public class TestPopulator {
                     b.setConfirmed(true);
                     b.setAudit(new Audit(u));
                     b.setAgencyReference("AXS" + i);
-                    b.setCancelled(false);
+                    b.setActive(true);
                     b.setComments("Test file created b test populator");
 
                     //ida
@@ -375,7 +375,7 @@ public class TestPopulator {
                         b.getServices().add(s);
                         s.setFile(b);
                         s.setStart(b.getStart());
-                        s.setComment("Incoming transfer test");
+                        //s.setComment("Incoming transfer test");
                         //s.setOverridedValue();
                         s.setFinish(s.getStart());
                         s.setAudit(new Audit(u));
@@ -387,11 +387,11 @@ public class TestPopulator {
                         s.setDropoff(hotel);
                         s.setPickup(ibz);
                         s.setOffice(oficina);
-                        s.setPos(pos);
+                        //s.setPos(pos);
                         s.setPrivateComment("VIP");
                         s.setSentToProvider(LocalDateTime.now());
                         s.setAlreadyPurchased(true);
-                        s.setAlreadyInvoiced(true);
+                        //s.setAlreadyInvoiced(true);
                     }
 
 
@@ -402,7 +402,7 @@ public class TestPopulator {
                         b.getServices().add(s);
                         s.setFile(b);
                         s.setStart(b.getFinish());
-                        s.setComment("Outgoing transfer test");
+                        //s.setComment("Outgoing transfer test");
                         //s.setOverridedValue();
                         s.setFinish(s.getStart());
                         s.setAudit(new Audit(u));
@@ -414,11 +414,11 @@ public class TestPopulator {
                         s.setDropoff(ibz);
                         s.setPickup(hotel);
                         s.setOffice(oficina);
-                        s.setPos(pos);
+                        //s.setPos(pos);
                         s.setPrivateComment("VIP");
                         s.setSentToProvider(LocalDateTime.now());
                         s.setAlreadyPurchased(true);
-                        s.setAlreadyInvoiced(true);
+                        //s.setAlreadyInvoiced(true);
                     }
 
 

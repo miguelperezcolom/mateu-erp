@@ -3,7 +3,6 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.taxes.VATSettlement;
@@ -18,6 +17,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,10 +44,12 @@ public abstract class Invoice {
 
     @NotEmpty
     @Output
+    @ListColumn
     private String number;
 
     @NotNull
     @Output
+    @ListColumn
     private LocalDate issueDate;
 
     @NotNull
@@ -58,11 +60,13 @@ public abstract class Invoice {
     @ManyToOne
     @NotNull
     @Output
+    @ListColumn
     private FinancialAgent issuer;
 
     @ManyToOne
     @NotNull
     @Output
+    @ListColumn
     private FinancialAgent recipient;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
@@ -85,7 +89,17 @@ public abstract class Invoice {
     @KPI
     @NotWhenCreating
     @NotNull
+    @ListColumn
     private Amount total;
+
+    @KPI
+    @ListColumn
+    private boolean valid = true;
+
+    @KPI
+    @ListColumn
+    private boolean paid;
+
 
     @Output
     private double retainedPercent;
@@ -103,12 +117,12 @@ public abstract class Invoice {
     private VATSettlement vatSettlement;
 
 
-    public Invoice(User u, List<Charge> charges) throws Throwable {
+    public Invoice(User u, Collection<? extends Charge> charges) throws Throwable {
         this(u, charges, false);
     }
 
 
-    public Invoice(User u, List<Charge> charges, boolean proforma) throws Throwable {
+    public Invoice(User u, Collection<? extends Charge> charges, boolean proforma) throws Throwable {
 
         if (charges == null || charges.size() == 0) throw new Exception("Can not create invoices from an empty list of charges");
 
@@ -122,7 +136,7 @@ public abstract class Invoice {
 
             if (inicializar) {
 
-                setType((ChargeType.BOOKING.equals(c.getType()))?InvoiceType.ISSUED:InvoiceType.RECEIVED);
+                setType((ChargeType.SALE.equals(c.getType()))?InvoiceType.ISSUED:InvoiceType.RECEIVED);
 
                 setAudit(new Audit(u));
 
@@ -130,13 +144,12 @@ public abstract class Invoice {
 
                 setIssueDate(LocalDate.now());
 
-                if (c.getFile().getAgency() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the agency " + c.getFile().getAgency().getName());
+                if (c.getPartner().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the agency " + c.getPartner().getName());
+                if (c.getPartner().getCompany() == null) throw new Exception("If you want to create proformas or invoices you must set the company for the agency " + c.getPartner().getName());
+                if (c.getPartner().getCompany().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the company " + c.getPartner().getCompany().getName());
 
-                setRecipient(c.getFile().getAgency().getFinancialAgent());
-
-                if (c.getFile().getAgency().getCompany() == null) throw new Exception("If you want to create proformas or invoices you must set the company for the agency " + c.getFile().getAgency().getName());
-
-                setIssuer(c.getFile().getAgency().getCompany().getFinancialAgent());
+                setRecipient((ChargeType.SALE.equals(c.getType()))?c.getPartner().getFinancialAgent():c.getPartner().getCompany().getFinancialAgent());
+                setIssuer((ChargeType.PURCHASE.equals(c.getType()))?c.getPartner().getFinancialAgent():c.getPartner().getCompany().getFinancialAgent());
 
                 setTaxDate(LocalDate.now());
 
@@ -144,7 +157,8 @@ public abstract class Invoice {
             }
 
 
-            getLines().add(new BookingInvoiceLine(this, c));
+            if (c instanceof BookingCharge) getLines().add(new BookingInvoiceLine(this, (BookingCharge) c));
+            else if (c instanceof PurchaseCharge) getLines().add(new PurchaseOrderInvoiceLine(this, (PurchaseCharge) c));
             if (!proforma) {
                 c.setInvoice(this);
             }
@@ -171,7 +185,16 @@ public abstract class Invoice {
 
     @PrePersist
     public void prePersist() {
-        setNumber(UUID.randomUUID().toString());
+        if (number == null) number = UUID.randomUUID().toString();
     }
+
+
+    @Override
+    public String toString() {
+        return number;
+    }
+
+
+
 
 }

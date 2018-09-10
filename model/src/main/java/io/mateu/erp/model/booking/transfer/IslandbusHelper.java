@@ -104,7 +104,7 @@ public class IslandbusHelper {
                     punto.setAttribute("localizador", "" + po.getId());
                     punto.setAttribute("Vuelos", formatFlight(s.getFlightNumber()));
                     punto.setAttribute("HoraVuelo", s.getFlightTime().format(hf));
-                    String c = s.getComment();
+                    String c = s.getBooking().getSpecialRequests();
                     if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
                         if (c == null) c = "";
                         else if (!"".equals(c)) c += " / ";
@@ -210,7 +210,7 @@ public class IslandbusHelper {
                     if (routeN.length() > 10) routeN = routeN.substring(0, 10);
                     shut.addContent(new Element("zona").setText(routeN));
 
-                    String c = s.getComment();
+                    String c = s.getBooking().getSpecialRequests();
                     if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
                         if (c == null) c = "";
                         else if (!"".equals(c)) c += " / ";

@@ -13,25 +13,25 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Getter@Setter
-public class BookingInvoiceLine extends AbstractInvoiceLine {
+public class ChargeInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
     @NotNull
-    private File file;
+    private Charge charge;
 
 
-    public BookingInvoiceLine() {
+    public ChargeInvoiceLine() {
         super();
     }
 
-    public BookingInvoiceLine(Invoice invoice, BookingCharge c) {
+    public ChargeInvoiceLine(Invoice invoice, Charge charge) {
         super(invoice);
 
-        file = c.getFile();
+        this.charge = charge;
 
-        setPrice(c.getTotal().getValue());
+        setPrice(charge.getTotal().getValue());
         setQuantity(1);
         setTotal(getPrice());
-        setSubject(c.getText());
+        setSubject(charge.getText());
     }
 }

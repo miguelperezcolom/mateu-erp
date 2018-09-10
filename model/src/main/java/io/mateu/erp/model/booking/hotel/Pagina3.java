@@ -64,6 +64,11 @@ public class Pagina3 implements WizardPage {
     }
 
     @Override
+    public boolean hasNext() {
+        return false;
+    }
+
+    @Override
     public WizardPage getNext() {
         return null;
     }

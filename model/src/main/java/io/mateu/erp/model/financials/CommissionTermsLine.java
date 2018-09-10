@@ -23,11 +23,9 @@ public class CommissionTermsLine {
     private CommissionTerms terms;
 
     @ManyToOne
-    @NotNull
     private Partner agent;
 
     @ManyToOne
-    @NotNull
     private ProductLine productLine;
 
     @Column(name = "_start")

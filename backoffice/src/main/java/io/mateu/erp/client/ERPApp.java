@@ -4,12 +4,14 @@ import io.mateu.erp.client.admin.AdminArea;
 import io.mateu.erp.client.booking.BookingArea;
 import io.mateu.erp.client.cms.CMSArea;
 import io.mateu.erp.client.crm.CRMArea;
+import io.mateu.erp.client.fieldBuilders.AmountFieldBuilder;
 import io.mateu.erp.client.fieldBuilders.FareValueFieldBuilder;
 import io.mateu.erp.client.financial.FinancialArea;
 import io.mateu.erp.client.management.ManagementArea;
 import io.mateu.erp.client.operations.OperationsArea;
 import io.mateu.erp.client.product.ProductArea;
 import io.mateu.erp.client.utils.UtilsArea;
+import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.product.hotel.FareValue;
 import io.mateu.mdd.core.app.AbstractArea;
 import io.mateu.mdd.core.app.BaseMDDApp;
@@ -65,6 +67,7 @@ public class ERPApp extends BaseMDDApp {
     @Override
     public AbstractFieldBuilder getFieldBuilder(FieldInterfaced field) {
         if (FareValue.class.equals(field.getType())) return new FareValueFieldBuilder();
+        else if (Amount.class.equals(field.getType())) return new AmountFieldBuilder();
         else return super.getFieldBuilder(field);
     }
 }

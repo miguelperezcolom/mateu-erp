@@ -38,7 +38,11 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new MDDOpenCRUDAction("Billing concepts", BillingConcept.class));
 
-        m.add(new MDDOpenCRUDAction("Rebate settlements", Rebate.class));
+        m.add(new MDDMenu("Rebates", "Rebates", Rebate.class, "Settlements", RebateSettlement.class));
+
+        m.add(new MDDMenu("Retentions", "Retention types", RetentionType.class, "Retention terms", RetentionTerms.class));
+
+        m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
 
         m.add(new MDDMenu("VAT", "VAT", VAT.class, "Percents", VATPercent.class, "Settlements", VATSettlement.class));
 
@@ -57,7 +61,7 @@ public class FinancialModule extends AbstractModule {
 
                         m.add(new MDDOpenCRUDAction("Invoices", IssuedInvoice.class));
 
-                        m.add(new MDDOpenCRUDAction("Charges", Charge.class, "x.type = " + ChargeType.class.getName() + "." + ChargeType.BOOKING));
+                        m.add(new MDDOpenCRUDAction("Charges", Charge.class, "x.type = " + ChargeType.class.getName() + "." + ChargeType.SALE));
 
                         m.add(new MDDOpenCRUDAction("Litigations", Litigation.class));
 
@@ -82,7 +86,6 @@ public class FinancialModule extends AbstractModule {
                 return m;
             }
         });
-
 
         m.add(new AbstractMenu("Payments") {
             @Override
