@@ -14,6 +14,7 @@ import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -173,6 +174,13 @@ public abstract class Booking {
     @UseLinkToListView
     @OneToMany(mappedBy = "booking")
     private List<BookingCharge> charges = new ArrayList<>();
+
+
+    @ManyToOne
+    private Partner commissionAgent;
+
+    private boolean nonCommissionable;
+
 
 
     @Override

@@ -4,6 +4,10 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.tickets.TicketStatus;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.tour.Excursion;
+import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +27,21 @@ public class TicketBooking extends Booking {
     @NotNull
     @ManyToOne
     private Ticket ticket;
+
+
+    private Excursion excursion;
+
+    private TourShift shift;
+
+    private int pax;
+
+    @ManyToOne
+    private TransferPoint pickupPoint;
+
+    private int pickupTime;
+
+
+    private String roomNumber;
 
 
     public TicketBooking() {

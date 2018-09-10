@@ -29,6 +29,8 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
+                m.add(new MDDOpenCRUDAction("Calendar", HotelServiceCalendar.class));
+
                 m.add(new MDDOpenCRUDAction("Services", HotelService.class));
 
                 m.add(new MDDOpenCRUDAction("Purchase orders", PurchaseOrder.class));
@@ -45,7 +47,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenListViewAction("Transfers summary", TransfersSummaryView.class));
+                m.add(new MDDOpenListViewAction("Calendar", TransfersSummaryView.class));
 
                 m.add(new MDDOpenCRUDAction("Services", TransferService.class));
 
@@ -65,6 +67,8 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
+                m.add(new MDDOpenCRUDAction("Calendar", GenericServiceCalendar.class));
+
                 m.add(new MDDOpenCRUDAction("Services", GenericService.class));
 
                 m.add(new MDDOpenCRUDAction("Purchase orders", PurchaseOrder.class));
@@ -77,6 +81,8 @@ public class OperationsModule extends AbstractModule {
             @Override
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new MDDOpenCRUDAction("Calendar", FreeTextServiceCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Services", FreeTextService.class));
 
@@ -91,6 +97,8 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
+                m.add(new MDDOpenCRUDAction("Calendar", ExcursionCalendar.class));
+
                 m.add(new MDDOpenCRUDAction("Events", ManagedEvent.class));
 
                 m.add(new MDDOpenCRUDAction("Purchase orders", PurchaseOrder.class));
@@ -104,6 +112,8 @@ public class OperationsModule extends AbstractModule {
             @Override
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
+
+                m.add(new MDDOpenCRUDAction("Calendar", CircuitCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Events", ManagedEvent.class));
 
