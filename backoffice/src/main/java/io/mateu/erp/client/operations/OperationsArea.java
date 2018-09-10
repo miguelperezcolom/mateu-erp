@@ -16,12 +16,7 @@ public class OperationsArea extends AbstractArea {
     @Override
     public List<AbstractModule> buildModules() {
         List<AbstractModule> l = new ArrayList<>();
-        l.add(new HotelOperationsModule());
-        l.add(new TransferOperationsModule());
-        l.add(new GenericOperationsModule());
-        l.add(new FreeTextOperationsModule());
-        l.add(new ExcursionOperationsModule());
-        l.add(new CircuitOperationsModule());
+        l.add(new OperationsModule());
         return l;
     }
 }

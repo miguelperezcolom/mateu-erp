@@ -34,7 +34,7 @@ public class AdminModule extends AbstractModule {
 
         m.add(new MDDOpenEditorAction("AppConfig", AppConfig.class, 1l));
 
-        m.add(new MDDOpenCRUDAction("Users", User.class));
+        m.add(new MDDOpenCRUDAction("Users", io.mateu.mdd.core.model.authentication.User.class));
 
         m.add(new MDDOpenCRUDAction("Auth tokens", AuthToken.class));
 

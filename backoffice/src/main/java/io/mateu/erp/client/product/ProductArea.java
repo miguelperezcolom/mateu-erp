@@ -14,8 +14,8 @@ import java.util.List;
 public class ProductArea extends AbstractArea {
 
     public ProductArea() {
-        super(VaadinIcons.COMPILE, "Portfolio");
-    } // VaadinIcons.FOLDER_OPEN
+        super(VaadinIcons.FOLDER_OPEN, "Portfolio");
+    } // VaadinIcons.COMPILE
 
     @Override
     public List<AbstractModule> buildModules() {

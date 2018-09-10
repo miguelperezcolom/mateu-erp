@@ -62,6 +62,16 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             }
 
 
+            Currency eur;
+            if (true) {
+                eur = new Currency();
+                eur.setIsoCode("EUR");
+                eur.setIsoNumericCode(978);
+                eur.setName("Euro");
+                em.persist(eur);
+            }
+
+
             io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
 
@@ -91,6 +101,9 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setAdminEmailSmtpPort((Integer) Helper.get(initialData, "smtp/port", 0));
             c.setAdminEmailUser((String) Helper.get(initialData, "smtp/user"));
             c.setAdminEmailCC((String) Helper.get(initialData, "smtp/cc"));
+
+
+            c.setNucCurrency(eur);
 
 
             em.persist(c);
@@ -230,14 +243,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             }
 
 
-            Currency eur;
-            if (false) {
-                eur = new Currency();
-                eur.setIsoCode("EUR");
-                eur.setIsoNumericCode(978);
-                eur.setName("Euro");
-                em.persist(eur);
-            }
 
             if (false) {
                 Currency usd = new Currency();
