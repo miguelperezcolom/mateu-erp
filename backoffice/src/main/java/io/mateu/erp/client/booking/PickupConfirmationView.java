@@ -7,33 +7,52 @@ import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.server.booking.BookingServiceImpl;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.MainSearchFilter;
 import io.mateu.mdd.core.interfaces.RpcCrudView;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 @Getter@Setter
-public class PickupConfirmationView implements RpcCrudView<PickupConfirmationView, PickupConfirmationView.Row, TransferService> {
+public class PickupConfirmationView implements RpcCrudView<PickupConfirmationView, PickupConfirmationRow, TransferService> {
 
+    @MainSearchFilter
     private LocalDate date;
+    @MainSearchFilter
     private TransferPoint hotel;
+    @MainSearchFilter
     private String reference;
+    @MainSearchFilter
     private String flightNumber;
+    @MainSearchFilter
     private String leadName;
 
 
+    @Ignored
+    private transient int count;
+
+
     @Override
-    public List<Row> rpc(PickupConfirmationView pickupConfirmationView, int offset, int limit) throws Throwable {
-        return null;
+    public List<PickupConfirmationRow> rpc(PickupConfirmationView pickupConfirmationView, int offset, int limit) throws Throwable {
+        List<PickupConfirmationRow> l = new ArrayList<>();
+        Helper.transact(em -> {
+            l.addAll(em.createQuery(getSql()).getResultList());
+        });
+        count = l.size();
+        return l;
     }
 
     @Override
     public int gatherCount(PickupConfirmationView filters) throws Throwable {
-        return 0;
+        return count;
     }
 
     @Override
@@ -46,14 +65,8 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
         return false;
     }
 
-    @Getter@Setter
-    public class Row {
-
-        private long id;
-
-    }
-
-    public static void confirm(Set<Row> selection, String comments) {
+    @Action
+    public static void confirm(Set<PickupConfirmationRow> selection, String comments) {
         selection.forEach( r -> {
             try {
                 new BookingServiceImpl().pickupTimeInformed(MDD.getUserData().getLogin(), r.getId(), comments);
@@ -64,25 +77,13 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
     }
 
     public String getSql() {
-        String jpql = "select x.id, x.file.agencyReference, x.file.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, " +
-                "case when " +
-                        " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
-                        " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
-                        " or epu.alternatePointForNonExecutive = true " +
-                        ") then ap.name else epu.name end" +
-                ", x.providers, x.sentToProvider " +
-                " from TransferService x left join x.effectivePickup epu " +
-                "   left join epu.alternatePointForShuttle ap " +
-                " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
-                " and x.start >= {d '" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "'} ";
-
-        jpql = "select x.id, x.file.agencyReference, x.file.leadName, x.transferType, x.pax, 'Choose', x.pickupTime, epu.name, " +
+        String jpql = "select new " + PickupConfirmationRow.class.getName() + "( x.id, x.file.agencyReference, x.file.leadName, x.transferType, x.pax, x.pickupTime, epu.name, " +
                 "case when " +
                 " ap.id != null and x.transferType != " + TransferType.class.getTypeName() + ".EXECUTIVE and (" +
                 " x.transferType = " + TransferType.class.getTypeName() + ".SHUTTLE " +
                 " or epu.alternatePointForNonExecutive = true " +
                 ") then ap.name else '---' end" +
-                " " +
+                ") " +
                 " from TransferService x left join x.effectivePickup epu " +
                 "   left join epu.alternatePointForShuttle ap " +
                 " where 1 = 1 and x.direction = " + TransferDirection.class.getTypeName() + ".OUTBOUND " +
@@ -96,54 +97,5 @@ public class PickupConfirmationView implements RpcCrudView<PickupConfirmationVie
         jpql += " order by x.start";
         return jpql;
     }
-
-    /*
-
-    @Override
-    public List<AbstractColumn> createColumns() {
-        int col = 1;
-        return Lists.newArrayList(
-                new LinkColumn("col" + col++, "Ref.", 100) {
-                    @Override
-                    public void run(Data in) {
-                        new MDDOpenEditorAction("", TransferService.class, in.get("_id")).run();
-                    }
-                }
-                , new TextColumn("col" + col++, "Lead name", 170, false)
-                , new TextColumn("col" + col++, "Service", 80, false)
-                , new TextColumn("col" + col++, "Pax", 40, false)
-
-                , new LinkColumn("col" + col++, "Informed", 100) {
-                    @Override
-                    public void run(Data in) {
-                        MateuUI.openView(new AbstractDialog() {
-                            @Override
-                            public void onOk(Data data) {
-                                ((BookingServiceAsync) MateuUI.create(BookingService.class)).pickupTimeInformed(MateuUI.getApp().getUserData().getLogin(), in.get("_id"), getData().getString("obs"), new Callback<Void>() {
-                                    @Override
-                                    public void onSuccess(Void result) {
-                                        search();
-                                    }
-                                });
-                            }
-
-                            @Override
-                            public String getTitle() {
-                                return "PU confirmed";
-                            }
-
-                            @Override
-                            public void build() {
-                                add(new TextAreaField("obs", "Comments"));
-                            }
-                        });
-                    }
-                }
-                , new TextColumn("col" + col++, "PU time", 150, false)
-                , new TextColumn("col" + col++, "PU point", 200, false)
-                , new TextColumn("col" + col++, "Alternate PU point", 200, false)
-        );
-    }
-    */
 
 }

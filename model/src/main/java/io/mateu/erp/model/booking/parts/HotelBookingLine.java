@@ -19,7 +19,13 @@ public class HotelBookingLine {
 
     @ManyToOne
     @NotNull
-    private Booking booking;
+    private HotelBooking booking;
+
+    public void setBooking(HotelBooking booking) {
+        this.booking = booking;
+        if (start == null && booking.getStart() != null) start = booking.getStart();
+        if (end == null && booking.getEnd() != null) end = booking.getEnd();
+    }
 
     @NotNull
     private LocalDate start;
@@ -37,6 +43,6 @@ public class HotelBookingLine {
     private int childrenPerRoom;
     private int[] ages;
 
-    private boolean cancelled;
+    private boolean active = true;
 
 }

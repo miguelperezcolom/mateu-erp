@@ -101,4 +101,10 @@ public class Room implements IRoom {
         if (getInventoryPropietary() != null) return getInventoryPropietary().getCode();
         else return null;
     }
+
+
+    @Override
+    public String toString() {
+        return (getType() != null)?getType().toString():null;
+    }
 }

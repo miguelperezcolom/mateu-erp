@@ -29,7 +29,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Calendar", HotelServiceCalendar.class));
+                m.add(new MDDOpenListViewAction("Calendar", HotelServiceCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Services", HotelService.class));
 
@@ -67,7 +67,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Calendar", GenericServiceCalendar.class));
+                m.add(new MDDOpenListViewAction("Calendar", GenericServiceCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Services", GenericService.class));
 
@@ -82,7 +82,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Calendar", FreeTextServiceCalendar.class));
+                m.add(new MDDOpenListViewAction("Calendar", FreeTextServiceCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Services", FreeTextService.class));
 
@@ -97,7 +97,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Calendar", ExcursionCalendar.class));
+                m.add(new MDDOpenListViewAction("Calendar", ExcursionCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Events", ManagedEvent.class));
 
@@ -113,7 +113,7 @@ public class OperationsModule extends AbstractModule {
             public List<MenuEntry> buildEntries() {
                 List<MenuEntry> m = new ArrayList<>();
 
-                m.add(new MDDOpenCRUDAction("Calendar", CircuitCalendar.class));
+                m.add(new MDDOpenListViewAction("Calendar", CircuitCalendar.class));
 
                 m.add(new MDDOpenCRUDAction("Events", ManagedEvent.class));
 

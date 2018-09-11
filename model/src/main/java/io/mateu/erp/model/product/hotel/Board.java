@@ -45,4 +45,11 @@ public class Board implements IBoard {
     public String getName() {
         return getType().getName().getEs();
     }
+
+
+    @Override
+    public String toString() {
+        return (getType() != null)?getType().toString():null;
+    }
+
 }
