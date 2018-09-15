@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.generic;
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
@@ -10,6 +11,7 @@ import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.GenericProduct;
+import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.Subtitle;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.Helper;
@@ -39,6 +41,7 @@ public class GenericService extends Service {
     @Tab("Service")
     @NotNull
     @ManyToOne
+    @ListColumn
     private GenericProduct product;
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
@@ -58,6 +61,7 @@ public class GenericService extends Service {
 
 
     public GenericService() {
+        setServiceType(ServiceType.GENERIC);
         setIcons(FontAwesome.GIFT.getHtml());
     }
 

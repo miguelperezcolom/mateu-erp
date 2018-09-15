@@ -6,6 +6,7 @@ import io.mateu.erp.client.cms.CMSArea;
 import io.mateu.erp.client.crm.CRMArea;
 import io.mateu.erp.client.fieldBuilders.AmountFieldBuilder;
 import io.mateu.erp.client.fieldBuilders.FareValueFieldBuilder;
+import io.mateu.erp.client.fieldBuilders.FastMoneyFieldBuilder;
 import io.mateu.erp.client.financial.FinancialArea;
 import io.mateu.erp.client.management.ManagementArea;
 import io.mateu.erp.client.operations.OperationsArea;
@@ -20,6 +21,7 @@ import io.mateu.mdd.core.model.population.Populator;
 import io.mateu.mdd.core.reflection.FieldInterfaced;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.vaadinport.vaadin.components.fieldBuilders.AbstractFieldBuilder;
+import org.javamoney.moneta.FastMoney;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +70,7 @@ public class ERPApp extends BaseMDDApp {
     public AbstractFieldBuilder getFieldBuilder(FieldInterfaced field) {
         if (FareValue.class.equals(field.getType())) return new FareValueFieldBuilder();
         else if (Amount.class.equals(field.getType())) return new AmountFieldBuilder();
+        else if (FastMoney.class.equals(field.getType())) return new FastMoneyFieldBuilder();
         else return super.getFieldBuilder(field);
     }
 }

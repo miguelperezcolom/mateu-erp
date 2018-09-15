@@ -59,11 +59,11 @@ public class P1105 extends BeroniRecord {
         setNombreViajeros(s.getFile().getLeadName());
         setNumeroPersonas((s instanceof TransferService)?((TransferService) s).getPax():0);
         setNumeroBono("" + po.getId());
-        setImporteNeto(po.getTotal());
-        setTotalDentroCEE(po.getTotal());
+        setImporteNeto(po.getValue().getValue());
+        setTotalDentroCEE(po.getValue().getValue());
 
-        double baseCompra = Helper.roundOffEuros(po.getTotal() / (1d + 10d / 100d));
-        double ivaCompra = Helper.roundOffEuros(po.getTotal() - baseCompra);
+        double baseCompra = Helper.roundOffEuros(po.getValue().getValue() / (1d + 10d / 100d));
+        double ivaCompra = Helper.roundOffEuros(po.getValue().getValue() - baseCompra);
         double baseVenta = Helper.roundOffEuros(s.getTotalNetValue() / (1d + 10d / 100d));
         double ivaVenta = Helper.roundOffEuros(s.getTotalNetValue() - baseVenta);
 

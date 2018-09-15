@@ -103,6 +103,7 @@ public class File {
     @SameLine
     @ListColumn(width = 60)
     @ColumnWidth(80)
+    @SearchFilter
     private boolean active = true;
 
 

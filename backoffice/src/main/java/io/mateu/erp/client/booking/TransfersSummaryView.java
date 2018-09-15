@@ -1,11 +1,14 @@
 package io.mateu.erp.client.booking;
 
 
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.renderers.ButtonRenderer;
 import io.mateu.erp.server.booking.BookingServiceImpl;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.app.MDDCallback;
 import io.mateu.mdd.core.interfaces.RpcCrudView;
+import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -173,5 +176,18 @@ public class TransfersSummaryView implements RpcCrudView<TransfersSummaryView, T
     @Override
     public int gatherCount(TransfersSummaryView filters) throws Throwable {
         return new BookingServiceImpl().getTransferSummaryCount(filters);
+    }
+
+
+    @Override
+    public void decorateGrid(Grid<TransfersSummaryDay> grid) {
+        int pos = 0;
+        for (Grid.Column col : grid.getColumns()) if (pos++ > 1) {
+            col.setRenderer(new ButtonRenderer(e -> {
+                TransfersSummaryDay i = (TransfersSummaryDay) e.getItem();
+                System.out.println("clicked on " + e.getItem() + "/" + e.getColumn().getId());
+                MDDUI.get().getNavegador().go("" + i.getAirport() + "-" + i.getDate() + "-" + "SHUTTLEIN");
+            }));
+        }
     }
 }

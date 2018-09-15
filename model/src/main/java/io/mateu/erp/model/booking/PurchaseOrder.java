@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.PurchaseCharge;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -28,6 +29,7 @@ import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.persistence.Parameter;
@@ -63,6 +65,10 @@ public class PurchaseOrder {
     @Ignored
     private Audit audit;
 
+    @Ignored
+    @NotNull
+    private ServiceType serviceType;
+
     @SearchFilter
     @ListColumn
     private LocalDate start;
@@ -70,6 +76,7 @@ public class PurchaseOrder {
     @ManyToOne
     @NotNull
     @ListColumn
+    @ColumnWidth(172)
     private Office office;
 
     @ManyToOne
@@ -77,10 +84,12 @@ public class PurchaseOrder {
     @ListColumn
     @SearchFilter
     @QLFilter("x.provider = true")
+    @ColumnWidth(172)
     private Partner provider;
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
+    @ColumnWidth(100)
     private boolean cancelled;
 
     private String comment;
@@ -89,6 +98,7 @@ public class PurchaseOrder {
     @Output
     @ListColumn
     @CellStyleGenerator(SentCellStyleGenerator.class)
+    @ColumnWidth(68)
     private boolean sent;
 
     public void setSent(boolean v) {
@@ -106,6 +116,7 @@ public class PurchaseOrder {
     @ListColumn
     @SearchFilter
     @CellStyleGenerator(PurchaseOrderStatusCellStyleGenerator.class)
+    @ColumnWidth(150)
     private PurchaseOrderStatus status;
     @ListColumn
     private String providerComment;
@@ -126,33 +137,24 @@ public class PurchaseOrder {
     @Output
     private boolean valued;
 
-    @Output
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="value", column=@Column(name="value_value"))
+            , @AttributeOverride(name="date", column=@Column(name="value_date"))
+            , @AttributeOverride(name="officeChangeRate", column=@Column(name="value_offchangerate"))
+            , @AttributeOverride(name="officeValue", column=@Column(name="value_offvalue"))
+            , @AttributeOverride(name="nucChangeRate", column=@Column(name="value_nuchangerate"))
+            , @AttributeOverride(name="nucValue", column=@Column(name="value_nucvalue"))
+    })
+    @AssociationOverrides({
+            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "value_currency"))
+    })
+    @KPI
+    @NotWhenCreating
     @ListColumn
-    double total;
+    private Amount value;
 
-    public void setTotal(double v) {
-        this.total = v;
-    }
-
-    @ManyToOne
-    @NotNull
-    Currency currency;
-
-    @NotNull
-    @ManyToOne
-    private Currency officeCurrency;
-
-    private double totalInOfficeCurrency;
-
-    private double officeCurrencyExchangeRate;
-
-    @NotNull
-    @ManyToOne
-    private Currency accountingCurrency;
-
-    private double totalInAccountingCurrency;
-
-    private double accountingCurrencyExchangeRate;
 
     @Output
     private String priceReport;
@@ -194,14 +196,13 @@ public class PurchaseOrder {
     }
 
     @Action("Send")
-    public static void sendFromList(EntityManager em, @Selection List<Data> selection, String email) throws Exception {
+    public static void sendFromList(EntityManager em, Set<PurchaseOrder> selection, String email) throws Exception {
         SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setStatus(TaskStatus.PENDING);
         t.setMethod(PurchaseOrderSendingMethod.EMAIL);
         t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, Constants.SYSTEM_USER_LOGIN)));
         String a = email;
-        for (Data d : selection) {
-            PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));
+        for (PurchaseOrder po : selection) {
             t.getPurchaseOrders().add(po);
             po.getSendingTasks().add(t);
             if (Strings.isNullOrEmpty(a)) a = po.getProvider().getSendOrdersTo();
@@ -269,7 +270,7 @@ public class PurchaseOrder {
         d.put("sent", isSent());
         d.put("sentTime", getSentTime());
         d.put("valued", isValued());
-        d.put("total", getTotal());
+        d.put("total", getValue());
 
         List<Map<String, Object>> ls = new ArrayList<>();
 
@@ -309,7 +310,7 @@ public class PurchaseOrder {
         }
     }
 
-    public void price(EntityManager em) {
+    public void price(EntityManager em) throws Throwable {
         boolean v = false;
         double t = 0;
         if (isValueOverrided()) {
@@ -332,7 +333,8 @@ public class PurchaseOrder {
             }
         }
         setValued(v);
-        setTotal(t);
+        getValue().setValue(t);
+        getValue().setCurrency(getProvider().getCurrency());
     }
 
     private double rate(EntityManager em, PrintWriter report) throws Throwable {

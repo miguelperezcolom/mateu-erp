@@ -1,5 +1,7 @@
 package io.mateu.erp.client.utils;
 
+import io.mateu.erp.model.health.Check;
+import io.mateu.erp.model.health.Report;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.tests.TestPopulator;
 import io.mateu.mdd.core.app.*;
@@ -22,6 +24,7 @@ public class UtilsModule extends AbstractModule {
 
         m.add(new MDDOpenCRUDAction("Queue", AbstractTask.class));
 
+        m.add(new MDDMenu("Health", "Reports", Report.class, "Checks", Check.class));
 
         m.add(new MDDCallMethodAction("Populate with test data", TestPopulator.class, "populateEverything"));
 

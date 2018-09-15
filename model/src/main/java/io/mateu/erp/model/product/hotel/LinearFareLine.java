@@ -1,6 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.Helper;
@@ -9,15 +12,43 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 @Getter@Setter
 public class LinearFareLine implements XMLSerializable {
+
+    @Ignored
+    @NotNull
+    private LinearFare fare;
+
 
     @ValueClass(RoomType.class)
     private String roomTypeCode;
 
+    public DataProvider getRoomTypeCodeDataProvider() {
+        List<String> l = new ArrayList<>();
+        for (Room r : fare.getPhoto().getContract().getHotel().getRooms()) {
+            l.add(r.getCode());
+        }
+        return new ListDataProvider<String>(l);
+    }
+
+
     @ValueClass(BoardType.class)
     @SameLine
     private String boardTypeCode;
+
+    public DataProvider getBoardTypeCodeDataProvider() {
+        List<String> l = new ArrayList<>();
+        for (Board r : fare.getPhoto().getContract().getHotel().getBoards()) {
+            l.add(r.getCode());
+        }
+        return new ListDataProvider<String>(l);
+    }
+
 
 
     private double lodgingPrice;

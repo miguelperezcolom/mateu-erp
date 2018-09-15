@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.interfaces.UseCalendarToEdit;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -7,12 +8,17 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter@Setter
 public class LinearFare implements XMLSerializable, UseCalendarToEdit {
+
+    @Ignored
+    @NotNull
+    private HotelContractPhoto photo;
 
     private List<DatesRange> dates = new ArrayList<>();
 

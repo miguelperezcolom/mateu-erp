@@ -2,11 +2,8 @@ package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
+import io.mateu.erp.model.booking.*;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.PurchaseOrderStatus;
-import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.partners.Partner;
@@ -47,6 +44,7 @@ public class TransferService extends Service {
     @NotNull
     @SearchFilter
     @ListColumn
+    @ColumnWidth(150)
     private TransferType transferType;
 
     @Sum
@@ -57,6 +55,7 @@ public class TransferService extends Service {
     @Output
     @SearchFilter
     @ListColumn
+    @ColumnWidth(150)
     private TransferDirection direction;
 
     @ManyToOne
@@ -111,19 +110,15 @@ public class TransferService extends Service {
 
 
     @Output
-    @ListColumn
     private LocalDateTime pickupConfirmedByTelephone;
     @Output
     @SameLine
-    @ListColumn
     private LocalDateTime pickupConfirmedByWeb;
 
     @Output
-    @ListColumn
     private LocalDateTime pickupConfirmedByEmailToHotel;
     @Output
     @SameLine
-    @ListColumn
     private LocalDateTime pickupConfirmedBySMS;
 
     @Ignored
@@ -153,6 +148,7 @@ public class TransferService extends Service {
 
 
     public TransferService() {
+        setServiceType(ServiceType.TRANSFER);
         setIcons(FontAwesome.BUS.getHtml());
     }
 

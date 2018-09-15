@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.FullWidth;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.StartTabs;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.DatesRange;
@@ -12,6 +14,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.EntityManager;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.*;
@@ -26,6 +29,10 @@ import java.util.Map;
  */
 @XmlRootElement(name = "terms")
 public class HotelContractPhoto implements Serializable, Externalizable {
+
+    @NotNull
+    @Ignored
+    private HotelContract contract;
 
     @StartTabs
     @FullWidth
@@ -290,6 +297,14 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.clauses = clauses;
     }
 
+
+    public HotelContract getContract() {
+        return contract;
+    }
+
+    public void setContract(HotelContract contract) {
+        this.contract = contract;
+    }
 
     @Override
     public String toString() {

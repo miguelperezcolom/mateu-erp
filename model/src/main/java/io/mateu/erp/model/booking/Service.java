@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -27,6 +28,7 @@ import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -65,6 +67,10 @@ public abstract class Service {
     @Output
     private Audit audit;
 
+    @Ignored
+    @NotNull
+    private ServiceType serviceType;
+
     @Output
     @HtmlCol
     @ColumnWidth(100)
@@ -90,6 +96,13 @@ public abstract class Service {
     @ManyToOne
     @Ignored
     private Booking booking;
+
+    @NotNull
+    @ManyToOne
+    @ListColumn
+    @SearchFilter
+    @ColumnWidth(170)
+    private Office office;
 
     @ManyToOne
     @NotWhenCreating
@@ -140,10 +153,6 @@ public abstract class Service {
     private boolean held;
 
 
-
-    @NotNull
-    @ManyToOne
-    private Office office;
 
     @TextArea
     @SameLine
@@ -232,7 +241,6 @@ public abstract class Service {
     private LocalDate start;
 
     @Ignored
-    @ListColumn
     private LocalDate finish;
 
     @Ignored
@@ -253,6 +261,7 @@ public abstract class Service {
 
     @Ignored
     private boolean visibleInSummary;
+
 
     public void updateProcessingStatus(EntityManager em) {
         ProcessingStatus ps = getProcessingStatus();
@@ -487,7 +496,7 @@ public abstract class Service {
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
-                if (po.isValued()) totalCost += po.getTotal();
+                if (po.isValued()) totalCost += po.getValue().getValue();
                 purchaseValued &= po.isValued();
             }
             setTotalCost(Helper.roundOffEuros(totalCost));
@@ -680,6 +689,7 @@ public abstract class Service {
             if (po == null) {
                 nueva = true;
                 po = new PurchaseOrder();
+                po.setServiceType(serviceType);
                 po.setAudit(new Audit());
                 po.getServices().add(this);
                 getPurchaseOrders().add(po);
@@ -687,7 +697,7 @@ public abstract class Service {
             }
             po.setOffice(getOffice());
             po.setProvider(provider);
-            po.setCurrency(provider.getCurrency());
+            po.setValue(new Amount(FastMoney.of(0, provider.getCurrency().getIsoCode())));
 
             if (nueva) em.persist(po);
 

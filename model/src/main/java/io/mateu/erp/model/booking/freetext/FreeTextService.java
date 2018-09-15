@@ -2,7 +2,9 @@ package io.mateu.erp.model.booking.freetext;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class FreeTextService extends Service {
 
     @Tab("Service")
     @NotNull
+    @ListColumn
     private String text;
 
     @NotNull
@@ -32,6 +35,7 @@ public class FreeTextService extends Service {
     private LocalDate returnDate;
 
     public FreeTextService() {
+        setServiceType(ServiceType.FREETEXT);
         setIcons(FontAwesome.EDIT.getHtml());
     }
 

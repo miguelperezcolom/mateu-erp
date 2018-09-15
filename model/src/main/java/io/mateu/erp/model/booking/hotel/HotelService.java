@@ -5,6 +5,7 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.File;
+import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.organization.Office;
@@ -40,6 +41,8 @@ public class HotelService extends Service {
     @Tab("Service")
     @ManyToOne
     @NotNull
+    @SearchFilter
+    @ListColumn
     private Hotel hotel;
 
     @ManyToOne
@@ -56,6 +59,7 @@ public class HotelService extends Service {
 
 
     public HotelService() {
+        setServiceType(ServiceType.HOTEL);
         setIcons(FontAwesome.HOTEL.getHtml());
     }
 
