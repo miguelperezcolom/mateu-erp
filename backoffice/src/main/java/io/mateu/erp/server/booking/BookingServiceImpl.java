@@ -1,14 +1,13 @@
 package io.mateu.erp.server.booking;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.client.booking.DayServiceStatus;
-import io.mateu.erp.client.booking.TransfersSummaryDay;
-import io.mateu.erp.client.booking.TransfersSummaryView;
+import io.mateu.erp.client.booking.views.DayServiceStatus;
+import io.mateu.erp.client.booking.views.TransfersSummaryDay;
+import io.mateu.erp.client.booking.views.TransfersSummaryView;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.mdd.core.data.Data;
-import io.mateu.mdd.core.data.FileLocator;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.DummyDate;
@@ -25,7 +24,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 

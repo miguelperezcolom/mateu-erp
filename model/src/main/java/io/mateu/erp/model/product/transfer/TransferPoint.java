@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.transfer;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
@@ -44,6 +45,10 @@ public class TransferPoint {
     private TransferPointType type;
 
     @NotNull
+    @ManyToOne
+    private Office office;
+
+    @NotNull
     @SearchFilter
     private String name;
 
@@ -77,6 +82,7 @@ public class TransferPoint {
     private int minutesForNationalFlights;
 
     private int minutesForInternationalFlights;
+
 
 
     public boolean isMinutesForNationalFlightsVisible() {

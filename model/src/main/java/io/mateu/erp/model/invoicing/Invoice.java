@@ -42,6 +42,10 @@ public abstract class Invoice {
     @Output
     private InvoiceType type;
 
+    @ManyToOne@NotNull
+    @Output
+    private InvoiceSerial serial;
+
     @NotEmpty
     @Output
     @ListColumn

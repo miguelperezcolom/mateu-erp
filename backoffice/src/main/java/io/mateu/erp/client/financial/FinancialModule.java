@@ -3,10 +3,7 @@ package io.mateu.erp.client.financial;
 import io.mateu.erp.model.accounting.AccountingEntry;
 import io.mateu.erp.model.accounting.LineItem;
 import io.mateu.erp.model.financials.*;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.ChargeType;
-import io.mateu.erp.model.invoicing.IssuedInvoice;
-import io.mateu.erp.model.invoicing.ReceivedInvoice;
+import io.mateu.erp.model.invoicing.*;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
@@ -34,21 +31,6 @@ public class FinancialModule extends AbstractModule {
 
         m.add(new MDDOpenCRUDAction("Agents", FinancialAgent.class));
 
-        m.add(new MDDOpenCRUDAction("Currency exchanges", CurrencyExchange.class));
-
-        m.add(new MDDOpenCRUDAction("Billing concepts", BillingConcept.class));
-
-        m.add(new MDDMenu("Rebates", "Rebates", Rebate.class, "Settlements", RebateSettlement.class));
-
-        m.add(new MDDMenu("Retentions", "Retention types", RetentionType.class, "Retention terms", RetentionTerms.class));
-
-        m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
-
-        m.add(new MDDMenu("VAT", "VAT", VAT.class, "Percents", VATPercent.class, "Settlements", VATSettlement.class));
-
-
-        m.add(new MDDMenu("Accounting", "Plans", io.mateu.erp.model.accounting.AccountingPlan.class, "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
-
         m.add(new AbstractMenu("Invoicing") {
             @Override
             public List<MenuEntry> buildEntries() {
@@ -64,6 +46,8 @@ public class FinancialModule extends AbstractModule {
                         m.add(new MDDOpenCRUDAction("Charges", Charge.class, "x.type = " + ChargeType.class.getName() + "." + ChargeType.SALE));
 
                         m.add(new MDDOpenCRUDAction("Litigations", Litigation.class));
+
+                        m.add(new MDDOpenCRUDAction("Series", InvoiceSerial.class));
 
                         return m;
                     }
@@ -111,6 +95,24 @@ public class FinancialModule extends AbstractModule {
                 return m;
             }
         });
+
+        m.add(new MDDOpenCRUDAction("Currency exchanges", CurrencyExchange.class));
+
+        m.add(new MDDOpenCRUDAction("Billing concepts", BillingConcept.class));
+
+        m.add(new MDDMenu("Rebates", "Rebates", Rebate.class, "Settlements", RebateSettlement.class));
+
+        m.add(new MDDMenu("Retentions", "Retention types", RetentionType.class, "Retention terms", RetentionTerms.class));
+
+        m.add(new MDDMenu("Commissions", "Settlements", RetentionType.class));
+
+        m.add(new MDDOpenCRUDAction("Payment terms", PaymentTerms.class));
+
+        m.add(new MDDMenu("VAT", "VAT", VAT.class, "Percents", VATPercent.class, "Settlements", VATSettlement.class));
+
+
+        m.add(new MDDMenu("Accounting", "Plans", io.mateu.erp.model.accounting.AccountingPlan.class, "Accounts", io.mateu.erp.model.accounting.Account.class, "Entries", AccountingEntry.class, "Line items", LineItem.class));
+
 
         m.add(new AbstractMenu("Viajes Ibiza") {
             @Override

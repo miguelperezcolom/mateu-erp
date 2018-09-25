@@ -1,6 +1,6 @@
 package io.mateu.erp.client.operations;
 
-import io.mateu.erp.client.booking.TransfersSummaryView;
+import io.mateu.erp.client.booking.views.*;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.ServiceType;
@@ -54,6 +54,8 @@ public class OperationsModule extends AbstractModule {
                 m.add(new MDDOpenCRUDAction("Services", TransferService.class));
 
                 m.add(new MDDOpenCRUDAction("Buses", PurchaseOrder.class, new ExtraFilters("x.serviceType = :st", "st", ServiceType.TRANSFER)));
+
+                m.add(new MDDOpenListViewAction("Flights", FlightsView.class));
 
                 m.add(new MDDOpenCRUDAction("Mapping", TransferPointMapping.class));
 

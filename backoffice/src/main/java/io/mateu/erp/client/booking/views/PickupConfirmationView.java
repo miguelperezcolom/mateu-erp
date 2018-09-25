@@ -1,4 +1,4 @@
-package io.mateu.erp.client.booking;
+package io.mateu.erp.client.booking.views;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.transfer.TransferDirection;

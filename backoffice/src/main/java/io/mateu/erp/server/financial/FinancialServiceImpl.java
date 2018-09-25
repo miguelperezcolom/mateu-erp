@@ -686,7 +686,7 @@ public class FinancialServiceImpl {
 
                             if (po.isValued()) {
                                 valoradas++;
-                                total += po.getTotal();
+                                total += po.getValue().getValue();
                             } else {
                                 novaloradas++;
                             }
@@ -714,8 +714,8 @@ public class FinancialServiceImpl {
 
                             if (po.isValued()) {
                                 valoradas++;
-                                total += po.getTotal();
-                                totalcompra += po.getTotal();
+                                total += po.getValue().getValue();
+                                totalcompra += po.getValue().getValue();
                             } else {
                                 novaloradas++;
                             }

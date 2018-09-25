@@ -8,6 +8,7 @@ import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
@@ -15,25 +16,29 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter@Setter
 public class GenericBooking extends Booking {
 
+    @NotNull
+    @ManyToOne
+    @Position(7)
+    private Office office;
+
     @ManyToOne@NotNull
+    @Position(8)
     private GenericProduct product;
 
 
+    @Position(9)
     private int units;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    private List<GenericBookingExtra> extras;
-
-
-    @NotNull
-    @ManyToOne
-    private Office office;
+    @Position(10)
+    private List<GenericBookingExtra> extras = new ArrayList<>();
 
 
     public GenericBooking() {

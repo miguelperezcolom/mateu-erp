@@ -1,4 +1,4 @@
-package io.mateu.erp.client.booking;
+package io.mateu.erp.client.booking.views;
 
 
 import com.vaadin.ui.Grid;
@@ -6,14 +6,12 @@ import com.vaadin.ui.renderers.ButtonRenderer;
 import io.mateu.erp.server.booking.BookingServiceImpl;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.app.MDDCallback;
 import io.mateu.mdd.core.interfaces.RpcCrudView;
 import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

@@ -1,9 +1,6 @@
 package io.mateu.erp.client.management;
 
-import io.mateu.mdd.core.app.AbstractAction;
-import io.mateu.mdd.core.app.AbstractModule;
-import io.mateu.mdd.core.app.MDDExecutionContext;
-import io.mateu.mdd.core.app.MenuEntry;
+import io.mateu.mdd.core.app.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,19 +18,9 @@ public class ManagementModule extends AbstractModule {
     public List<MenuEntry> buildMenu() {
         List<MenuEntry> m = new ArrayList<>();
 
-        m.add(new AbstractAction("Control panel") {
-            @Override
-            public void run(MDDExecutionContext mddExecutionContext) {
+        m.add(new MDDOpenEditorAction("Dashboard", Dashboard.class));
 
-            }
-        });
-
-        m.add(new AbstractAction("Sales report") {
-            @Override
-            public void run(MDDExecutionContext mddExecutionContext) {
-
-            }
-        });
+        m.add(new MDDOpenEditorAction("Status", StateOfAffairs.class));
 
         return m;
     }

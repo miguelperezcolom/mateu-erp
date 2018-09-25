@@ -1,4 +1,4 @@
-package io.mateu.erp.client.booking;
+package io.mateu.erp.client.booking.views;
 
 import io.mateu.mdd.core.annotations.CellStyleGenerator;
 import io.mateu.mdd.core.annotations.Ignored;

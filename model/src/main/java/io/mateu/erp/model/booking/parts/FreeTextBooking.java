@@ -5,6 +5,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -23,13 +24,17 @@ import java.time.LocalDate;
 @Getter@Setter
 public class FreeTextBooking extends Booking {
 
-    @TextArea
-    @NotEmpty
-    private String serviceDescription;
-
     @NotNull
     @ManyToOne
+    @Position(7)
     private Office office;
+
+
+    @TextArea
+    @NotEmpty
+    @Position(8)
+    private String serviceDescription;
+
 
 
     public FreeTextBooking() {
@@ -65,7 +70,7 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
-    public void priceServices() {
-
+    public void priceServices() throws Throwable {
+        throw new Exception("Free text needs price to be overrided");
     }
 }

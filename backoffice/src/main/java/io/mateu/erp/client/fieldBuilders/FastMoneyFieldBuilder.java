@@ -9,9 +9,7 @@ import com.vaadin.data.validator.BeanValidator;
 import com.vaadin.shared.Registration;
 import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.ui.*;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.product.hotel.FareValue;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.data.MDDBinder;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
@@ -63,11 +61,13 @@ public class FastMoneyFieldBuilder extends AbstractFieldBuilder {
         Binder<DTO> subBinder = new Binder(DTO.class);
 
         TextField tf = new TextField();
+        tf.setWidth("100px");
         tf.setValueChangeMode(ValueChangeMode.BLUR);
         subBinder.forField(tf).withConverter(new StringToDoubleConverter(0.0, "Must be a valid number")).bind("value");
 
 
         ComboBox<Currency> cb = new ComboBox<>();
+        cb.setWidth("100px");
         cb.setDataProvider((ListDataProvider<Currency>) new JPQLListDataProvider(Currency.class));
         subBinder.forField(cb).bind("currency");
 
@@ -81,7 +81,7 @@ public class FastMoneyFieldBuilder extends AbstractFieldBuilder {
 
 
 
-
+        allFieldContainers.put(field, hl);
 
 
 
@@ -109,7 +109,7 @@ public class FastMoneyFieldBuilder extends AbstractFieldBuilder {
             @Override
             public Object getValue() {
                 try {
-                    return new Amount(subBinder.getBean().toFastMoney());
+                    return subBinder.getBean().toFastMoney();
                 } catch (Throwable throwable) {
                     MDD.alert(throwable);
                 }

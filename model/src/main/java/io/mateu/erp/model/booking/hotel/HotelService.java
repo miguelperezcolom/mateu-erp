@@ -6,14 +6,12 @@ import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.product.hotel.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.Data;
@@ -53,7 +51,7 @@ public class HotelService extends Service {
     @Output
     private HotelContract purchaseContract;
 
-    @OneToMany(mappedBy = "service")
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
     @OwnedList
     private List<HotelServiceLine> lines = new ArrayList<>();
 
@@ -74,12 +72,13 @@ public class HotelService extends Service {
                 Map<String, Object> x;
                 ls.add(x = new HashMap<>());
                 x.put("numberofrooms", l.getNumberOfRooms());
-                x.put("paxperroom", l.getPaxPerRoom());
+                x.put("adultsperroom", l.getAdultsPerRoom());
+                x.put("childrenperroom", l.getChildrenPerRoom());
                 if (l.getStart() != null) x.put("start", l.getStart().format(DateTimeFormatter.ISO_DATE));
                 if (l.getEnd() != null) x.put("finish", l.getEnd().format(DateTimeFormatter.ISO_DATE));
                 if (l.getAges() != null) x.put("ages", Arrays.toString(l.getAges()));
-                if (l.getBoardType() != null && l.getBoardType().getName() != null) x.put("board", l.getBoardType().getName().getEs());
-                if (l.getRoomType() != null && l.getRoomType().getName() != null) x.put("room", l.getRoomType().getName().getEs());
+                if (l.getBoard() != null && l.getBoard().getName() != null) x.put("board", l.getBoard().getName());
+                if (l.getRoom() != null && l.getRoom().getName() != null) x.put("room", l.getRoom().getName());
                 x.put("active", "" + l.isActive());
             }
             for (int i = 0; i < ls.size(); i++) m.put("line_" + i, ls.get(i));
@@ -120,7 +119,7 @@ public class HotelService extends Service {
         boolean matches = true;
         int pos = 0;
         for (HotelServiceLine l : getLines()) {
-            matches &= l.getRoomType().getCode().equals(o.getDistribution().get(pos).getRoomId());
+            matches &= l.getRoom().getCode().equals(o.getDistribution().get(pos).getRoomId());
         }
         matches &= getLines().size() == o.getDistribution().size();
         return matches;
@@ -129,7 +128,7 @@ public class HotelService extends Service {
     private DispoRQ createDispoRQ() {
         List<Occupancy> ocs = new ArrayList<>();
         for (HotelServiceLine l : getLines()) {
-            ocs.add(new Occupancy(l.getNumberOfRooms(), l.getPaxPerRoom(), l.getAges(), l.getBoardType().getCode()));
+            ocs.add(new Occupancy(l.getNumberOfRooms(), l.getAdultsPerRoom() + l.getChildrenPerRoom(), l.getAges(), l.getBoard().getCode()));
         }
         DispoRQ rq = new DispoRQ(LocalDate.now(), io.mateu.erp.dispo.Helper.toInt(getStart()), io.mateu.erp.dispo.Helper.toInt(getFinish()), ocs, false);
         return rq;
@@ -239,7 +238,6 @@ public class HotelService extends Service {
             b.setCurrency(agencia.getCurrency());
             b.setAgencyReference(agencyReference);
             b.setAudit(new Audit(u));
-            b.setConfirmed(true);
             b.setLeadName(leadName);
             em.persist(b);
 
@@ -261,18 +259,19 @@ public class HotelService extends Service {
 
             for (Allocation a : k.getAllocation()) {
                 HotelServiceLine l;
-                s.getLines().add(l = new HotelServiceLine());
+                s.getLines().add(l = new HotelServiceLine(s, null)); // todo: esto tiene que crear una reserva, no un servicio
                 em.persist(l);
                 l.setService(s);
 
                 l.setActive(true);
                 l.setAges(a.getAges());
-                l.setBoardType(em.find(BoardType.class, k.getBoardPrice().getBoardBasisId()));
+                l.setBoard(em.find(Board.class, Long.parseLong(k.getBoardPrice().getBoardBasisId())));
                 l.setEnd(io.mateu.erp.dispo.Helper.toDate(k.getCheckOut()));
                 l.setStart(io.mateu.erp.dispo.Helper.toDate(k.getCheckIn()));
                 l.setNumberOfRooms(a.getNumberOfRooms());
-                l.setPaxPerRoom(a.getPaxPerRoom());
-                l.setRoomType(em.find(RoomType.class, a.getRoomId()));
+                l.setAdultsPerRoom(a.getPaxPerRoom());
+                l.setChildrenPerRoom(0);
+                l.setRoom(em.find(Room.class, Long.parseLong(a.getRoomId())));
 
             }
 

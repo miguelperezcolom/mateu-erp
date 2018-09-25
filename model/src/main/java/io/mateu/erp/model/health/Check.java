@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter@Setter
+@Table(name = "_check")
 public class Check {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)

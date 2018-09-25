@@ -9,6 +9,7 @@ import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
@@ -57,6 +58,11 @@ public abstract class Booking {
     @Order(desc = true, priority = 10)
     private long id;
 
+
+    @Section("Service")
+    @Embedded
+    private Audit audit;
+
     @ListColumn(width = 60)
     @ManyToOne
     @NotNull
@@ -65,24 +71,11 @@ public abstract class Booking {
     private File file;
 
     @ListColumn(width = 60)
-    @Output
+    @NotInEditor
     @HtmlCol
     @ColumnWidth(100)
     private String icons;
 
-
-    private boolean directSale;
-
-    @ManyToOne
-    @NotNull
-    @ListColumn(width = 60)
-    @ColumnWidth(156)
-    private PointOfSale pos;
-
-    @OneToMany(mappedBy = "booking")
-    @Output
-    @NotWhenCreating
-    private List<Service> services = new ArrayList<>();
 
 
     @KPI
@@ -113,11 +106,25 @@ public abstract class Booking {
     @TextArea
     private String specialRequests;
 
+    @Section("Sale")
     @TextArea
     @SameLine
     private String privateComments;
 
 
+    @OneToMany(mappedBy = "booking")
+    @Output
+    @NotWhenCreating
+    private List<Service> services = new ArrayList<>();
+
+
+    private boolean directSale;
+
+    @ManyToOne
+    @NotNull
+    @ListColumn(width = 60)
+    @ColumnWidth(156)
+    private PointOfSale pos;
 
     @Embedded
     @AttributeOverrides({
@@ -131,16 +138,39 @@ public abstract class Booking {
     @AssociationOverrides({
             @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "value_currency"))
     })
-    @KPI
-    @NotWhenCreating
+    @NotInEditor
     private Amount value;
+
+    @KPI
+    @ListColumn
+    private double totalValue;
+
+    @KPI
+    @ListColumn
+    private double totalNetValue;
+
+    @KPI
+    @SameLine
+    private double totalCost;
+
+    @KPI
+    @SameLine
+    private double balance;
+
+    @KPI
+    @ManyToOne
+    private Currency currency;
+
+
+    @KPI
+    private boolean available;
 
 
     private boolean valueOverrided;
     @SameLine
     private FastMoney overridedValue;
 
-    public boolean isOverridedNetValueVisible() {
+    public boolean isOverridedValueVisible() {
         return valueOverrided;
     }
 
@@ -172,7 +202,7 @@ public abstract class Booking {
 
     @NotWhenCreating
     @UseLinkToListView
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     private List<BookingCharge> charges = new ArrayList<>();
 
 
@@ -391,11 +421,15 @@ public abstract class Booking {
 
 
     @PrePersist@PreUpdate
-    public void pre() throws Exception {
+    public void pre() throws Throwable {
         if (isValueOverrided()) {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
         }
         validate();
+        if (isConfirmed()) {
+            generateServices(Helper.getEMFromThreadLocal());
+        }
+        price(Helper.getEMFromThreadLocal());
     }
 
 
@@ -428,7 +462,7 @@ public abstract class Booking {
         em.merge(this);
     }
 
-    public abstract void priceServices();
+    public abstract void priceServices() throws Throwable;
 
 
     private void updateCharges(EntityManager em) {
@@ -475,7 +509,7 @@ public abstract class Booking {
                         public String apply(Object o) {
                             String s = null;
                             if (old != null) s = old.apply(o);
-                            if (!((Boolean)((Object[])o)[6])) {
+                            if (!((Boolean)((Object[])o)[5])) {
                                 s = (s != null)?s + " cancelled":"cancelled";
                             }
                             return s;

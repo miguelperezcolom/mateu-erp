@@ -1,6 +1,9 @@
 package io.mateu.erp.model.booking.hotel;
 
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.product.hotel.Board;
 import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.Room;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.mdd.core.model.util.IntArrayAttributeConverter;
 import lombok.Getter;
@@ -31,17 +34,20 @@ public class HotelServiceLine {
 
     @ManyToOne
     @NotNull
-    private RoomType roomType;
+    private Room room;
 
     @ManyToOne
     @NotNull
-    private BoardType boardType;
+    private Board board;
 
     @NotNull
     private int numberOfRooms;
 
     @NotNull
-    private int paxPerRoom;
+    private int adultsPerRoom;
+
+    @NotNull
+    private int childrenPerRoom;
 
     @Convert(converter = IntArrayAttributeConverter.class)
     @Column(name = "_ages")
@@ -50,4 +56,20 @@ public class HotelServiceLine {
     private boolean active;
 
 
+    public HotelServiceLine() {
+
+    }
+
+    public HotelServiceLine(HotelService service, HotelBookingLine l) {
+        this.service = service;
+        start = l.getStart();
+        end = l.getEnd();
+        room = l.getRoom();
+        board = l.getBoard();
+        numberOfRooms = l.getRooms();
+        adultsPerRoom = l.getAdultsPerRoon();
+        childrenPerRoom = l.getChildrenPerRoom();
+        ages = l.getAges();
+        active = l.isActive();
+    }
 }

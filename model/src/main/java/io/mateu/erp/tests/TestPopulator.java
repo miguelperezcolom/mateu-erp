@@ -362,7 +362,6 @@ public class TestPopulator {
                     b.setFinish(LocalDate.of(2017, 6, 15));
                     b.setEmail("miguelperezcolom@gmail.com");
                     b.setCurrency(eur);
-                    b.setConfirmed(true);
                     b.setAudit(new Audit(u));
                     b.setAgencyReference("AXS" + i);
                     b.setActive(true);

@@ -1,4 +1,4 @@
-package io.mateu.erp.client.booking;
+package io.mateu.erp.client.booking.views;
 
 import lombok.Getter;
 import lombok.Setter;

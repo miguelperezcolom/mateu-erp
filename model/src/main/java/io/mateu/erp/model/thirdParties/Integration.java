@@ -1,6 +1,7 @@
 package io.mateu.erp.model.thirdParties;
 
 import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.revenue.ProductLine;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +25,10 @@ public class Integration implements IIntegration {
     @NotNull
     @ManyToOne
     private ProductLine productLine;
+
+    @NotNull
+    @ManyToOne
+    private Office office;
 
     private String baseUrl;
 

@@ -72,7 +72,6 @@ public class File {
 
     @Section("Info")
     @Embedded
-    @Output
     @SearchFilter(field="created")
     @SearchFilter(field="modified")
     private Audit audit;
@@ -98,16 +97,6 @@ public class File {
 
     private String telephone;
 
-    private boolean confirmed;
-
-    @SameLine
-    @ListColumn(width = 60)
-    @ColumnWidth(80)
-    @SearchFilter
-    private boolean active = true;
-
-
-
 
     @Ignored
     @SearchFilter
@@ -122,69 +111,6 @@ public class File {
     private String comments;
 
 
-    @KPI
-    @ListColumn
-    private double totalNetValue;
-
-    @KPI
-    @SameLine
-    private double totalRetailValue;
-
-    @KPI
-    @SameLine
-    private double totalCommissionValue;
-
-
-    @KPI
-    @SameLine
-    private double balance;
-
-    @Ignored
-    @ManyToOne
-    private Currency currency;
-
-    @Transient
-    @Ignored
-    private transient boolean alreadyCancelled = false;
-
-
-
-    @Section("Quotation requests")
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "orderInBooking")
-    @Output
-    private List<QuotationRequest> quotationRequests = new ArrayList<>();
-
-
-    @Section("Bookings")
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "orderInBooking")
-    @Output
-    private List<Booking> bookings = new ArrayList<>();
-
-    @Section("Services")
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "orderInBooking")
-    @Output
-    private List<Service> services = new ArrayList<>();
-
-    @Section("Charges")
-    @OneToMany(mappedBy = "file")
-    @Output
-    private List<BookingCharge> charges = new ArrayList<>();
-
-    @Section("Payments")
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "id")
-    @Output
-    private List<BookingPaymentAllocation> payments = new ArrayList<>();
-
-    @Output
-    @OneToMany(mappedBy = "file")
-    private List<TPVTransaction> TPVTransactions = new ArrayList<>();
-
-
-    @Section("Invoicing")
     private String companyName;
     private String vatId;
     private String address;
@@ -193,6 +119,71 @@ public class File {
     private String country;
     private String postalCode;
 
+    @KPI
+    @ListColumn
+    private double totalValue;
+
+    @KPI
+    @ListColumn
+    private double totalNetValue;
+
+    @KPI
+    @SameLine
+    private double totalCost;
+
+    @KPI
+    @SameLine
+    private double balance;
+
+    @KPI
+    @ManyToOne
+    private Currency currency;
+
+    @ListColumn(width = 60)
+    @ColumnWidth(80)
+    @SearchFilter
+    @KPI
+    private boolean active = true;
+
+
+    @Transient
+    @Ignored
+    private transient boolean alreadyCancelled = false;
+
+
+
+    @Section("Links")
+    @OneToMany(mappedBy = "file")
+    @OrderColumn(name = "orderInBooking")
+    @UseLinkToListView
+    private List<QuotationRequest> quotationRequests = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "file")
+    @OrderColumn(name = "orderInBooking")
+    @UseLinkToListView
+    private List<Booking> bookings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "file")
+    @OrderColumn(name = "orderInBooking")
+    @UseLinkToListView
+    private List<Service> services = new ArrayList<>();
+
+    @OneToMany(mappedBy = "file")
+    @UseLinkToListView
+    private List<BookingCharge> charges = new ArrayList<>();
+
+    @OneToMany(mappedBy = "file")
+    @OrderColumn(name = "id")
+    @UseLinkToListView
+    private List<BookingPaymentAllocation> payments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "file")
+    @UseLinkToListView
+    private List<TPVTransaction> TPVTransactions = new ArrayList<>();
+
+
+
 
     @Override
     public String toString() {
@@ -200,19 +191,11 @@ public class File {
     }
 
 
-    @Links
-    public List<MDDLink> getLinks() {
-        List<MDDLink> l = new ArrayList<>();
-        l.add(new MDDLink("Services", Service.class, ActionType.OPENLIST, new Data("file.id", getId())));
-        if (getAgency() != null) l.add(new MDDLink("Updates", TransferBookingRequest.class, ActionType.OPENLIST, new Data("customer", new Pair(getAgency().getId(), getAgency().getName()), "agencyReference", getAgencyReference())));
-        return l;
-    }
-
-    public static File getByAgencyRef(EntityManager em, String agencyRef, Partner age)
+    public static File getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
     {
         try {
             String jpql = "select x from " + File.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + age.getId();
+                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + partner.getId();
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<File> l = q.getResultList();
             File b = (l.size() > 0)?l.get(0):null;
@@ -296,6 +279,12 @@ public class File {
             s.cancel(em, u);
         }
     }
+
+    @Action(icon = VaadinIcons.DOLLAR)
+    public void changeCurrency(EntityManager em) {
+        //todo: cambiar moneda
+    }
+
 
     public Map<String,Object> getData() {
         Map<String, Object> d = new HashMap<>();
@@ -558,7 +547,7 @@ public class File {
                         public String apply(Object o) {
                             String s = null;
                             if (old != null) s = old.apply(o);
-                            if (!((Boolean)((Object[])o)[6])) {
+                            if (!((Boolean)((Object[])o)[9])) {
                                 s = (s != null)?s + " cancelled":"cancelled";
                             }
                             return s;
