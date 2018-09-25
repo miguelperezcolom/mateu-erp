@@ -9,7 +9,6 @@
     <version>0.0.2-SNAPSHOT</version>
     <modules>
         <module>model</module>
-        <module>backoffice</module>
         <module>traductor-caval-out</module>
         <module>dispo-tester</module>
         <module>show</module>
