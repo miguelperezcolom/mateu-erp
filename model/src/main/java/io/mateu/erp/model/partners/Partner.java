@@ -161,6 +161,13 @@ public class Partner implements IPartner {
         return getName();
     }
 
+
+    @Action
+    public void ratesPdf() {
+        //todo: crear el tarifario
+    }
+
+
     public Element toXml() {
         Element xml = new Element("actor");
         xml.setAttribute("id", "" + getId());

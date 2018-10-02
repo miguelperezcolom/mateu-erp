@@ -6,6 +6,7 @@ import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.erp.model.product.tour.TourVariant;
+import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,16 +21,22 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
+    @Position(7)
     private Excursion excursion;
 
 
     @ManyToOne
     @NotNull
+    @Position(8)
     private TourVariant variant;
 
     @ManyToOne
     @NotNull
+    @Position(9)
     private TourShift shift;
+
+
+    public boolean isEndOutput() { return true; }
 
 
     public ExcursionBooking() {

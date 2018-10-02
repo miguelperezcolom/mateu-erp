@@ -20,7 +20,7 @@ public class BoardType {
     @NotEmpty
     private String code;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @NotNull
     private Literal name;
 

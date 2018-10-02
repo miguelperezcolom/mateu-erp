@@ -8,6 +8,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,21 +27,24 @@ public class TicketBooking extends Booking {
 
     @NotNull
     @ManyToOne
+    @Position(3)
     private Ticket ticket;
 
-
+    @Position(4)
     private Excursion excursion;
 
+    @Position(5)
     private TourShift shift;
 
-    private int pax;
-
     @ManyToOne
+    @Position(6)
     private TransferPoint pickupPoint;
 
+    @Position(7)
     private int pickupTime;
 
 
+    @Position(8)
     private String roomNumber;
 
 
@@ -51,9 +55,6 @@ public class TicketBooking extends Booking {
     }
 
 
-    public boolean isStartVisible() {
-        return false;
-    }
 
     public boolean isEndVisible() {
         return false;

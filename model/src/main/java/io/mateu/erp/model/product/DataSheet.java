@@ -30,7 +30,7 @@ public class DataSheet {
     @NotEmpty
     private String name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @NotNull
     @TextArea
     private Literal description;

@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.HotelServiceLine;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
@@ -24,26 +25,43 @@ public class ThirdPartyHotelBooking extends Booking {
 
     @NotNull
     @ManyToOne
+    @Position(2)
     private Integration integration;
 
     @NotEmpty
+    @Position(3)
     private String hotelName;
 
+    @Position(4)
     private String hotelCategory;
 
+    @Position(5)
     private String hotelAddress;
 
+    @Position(6)
     private String hotelCity;
 
+    @Position(7)
     private String hotelState;
 
+    @Position(8)
     private String hotelCountry;
 
+    @Position(9)
     private String hotelDataSheetUrl;
 
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
+    @Position(10)
     private List<ThirdPartyHotelBookingLine> lines = new ArrayList<>();
+
+
+    public boolean isStartVisible() { return false; }
+    public boolean isEndVisible() { return false; }
+    public boolean isAdultsVisible() { return false; }
+    public boolean isChildrenVisible() { return false; }
+    public boolean isAgesVisible() { return false; }
+
 
 
     public ThirdPartyHotelBooking() {

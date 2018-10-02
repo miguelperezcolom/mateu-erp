@@ -5,9 +5,8 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.product.tour.TourShift;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Order;
-import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.config.Template;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -120,6 +119,12 @@ public class ManagedEvent {
             e.setActive(true);
             em.merge(e);
         });
+    }
+
+
+    @Action
+    public static void sendEmail(Set<ManagedEvent> sel, @Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) {
+
     }
 
 }
