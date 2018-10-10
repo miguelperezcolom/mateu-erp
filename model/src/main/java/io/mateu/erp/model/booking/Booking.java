@@ -54,7 +54,6 @@ public abstract class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @SearchFilter
     @Order(desc = true, priority = 10)
     private long id;
 
