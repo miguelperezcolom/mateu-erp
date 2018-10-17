@@ -263,6 +263,18 @@ public abstract class Service {
     private boolean visibleInSummary;
 
 
+    @ListColumn(width = 60)
+    @CellStyleGenerator(ValidCellStyleGenerator.class)
+    @Output
+    @ColumnWidth(120)
+    private ValidationStatus validationStatus = ValidationStatus.VALID;
+
+    @Output
+    @SameLine
+    private String validationMessage;
+
+
+
     public void updateProcessingStatus(EntityManager em) {
         ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
@@ -815,10 +827,8 @@ public abstract class Service {
 
     public void validate(EntityManager em) {
         // todo: esto lo hemos llevado a la reserva
-        /*
         setValidationStatus(ValidationStatus.VALID);
         setValidationMessage("");
-        */
     }
 
     @PostUpdate
