@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IBoard;
+import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.annotations.Unmodifiable;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.annotations.SearchFilter;
@@ -26,14 +27,17 @@ public class Board implements IBoard {
     @ManyToOne
     @NotNull
     @Unmodifiable
+    @NoChart
     private Hotel hotel;
 
     @SearchFilter
     @ManyToOne
     @NotNull
+    @NoChart
     private BoardType type;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @NoChart
     private Literal description;
 
     @Override

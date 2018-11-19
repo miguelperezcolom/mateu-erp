@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.mdd.core.CSS;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -27,6 +28,8 @@ public class StopSales {
     @ManyToOne
     @NotNull
     @Output
+    @NoChart
+    @MainSearchFilter
     private Hotel hotel;
 
     @Ignored
@@ -105,14 +108,14 @@ public class StopSales {
         return (getHotel() != null)?getHotel().getName():"No hotel";
     }
 
-    @Action
+    @Action(order = 1, style = "success")
     public StopSalesOperation openOrClose() {
         StopSalesOperation o = new StopSalesOperation();
         o.setStopSales(this);
         return o;
     }
 
-    @Action
+    @Action(order = 2)
     public void rebuild() throws Throwable {
         Helper.transact(em -> em.find(StopSales.class, getId()).build(em));
     }

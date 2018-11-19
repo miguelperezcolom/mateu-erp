@@ -14,21 +14,17 @@ import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.persistence.EntityManager;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,13 +32,13 @@ import java.util.Map;
 import java.util.UUID;
 
 @Getter@Setter
-public class FileInvoiceForm {
+public class BookingInvoiceForm {
 
     @Ignored
     private final java.io.File temp;
 
     @Output
-    private File file;
+    private Booking booking;
 
     private String email;
 
@@ -53,14 +49,14 @@ public class FileInvoiceForm {
     private URL proforma;
 
 
-    public FileInvoiceForm(File file) throws Throwable {
-        this.file = file;
+    public BookingInvoiceForm(Booking booking) throws Throwable {
+        this.booking = booking;
 
 
         Document xml = new Document(new Element("invoices"));
 
         List<Charge> charges = new ArrayList<>();
-        for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
+        charges.addAll(booking.getCharges());
 
         Helper.notransact(em -> xml.getRootElement().addContent(new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, true).toXml()));
 
@@ -122,7 +118,7 @@ public class FileInvoiceForm {
         email.setFrom(appconfig.getAdminEmailFrom());
         if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
 
-        email.setSubject("File " + file.getId() + " proforma");
+        email.setSubject("Booking " + booking.getId() + " proforma");
 
 
         String msg = postscript;
@@ -132,7 +128,7 @@ public class FileInvoiceForm {
         if (!Strings.isNullOrEmpty(freemark)) {
             Map<String, Object> data = Helper.getGeneralData();
             data.put("postscript", postscript);
-            data.put("leadname", file.getLeadName());
+            data.put("leadname", booking.getLeadName());
             msg = Helper.freemark(freemark, data);
         }
 
@@ -152,7 +148,7 @@ public class FileInvoiceForm {
         Helper.transact(em -> {
 
             List<Charge> charges = new ArrayList<>();
-            for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
+            charges.addAll(booking.getCharges());
 
             Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges);
             em.persist(i);

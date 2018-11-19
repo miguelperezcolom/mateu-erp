@@ -10,6 +10,7 @@ import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
@@ -28,50 +29,59 @@ public class TransferBooking extends Booking {
     public boolean isStartVisible() { return false; }
     public boolean isEndVisible() { return false; }
 
-    @Position(7)
+    @Position(13)
     private int bigLuggages;
 
     @SameLine
-    @Position(8)
+    @Position(14)
     private int golf;
 
     @SameLine
-    @Position(9)
+    @Position(15)
     private int bikes;
 
 
     @ManyToOne@NotNull
-    @Position(10)
+    @Position(16)
     private TransferPoint origin;
 
+    @TextArea
+    @Position(17)
+    private String originAddress;
+
     @ManyToOne@NotNull
-    @Position(11)
+    @Position(18)
     private TransferPoint destination;
 
+    @TextArea
+    @Position(19)
+    private String destinationAddress;
+
+
     @NotNull
-    @Position(12)
+    @Position(20)
     private TransferType transferType;
 
 
-    @Position(13)
+    @Position(21)
     private LocalDateTime arrivalFlightTime;
 
-    @Position(14)
+    @Position(22)
     private String arrivalFlightNumber;
 
 
-    @Position(15)
+    @Position(23)
     private String arrivalFlightOrigin;
 
 
 
-    @Position(16)
+    @Position(24)
     private LocalDateTime departureFlightTime;
 
-    @Position(17)
+    @Position(25)
     private String departureFlightNumber;
 
-    @Position(18)
+    @Position(26)
     private String departureFlightDestination;
 
 
@@ -96,8 +106,6 @@ public class TransferBooking extends Booking {
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
-                s.setFile(getFile());
-                getFile().getServices().add(s);
                 s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
             }
             s.setOffice(origin.getOffice());
@@ -129,8 +137,6 @@ public class TransferBooking extends Booking {
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
-                s.setFile(getFile());
-                getFile().getServices().add(s);
                 s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
             }
             s.setOffice(destination.getOffice());

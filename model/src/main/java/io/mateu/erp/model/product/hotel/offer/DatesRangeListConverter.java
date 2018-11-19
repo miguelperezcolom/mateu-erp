@@ -48,7 +48,7 @@ public class DatesRangeListConverter implements AttributeConverter<DatesRanges, 
             for (String z : joined.split(",")) if (!"".equals(z)) {
                 DatesRange r;
                 l.add(r = new DatesRange());
-                String[] x = z.split("|");
+                String[] x = z.split("\\|");
                 if (!"_".equals(x[0])) r.setStart(LocalDate.parse(x[0]));
                 if (!"_".equals(x[1])) r.setEnd(LocalDate.parse(x[1]));
             }

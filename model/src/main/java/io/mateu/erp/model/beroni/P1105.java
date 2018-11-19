@@ -52,11 +52,11 @@ public class P1105 extends BeroniRecord {
 
     public P1105(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Service s, PurchaseOrder po) {
 
-        setNumeroReserva(s.getFile().getId());
+        setNumeroReserva(s.getBooking().getId());
         setCodigoProveedorEnBeroni(po.getProvider().getIdInInvoicingApp());
         setNombreProveedor(po.getProvider().getName());
         setFechaServicio(s.getStart());
-        setNombreViajeros(s.getFile().getLeadName());
+        setNombreViajeros(s.getBooking().getLeadName());
         setNumeroPersonas((s instanceof TransferService)?((TransferService) s).getPax():0);
         setNumeroBono("" + po.getId());
         setImporteNeto(po.getValue().getValue());
@@ -64,6 +64,8 @@ public class P1105 extends BeroniRecord {
 
         double baseCompra = Helper.roundOffEuros(po.getValue().getValue() / (1d + 10d / 100d));
         double ivaCompra = Helper.roundOffEuros(po.getValue().getValue() - baseCompra);
+
+        /*
         double baseVenta = Helper.roundOffEuros(s.getTotalNetValue() / (1d + 10d / 100d));
         double ivaVenta = Helper.roundOffEuros(s.getTotalNetValue() - baseVenta);
 
@@ -73,6 +75,7 @@ public class P1105 extends BeroniRecord {
         setBaseImponibleVentaSiRegimenGeneral(baseVenta);
         setPorcentajeIVAVentaSiRegimenGeneral(10);
         setIVARepercutido(Helper.roundOffEuros(ivaVenta - ivaCompra));
+        */
 
 
     }

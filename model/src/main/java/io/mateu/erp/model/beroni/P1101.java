@@ -90,18 +90,18 @@ public class P1101 extends BeroniRecord {
 
     public P1101(EntityManager em, io.mateu.erp.model.config.AppConfig appconfig, Service s) {
 
-        setNumeroReserva(s.getFile().getId());
-        setFechaReserva(s.getFile().getAudit().getCreated().toLocalDate());
-        setFechaPeticionReserva(s.getFile().getAudit().getCreated().toLocalDate());
-        setCodigoClienteEnBeroni(s.getFile().getAgency().getIdInInvoicingApp());
-        setNombre(s.getFile().getAgency().getName());
+        setNumeroReserva(s.getBooking().getId());
+        setFechaReserva(s.getBooking().getAudit().getCreated().toLocalDate());
+        setFechaPeticionReserva(s.getBooking().getAudit().getCreated().toLocalDate());
+        setCodigoClienteEnBeroni(s.getBooking().getAgency().getIdInInvoicingApp());
+        setNombre(s.getBooking().getAgency().getName());
         setObservaciones(s.getPrivateComment());
         setObservacionesCliente(s.getBooking().getSpecialRequests());
-        setNombreViajeros(s.getFile().getLeadName());
+        setNombreViajeros(s.getBooking().getLeadName());
         setFechaViaje(s.getStart());
         setDiasViaje((int)DAYS.between(s.getStart(), s.getFinish()));
         setNumeroPersonas((s instanceof TransferService)?((TransferService) s).getPax():0);
-        setTotalFactura(s.getTotalNetValue());
+        //setTotalFactura(s.getTotalNetValue());
         setPorcentajeIVA(10);
 
     }

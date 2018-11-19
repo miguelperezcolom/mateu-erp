@@ -42,12 +42,13 @@ public class Office {
     private Zone city;
 
 
+    /*
     @NotNull
     @ManyToOne
     @NotInList
     @DataProvider(dataProvider = AirportDataProvider.class)
     private TransferPoint defaultAirportForTransfers;
-
+    */
 
     @Section("Email")
     @NotInList

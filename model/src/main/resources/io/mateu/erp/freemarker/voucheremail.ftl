@@ -3,7 +3,7 @@ Dear ${leadname},
 here you have your vouchers.
 
 
-${postscript}
+${postscript}!
 
 
 Have a nice day ;)

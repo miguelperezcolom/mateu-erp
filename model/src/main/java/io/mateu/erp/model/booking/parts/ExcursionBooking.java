@@ -21,18 +21,18 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(7)
+    @Position(13)
     private Excursion excursion;
 
 
     @ManyToOne
     @NotNull
-    @Position(8)
+    @Position(14)
     private TourVariant variant;
 
     @ManyToOne
     @NotNull
-    @Position(9)
+    @Position(15)
     private TourShift shift;
 
 
@@ -40,7 +40,7 @@ public class ExcursionBooking extends TourBooking {
 
 
     public ExcursionBooking() {
-        setIcons(FontAwesome.EYE.getHtml());
+        setIcons("<i class=\"v-icon fas fa-hiking\"></i>");
     }
 
 

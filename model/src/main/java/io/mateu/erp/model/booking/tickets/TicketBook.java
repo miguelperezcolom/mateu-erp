@@ -20,7 +20,6 @@ public class TicketBook {
 
     private String reference;
 
-    @NotNull
     @ManyToOne
     private AbstractProduct product;
 

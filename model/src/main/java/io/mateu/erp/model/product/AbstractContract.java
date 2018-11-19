@@ -57,7 +57,6 @@ public abstract class AbstractContract {
     @Output
     private Audit audit;
 
-    @FullWidth
     @NotNull
     @SearchFilter
     @ListColumn
@@ -74,7 +73,7 @@ public abstract class AbstractContract {
 
     @ManyToOne
     @NotNull
-    private ProductLine product;
+    private ProductLine productLine;
 
     private boolean VATIncluded;
 
@@ -118,19 +117,24 @@ public abstract class AbstractContract {
 
 
     @OneToMany
+    @UseChips
     private List<PartnerGroup> partnerGroups = new ArrayList<>();
 
     @OneToMany
+    @UseChips
     private List<Partner> partners = new ArrayList<>();
 
     @OneToMany
+    @UseChips
     private List<Market> markets = new ArrayList<>();
 
     @OneToMany
+    @UseChips
     private List<Company> companies = new ArrayList<>();
 
     @Tab("Tour")
     @OneToMany
+    @UseChips
     private List<Tour> tours = new ArrayList<>();
 
     @Tab("Signature")

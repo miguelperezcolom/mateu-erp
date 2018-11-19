@@ -4,6 +4,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.UseChips;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -54,14 +55,17 @@ public class AbstractOffer {
 
     @SearchFilter
     @ManyToMany
+    @UseChips
     private List<AbstractContract> contracts = new ArrayList<>();
 
     @SearchFilter
     @OneToMany
+    @UseChips
     private List<Partner> targets = new ArrayList<>();
 
     @SearchFilter
     @ManyToMany
+    @UseChips
     private List<AbstractOffer> cumulativeTo = new ArrayList<>();
 
 }

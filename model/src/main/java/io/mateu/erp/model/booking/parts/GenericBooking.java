@@ -13,6 +13,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
+import travel.caval._20091127.commons.GetBooking;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -23,21 +24,22 @@ import java.util.List;
 @Getter@Setter
 public class GenericBooking extends Booking {
 
+    @Position(13)
+    private int units;
+
     @NotNull
     @ManyToOne
-    @Position(7)
+    @Position(14)
     private Office office;
 
     @ManyToOne@NotNull
-    @Position(8)
+    @Position(15)
     private GenericProduct product;
 
 
-    @Position(9)
-    private int units;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    @Position(10)
+    @Position(16)
     private List<GenericBookingExtra> extras = new ArrayList<>();
 
 
@@ -60,8 +62,6 @@ public class GenericBooking extends Booking {
         if (s == null) {
             getServices().add(s = new GenericService());
             s.setBooking(this);
-            s.setFile(getFile());
-            getFile().getServices().add(s);
             s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
         }
         s.setOffice(office);

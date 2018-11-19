@@ -20,19 +20,16 @@ public class BookingCharge extends Charge {
 
 
     @ManyToOne
-    @NotNull
     private File file;
 
-    public void setFile(File file) {
-        this.file = file;
-        if (file != null) setPartner(file.getAgency());
-    }
-
-
-
-
     @ManyToOne
+    @NotNull
     private Booking booking;
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+        if (booking != null) setPartner(booking.getAgency());
+    }
 
     @DependsOn("file")
     public DataProvider getBookingDataProvider() throws Throwable {

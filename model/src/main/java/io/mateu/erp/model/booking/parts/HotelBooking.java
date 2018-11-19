@@ -27,10 +27,10 @@ public class HotelBooking extends Booking {
 
     @ManyToOne
     @NotNull
-    @Position(2)
+    @Position(8)
     private Hotel hotel;
 
-    @Output@Position(3)
+    @Output@Position(9)
     private transient String description = "2 adults and 1 children from 2018-06-01 to 06-15 (14 nights)";
 
 
@@ -41,7 +41,7 @@ public class HotelBooking extends Booking {
     public boolean isAgesVisible() { return false; }
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
-    @Position(4)
+    @Position(10)
     private List<HotelBookingLine> lines = new ArrayList<>();
 
 
@@ -65,8 +65,6 @@ public class HotelBooking extends Booking {
         if (s == null) {
             getServices().add(s = new HotelService());
             s.setBooking(this);
-            s.setFile(getFile());
-            getFile().getServices().add(s);
             s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
         }
         s.setOffice(hotel.getOffice());

@@ -28,10 +28,19 @@ public class Inventory implements IInventory {
     @ManyToOne
     @NotNull
     @Unmodifiable
+    @NoChart
     private Hotel hotel;
 
     @SearchFilter
     private String name;
+
+
+    @ManyToOne
+    private Inventory substractFrom;
+
+
+    private int returnRelease;
+
 
     @Ignored
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
@@ -142,14 +151,14 @@ public class Inventory implements IInventory {
 
 
 
-    @Action
+    @Action(order = 1, style = "success")
     public InventoryOperation modify() {
         InventoryOperation o = new InventoryOperation();
         o.setInventory(this);
         return o;
     }
 
-    @Action
+    @Action(order = 2)
     public void rebuild() throws Throwable {
         Helper.transact(em -> em.find(Inventory.class, getId()).build(em));
     }

@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 
+import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ public class BoardType {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @NotNull
+    @NoChart
     private Literal name;
 
 

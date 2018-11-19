@@ -6,6 +6,7 @@ import io.mateu.erp.dispo.*;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Service;
@@ -34,6 +35,8 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
+@NewNotAllowed
+@Indelible
 public class HotelService extends Service {
 
     @Tab("Service")
@@ -83,7 +86,7 @@ public class HotelService extends Service {
             }
             for (int i = 0; i < ls.size(); i++) m.put("line_" + i, ls.get(i));
 
-            m.put("cancelled", "" + isCancelled());
+            m.put("cancelled", "" + !isActive());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +96,7 @@ public class HotelService extends Service {
 
     @Override
     public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-        AvailableHotel ah = new HotelAvailabilityRunner().check(this.getFile().getAgency(), getHotel(), this.getFile().getAgency().getId(), 1, new ModeloDispo() {
+        AvailableHotel ah = new HotelAvailabilityRunner().check(this.getBooking().getAgency(), getHotel(), this.getBooking().getAgency().getId(), 1, new ModeloDispo() {
             @Override
             public IHotelContract getHotelContract(long id) {
                 return em.find(HotelContract.class, id);
@@ -149,7 +152,7 @@ public class HotelService extends Service {
         }
         setStart(s);
         setFinish(f);
-        setCancelled(!algunaLineaActiva);
+        setActive(algunaLineaActiva);
 
         afterSetAsService(em);
         
@@ -201,6 +204,7 @@ public class HotelService extends Service {
     }
 
 
+    /*
     @Action
     public static void price(UserData user, @Selection List<Data> _selection) throws Throwable {
         io.mateu.mdd.core.util.Helper.transact(new JPATransaction() {
@@ -213,6 +217,7 @@ public class HotelService extends Service {
             }
         });
     }
+    */
 
     @Action("Look for available")
     public static Pagina1 book() throws Throwable {
@@ -233,7 +238,7 @@ public class HotelService extends Service {
             Office oficina = hotel.getOffice();
             PointOfSale pos = em.find(PointOfSale.class, k.getPointOfSaleId());
 
-            File b = new File();
+            HotelBooking b = new HotelBooking();
             b.setAgency(agencia);
             b.setCurrency(agencia.getCurrency());
             b.setAgencyReference(agencyReference);
@@ -244,7 +249,7 @@ public class HotelService extends Service {
             HotelService s = new HotelService();
             em.persist(s);
             b.getServices().add(s);
-            s.setFile(b);
+            s.setBooking(b);
             s.setHotel(hotel);
             s.setOffice(oficina);
             //s.setPos(pos);
@@ -287,7 +292,7 @@ public class HotelService extends Service {
 
     @Override
     public String toString() {
-        return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((this.getFile() != null)? this.getFile().getLeadName():"no file");
+        return "" + ((getHotel() != null)?getHotel().getName():"no hotel") + " " + ((this.getBooking() != null)? this.getBooking().getLeadName():"no file");
     }
 
 

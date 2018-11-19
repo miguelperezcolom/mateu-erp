@@ -1,8 +1,12 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.PurchaseCharge;
+import io.mateu.erp.model.product.AbstractContract;
+import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.util.Constants;
@@ -53,6 +57,8 @@ public class PurchaseOrder {
     @Ignored
     private boolean preventAfterSet;
 
+    @Section("Info")
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SearchFilter
@@ -60,9 +66,8 @@ public class PurchaseOrder {
 
     private String reference;
 
-    @Tab("Info")
     @Embedded
-    @Ignored
+    @Output
     private Audit audit;
 
     @Ignored
@@ -71,6 +76,7 @@ public class PurchaseOrder {
 
     @SearchFilter
     @ListColumn
+    @Output
     private LocalDate start;
 
     @ManyToOne
@@ -85,17 +91,26 @@ public class PurchaseOrder {
     @SearchFilter
     @QLFilter("x.provider = true")
     @ColumnWidth(172)
+    @NoChart
     private Partner provider;
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     @ColumnWidth(100)
-    private boolean cancelled;
+    private boolean active = true;
 
+    @TextArea
     private String comment;
 
-    @Tab("Delivering")
-    @Output
+
+
+    @SearchFilter(value="Service Id", field = "id")
+    @UseLinkToListView
+    @ManyToMany(mappedBy = "purchaseOrders")
+    private List<Service> services = new ArrayList<>();
+
+
+    @KPI
     @ListColumn
     @CellStyleGenerator(SentCellStyleGenerator.class)
     @ColumnWidth(68)
@@ -105,6 +120,7 @@ public class PurchaseOrder {
         this.sent = v;
     }
 
+    @Section("Delivering")
     @Output
     @ListColumn
     private LocalDateTime sentTime;
@@ -122,19 +138,32 @@ public class PurchaseOrder {
     private String providerComment;
 
 
-    @Output
+    @Ignored
     private String signature;
 
-    @Tab("Price")
+    @ManyToMany
+    @JoinTable(
+            name="purchaseorder_task",
+            joinColumns=@JoinColumn(name="purchaseorders_ID"),
+            inverseJoinColumns=@JoinColumn(name="sendingtasks_ID"))
+    @SearchFilter(value="Task Id", field = "id")
+    @UseLinkToListView
+    private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
+
+
+    @Section("Price")
     private boolean valueOverrided;
 
+    @SameLine
     private double overridedValue;
 
     @Ignored
     private String overridedValueCalculator;
 
 
-    @Output
+
+
+    @KPI
     private boolean valued;
 
 
@@ -160,34 +189,10 @@ public class PurchaseOrder {
     private String priceReport;
 
 
-    @Tab("Charges")
     @OneToMany(mappedBy = "purchaseOrder")
-    @Output
+    @UseLinkToListView
     private List<PurchaseCharge> charges = new ArrayList<>();
 
-
-    @SearchFilter(value="Service Id", field = "id")
-    @NotInEditor
-    @ManyToMany(mappedBy = "purchaseOrders")
-    private List<Service> services = new ArrayList<>();
-
-    @ManyToMany
-    @JoinTable(
-            name="purchaseorder_task",
-            joinColumns=@JoinColumn(name="purchaseorders_ID"),
-            inverseJoinColumns=@JoinColumn(name="sendingtasks_ID"))
-    @SearchFilter(value="Task Id", field = "id")
-    @NotInEditor
-    private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
-
-
-    @Links
-    public List<MDDLink> getLinks() {
-        List<MDDLink> l = new ArrayList<>();
-        l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("purchaseOrders.id", getId())));
-        l.add(new MDDLink("Services", Service.class, ActionType.OPENLIST, new Data("purchaseOrders.id", getId())));
-        return l;
-    }
 
 
     @Action("Send")
@@ -235,7 +240,7 @@ public class PurchaseOrder {
 
         setSignature(createSignature());
 
-        if (!isCancelled() || getSendingTasks().size() > 0) {
+        if (isActive() || getSendingTasks().size() > 0) {
 
             SendPurchaseOrdersTask t = null;
 
@@ -264,7 +269,7 @@ public class PurchaseOrder {
         d.put("id", getId());
         d.put("reference", getReference());
         d.put("provider", getProvider().getName());
-        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("status", (!isActive())?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
         d.put("sent", isSent());
@@ -289,7 +294,7 @@ public class PurchaseOrder {
 
         for (Service s : ss) {
             Map<String, Object> ds = s.getData();
-            if (isCancelled()) ds.put("status", "CANCELLED");
+            if (!isActive()) ds.put("status", "CANCELLED");
             ls.add(ds);
         }
 
@@ -299,12 +304,12 @@ public class PurchaseOrder {
     }
 
     public void cancel(EntityManager em) {
-        if (!isCancelled()) {
+        if (isActive()) {
             if (!isSent()) {
-                setCancelled(true);
+                setActive(false);
                 setStatus(PurchaseOrderStatus.CONFIRMED);
             } else {
-                setCancelled(true);
+                setActive(false);
                 setStatus(PurchaseOrderStatus.PENDING);
             }
         }
@@ -339,7 +344,7 @@ public class PurchaseOrder {
 
     private double rate(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
-        if (!isCancelled()) for (Service s : getServices()) if (!s.isCancelled()) {
+        if (isActive()) for (Service s : getServices()) if (s.isActive()) {
             double serviceCost = s.getOverridedCostValue();
             if (!s.isCostOverrided()) serviceCost = s.rate(em, false, getProvider(), report);
             total += serviceCost;
@@ -418,5 +423,36 @@ public class PurchaseOrder {
             e.printStackTrace();
         }
 
+    }
+
+
+
+    public static GridDecorator getGridDecorator() {
+        return new GridDecorator() {
+            @Override
+            public void decorateGrid(Grid grid) {
+                grid.getColumns().forEach(col -> {
+
+                    StyleGenerator old = ((Grid.Column) col).getStyleGenerator();
+
+                    ((Grid.Column)col).setStyleGenerator(new StyleGenerator() {
+                        @Override
+                        public String apply(Object o) {
+                            String s = null;
+                            if (old != null) s = old.apply(o);
+
+                            if (o instanceof PurchaseOrder) {
+                                if (!((PurchaseOrder)o).isActive()) s = (s != null)?s + " cancelled":"cancelled";
+                            } else {
+                                if (!((Boolean)((Object[])o)[5])) {
+                                    s = (s != null)?s + " cancelled":"cancelled";
+                                }
+                            }
+                            return s;
+                        }
+                    });
+                });
+            }
+        };
     }
 }

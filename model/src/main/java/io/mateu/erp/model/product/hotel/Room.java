@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
+import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.annotations.Unmodifiable;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
@@ -28,16 +30,22 @@ public class Room implements IRoom {
     @ListColumn
     @NotNull
     @Unmodifiable
+    @NoChart
     private Hotel hotel;
 
     @SearchFilter
     @ManyToOne
     @ListColumn
     @NotNull
+    @NoChart
     private RoomType type;
 
     @ManyToOne(cascade = CascadeType.ALL)
+    @NoChart
     private Literal description;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Resource photo;
 
     @Convert(converter = MaxCapacitiesConverter.class)
     private MaxCapacities maxCapacities = new MaxCapacities();
@@ -54,6 +62,7 @@ public class Room implements IRoom {
 
     @ManyToOne
     @ListColumn(field = "code", value = "Inv. owner")
+    @NoChart
     private RoomType inventoryPropietary;
 
     @Override

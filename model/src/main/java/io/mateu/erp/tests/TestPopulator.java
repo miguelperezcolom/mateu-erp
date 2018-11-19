@@ -2,7 +2,9 @@ package io.mateu.erp.tests;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
+import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -353,26 +355,26 @@ public class TestPopulator {
 
                 for (int i = 0; i < 10; i++) {
 
-                    File b = new File();
+                    TransferBooking b = new TransferBooking();
                     em.persist(b);
                     b.setAgency(agencia);
                     b.setTelephone("629602085");
                     b.setStart(LocalDate.of(2017, 6, 1));
                     b.setLeadName("Mrs Test " + i);
-                    b.setFinish(LocalDate.of(2017, 6, 15));
+                    b.setEnd(LocalDate.of(2017, 6, 15));
                     b.setEmail("miguelperezcolom@gmail.com");
                     b.setCurrency(eur);
                     b.setAudit(new Audit(u));
                     b.setAgencyReference("AXS" + i);
                     b.setActive(true);
-                    b.setComments("Test file created b test populator");
+                    b.setSpecialRequests("Test file created b test populator");
 
                     //ida
                     {
                         TransferService s = new TransferService();
                         em.persist(s);
                         b.getServices().add(s);
-                        s.setFile(b);
+                        s.setBooking(b);
                         s.setStart(b.getStart());
                         //s.setComment("Incoming transfer test");
                         //s.setOverridedValue();
@@ -399,8 +401,8 @@ public class TestPopulator {
                         TransferService s = new TransferService();
                         em.persist(s);
                         b.getServices().add(s);
-                        s.setFile(b);
-                        s.setStart(b.getFinish());
+                        s.setBooking(b);
+                        s.setStart(b.getEnd());
                         //s.setComment("Outgoing transfer test");
                         //s.setOverridedValue();
                         s.setFinish(s.getStart());
@@ -674,8 +676,8 @@ public class TestPopulator {
 
 
         {
-            p.getGalas().add(new Gala(LocalDate.parse("2018-12-25"), 120, Arrays.asList(50.0, 20.0), null));
-            p.getGalas().add(new Gala(LocalDate.parse("2018-12-31"), 180, Arrays.asList(50.0, 20.0), null));
+            p.getGalas().add(new Gala(LocalDate.parse("2018-12-25"), 120, new FareValue("-50%"), new FareValue("-20%"), null));
+            p.getGalas().add(new Gala(LocalDate.parse("2018-12-31"), 180, new FareValue("-50%"), new FareValue("-20%"), null));
         }
 
         for (int j = 1; j < 20; j++) {

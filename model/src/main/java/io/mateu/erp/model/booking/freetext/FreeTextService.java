@@ -4,8 +4,7 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,22 +20,29 @@ import java.util.Map;
 
 @Entity
 @Getter@Setter
+@NewNotAllowed
+@Indelible
 public class FreeTextService extends Service {
 
-    @Tab("Service")
     @NotNull
     @ListColumn
+    @Position(5)
+    @Output
     private String text;
 
     @NotNull
+    @Position(6)
+    @Output
     private LocalDate deliveryDate;
 
     @NotNull
+    @Position(7)
+    @Output
     private LocalDate returnDate;
 
     public FreeTextService() {
         setServiceType(ServiceType.FREETEXT);
-        setIcons(FontAwesome.EDIT.getHtml());
+        setIcons(FontAwesome.PENCIL.getHtml());
     }
 
 
@@ -57,7 +63,7 @@ public class FreeTextService extends Service {
             m.put("start", getStart());
             m.put("finish", getFinish());
 
-            m.put("cancelled", "" + isCancelled());
+            m.put("cancelled", "" + !isActive());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();

@@ -38,4 +38,9 @@ public class MaxCapacity implements Serializable {
         xml.setAttribute("infants", "" + getInfants());
         return xml;
     }
+
+    @Override
+    public String toString() {
+        return "" + adults + "+" + children + "+" + infants;
+    }
 }

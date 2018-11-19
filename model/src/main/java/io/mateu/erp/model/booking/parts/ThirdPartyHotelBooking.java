@@ -25,34 +25,34 @@ public class ThirdPartyHotelBooking extends Booking {
 
     @NotNull
     @ManyToOne
-    @Position(2)
+    @Position(3)
     private Integration integration;
 
     @NotEmpty
-    @Position(3)
+    @Position(4)
     private String hotelName;
 
-    @Position(4)
+    @Position(5)
     private String hotelCategory;
 
-    @Position(5)
+    @Position(6)
     private String hotelAddress;
 
-    @Position(6)
+    @Position(7)
     private String hotelCity;
 
-    @Position(7)
+    @Position(8)
     private String hotelState;
 
-    @Position(8)
+    @Position(9)
     private String hotelCountry;
 
-    @Position(9)
+    @Position(10)
     private String hotelDataSheetUrl;
 
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
-    @Position(10)
+    @Position(11)
     private List<ThirdPartyHotelBookingLine> lines = new ArrayList<>();
 
 
@@ -83,8 +83,6 @@ public class ThirdPartyHotelBooking extends Booking {
         if (s == null) {
             getServices().add(s = new FreeTextService());
             s.setBooking(this);
-            s.setFile(getFile());
-            getFile().getServices().add(s);
             s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
         }
         s.setOffice(integration.getOffice());

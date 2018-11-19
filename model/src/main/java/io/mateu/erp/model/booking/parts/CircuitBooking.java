@@ -21,20 +21,20 @@ public class CircuitBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(7)
+    @Position(13)
     private Circuit circuit;
 
 
     @ManyToOne
     @NotNull
-    @Position(8)
+    @Position(14)
     private TourVariant variant;
 
     public boolean isEndOutput() { return true; }
 
 
     public CircuitBooking() {
-        setIcons(FontAwesome.BUS.getHtml());
+        setIcons(FontAwesome.GLOBE.getHtml());
     }
 
 

@@ -227,13 +227,13 @@ public class CommonsServiceImpl implements CommonsService {
                         b.setCreated(s.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
                         b.setCreatedBy(s.getAudit().getCreatedBy().getLogin());
                         b.setModified(s.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
-                        b.setLeadName(s.getFile().getLeadName());
+                        b.setLeadName(s.getBooking().getLeadName());
                         b.setStart(s.getStart().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
                         b.setEnd(s.getFinish().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
                         Amount a;
                         b.setNetValue(a = new Amount());
                         a.setCurrencyIsoCode("EUR");
-                        a.setValue(s.getTotalNetValue());
+                        //a.setValue(s.getTotalNetValue());
                         String desc = "Service file";
                         b.setServiceType("GENERIC");
                         if (s instanceof TransferService) {
@@ -241,7 +241,7 @@ public class CommonsServiceImpl implements CommonsService {
                             b.setServiceType("TRANSFER");
                         }
                         b.setServiceDescription(desc);
-                        b.setStatus((s.isCancelled())?"CANCELLED":"OK");
+                        b.setStatus((s.isActive())?"OK":"CANCELLED");
 
                     if (pos++ > 300) break;
                 }
@@ -276,13 +276,13 @@ public class CommonsServiceImpl implements CommonsService {
                     b.setCreated(s.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
                     b.setCreatedBy(s.getAudit().getCreatedBy().getLogin());
                     b.setModified(s.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
-                    b.setLeadName(s.getFile().getLeadName());
+                    b.setLeadName(s.getBooking().getLeadName());
                     b.setStart(s.getStart().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
                     b.setEnd(s.getFinish().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
                     Amount a;
                     b.setNetValue(a = new Amount());
                     a.setCurrencyIsoCode("EUR");
-                    a.setValue(s.getTotalNetValue());
+                    //a.setValue(s.getTotalNetValue());
                     String desc = "Service file";
                     b.setServiceType("GENERIC");
                     if (s instanceof TransferService) {
@@ -290,7 +290,7 @@ public class CommonsServiceImpl implements CommonsService {
                         b.setServiceType("TRANSFER");
                     }
                     b.setServiceDescription(desc);
-                    b.setStatus((s.isCancelled())?"CANCELLED":"OK");
+                    b.setStatus((s.isActive())?"OK":"CANCELLED");
 
 
                 }

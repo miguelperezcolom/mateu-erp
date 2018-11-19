@@ -141,7 +141,7 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
         Set<Partner> partners = issueInvoicesParametersPage.getPending().stream().map(i -> i.getPartner()).collect(Collectors.toSet());
 
         for (BookingCharge c : (List<BookingCharge>) em.createQuery("select x from " + BookingCharge.class.getName() + " x where x.invoice = null and x.partner in :ps").setParameter("ps", partners).getResultList()) {
-            Partner p = c.getFile().getAgency();
+            Partner p = c.getBooking().getAgency();
             List<Charge> charges = chargesByPartner.get(p);
             if (charges == null) {
                 chargesByPartner.put(p, charges = new ArrayList<>());

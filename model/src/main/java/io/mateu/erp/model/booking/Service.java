@@ -1,8 +1,11 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
@@ -52,6 +55,8 @@ import java.util.stream.Collectors;
 @Entity
 @Getter
 @Setter
+@NewNotAllowed
+@Indelible
 public abstract class Service {
 
     @Transient
@@ -63,6 +68,7 @@ public abstract class Service {
     @SearchFilter
     private long id;
 
+    @Section("Service")
     @Embedded
     @Output
     private Audit audit;
@@ -76,43 +82,27 @@ public abstract class Service {
     @ColumnWidth(100)
     private String icons;
 
-    @Tab("General")
-    @FullWidth
     @ManyToOne
+    @Output
     @NotNull
-    @SearchFilter(value="File Id", field = "id")
-    @SearchFilter(field = "agencyReference")
-    @SearchFilter(field = "agency")
-    @ListColumn(value="Boking", field = "id")
-    @ListColumn(field = "agencyReference", width = 150)
-    @ListColumn(field = "agency", width = 150)
-    @SearchFilter(field = "leadName")
-    @ListColumn(field = "leadName")
-    @SearchFilter(field = "telephone")
-    @ListColumn(field = "telephone")
-    private File file;
-
+    private Booking booking;
 
     @ManyToOne
-    @Ignored
-    private Booking booking;
+    @Output
+    private ManagedEvent managedEvent;
 
     @NotNull
     @ManyToOne
     @ListColumn
     @SearchFilter
     @ColumnWidth(170)
+    @Output
     private Office office;
-
-    @ManyToOne
-    @NotWhenCreating
-    @KPI
-    private ManagedEvent managedEvent;
 
     @ListColumn
     @CellStyleGenerator(ProcessingStatusCellStyleGenerator.class)
     @SearchFilter
-    @NotInEditor
+    @KPI
     @ColumnWidth(130)
     private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 
@@ -132,11 +122,11 @@ public abstract class Service {
     @ListColumn(value = "Active")
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     @ColumnWidth(106)
-    private boolean cancelled;
+    @KPI
+    private boolean active = true;
 
     @ListColumn
     @CellStyleGenerator(NoShowCellStyleGenerator.class)
-    @SameLine
     @ColumnWidth(106)
     private boolean noShow;
 
@@ -155,63 +145,19 @@ public abstract class Service {
 
 
     @TextArea
-    @SameLine
     private String operationsComment;
 
     @TextArea
     @SameLine
     private String privateComment;
 
-    @Tab("Change log")
-    @Output
-    private String changeLog;
 
 
-    @Tab("Price")
-    private boolean costOverrided;
-    @SameLine
-    private double overridedCostValue;
-    @Ignored
-    private String overridedCostValueCalculator;
-
-
-    @Output
-    @CellStyleGenerator(ValuedCellStyleGenerator.class)
-    private boolean valued;
-
-    @Output
-    private double totalNetValue;
-
-    @Output
-    @SameLine
-    private double totalRetailValue;
-
-    @Output
-    @SameLine
-    private double totalCommissionValue;
-
-
-
-    @Output
-    private double currentCancellationCost;
-
-    @Output
-    //@CellStyleGenerator(ValuedCellStyleGenerator.class)
-    private boolean purchaseValued;
-
-    @Output
-    private double totalCost;
-
-    @Tab("Charges")
-    @OneToMany(mappedBy = "service")
-    @Output
-    private List<BookingCharge> charges = new ArrayList<>();
-
-    @Tab("Handling")
     @Ignored
     private int effectiveProcessingStatus;
 
-    @Tab("Purchase")
+    @Section("Purchase")
+
     @ManyToOne
     @QLFilter("x.provider = true")
     private Partner preferredProvider;
@@ -222,7 +168,6 @@ public abstract class Service {
     @Output
     private LocalDateTime alreadyPurchasedDate;
 
-    @SameLine
     private String providerReference;
 
 
@@ -248,11 +193,11 @@ public abstract class Service {
 
     @SearchFilter(value="Purchase Order Id", field = "id")
     @ManyToMany
-    @NotInEditor
+    @UseLinkToListView
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
-    @Output 
+    @Ignored
     private String signature;
 
     @Transient
@@ -275,13 +220,37 @@ public abstract class Service {
 
 
 
+
+
+
+    private boolean costOverrided;
+    @SameLine
+    private double overridedCostValue;
+    @Ignored
+    private String overridedCostValueCalculator;
+
+
+    @KPI
+    @CellStyleGenerator(ValuedCellStyleGenerator.class)
+    private boolean valued;
+
+    @OneToMany(mappedBy = "service")
+    @UseLinkToListView
+    private List<BookingCharge> charges = new ArrayList<>();
+
+    @Section("Log")
+
+    @Output
+    private String changeLog;
+
+
     public void updateProcessingStatus(EntityManager em) {
         ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
             ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
         } else if (getFinish() != null && !getFinish().isBefore(LocalDate.now())) {
             ps = ProcessingStatus.INITIAL;
-            if (isCancelled() && getSentToProvider() == null) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
+            if (!isActive() && getSentToProvider() == null) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
             else if (isAllMapped(em)) {
                 ps = ProcessingStatus.DATA_OK;
 
@@ -290,7 +259,7 @@ public abstract class Service {
 
                     boolean allSent = true;
 
-                    for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) if (!po.isSent()) allSent = false;
+                    for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) if (!po.isSent()) allSent = false;
 
                     if (allSent) {
                         ps = ProcessingStatus.PURCHASEORDERS_SENT;
@@ -298,7 +267,7 @@ public abstract class Service {
                         boolean allConfirmed = true;
                         boolean anyRejected = false;
 
-                        for (PurchaseOrder po : getPurchaseOrders()) if (!po.isCancelled()) {
+                        for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
                             if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) allConfirmed = false;
                             if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
                         }
@@ -323,7 +292,7 @@ public abstract class Service {
 
     public Map<String, Object> toMap() {
         Map<String, Object> m = new HashMap<>();
-        m.put("cancelled", isCancelled());
+        m.put("cancelled", !isActive());
         String c = getBooking().getSpecialRequests();
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
@@ -353,7 +322,67 @@ public abstract class Service {
         Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
         for (Service s : selection) {
-            if (!s.isCancelled() || s.getSentToProvider() != null) {
+            if (s.isActive() || s.getSentToProvider() != null) {
+                if (provider != null) s.setPreferredProvider(provider);
+                for (PurchaseOrder po : s.getPurchaseOrders()) {
+                    po.setSignature(po.createSignature());
+                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                    if (t == null) {
+                        if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
+                        /*
+                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
+                        em.persist(t);
+                        t.setOffice(s.getOffice());
+                        t.setProvider(po.getProvider());
+                        t.setStatus(TaskStatus.PENDING);
+                        t.setAudit(new Audit(u));
+                        ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
+                        t.setPostscript(postscript);
+                        */
+                        } else { // email
+                            taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
+                            em.persist(t);
+                            t.setOffice(s.getOffice());
+                            t.setProvider(po.getProvider());
+                            t.setStatus(TaskStatus.PENDING);
+                            t.setAudit(new Audit(u));
+                            if (!Strings.isNullOrEmpty(email)) {
+                                t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                                ((SendPurchaseOrdersByEmailTask)t).setTo(email);
+                            } else {
+                                t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
+                                ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                            }
+                            ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
+                            t.setPostscript(postscript);
+                        }
+                    }
+                    t.getPurchaseOrders().add(po);
+                    po.getSendingTasks().add(t);
+                }
+            }
+        }
+//        for (SendPurchaseOrdersTask t : taskPerProvider.values()) {
+//            try {
+//                t.execute(em, u);
+//            } catch (Throwable e) {
+//                e.printStackTrace();
+//            }
+//        }
+    }
+
+    @Action
+    public void sendToProvider(EntityManager em, UserData user, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) throws Throwable {
+        
+        setAlreadyPurchased(false);
+        if (provider != null) setPreferredProvider(provider);
+        checkPurchase(em, user);
+
+        Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
+        io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
+        {
+            Service s = this;
+            if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
                 for (PurchaseOrder po : s.getPurchaseOrders()) {
                     po.setSignature(po.createSignature());
@@ -449,12 +478,11 @@ public abstract class Service {
     }
 
 
+    /*
     public void price(EntityManager em, User u) {
         setValued(false);
-        setTotalNetValue(0);
 
         //todo: ver si lo llevamos a la reserva
-        /*
         if (!isCancelled() && isValueOverrided()) {
             setTotalNetValue(getOverridedNetValue());
             setValued(true);
@@ -475,7 +503,6 @@ public abstract class Service {
                 throwable.printStackTrace();
             }
         }
-        */
 
         try {
             checkPurchase(em, u);
@@ -521,6 +548,7 @@ public abstract class Service {
     public void price(EntityManager em, UserData user) {
         price(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
+    */
 
     @Action("Print POs")
     public URL printOrders(EntityManager em) throws Throwable {
@@ -563,7 +591,7 @@ public abstract class Service {
                     int totalPax = 0;
                     {
 
-                        if (!s.isCancelled() && !s.isHeld()) {
+                        if (s.isActive() && !s.isHeld()) {
 
                             totalPax += s.getPax();
 
@@ -571,11 +599,11 @@ public abstract class Service {
                             eg.addContent(es = new Element("service"));
 
                             es.setAttribute("id", "" + s.getId());
-                            es.setAttribute("agency", "" + this.getFile().getAgency().getName());
-                            if (this.getFile().getAgencyReference() != null) es.setAttribute("agencyReference", this.getFile().getAgencyReference());
-                            es.setAttribute("leadName", "" + this.getFile().getLeadName());
+                            es.setAttribute("agency", "" + this.getBooking().getAgency().getName());
+                            if (this.getBooking().getAgencyReference() != null) es.setAttribute("agencyReference", this.getBooking().getAgencyReference());
+                            es.setAttribute("leadName", "" + this.getBooking().getLeadName());
                             String comments = "";
-                            if (this.getFile().getComments() != null) comments += this.getFile().getComments();
+                            if (this.getBooking().getSpecialRequests() != null) comments += this.getBooking().getSpecialRequests();
                             if (s.getBooking().getSpecialRequests() != null) comments += s.getBooking().getSpecialRequests();
                             if (!Strings.isNullOrEmpty(getOperationsComment())) {
                                 if (!"".equals(comments)) comments += " / ";
@@ -643,29 +671,11 @@ public abstract class Service {
 
 
 
-    @Badges
-    public List<Data> getBadges() {
-        List<Data> l = new ArrayList<>();
-        l.add(new Data("_css", "brown", "_value", "" + getTotalNetValue()));
-        String s = "";
-        ProcessingStatus v = getProcessingStatus();
-        if (v != null) switch (v) {
-            case INITIAL:
-            case DATA_OK: s = "azul"; break;
-            case PURCHASEORDERS_SENT:
-            case PURCHASEORDERS_READY: s = "naranja"; break;
-            case PURCHASEORDERS_CONFIRMED: s = "verde"; break;
-            case PURCHASEORDERS_REJECTED: s = "rojo"; break;
-        }
-        l.add(new Data("_css", s, "_value", "" + getProcessingStatus()));
-        return l;
-    }
-
     @Links
     public List<MDDLink> getLinks() {
         List<MDDLink> l = new ArrayList<>();
-        if (this.getFile() != null) {
-            l.add(new MDDLink("File", File.class, ActionType.OPENEDITOR, new Data("_id", this.getFile().getId())));
+        if (this.getBooking() != null) {
+            l.add(new MDDLink("Booking", Booking.class, ActionType.OPENEDITOR, new Data("_id", this.getBooking().getId())));
             l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("services.id", getId())));
             l.add(new MDDLink("Purchase orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("services.id", getId())));
         }
@@ -684,7 +694,7 @@ public abstract class Service {
         Partner provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
         if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
-        if (isCancelled() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
+        if (!isActive() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
         if (!ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())) {
             PurchaseOrder po = null;
             if (getPurchaseOrders().size() > 0) {
@@ -721,8 +731,8 @@ public abstract class Service {
 
     @Override
     public String toString() {
-        String s = "";
-        if (getAudit() != null) s += getAudit();
+        String s = "" + getId() + " " + getIcons();
+        if (getBooking() != null) s += getBooking().getLeadName();
         return s;
     }
 
@@ -759,10 +769,10 @@ public abstract class Service {
         Map<String, Object> d = new HashMap<>();
 
         d.put("id", getId());
-        d.put("locator", this.getFile().getId());
-        d.put("agency", this.getFile().getAgency().getName());
-        d.put("agencyReference", this.getFile().getAgencyReference());
-        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("locator", this.getBooking().getId());
+        d.put("agency", this.getBooking().getAgency().getName());
+        d.put("agencyReference", this.getBooking().getAgencyReference());
+        d.put("status", (isActive())?"ACTIVE":"CANCELLED");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
 
@@ -779,6 +789,7 @@ public abstract class Service {
         d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
+/*
         double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
         double iva = Helper.roundOffEuros(getTotalNetValue() - base);
 
@@ -790,18 +801,21 @@ public abstract class Service {
         d.put("total", getTotalNetValue());
         d.put("purchaseValued", isPurchaseValued());
         d.put("totalCost", getTotalCost());
-
+*/
         return d;
     }
 
+
     public void cancel(EntityManager em, User u) {
-        if (!isCancelled()) {
-            setCancelled(true);
+        if (isActive()) {
+            setActive(false);
+            /*
             setTotalNetValue(getCurrentCancellationCost());
             setTotalCost(0);
             setTotalCommissionValue(0);
             setTotalRetailValue(0);
             price(em, u);
+            */
             try {
                 checkPurchase(em, u);
             } catch (Throwable throwable) {
@@ -950,19 +964,19 @@ public abstract class Service {
 
         System.out.println("service " + getId() + ".afterset");
 
-        if (true || this.getFile().getFinish() == null) {
-            for (Service x : this.getFile().getServices()) {
+        if (true || this.getBooking().getEnd() == null) {
+            for (Service x : this.getBooking().getServices()) {
                 if (x.getStart() != null) {
-                    if (this.getFile().getStart() == null || this.getFile().getStart().isAfter(x.getStart())) this.getFile().setStart(x.getStart());
-                    if (this.getFile().getFinish() == null || this.getFile().getFinish().isBefore(x.getStart())) this.getFile().setFinish(x.getStart());
+                    if (this.getBooking().getStart() == null || this.getBooking().getStart().isAfter(x.getStart())) this.getBooking().setStart(x.getStart());
+                    if (this.getBooking().getEnd() == null || this.getBooking().getEnd().isBefore(x.getStart())) this.getBooking().setEnd(x.getStart());
                 }
 
                 if (x.getFinish() != null) {
-                    if (this.getFile().getStart() == null || this.getFile().getStart().isAfter(x.getFinish())) this.getFile().setStart(x.getFinish());
-                    if (this.getFile().getFinish() == null || this.getFile().getFinish().isBefore(x.getFinish())) this.getFile().setFinish(x.getFinish());
+                    if (this.getBooking().getStart() == null || this.getBooking().getStart().isAfter(x.getFinish())) this.getBooking().setStart(x.getFinish());
+                    if (this.getBooking().getEnd() == null || this.getBooking().getEnd().isBefore(x.getFinish())) this.getBooking().setEnd(x.getFinish());
                 }
 
-                if (this.getFile().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(this.getFile().getFinish());
+                if (this.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(this.getBooking().getEnd());
                 else x.setServiceDateForInvoicing(x.getStart());
             }
         }
@@ -973,6 +987,7 @@ public abstract class Service {
             setAlreadyPurchasedDate(null);
         }
 
+        /*
         try {
             price(em, getAudit().getModifiedBy());
         } catch (Throwable e) {
@@ -981,6 +996,7 @@ public abstract class Service {
             else error = error.substring(error.indexOf(":"));
             System.out.println(error);
         }
+        */
 
         try {
             checkPurchase(em, getAudit().getModifiedBy());
@@ -1016,14 +1032,14 @@ public abstract class Service {
         validate(em);
 
 
-        setVisibleInSummary(!isCancelled() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
+        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
     }
 
 
     public Element toXml() {
         Element xml = new Element("service");
         xml.setAttribute("id", "" + getId());
-        xml.setAttribute("status", !isCancelled()?"OK":"CANCELLED");
+        xml.setAttribute("status", isActive()?"OK":"CANCELLED");
         xml.setAttribute("description", getDescription());
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -1035,4 +1051,34 @@ public abstract class Service {
 
     protected abstract String getDescription();
 
+
+
+    public static GridDecorator getGridDecorator() {
+        return new GridDecorator() {
+            @Override
+            public void decorateGrid(Grid grid) {
+                grid.getColumns().forEach(col -> {
+
+                    StyleGenerator old = ((Grid.Column) col).getStyleGenerator();
+
+                    ((Grid.Column)col).setStyleGenerator(new StyleGenerator() {
+                        @Override
+                        public String apply(Object o) {
+                            String s = null;
+                            if (old != null) s = old.apply(o);
+
+                            if (o instanceof Service) {
+                                if (!((Service)o).isActive()) s = (s != null)?s + " cancelled":"cancelled";
+                            } else {
+                                if (!((Boolean)((Object[])o)[4])) {
+                                    s = (s != null)?s + " cancelled":"cancelled";
+                                }
+                            }
+                            return s;
+                        }
+                    });
+                });
+            }
+        };
+    }
 }

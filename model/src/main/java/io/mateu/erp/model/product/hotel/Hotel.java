@@ -10,9 +10,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -73,12 +71,13 @@ public class Hotel extends AbstractProduct implements IHotel {
 
 
 
+    @Section("Related")
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    @Ignored
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<Room> rooms = new ArrayList<>();
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    @Ignored
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<Board> boards = new ArrayList<>();
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -86,7 +85,7 @@ public class Hotel extends AbstractProduct implements IHotel {
     private StopSales stopSales;
 
     @OneToMany(mappedBy = "hotel")
-    @Ignored
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<Inventory> inventories = new ArrayList<>();
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -94,11 +93,11 @@ public class Hotel extends AbstractProduct implements IHotel {
     private Inventory realInventory;
 
     @OneToMany(mappedBy = "hotel")
-    @Ignored
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<HotelContract> contracts = new ArrayList<>();
 
     @OneToMany(mappedBy = "hotel")
-    @Ignored
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<AbstractHotelOffer> offers = new ArrayList<>();
 
 

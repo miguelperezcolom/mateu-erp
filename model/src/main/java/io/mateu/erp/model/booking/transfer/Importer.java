@@ -72,7 +72,7 @@ public class Importer {
 
                                 s.setPickupTime(LocalDateTime.of(pud.getYear(), pud.getMonth(), pud.getDayOfMonth(), put.getHour(), put.getMinute()));
 
-                                pw.println("line " + nofila + ": pickup time for service id " + id + " (" + s.getFile().getLeadName() + ") setted to " + s.getPickupTime().format(dtf));
+                                pw.println("line " + nofila + ": pickup time for service id " + id + " (" + s.getBooking().getLeadName() + ") setted to " + s.getPickupTime().format(dtf));
                             } else {
                                 pw.println("<span style='color: red;'>line " + nofila + ": no service for purchase order with id " + ref + "</span>");
                             }

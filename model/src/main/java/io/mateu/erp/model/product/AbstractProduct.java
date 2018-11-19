@@ -3,10 +3,7 @@ package io.mateu.erp.model.product;
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.world.Zone;
-import io.mateu.mdd.core.annotations.CellStyleGenerator;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.SearchFilter;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,6 +43,7 @@ public abstract class AbstractProduct {
     @NotNull
     @ListColumn
     @SearchFilter
+    @NoChart
     private Zone zone;
 
 

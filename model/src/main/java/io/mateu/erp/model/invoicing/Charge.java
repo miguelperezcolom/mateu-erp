@@ -85,7 +85,7 @@ public class Charge {
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("##,###,###,###,###.00");
-        return "<div style='text-align:right;width:100px;display:inline-block;margin-right:10px;'>" + df.format(total.getValue()) + "</div><div style='display: inline-block;'>" + text + "</div>";
+        return "<div style='text-align:right;width:100px;display:inline-block;margin-right:10px;'>" + ((total != null)?df.format(total.getValue()):"0.0") + "</div><div style='display: inline-block;'>" + ((text != null)?text:"---") + "</div>";
     }
 
 

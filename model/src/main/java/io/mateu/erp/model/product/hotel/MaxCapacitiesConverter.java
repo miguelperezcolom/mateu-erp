@@ -13,7 +13,7 @@ public class MaxCapacitiesConverter  implements AttributeConverter<MaxCapacities
     @Override
     public String convertToDatabaseColumn(MaxCapacities maxCapacities) {
         if (maxCapacities == null) return null;
-        else return maxCapacities.toString();
+        else return maxCapacities.toXmlString();
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ContractClauseGroup {
     @NotNull
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "group")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private List<ContractClause> clauses = new ArrayList<>();
 
 

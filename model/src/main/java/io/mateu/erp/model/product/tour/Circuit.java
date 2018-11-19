@@ -5,6 +5,7 @@ import io.mateu.mdd.core.annotations.Action;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
@@ -19,7 +20,7 @@ import java.util.Map;
 @Setter
 public class Circuit extends Tour {
 
-    @OneToMany(mappedBy = "circuit")
+    @OneToMany(mappedBy = "circuit", cascade = CascadeType.ALL)
     private List<CircuitCalendar> schedule = new ArrayList<>();
 
 

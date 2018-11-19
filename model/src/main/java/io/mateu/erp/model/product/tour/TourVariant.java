@@ -20,10 +20,10 @@ public class TourVariant {
     @NotNull
     private Tour tour;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal description;
 
 

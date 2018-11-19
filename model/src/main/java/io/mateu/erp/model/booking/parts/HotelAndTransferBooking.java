@@ -17,31 +17,31 @@ public class HotelAndTransferBooking extends HotelBooking {
 
 
     @NotNull
-    @Position(5)
+    @Position(6)
     private TransferType transferType;
 
-    @Position(6)
+    @Position(7)
     private boolean roundTrip;
 
 
-    @Position(7)
+    @Position(8)
     private String arrivalFlightNumber;
 
-    @Position(8)
+    @Position(9)
     private LocalDateTime arrivalFlightTime;
 
-    @Position(9)
+    @Position(10)
     private String arrivalFlightOrigin;
 
 
 
-    @Position(10)
+    @Position(11)
     private String departureFlightNumber;
 
-    @Position(11)
+    @Position(12)
     private LocalDateTime departureFlightTime;
 
-    @Position(12)
+    @Position(13)
     private String departureFlightDestination;
 
 

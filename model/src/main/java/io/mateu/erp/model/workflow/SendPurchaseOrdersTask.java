@@ -86,7 +86,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
             for (Service s : po.getServices()) {
                 Map<String, Object> ds = s.getData();
 
-                if (po.isCancelled()) ds.put("status", "CANCELLED");
+                if (!po.isActive()) ds.put("status", "CANCELLED");
 
                 ds.put("po", po.getId());
                 if (s instanceof TransferService) {

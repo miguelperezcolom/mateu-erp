@@ -92,7 +92,7 @@ public class IslandbusHelper {
                     else if (TransferDirection.INBOUND.equals(firstService.getDirection())) t = s.getPickupTime();
                     else if (TransferDirection.POINTTOPOINT.equals(firstService.getDirection())) t = (s.getPickupTime() != null)?s.getPickupTime():s.getFlightTime();
                     punto.setAttribute("Hora", (t != null)?t.format(hf):"");
-                    punto.setAttribute("TTOO",s.getFile().getAgency().getName());
+                    punto.setAttribute("TTOO",s.getBooking().getAgency().getName());
                     punto.setAttribute("ZonaFisica",tp.getZone().getName());
 
                     punto.setAttribute("Adultos", ""+ s.getPax());
@@ -100,7 +100,7 @@ public class IslandbusHelper {
 
                     punto.setAttribute("AdultosInvitados", ""+0);
                     punto.setAttribute("NiñosInvitados", ""+0);
-                    punto.setAttribute("NombrePax", s.getFile().getLeadName());
+                    punto.setAttribute("NombrePax", s.getBooking().getLeadName());
                     punto.setAttribute("localizador", "" + po.getId());
                     punto.setAttribute("Vuelos", formatFlight(s.getFlightNumber()));
                     punto.setAttribute("HoraVuelo", s.getFlightTime().format(hf));
@@ -127,7 +127,7 @@ public class IslandbusHelper {
                         vuelo.setAttribute("Fecha", s.getFlightTime().format(df));
                         vuelo.setAttribute("RefVuelo",flightno);
                         vuelo.setAttribute("Hora",s.getFlightTime().format(hf));
-                        vuelo.setAttribute("TTOO",s.getFile().getAgency().getName());
+                        vuelo.setAttribute("TTOO",s.getBooking().getAgency().getName());
                         vuelo.setAttribute("FechaLlegadaVuelo",s.getFlightTime().format(hf));
                         vuelo.setAttribute("EntSal",TransferDirection.INBOUND.equals(firstService.getDirection())?"E":"S");
                     }
@@ -180,7 +180,7 @@ public class IslandbusHelper {
                     Element shut = new Element("traslado");
                     root.addContent(shut);
 
-                    String touroperador = s.getFile().getAgency().getName();
+                    String touroperador = s.getBooking().getAgency().getName();
                     touroperador = touroperador.replaceAll(" ","").toUpperCase();
                     if (touroperador.length() > 10) touroperador = touroperador.substring(0,10);
 
@@ -191,7 +191,7 @@ public class IslandbusHelper {
                     shut.addContent(new Element("fecha").setText(s.getFlightTime().format(dfx)));
                     shut.addContent(new Element("vuelo").setText(formatFlight(s.getFlightNumber())));
                     shut.addContent(new Element("hora").setText(s.getFlightTime().format(hf)));
-                    shut.addContent(new Element("nombre").setText(s.getFile().getLeadName()));
+                    shut.addContent(new Element("nombre").setText(s.getBooking().getLeadName()));
 
                     shut.addContent(new Element("adultos").setText("" + s.getPax()));
                     shut.addContent(new Element("ninyos").setText("" + 0));

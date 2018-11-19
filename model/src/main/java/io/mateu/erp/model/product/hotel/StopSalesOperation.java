@@ -2,10 +2,9 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.annotations.Keep;
-import io.mateu.mdd.core.annotations.NotInEditor;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
@@ -35,12 +34,15 @@ public class StopSalesOperation {
     @ManyToOne
     @NotInEditor
     @Keep
-    private io.mateu.erp.model.authentication.User createdBy;
+    @NoChart
+    private User createdBy = MDD.getCurrentUser();
 
     @SearchFilter
     @ManyToOne
-    @Output
+    @Unmodifiable
     @Keep
+    @NoChart
+    @NotNull
     private StopSales stopSales;
 
     @SearchFilter

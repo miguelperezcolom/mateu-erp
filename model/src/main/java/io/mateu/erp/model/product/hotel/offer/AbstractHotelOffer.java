@@ -14,6 +14,8 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,8 +76,14 @@ public class AbstractHotelOffer implements IHotelOffer {
     private boolean onBoardBasis;
     private boolean onDiscounts;
 
+
+    @TextArea
+    private Literal description;
+
+
     private boolean extras;
-    private String extrasDescription;
+    @TextArea
+    private Literal extrasDescription;
 
     @SearchFilter
     @ManyToOne

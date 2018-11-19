@@ -1,9 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.mdd.core.annotations.Keep;
-import io.mateu.mdd.core.annotations.NotInEditor;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
@@ -26,7 +23,9 @@ public class InventoryOperation {
     @ManyToOne
     @SearchFilter
     @Keep
-    @Output
+    @Unmodifiable
+    @NoChart
+    @NotNull
     private Inventory inventory;
 
 
@@ -36,6 +35,7 @@ public class InventoryOperation {
 
     @ManyToOne
     @NotInEditor
+    @NoChart
     private io.mateu.erp.model.authentication.User createdBy;
 
     private LocalDate start;

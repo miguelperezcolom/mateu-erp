@@ -5,11 +5,10 @@ import lombok.Setter;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,10 +29,31 @@ public class MaxCapacities implements Serializable {
         for (Element e : xml.getChildren("capacity")) getCapacities().add(new MaxCapacity(e));
     }
 
-    @Override
-    public String toString() {
+    public Element toXml() {
         Element xml = new Element("maxcapacities");
         for (MaxCapacity c : getCapacities()) xml.addContent(c.toXml());
-        return new XMLOutputter().outputString(xml);
+        return xml;
     }
+
+    public String toXmlString() {
+        return new XMLOutputter(Format.getCompactFormat()).outputString(toXml());
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer sb = new StringBuffer();
+        boolean first = true;
+        for (MaxCapacity c : getCapacities()) {
+            if (first) first = false;
+            else sb.append(",");
+            sb.append(c.toString());
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj != null && toString().equals(obj.toString());
+    }
+
 }

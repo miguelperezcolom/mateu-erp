@@ -2,9 +2,11 @@ package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
+import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
@@ -265,7 +267,7 @@ public class TransferBookingRequest {
 
     @Output
     @ManyToOne
-    private File file;
+    private Booking booking;
 
     @Output
     @ListColumn
@@ -355,11 +357,11 @@ public class TransferBookingRequest {
 
 
             //Si ok, actualizamos la reserva...
-            File b = File.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+            Booking b = Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
             User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
             if (b==null)//Crear reserva nueva
             {
-                b = new File();
+                b = new TransferBooking();
                 b.setAudit(new Audit(u));
                 nuevasEntidades.add(b);
 
@@ -368,9 +370,9 @@ public class TransferBookingRequest {
                 b.setLeadName(passengerName);
                 b.setTelephone(phone);
                 b.setEmail(email);
-                if (comments!=null) b.setComments(comments);
+                if (comments!=null) b.setSpecialRequests(comments);
                //TODO: b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
-                this.setFile(b);
+                this.setBooking(b);
                 nuevasEntidades.add(this);
 
                 //ojo, si la reserva es nueva no comprobamos fechas ni el estado. La reserva se crea siempre
@@ -379,7 +381,7 @@ public class TransferBookingRequest {
                     TransferService s;
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
-                    s.setFile(b);
+                    s.setBooking(b);
                     nuevasEntidades.add(s);
                     fillArrival(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
@@ -389,7 +391,7 @@ public class TransferBookingRequest {
                     TransferService s;
                     b.getServices().add(s = new TransferService());
                     s.setAudit(new Audit(u));
-                    s.setFile(b);
+                    s.setBooking(b);
                     nuevasEntidades.add(s);
                     fillDeparture(s, null, nuevasEntidades);
                     this.getTask().increaseAdditions();
@@ -425,9 +427,9 @@ public class TransferBookingRequest {
                         b.setEmail(email);
                         hayCambios=true;
                     }
-                    if (comments!=null && !b.getComments().contains(comments) && (lastRequest == null || !comments.equals(lastRequest.getComments())))
+                    if (comments!=null && !b.getSpecialRequests().contains(comments) && (lastRequest == null || !comments.equals(lastRequest.getComments())))
                     {
-                        b.setComments(b.getComments() + "--" + comments);
+                        b.setSpecialRequests(b.getSpecialRequests() + "--" + comments);
                         hayCambios=true;
                     }
 
@@ -441,7 +443,7 @@ public class TransferBookingRequest {
                     {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
-                        s.setFile(b);
+                        s.setBooking(b);
                         nuevasEntidades.add(s);
                         fillArrival(s, null, nuevasEntidades);
                         hayCambios = true;
@@ -465,7 +467,7 @@ public class TransferBookingRequest {
                             fillArrival(s, lastRequest, nuevasEntidades);
                             s.getAudit().touch(u);
                             hayCambios=true;
-                            if (s.isCancelled()) this.getTask().increaseCancellations();
+                            if (!s.isActive()) this.getTask().increaseCancellations();
                             else this.getTask().increaseModifications();
                         }
                     }
@@ -495,7 +497,7 @@ public class TransferBookingRequest {
                     {
                         b.getServices().add(s = new TransferService());
                         s.setAudit(new Audit(u));
-                        s.setFile(b);
+                        s.setBooking(b);
                         nuevasEntidades.add(s);
                         fillDeparture(s, null, nuevasEntidades);
                         hayCambios = true;
@@ -518,7 +520,7 @@ public class TransferBookingRequest {
                             fillDeparture(s, lastRequest, nuevasEntidades);
                             s.getAudit().touch(u);
                             hayCambios = true;
-                            if (s.isCancelled()) this.getTask().increaseCancellations();
+                            if (!s.isActive()) this.getTask().increaseCancellations();
                             else this.getTask().increaseModifications();
                         }
                     }
@@ -544,7 +546,7 @@ public class TransferBookingRequest {
                 if (hayCambios) {
                     //TODO:    b.getBookingRequests.add(this);//Agregar este request en el historial de la reserva
                     b.getAudit().touch(u);
-                    this.setFile(b);
+                    this.setBooking(b);
                     nuevasEntidades.add(this);
                 }
 
@@ -585,7 +587,7 @@ public class TransferBookingRequest {
     }
 
 
-    private TransferService getArrival(File b)  {
+    private TransferService getArrival(Booking b)  {
         if (b.getServices().size()==0) return null;
         for (Service s: b.getServices())
         {
@@ -600,7 +602,7 @@ public class TransferBookingRequest {
     }
 
     private void fillArrival(TransferService s, TransferBookingRequest lastRequest, List<Object> nuevasEntidades) {
-        if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setCancelled(arrivalStatus.equals(STATUS.CANCELLED));
+        if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setActive(!arrivalStatus.equals(STATUS.CANCELLED));
 
         if (lastRequest == null || !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()) || !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime())) {
             if (arrivalPickupDate!=null && arrivalPickupTime!=null)
@@ -672,7 +674,7 @@ public class TransferBookingRequest {
     }
 
     private boolean changesInArrival(TransferService s, TransferBookingRequest lastRequest) {
-       if (s.isCancelled()!= (arrivalStatus.equals(STATUS.CANCELLED))  && (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus()))) return true;
+       if ((!s.isActive())!= (arrivalStatus.equals(STATUS.CANCELLED))  && (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus()))) return true;
 
        //todo: se ha movido a la reserva
         /*
@@ -736,7 +738,7 @@ public class TransferBookingRequest {
         return false;
     }
 
-    private TransferService getDeparture(File b)  {
+    private TransferService getDeparture(Booking b)  {
         if (b.getServices().size()==0) return null;
         for (Service s: b.getServices())
         {
@@ -751,7 +753,7 @@ public class TransferBookingRequest {
     }
 
     private boolean changesInDeparture(TransferService s, TransferBookingRequest lastRequest) {
-        if (s.isCancelled()!= (departureStatus.equals(STATUS.CANCELLED)) && (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus()))) return true;
+        if ((!s.isActive()) != (departureStatus.equals(STATUS.CANCELLED)) && (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus()))) return true;
 
         //todo: se ha movido a la reserva
         /*
@@ -815,7 +817,7 @@ public class TransferBookingRequest {
     }
 
     private void fillDeparture(TransferService s, TransferBookingRequest lastRequest, List<Object> nuevasEntidades) {
-        if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setCancelled(departureStatus.equals(STATUS.CANCELLED));
+        if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setActive(!departureStatus.equals(STATUS.CANCELLED));
 
         if (lastRequest == null || !departurePickupDate.equals(lastRequest.getDeparturePickupDate()) || !departurePickupTime.equals(lastRequest.getDeparturePickupTime())) {
             if (departurePickupDate!=null && departurePickupTime!=null)

@@ -11,9 +11,7 @@ import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.generic.Price;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.Subtitle;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,6 +34,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Entity
 @Getter
 @Setter
+@NewNotAllowed
+@Indelible
 public class GenericService extends Service {
 
     @Tab("Service")
@@ -91,7 +91,7 @@ public class GenericService extends Service {
             m.put("units", getUnits());
             m.put("adults", getAdults());
             m.put("children", getChildren());
-            m.put("cancelled", "" + isCancelled());
+            m.put("cancelled", "" + !isActive());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,7 +105,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.SALE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -148,7 +148,7 @@ public class GenericService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getFile().getAgency());
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -191,11 +191,11 @@ public class GenericService extends Service {
         Map<String, Object> d = super.getData();
 
         d.put("id", getId());
-        d.put("locator", this.getFile().getId());
-        d.put("leadName", this.getFile().getLeadName());
-        d.put("agency", this.getFile().getAgency().getName());
-        d.put("agencyReference", this.getFile().getAgencyReference());
-        d.put("status", (isCancelled())?"CANCELLED":"ACTIVE");
+        d.put("locator", this.getBooking().getId());
+        d.put("leadName", this.getBooking().getLeadName());
+        d.put("agency", this.getBooking().getAgency().getName());
+        d.put("agencyReference", this.getBooking().getAgencyReference());
+        d.put("status", (isActive())?"ACTIVE":"CANCELLED");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 

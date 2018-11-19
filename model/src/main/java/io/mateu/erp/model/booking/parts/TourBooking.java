@@ -26,7 +26,7 @@ public abstract class TourBooking extends Booking {
     private ManagedEvent managedEvent;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    @Position(9)
+    @Position(13)
     private List<TourBookingExtra> extras = new ArrayList<>();
 
 }

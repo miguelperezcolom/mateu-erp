@@ -19,8 +19,9 @@ public class ContractClause {
 
     @ManyToOne
     @NotNull
-    @JoinColumn(name = "_group")
-    private ContractClauseGroup group;
+    //@JoinColumn(name = "_group")
+    //todo: ver por que no podemos llamarle "group". Luego falla al abrir el mantenimiento
+    private ContractClauseGroup owner;
 
     @Column(name = "_order")
     private int order;

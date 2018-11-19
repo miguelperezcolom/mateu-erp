@@ -25,28 +25,26 @@ public class LinearFareLine implements XMLSerializable {
     private LinearFare fare;
 
 
-    @ValueClass(RoomType.class)
     private String roomTypeCode;
 
     public DataProvider getRoomTypeCodeDataProvider() {
-        List<String> l = new ArrayList<>();
+        List<RoomType> l = new ArrayList<>();
         for (Room r : fare.getPhoto().getContract().getHotel().getRooms()) {
-            l.add(r.getCode());
+            l.add(r.getType());
         }
-        return new ListDataProvider<String>(l);
+        return new ListDataProvider<RoomType>(l);
     }
 
 
-    @ValueClass(BoardType.class)
     @SameLine
     private String boardTypeCode;
 
     public DataProvider getBoardTypeCodeDataProvider() {
-        List<String> l = new ArrayList<>();
+        List<BoardType> l = new ArrayList<>();
         for (Board r : fare.getPhoto().getContract().getHotel().getBoards()) {
-            l.add(r.getCode());
+            l.add(r.getType());
         }
-        return new ListDataProvider<String>(l);
+        return new ListDataProvider<BoardType>(l);
     }
 
 

@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.tickets.TicketStatus;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.TourVariant;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.TextArea;
@@ -27,24 +28,27 @@ public class TicketBooking extends Booking {
 
     @NotNull
     @ManyToOne
-    @Position(3)
+    @Position(13)
     private Ticket ticket;
 
-    @Position(4)
+    @Position(14)
     private Excursion excursion;
 
-    @Position(5)
+    @Position(15)
+    private TourVariant variant;
+
+    @Position(16)
     private TourShift shift;
 
     @ManyToOne
-    @Position(6)
+    @Position(17)
     private TransferPoint pickupPoint;
 
-    @Position(7)
+    @Position(18)
     private int pickupTime;
 
 
-    @Position(8)
+    @Position(19)
     private String roomNumber;
 
 
@@ -74,8 +78,8 @@ public class TicketBooking extends Booking {
 
 
     @PrePersist
-    public void pre() throws Exception {
-        if (!TicketStatus.LIVE.equals(ticket.getStatus())) throw new Exception("Ticket must be live");
+    public void pre() throws Error {
+        if (!TicketStatus.LIVE.equals(ticket.getStatus())) throw new Error("Ticket must be live");
     }
 
     @Override

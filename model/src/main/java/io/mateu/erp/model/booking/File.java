@@ -42,6 +42,7 @@ import org.jdom2.output.XMLOutputter;
 
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
@@ -76,31 +77,16 @@ public class File {
     @SearchFilter(field="modified")
     private Audit audit;
 
-    @ManyToOne
-    @NotNull
+    @ListColumn
     @SearchFilter
-    @QLFilter("x.agency = true")
-    @ListColumn
-    private Partner agency;
-
-    @NotNull
-    @SearchFilter(exactMatch = true)
-    @ListColumn
-    private String agencyReference;
-
-    @NotNull
-    @SearchFilter
-    @ListColumn
     private String leadName;
 
-    private String email;
-
-    private String telephone;
 
 
     @Ignored
     @SearchFilter
     @ListColumn
+    @ColumnWidth(132)
     private LocalDate start;
 
     @Ignored
@@ -110,14 +96,6 @@ public class File {
     @TextArea
     private String comments;
 
-
-    private String companyName;
-    private String vatId;
-    private String address;
-    private String city;
-    private String state;
-    private String country;
-    private String postalCode;
 
     @KPI
     @ListColumn
@@ -164,61 +142,16 @@ public class File {
     @UseLinkToListView
     private List<Booking> bookings = new ArrayList<>();
 
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "orderInBooking")
-    @UseLinkToListView
-    private List<Service> services = new ArrayList<>();
 
-    @OneToMany(mappedBy = "file")
-    @UseLinkToListView
-    private List<BookingCharge> charges = new ArrayList<>();
-
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "id")
-    @UseLinkToListView
-    private List<BookingPaymentAllocation> payments = new ArrayList<>();
-
-    @OneToMany(mappedBy = "file")
-    @UseLinkToListView
-    private List<TPVTransaction> TPVTransactions = new ArrayList<>();
 
 
 
 
     @Override
     public String toString() {
-        return "" + getId() + " / " + ((getAgencyReference() != null)?getAgencyReference():"") + " - " + getLeadName() + " (" + ((getAgency() != null)?getAgency().getName():"No agency") + ") " + ((getComments() != null)?getComments():"");
+        return "" + getId() + " - " + getLeadName() + " " + ((getComments() != null)?getComments():"");
     }
 
-
-    public static File getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
-    {
-        try {
-            String jpql = "select x from " + File.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + partner.getId();
-            Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
-            List<File> l = q.getResultList();
-            File b = (l.size() > 0)?l.get(0):null;
-            return b;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static void main(String... args) throws Throwable {
-        Partner a = new Partner();
-        a.setId(1);
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-                System.out.println(getByAgencyRef(em, "1234", a));
-            }
-        });
-
-    }
 
     @PostLoad
     public void beforeSet() throws Throwable {
@@ -286,72 +219,12 @@ public class File {
     }
 
 
-    public Map<String,Object> getData() {
-        Map<String, Object> d = new HashMap<>();
-
-        d.put("start", getStart());
-        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"...") + " - " + ((getFinish() != null)?getFinish().format(f):"..."));
-        d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-
-        double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
-        double iva = Helper.roundOffEuros(getTotalNetValue() - base);
-
-
-        d.put("base", base);
-        d.put("iva", iva);
-
-        List<String> points = new ArrayList<>();
-        String comentarios = "";
-        int pax = 0;
-        boolean allServicesAreValued = true;
-        boolean allPurchasesAreValued = true;
-        double totalCost = 0;
-
-        boolean todoCancelado = true;
-
-        for (Service s : getServices()) {
-            if (s instanceof TransferService) {
-                TransferService t = (TransferService) s;
-                if (pax < t.getPax()) pax = t.getPax();
-                if (!points.contains(t.getPickupText())) points.add(t.getPickupText());
-                if (!points.contains(t.getDropoffText())) points.add(t.getDropoffText());
-                d.put("transferType", "" + t.getTransferType());
-            }
-            todoCancelado &= s.isCancelled();
-            allServicesAreValued &= s.isValued();
-            allPurchasesAreValued &= s.isPurchaseValued();
-            if (!Strings.isNullOrEmpty(s.getBooking().getSpecialRequests())) comentarios += s.getBooking().getSpecialRequests();
-            if (!Strings.isNullOrEmpty(s.getOperationsComment())) comentarios += s.getOperationsComment();
-            totalCost += s.getTotalCost();
-        }
-
-        d.put("valued", allServicesAreValued);
-        d.put("total", getTotalNetValue());
-        d.put("purchaseValued", allPurchasesAreValued);
-        d.put("totalCost", totalCost);
-
-        d.put("id", getId());
-        d.put("locator", getId());
-        d.put("leadName", getLeadName());
-        d.put("agency", getAgency().getName());
-        d.put("agencyReference", getAgencyReference());
-        d.put("status", (todoCancelado)?"CANCELLED":"ACTIVE");
-        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
-        d.put("office", "");
-
-        d.put("comments", comentarios);
-        d.put("direction", String.join(",", points));
-        d.put("pax", pax);
-
-        return d;
-    }
 
 
 
     @Action(order = 1, icon = VaadinIcons.ENVELOPES)
     @NotWhenCreating
-    public void sendVouchers(String changeEmail, String postscript) throws Throwable {
+    public void sendVouchers(@NotEmpty String changeEmail, String postscript) throws Throwable {
 
 
         Helper.transact(em ->{
@@ -361,19 +234,19 @@ public class File {
 
 
             String to = changeEmail;
+            //todo: enviar un email por agencia
+            /*
             if (Strings.isNullOrEmpty(to)) {
-                to = getEmail();
+                to = getboogetAgency().getEmail();
             }
-            if (Strings.isNullOrEmpty(to)) {
-                to = getAgency().getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
+            */
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address.");
 
 
 
             Document xml = new Document(new Element("services"));
 
-            for (Service s : services) {
+            for (Booking b : getBookings()) for (Service s : b.getServices()) {
                 xml.getRootElement().addContent(s.toXml());
             }
 
@@ -440,16 +313,19 @@ public class File {
 
     @Action(order = 2, icon = VaadinIcons.ENVELOPE)
     @NotWhenCreating
-    public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) throws Throwable {
+    public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, @NotEmpty String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) throws Throwable {
 
         String to = changeEmail;
+        //todo: enviar cada voucher a cada agencia
+        /*
         if (Strings.isNullOrEmpty(to)) {
             to = getEmail();
         }
         if (Strings.isNullOrEmpty(to)) {
             to = getAgency().getEmail();
         }
-        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
+        */
+        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address.");
 
         if (template != null) {
             Map<String, Object> data = Helper.getGeneralData();
@@ -461,67 +337,6 @@ public class File {
 
     }
 
-    @Action(order = 3, icon = VaadinIcons.EURO)
-    @NotWhenCreating
-    public void sendPaymentEmail(EntityManager em, String toEmail, String subject, String postscript, @NotNull TPV tpv, FastMoney amount) throws Throwable {
-        AppConfig appconfig = AppConfig.get(em);
-
-
-        String to = toEmail;
-        if (Strings.isNullOrEmpty(to)) {
-            to = getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) {
-            to = getAgency().getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
-
-
-
-        // Create the email message
-        HtmlEmail email = new HtmlEmail();
-        //Email email = new HtmlEmail();
-        email.setHostName(appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
-
-        email.setSubject("Payment request for booking file " + getId() + "");
-
-
-        TPVTransaction t = new TPVTransaction();
-        t.setValue(amount.getNumber().doubleValueExact());
-        t.setCurrency(em.find(Currency.class, amount.getCurrency().getCurrencyCode()));
-        t.setFile(this);
-        TPVTransactions.add(t);
-        t.setLanguage("es");
-        t.setSubject((!Strings.isNullOrEmpty(subject))?subject:"");
-        t.setTpv(tpv);
-        em.merge(t);
-
-
-        String msg = postscript;
-
-        String freemark = appconfig.getPaymentEmailTemplate();
-
-        if (!Strings.isNullOrEmpty(freemark)) {
-            Map<String, Object> data = Helper.getGeneralData();
-            data.put("postscript", postscript);
-            data.put("leadname", getLeadName());
-            data.put("paymentbutton", t.getBoton(em));
-            msg = Helper.freemark(freemark, data);
-        }
-
-        email.setMsg(msg);
-
-        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
-
-
-        email.send();
-
-    }
 
 
     @Action(order = 4, icon = VaadinIcons.INVOICE)
@@ -547,7 +362,7 @@ public class File {
                         public String apply(Object o) {
                             String s = null;
                             if (old != null) s = old.apply(o);
-                            if (!((Boolean)((Object[])o)[9])) {
+                            if (!((Boolean)((Object[])o)[7])) {
                                 s = (s != null)?s + " cancelled":"cancelled";
                             }
                             return s;

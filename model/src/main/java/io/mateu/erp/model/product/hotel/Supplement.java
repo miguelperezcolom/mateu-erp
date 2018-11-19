@@ -1,6 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -26,6 +28,9 @@ public class Supplement implements XMLSerializable {
     private LocalDate checkoutEnd;
      */
 
+    @ValueClass(HotelExtraType.class)
+    private String extra;
+
     private boolean optional;
 
     private boolean affectedByOffers;
@@ -50,8 +55,10 @@ public class Supplement implements XMLSerializable {
 
     private double value;
 
+    @ValueClass(Partner.class)
     private long providerId;
 
+    @ValueClass(BillingConcept.class)
     private String invoicingKey;
 
     @ValueClass(RoomType.class)
