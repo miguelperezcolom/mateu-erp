@@ -1,5 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -13,13 +16,26 @@ import java.util.List;
  */
 public class ReleaseRule implements XMLSerializable {
 
+    @Ignored
+    private HotelContractPhoto photo;
+
     private LocalDate start;
     private LocalDate end;
 
     private int release;
 
-    @ValueClass(RoomType.class)
     private List<String> rooms = new ArrayList<>();
+
+    public DataProvider getRoomsDataProvider() {
+        List<RoomType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Room r : h.getRooms()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<RoomType>(l);
+    }
+
+
 
     public LocalDate getStart() {
         return start;
@@ -53,7 +69,13 @@ public class ReleaseRule implements XMLSerializable {
         this.rooms = rooms;
     }
 
-    public ReleaseRule(Element e) {
+
+    public ReleaseRule(HotelContractPhoto photo) {
+        this.photo = photo;
+    }
+
+    public ReleaseRule(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
         fromXml(e);
     }
 

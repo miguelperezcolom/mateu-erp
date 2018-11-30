@@ -26,16 +26,19 @@ public abstract class AbstractProduct {
     @ManyToOne
     @NotNull
     @ListColumn
+    @ColumnWidth(120)
     private ProductType type;
 
     @ListColumn
     @CellStyleGenerator(ActiveCellStyleGenerator.class)
+    @ColumnWidth(70)
     private boolean active = true;
 
     @ManyToOne
     @NotNull
     @ListColumn
     @SearchFilter
+    @ColumnWidth(120)
     private Office office;
 
 
@@ -47,7 +50,7 @@ public abstract class AbstractProduct {
     private Zone zone;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private DataSheet dataSheet;
 
     @Override

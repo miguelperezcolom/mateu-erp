@@ -1,9 +1,13 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +16,9 @@ import java.util.List;
  * Created by miguel on 1/10/16.
  */
 public class MinimumStayRule implements XMLSerializable {
+
+    @Ignored
+    private HotelContractPhoto photo;
 
     private LocalDate start;
     private LocalDate end;
@@ -24,13 +31,31 @@ public class MinimumStayRule implements XMLSerializable {
 
     private double supplementValue;
 
-    private SupplementPer per;
+    @NotNull
+    private SupplementPer per = SupplementPer.PAX;
 
-    @ValueClass(RoomType.class)
     private List<String> rooms = new ArrayList<>();
 
-    @ValueClass(BoardType.class)
+    public DataProvider getRoomsDataProvider() {
+        List<RoomType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Room r : h.getRooms()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<RoomType>(l);
+    }
+
     private List<String> boards = new ArrayList<>();
+
+    public DataProvider getBoardsDataProvider() {
+        List<BoardType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Board r : h.getBoards()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<BoardType>(l);
+    }
+
 
     public LocalDate getStart() {
         return start;
@@ -104,7 +129,12 @@ public class MinimumStayRule implements XMLSerializable {
         this.boards = boards;
     }
 
-    public MinimumStayRule(Element e) {
+    public MinimumStayRule(HotelContractPhoto photo) {
+        this.photo = photo;
+    }
+
+    public MinimumStayRule(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
         fromXml(e);
     }
 
@@ -135,7 +165,7 @@ public class MinimumStayRule implements XMLSerializable {
         if (isOnRequest()) e.setAttribute("onRequest", "");
         e.setAttribute("supplementPercent", "" + getSupplementPercent());
         e.setAttribute("supplementValue", "" + getSupplementValue());
-        e.setAttribute("per", "" + getPer());
+        if (getPer() != null) e.setAttribute("per", "" + getPer());
         for (String k : getRooms()) e.addContent(new Element("room").setAttribute("id", "" + k));
         for (String k : getBoards()) e.addContent(new Element("board").setAttribute("id", "" + k));
 
@@ -148,7 +178,7 @@ public class MinimumStayRule implements XMLSerializable {
         if (getSupplementPercent() != 0 || getSupplementValue() != 0) sb.append(" supplement will be applied");
         if (isOnRequest()) {
             if (sb.length() > 0) sb.append(" and ");
-            sb.append("the file will be on request");
+            sb.append("the booking will be on request");
         }
         if (getRooms().size() > 0) {
             if (sb.length() > 0) sb.append(". ");
@@ -168,7 +198,7 @@ public class MinimumStayRule implements XMLSerializable {
             }
         }
 
-        if (sb.length() > 0) e.setAttribute("description", "For shorter stays " + sb.toString());
+        if (sb.length() > 0) e.setAttribute("descriptionforpdf", "" + sb.toString());
 
         return e;
     }

@@ -7,6 +7,7 @@ import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.StartTabs;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.DatesRange;
+import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -14,6 +15,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.EntityManager;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -34,195 +36,67 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     @Ignored
     private HotelContract contract;
 
-    @StartTabs
-    @FullWidth
-    @Tab("General")
-    private RatesType ratesType = RatesType.NET;
-
-    private List<DoublePerDateRange> commission = new ArrayList<>();
-
-    private boolean mandatoryRates;
-
-
-    /**
-     * groups related
-     */
-    private int maxPaxPerBooking;
-
-    /**
-     * groups related
-     */
-    private int maxRoomsPerBooking;
-
-    /**
-     * for allotment rescue
-     */
-    private int maxCheckoutRelease;
-
-
-    /**
-     * for warranties
-     */
-    private boolean zeroPricesAllowed;
-
-
-    private String specialTerms;
-
-
-
-    /**
-     * inclusive
-     */
-    private int childStartAge;
-
-    /**
-     * inclusive
-     */
-    private int juniorStartAge;
-
-    /**
-     * inclusive
-     */
-    private int adultStartAge;
-
-    private boolean youngestFirst;
-
-
     @Tab("Fares")
     @FullWidth
     private List<LinearFare> fares = new ArrayList<>();
 
+    public LinearFare createFaresInstance() {
+        return new LinearFare(this);
+    }
+
 
     @Tab("Min. stay")
+    @FullWidth
     private List<MinimumStayRule> minimumStayRules = new ArrayList<>();
 
+    public MinimumStayRule createMinimumStayRulesInstance() {
+        return new MinimumStayRule(this);
+    }
+
     @Tab("Release")
+    @FullWidth
     private List<ReleaseRule> releaseRules = new ArrayList<>();
 
+    public ReleaseRule createReleaseRulesInstance() {
+        return new ReleaseRule(this);
+    }
+
     @Tab("Check in/out")
+    @FullWidth
     private List<WeekDaysRule> weekDaysRules = new ArrayList<>();
 
     @Tab("Supplements")
+    @FullWidth
     private List<Supplement> supplements = new ArrayList<>();
 
+    public Supplement createSupplementsInstance() {
+        return new Supplement(this);
+    }
+
     @Tab("Galas")
+    @FullWidth
     private List<Gala> galas = new ArrayList<>();
 
+    public Gala createGalasInstance() {
+        return new Gala(this);
+    }
+
     @Tab("Allotment")
+    @FullWidth
     private List<Allotment> allotment = new ArrayList<>();
 
-    @Tab("Cancellation")
-    private List<CancellationRule> cancellationRules = new ArrayList<>();
 
-    @Tab("Clauses")
-    private List<String> clauses = new ArrayList<>();
-
-
-    @XmlAttribute
-    public RatesType getRatesType() {
-        return ratesType;
+    public Allotment createAllotmentInstance() {
+        return new Allotment(this);
     }
 
-    public void setRatesType(RatesType ratesType) {
-        this.ratesType = ratesType;
-    }
+    @Tab("Security allotment")
+    @FullWidth
+    private List<Allotment> securityAllotment = new ArrayList<>();
 
-    public List<DoublePerDateRange> getCommission() {
-        return commission;
-    }
 
-    public void setCommission(List<DoublePerDateRange> commission) {
-        this.commission = commission;
-    }
-
-    @XmlAttribute
-    public boolean isMandatoryRates() {
-        return mandatoryRates;
-    }
-
-    public void setMandatoryRates(boolean mandatoryRates) {
-        this.mandatoryRates = mandatoryRates;
-    }
-
-    @XmlAttribute
-    public int getMaxPaxPerBooking() {
-        return maxPaxPerBooking;
-    }
-
-    public void setMaxPaxPerBooking(int maxPaxPerBooking) {
-        this.maxPaxPerBooking = maxPaxPerBooking;
-    }
-
-    @XmlAttribute
-    public int getMaxRoomsPerBooking() {
-        return maxRoomsPerBooking;
-    }
-
-    public void setMaxRoomsPerBooking(int maxRoomsPerBooking) {
-        this.maxRoomsPerBooking = maxRoomsPerBooking;
-    }
-
-    @XmlAttribute
-    public int getMaxCheckoutRelease() {
-        return maxCheckoutRelease;
-    }
-
-    public void setMaxCheckoutRelease(int maxCheckoutRelease) {
-        this.maxCheckoutRelease = maxCheckoutRelease;
-    }
-
-    @XmlAttribute
-    public boolean isZeroPricesAllowed() {
-        return zeroPricesAllowed;
-    }
-
-    public void setZeroPricesAllowed(boolean zeroPricesAllowed) {
-        this.zeroPricesAllowed = zeroPricesAllowed;
-    }
-
-    @XmlAttribute
-    public String getSpecialTerms() {
-        return specialTerms;
-    }
-
-    public void setSpecialTerms(String specialTerms) {
-        this.specialTerms = specialTerms;
-    }
-
-    @XmlAttribute
-    public int getChildStartAge() {
-        return childStartAge;
-    }
-
-    public void setChildStartAge(int childStartAge) {
-        this.childStartAge = childStartAge;
-    }
-
-    @XmlAttribute
-    public int getJuniorStartAge() {
-        return juniorStartAge;
-    }
-
-    public void setJuniorStartAge(int juniorStartAge) {
-        this.juniorStartAge = juniorStartAge;
-    }
-
-    @XmlAttribute
-    public int getAdultStartAge() {
-        return adultStartAge;
-    }
-
-    public void setAdultStartAge(int adultStartAge) {
-        this.adultStartAge = adultStartAge;
-    }
-
-    @XmlAttribute
-    public boolean isYoungestFirst() {
-        return youngestFirst;
-    }
-
-    public void setYoungestFirst(boolean youngestFirst) {
-        this.youngestFirst = youngestFirst;
+    public Allotment createSecurityAllotmentInstance() {
+        return new Allotment(this);
     }
 
     public List<LinearFare> getFares() {
@@ -281,22 +155,14 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         this.allotment = allotment;
     }
 
-    public List<CancellationRule> getCancellationRules() {
-        return cancellationRules;
+
+    public List<Allotment> getSecurityAllotment() {
+        return securityAllotment;
     }
 
-    public void setCancellationRules(List<CancellationRule> cancellationRules) {
-        this.cancellationRules = cancellationRules;
+    public void setSecurityAllotment(List<Allotment> securityAllotment) {
+        this.securityAllotment = securityAllotment;
     }
-
-    public List<String> getClauses() {
-        return clauses;
-    }
-
-    public void setClauses(List<String> clauses) {
-        this.clauses = clauses;
-    }
-
 
     public HotelContract getContract() {
         return contract;
@@ -310,32 +176,12 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     public String toString() {
         StringBuffer html = new StringBuffer();
 
-        html.append("" + getRatesType() + " rates.<br/>");
-
-        if (getMaxPaxPerBooking() > 0) html.append("" + getMaxPaxPerBooking() + " max pax per booking.<br/>");
-
-        if (!Strings.isNullOrEmpty(getSpecialTerms())) html.append("<pre>" + getSpecialTerms() + "</pre>");
 
         return html.toString();
     }
 
     public String serialize() {
         Element xml = new Element("terms");
-
-        xml.setAttribute("adultStartAge", "" + getAdultStartAge());
-        if (getSpecialTerms() != null) xml.setAttribute("specialTerms", "" + getSpecialTerms());
-        xml.setAttribute("childStartAge", "" + getChildStartAge());
-        xml.setAttribute("maxCheckoutRelease", "" + getMaxCheckoutRelease());
-        xml.setAttribute("maxPaxPerBooking", "" + getMaxPaxPerBooking());
-        xml.setAttribute("maxRoomsPerBooking", "" + getMaxRoomsPerBooking());
-        xml.setAttribute("ratesType", "" + getRatesType());
-
-
-        {
-            Element l = new Element("commissions");
-            for (XMLSerializable x : getCommission()) l.addContent(x.toXml());
-            xml.addContent(l);
-        }
 
         {
             Element l = new Element("fares");
@@ -381,47 +227,28 @@ public class HotelContractPhoto implements Serializable, Externalizable {
             xml.addContent(l);
         }
 
-
         {
-            Element l = new Element("cancellationRules");
-            for (XMLSerializable x : getCancellationRules()) l.addContent(x.toXml());
+            Element l = new Element("securityAllotment");
+            for (XMLSerializable x : getSecurityAllotment()) l.addContent(x.toXml());
             xml.addContent(l);
         }
-
-
-        {
-            Element l = new Element("clauses");
-            for (String x : getClauses()) l.addContent(new Element("clause").setText(x));
-            xml.addContent(l);
-        }
-
 
         return new XMLOutputter().outputString(xml);
     }
 
     private void fill(Element e) {
 
-        if (e.getAttribute("adultStartAge") != null) setAdultStartAge(Integer.parseInt(e.getAttributeValue("adultStartAge")));
-        if (e.getAttribute("specialTerms") != null) setSpecialTerms(e.getAttributeValue("specialTerms"));
-        if (e.getAttribute("childStartAge") != null) setChildStartAge(Integer.parseInt(e.getAttributeValue("childStartAge")));
-        if (e.getAttribute("maxCheckoutRelease") != null) setMaxCheckoutRelease(Integer.parseInt(e.getAttributeValue("maxCheckoutRelease")));
-        if (e.getAttribute("maxPaxPerBooking") != null) setMaxRoomsPerBooking(Integer.parseInt(e.getAttributeValue("maxPaxPerBooking")));
-        if (e.getAttribute("maxRoomsPerBooking") != null) setMaxRoomsPerBooking(Integer.parseInt(e.getAttributeValue("maxRoomsPerBooking")));
-        if (e.getAttribute("ratesType") != null) setRatesType(RatesType.valueOf(e.getAttributeValue("ratesType")));
-
         Element x = null;
-        if ((x = e.getChild("commissions")) != null) for (Element z : x.getChildren()) getCommission().add(new DoublePerDateRange(z));
-        if ((x = e.getChild("fares")) != null) for (Element z : x.getChildren()) getFares().add(new LinearFare(z));
-        if ((x = e.getChild("minimumStayRules")) != null) for (Element z : x.getChildren()) getMinimumStayRules().add(new MinimumStayRule(z));
-        if ((x = e.getChild("releaseRules")) != null) for (Element z : x.getChildren()) getReleaseRules().add(new ReleaseRule(z));
+        if ((x = e.getChild("fares")) != null) for (Element z : x.getChildren()) getFares().add(new LinearFare(this, z));
+        if ((x = e.getChild("minimumStayRules")) != null) for (Element z : x.getChildren()) getMinimumStayRules().add(new MinimumStayRule(this, z));
+        if ((x = e.getChild("releaseRules")) != null) for (Element z : x.getChildren()) getReleaseRules().add(new ReleaseRule(this, z));
         if ((x = e.getChild("weekDaysRules")) != null) for (Element z : x.getChildren()) getWeekDaysRules().add(new WeekDaysRule(z));
-        if ((x = e.getChild("supplements")) != null) for (Element z : x.getChildren()) getSupplements().add(new Supplement(z));
+        if ((x = e.getChild("supplements")) != null) for (Element z : x.getChildren()) getSupplements().add(new Supplement(this, z));
         // ordenamos los suplementos por orden de aplicación
         getSupplements().sort((s1, s2) -> s1.getApplicationOrder() - s2.getApplicationOrder());
-        if ((x = e.getChild("galas")) != null) for (Element z : x.getChildren()) getGalas().add(new Gala(z));
-        if ((x = e.getChild("allotment")) != null) for (Element z : x.getChildren()) getAllotment().add(new Allotment(z));
-        if ((x = e.getChild("canellationRules")) != null) for (Element z : x.getChildren()) getCancellationRules().add(new CancellationRule(z));
-        if ((x = e.getChild("clauses")) != null) for (Element z : x.getChildren()) getClauses().add(z.getText());
+        if ((x = e.getChild("galas")) != null) for (Element z : x.getChildren()) getGalas().add(new Gala(this, z));
+        if ((x = e.getChild("allotment")) != null) for (Element z : x.getChildren()) getAllotment().add(new Allotment(this, z));
+        if ((x = e.getChild("securityAllotment")) != null) for (Element z : x.getChildren()) getSecurityAllotment().add(new Allotment(this, z));
     }
 
     public HotelContractPhoto() {
@@ -459,15 +286,18 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
         List<String> rooms = new ArrayList<>();
         List<String> boards = new ArrayList<>();
-        Map<String, LinearFareLine> linesMap = new HashMap<>();
         for (LinearFare f : getFares()) for (LinearFareLine l : f.getLines()) {
-            if (!rooms.contains(l.getRoomTypeCode())) rooms.add(l.getRoomTypeCode());
-            if (!boards.contains(l.getBoardTypeCode())) boards.add(l.getBoardTypeCode());
-            linesMap.put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+            if (!Strings.isNullOrEmpty(l.getRoomTypeCode()) && !rooms.contains(l.getRoomTypeCode())) rooms.add(l.getRoomTypeCode());
+            if (!Strings.isNullOrEmpty(l.getBoardTypeCode()) && !boards.contains(l.getBoardTypeCode())) boards.add(l.getBoardTypeCode());
         }
+
+
+
+
 
         Element erooms;
         xml.addContent(erooms = new Element("rooms"));
+        Element eds = null;
 
         for (String rcode : rooms) for (String bcode : boards) {
             Element eroom;
@@ -486,11 +316,26 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
 
             Element el = null;
-            Element eds = null;
             Map<String, Element> els = null;
             int pos = 0;
             for (LinearFare f : getFares()) {
-                if (pos++ % 6 == 0) {
+
+
+                Map<String, LinearFareLine> linesMap = new HashMap<>();
+                for (LinearFareLine l : f.getLines()) {
+                    linesMap.put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+                }
+
+                if (pos++ % 8 == 0) {
+
+                    if (el != null) {
+                        List<Element> eliminar = new ArrayList<>();
+                        for (Element l : el.getChildren("line")) {
+                            if (Strings.isNullOrEmpty(l.getChildText("price"))) eliminar.add(l);
+                        }
+                        for (Element l : eliminar) el.removeContent(l);
+                    }
+
                     eroom.addContent(el = new Element("row"));
                     el.addContent(eds = new Element("dates"));
 
@@ -538,12 +383,12 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
                 }
 
+
                 Element ers;
                 eds.addContent(ers = new Element("ranges"));
                 for (DatesRange dr : f.getDates()) {
-                    ers.addContent(new Element("range").setAttribute("start", dr.getStart().format(DateTimeFormatter.BASIC_ISO_DATE)).setAttribute("end", dr.getEnd().format(DateTimeFormatter.BASIC_ISO_DATE)));
+                    ers.addContent(new Element("range").setAttribute("start", dr.getStart().format(DateTimeFormatter.ISO_DATE)).setAttribute("end", dr.getEnd().format(DateTimeFormatter.ISO_DATE)));
                 };
-
 
 
                 LinearFareLine l = linesMap.get(rcode + "-" + bcode);
@@ -571,6 +416,13 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
             }
 
+            List<Element> eliminar = new ArrayList<>();
+            for (Element l : el.getChildren("line")) {
+                if (Strings.isNullOrEmpty(l.getChildText("price"))) eliminar.add(l);
+            }
+            for (Element l : eliminar) el.removeContent(l);
+
+
         }
 
 
@@ -586,6 +438,14 @@ public class HotelContractPhoto implements Serializable, Externalizable {
             Element rs;
             xml.addContent(rs = new Element("allotment"));
             for (Allotment r : getAllotment()) {
+                rs.addContent(r.toXml());
+            }
+        }
+
+        {
+            Element rs;
+            xml.addContent(rs = new Element("securityAllotment"));
+            for (Allotment r : getSecurityAllotment()) {
                 rs.addContent(r.toXml());
             }
         }
@@ -614,19 +474,25 @@ public class HotelContractPhoto implements Serializable, Externalizable {
             }
         }
 
-        {
-            Element rs;
-            xml.addContent(rs = new Element("cancellation"));
-            for (CancellationRule r : getCancellationRules()) {
-                rs.addContent(r.toXml());
-            }
-        }
-
         return xml;
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj != null && toString().equals(obj.toString());
+        return obj != null && obj instanceof HotelContractPhoto && serialize().equals(((HotelContractPhoto)obj).serialize());
+    }
+
+    public HotelContractPhoto increment(double incrementPercent) {
+        for (LinearFare f : fares) {
+            for (LinearFareLine l : f.getLines()) {
+                l.setLodgingPrice(Helper.roundEuros(l.getLodgingPrice() * (100d + incrementPercent)) / 100d);
+                l.setAdultPrice(Helper.roundEuros(l.getAdultPrice() * (100d + incrementPercent)) / 100d);
+            }
+        }
+        return this;
+    }
+
+    public HotelContractPhoto cloneAsConverted() throws Throwable {
+        return new HotelContractPhoto(serialize());
     }
 }

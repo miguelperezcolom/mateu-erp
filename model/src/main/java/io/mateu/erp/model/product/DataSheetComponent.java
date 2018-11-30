@@ -21,7 +21,7 @@ public class DataSheetComponent extends Composite {
         if (dataSheet.getDescription() != null) {
             Label l;
             vl.addComponent(l = new Label(dataSheet.getDescription().toString(), ContentMode.HTML));
-            l.setWidth("400px");
+            l.setWidth("100%");
         }
 
         try {

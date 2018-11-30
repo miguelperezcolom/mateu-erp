@@ -1,8 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
 
+import com.google.common.base.Strings;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.erp.model.product.hotel.offer.PriceOffer;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.ValueClass;
@@ -21,15 +23,15 @@ import java.util.List;
 public class LinearFareLine implements XMLSerializable {
 
     @Ignored
-    @NotNull
     private LinearFare fare;
-
 
     private String roomTypeCode;
 
     public DataProvider getRoomTypeCodeDataProvider() {
         List<RoomType> l = new ArrayList<>();
-        for (Room r : fare.getPhoto().getContract().getHotel().getRooms()) {
+        Hotel h = null;
+        if (fare != null) h = fare.getPhoto().getContract().getHotel();
+        for (Room r : h.getRooms()) {
             l.add(r.getType());
         }
         return new ListDataProvider<RoomType>(l);
@@ -41,7 +43,9 @@ public class LinearFareLine implements XMLSerializable {
 
     public DataProvider getBoardTypeCodeDataProvider() {
         List<BoardType> l = new ArrayList<>();
-        for (Board r : fare.getPhoto().getContract().getHotel().getBoards()) {
+        Hotel h = null;
+        if (fare != null) h = fare.getPhoto().getContract().getHotel();
+        for (Board r : h.getBoards()) {
             l.add(r.getType());
         }
         return new ListDataProvider<BoardType>(l);
@@ -88,8 +92,12 @@ public class LinearFareLine implements XMLSerializable {
 
     }
 
+    public LinearFareLine(LinearFare fare) {
+        this.fare = fare;
+    }
 
-    public LinearFareLine(Element e) {
+    public LinearFareLine(LinearFare fare, Element e) {
+        this.fare = fare;
         fromXml(e);
     }
 
@@ -151,8 +159,8 @@ public class LinearFareLine implements XMLSerializable {
     public Element toXml() {
         Element e = new Element("line");
 
-        e.setAttribute("room", getRoomTypeCode());
-        e.setAttribute("board", getBoardTypeCode());
+        if (!Strings.isNullOrEmpty(getRoomTypeCode())) e.setAttribute("room", getRoomTypeCode());
+        if (!Strings.isNullOrEmpty(getBoardTypeCode())) e.setAttribute("board", getBoardTypeCode());
 
 
         e.setAttribute("lodging", "" + getLodgingPrice());
@@ -180,8 +188,8 @@ public class LinearFareLine implements XMLSerializable {
 
     @Override
     public void fromXml(Element e) {
-        setRoomTypeCode(e.getAttributeValue("room"));
-        setBoardTypeCode(e.getAttributeValue("board"));
+        if (e.getAttribute("room") != null) setRoomTypeCode(e.getAttributeValue("room"));
+        if (e.getAttribute("board") != null) setBoardTypeCode(e.getAttributeValue("board"));
 
 
         setLodgingPrice(Helper.toDouble(e.getAttributeValue("lodging")));

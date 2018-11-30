@@ -1,5 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -10,6 +13,9 @@ import java.util.List;
 
 public class Gala implements XMLSerializable {
 
+    @Ignored
+    private HotelContractPhoto photo;
+
     private LocalDate date;
 
     private double pricePerPax;
@@ -18,8 +24,16 @@ public class Gala implements XMLSerializable {
 
     private FareValue juniorPrice;
 
-    @ValueClass(BoardType.class)
     private List<String> boards = new ArrayList<>();
+
+    public DataProvider getBoardsDataProvider() {
+        List<BoardType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Board r : h.getBoards()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<BoardType>(l);
+    }
 
 
 
@@ -63,7 +77,12 @@ public class Gala implements XMLSerializable {
         this.boards = boards;
     }
 
-    public Gala(Element e) {
+    public Gala(HotelContractPhoto photo) {
+        this.photo = photo;
+    }
+
+    public Gala(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
         fromXml(e);
     }
 

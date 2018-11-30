@@ -209,7 +209,7 @@ public class HotelAvailabilityRunner {
 
         LocalDate ci = Helper.toDate(k.getCheckIn());
 
-        for (CancellationRule r : contrato.getTerms().getCancellationRules()) {
+        for (io.mateu.erp.model.financials.CancellationRule r : contrato.getCancellationRules().getRules()) {
             boolean aplica = false;
             if (aplica) {
                 CancellationCost c;

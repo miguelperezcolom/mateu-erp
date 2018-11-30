@@ -2,8 +2,10 @@ package io.mateu.erp.model.organization;
 
 import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -26,8 +28,38 @@ public class Company {
     @ManyToOne
     private AccountingPlan accountingPlan;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Resource logo;
+
     @Override
     public String toString() {
         return getName();
+    }
+
+
+    public Element toXml() {
+        Element xml = new Element("company");
+        xml.setAttribute("id", "" + getId());
+        xml.setAttribute("name", getName());
+        if (getLogo() != null) {
+            try {
+                xml.setAttribute("logo", getLogo().toFileLocator().getTmpPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (getFinancialAgent() != null) {
+            if (getFinancialAgent().getBusinessName() != null) xml.setAttribute("businessName", getFinancialAgent().getBusinessName());
+            if (getFinancialAgent().getAddress() != null) xml.setAttribute("address", getFinancialAgent().getAddress());
+            if (getFinancialAgent().getCity() != null) xml.setAttribute("city", getFinancialAgent().getCity());
+            if (getFinancialAgent().getPostalCode() != null) xml.setAttribute("postalCode", getFinancialAgent().getPostalCode());
+            if (getFinancialAgent().getState() != null) xml.setAttribute("state", getFinancialAgent().getState());
+            if (getFinancialAgent().getCountry() != null) xml.setAttribute("country", getFinancialAgent().getCountry());
+            if (getFinancialAgent().getVatIdentificationNumber() != null) xml.setAttribute("vatIdentificationNumber", getFinancialAgent().getVatIdentificationNumber());
+            if (getFinancialAgent().getEmail() != null) xml.setAttribute("email", getFinancialAgent().getEmail());
+            if (getFinancialAgent().getTelephone() != null) xml.setAttribute("telephone", getFinancialAgent().getTelephone());
+        }
+
+        return xml;
     }
 }

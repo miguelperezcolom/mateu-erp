@@ -178,18 +178,22 @@ public abstract class Booking {
 
     @KPI
     @ListColumn
+    @Sum
     private double totalValue;
 
     @KPI
     @ListColumn
+    @Sum
     private double totalNetValue;
 
     @KPI
     @SameLine
+    @Sum
     private double totalCost;
 
     @KPI
     @SameLine
+    @Sum
     private double balance;
 
     @KPI

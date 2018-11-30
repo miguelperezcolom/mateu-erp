@@ -173,9 +173,15 @@ public class Partner implements IPartner {
         xml.setAttribute("id", "" + getId());
         xml.setAttribute("name", getName());
         if (getFinancialAgent() != null) {
-            if (getFinancialAgent().getBusinessName() != null) xml.setAttribute("bussinessName", getFinancialAgent().getBusinessName());
-            if (getFinancialAgent().getAddress() != null) xml.setAttribute("address", getFinancialAgent().getBusinessName());
+            if (getFinancialAgent().getBusinessName() != null) xml.setAttribute("businessName", getFinancialAgent().getBusinessName());
+            if (getFinancialAgent().getAddress() != null) xml.setAttribute("address", getFinancialAgent().getAddress());
+            if (getFinancialAgent().getCity() != null) xml.setAttribute("city", getFinancialAgent().getCity());
+            if (getFinancialAgent().getPostalCode() != null) xml.setAttribute("postalCode", getFinancialAgent().getPostalCode());
+            if (getFinancialAgent().getState() != null) xml.setAttribute("state", getFinancialAgent().getState());
+            if (getFinancialAgent().getCountry() != null) xml.setAttribute("country", getFinancialAgent().getCountry());
             if (getFinancialAgent().getVatIdentificationNumber() != null) xml.setAttribute("vatIdentificationNumber", getFinancialAgent().getVatIdentificationNumber());
+            if (getFinancialAgent().getEmail() != null) xml.setAttribute("email", getFinancialAgent().getEmail());
+            if (getFinancialAgent().getTelephone() != null) xml.setAttribute("telephone", getFinancialAgent().getTelephone());
         }
         if (getEmail() != null) xml.setAttribute("email", getEmail());
         if (getComments() != null) xml.setAttribute("comments", getComments());

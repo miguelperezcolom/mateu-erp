@@ -1,18 +1,25 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Supplement implements XMLSerializable {
+
+    @Ignored
+    private HotelContractPhoto photo;
 
     private LocalDate start;
     private LocalDate end;
@@ -28,14 +35,21 @@ public class Supplement implements XMLSerializable {
     private LocalDate checkoutEnd;
      */
 
-    @ValueClass(HotelExtraType.class)
+    @NotEmpty
     private String extra;
+
+    public DataProvider getExtraDataProvider() {
+        List<HotelExtraType> l = new ArrayList<>();
+        for (HotelExtra r : photo.getContract().getHotel().getExtras()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<HotelExtraType>(l);
+    }
+
 
     private boolean optional;
 
     private boolean affectedByOffers;
-
-    private String description;
 
     private SupplementPer per = SupplementPer.PAX;
 
@@ -61,11 +75,28 @@ public class Supplement implements XMLSerializable {
     @ValueClass(BillingConcept.class)
     private String invoicingKey;
 
-    @ValueClass(RoomType.class)
     private List<String> rooms = new ArrayList<>();
 
-    @ValueClass(BoardType.class)
+    public DataProvider getRoomsDataProvider() {
+        List<RoomType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Room r : h.getRooms()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<RoomType>(l);
+    }
+
     private List<String> boards = new ArrayList<>();
+
+    public DataProvider getBoardsDataProvider() {
+        List<BoardType> l = new ArrayList<>();
+        Hotel h = photo.getContract().getHotel();
+        for (Board r : h.getBoards()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<BoardType>(l);
+    }
+
 
 
     public LocalDate getStart() {
@@ -98,14 +129,6 @@ public class Supplement implements XMLSerializable {
 
     public void setAffectedByOffers(boolean affectedByOffers) {
         this.affectedByOffers = affectedByOffers;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public SupplementPer getPer() {
@@ -180,19 +203,24 @@ public class Supplement implements XMLSerializable {
         this.boards = boards;
     }
 
-    public Supplement(Element e) {
+
+    public Supplement(HotelContractPhoto photo) {
+        this.photo = photo;
+    }
+
+    public Supplement(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
         fromXml(e);
     }
 
     public Supplement() {
     }
 
-    public Supplement(LocalDate start, LocalDate end, boolean optional, boolean affectedByOffers, String description, SupplementPer per, SupplementScope scope, boolean onRequest, double percent, double value, long providerId, String invoicingKey, List<String> rooms, List<String> boards) {
+    public Supplement(LocalDate start, LocalDate end, boolean optional, boolean affectedByOffers, SupplementPer per, SupplementScope scope, boolean onRequest, double percent, double value, long providerId, String invoicingKey, List<String> rooms, List<String> boards) {
         this.start = start;
         this.end = end;
         this.optional = optional;
         this.affectedByOffers = affectedByOffers;
-        this.description = description;
         this.per = per;
         this.scope = scope;
         this.onRequest = onRequest;
@@ -215,7 +243,6 @@ public class Supplement implements XMLSerializable {
         if (getEnd() != null) e.setAttribute("end", getEnd().toString());
         if (isOptional()) e.setAttribute("optional", "");
         if (isAffectedByOffers()) e.setAttribute("affectedByOffers", "");
-        if (getDescription() != null) e.setAttribute("description", getDescription());
         e.setAttribute("per", "" + getPer());
         e.setAttribute("scope", "" + getScope());
         if (isOnRequest()) e.setAttribute("onRequest", "");
@@ -233,9 +260,9 @@ public class Supplement implements XMLSerializable {
 
         StringBuffer sb = new StringBuffer();
 
-        if (!Strings.isNullOrEmpty(getDescription())) {
+        if (!Strings.isNullOrEmpty(getExtra())) {
             if (sb.length() > 0) sb.append(" ");
-            sb.append(getDescription());
+            sb.append(getExtra());
         }
 
         if (sb.length() > 0) sb.append(" ");
@@ -304,7 +331,6 @@ public class Supplement implements XMLSerializable {
         if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
         if (e.getAttribute("optional") != null) setOptional(true);
         if (e.getAttribute("affectedByOffers") != null) setAffectedByOffers(true);
-        if (e.getAttribute("description") != null) setDescription(e.getAttributeValue("description"));
         if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
         if (e.getAttribute("scope") != null) setScope(SupplementScope.valueOf(e.getAttributeValue("scope")));
         if (e.getAttribute("onRequest") != null) setOnRequest(true);
@@ -353,5 +379,13 @@ public class Supplement implements XMLSerializable {
 
     public void setApplicationOrder(int applicationOrder) {
         this.applicationOrder = applicationOrder;
+    }
+
+    public String getExtra() {
+        return extra;
+    }
+
+    public void setExtra(String extra) {
+        this.extra = extra;
     }
 }

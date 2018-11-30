@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -14,20 +13,20 @@ import java.util.List;
 
 @Getter
 @Setter
-public class InventoryCube {
+public class InventoryCalendarCube {
     private final Inventory inventory;
 
     LocalDate ayer = null;
 
     // dimensiones = fecha, habitacion
-    private int[][] cubo = null;
+    private int[][][] cubo = null;
 
     private LocalDate inicio = null;
     private LocalDate fin = null;
     private List<RoomType> rooms = new ArrayList<>();
     int maxdias = 0;
 
-    public InventoryCube(Inventory inventory) throws Throwable {
+    public InventoryCalendarCube(Inventory inventory) throws Throwable {
 
         this.inventory = inventory;
 
@@ -80,13 +79,16 @@ public class InventoryCube {
                 int poshab = rooms.indexOf(o.getRoom());
                 switch (o.getAction()) {
                     case ADD:
-                        cubo[fecha][poshab] += o.getQuantity();
+                        cubo[fecha][poshab][0] += o.getQuantity();
+                        cubo[fecha][poshab][2] += o.getQuantity();
                         break;
                     case SUBSTRACT:
-                        cubo[fecha][poshab] -= o.getQuantity();
+                        cubo[fecha][poshab][1] += o.getQuantity();
+                        cubo[fecha][poshab][2] -= o.getQuantity();
                         break;
                     case SET:
-                        cubo[fecha][poshab] = o.getQuantity();
+                        cubo[fecha][poshab][0] = o.getQuantity();
+                        cubo[fecha][poshab][2] = o.getQuantity();
                         break;
                 }
             }
@@ -122,43 +124,20 @@ public class InventoryCube {
 
         if (inicio != null && fin != null) maxdias = (int) ChronoUnit.DAYS.between(inicio, fin);
 
-        cubo = new int[maxdias + 1][rooms.size()];
+        cubo = new int[maxdias + 1][rooms.size()][4];
 
     }
 
-    public void save(EntityManager em) {
-
-        // vaciamos las líneas actuales
-
-        for (InventoryLine l : getInventory().getLines()) em.remove(l);
-        getInventory().getLines().clear();
-
-        for (int poshab = 0; poshab < rooms.size(); poshab++) {
-            int firmaActual = Integer.MIN_VALUE;
-            int desdefecha = -1;
-            for (int posfecha = 0; posfecha <= maxdias; posfecha++) {
-                int firma = cubo[posfecha][poshab];
-                if (firma != firmaActual) {
-                    if (firmaActual != Integer.MIN_VALUE) save(em, desdefecha, posfecha, poshab);
-                    desdefecha = posfecha;
-                    firmaActual = firma;
-                }
-            }
-            if (firmaActual != Integer.MIN_VALUE) {
-                save(em, desdefecha, maxdias, poshab);
-            }
-        }
-
+    public int[][][] getCubo() {
+        return cubo;
     }
 
-    private void save(EntityManager em, int desdefecha, int hastafecha, int poshab) {
-        InventoryLine l;
-        getInventory().getLines().add(l = new InventoryLine());
-        em.persist(l);
-        l.setStart(inicio.plusDays(desdefecha));
-        l.setEnd(inicio.plusDays(hastafecha));
-        l.setInventory(getInventory());
-        l.setRoom(rooms.get(poshab));
-        l.setQuantity(cubo[desdefecha][poshab]);
+    public int[] getCubo(LocalDate fecha, RoomType room) {
+        int posfecha = (int) ChronoUnit.DAYS.between(inicio, fecha);
+        int poshab = rooms.indexOf(room);
+
+        if (posfecha >= 0 && posfecha < cubo.length && poshab >= 0 && poshab < cubo[posfecha].length) return cubo[posfecha][poshab];
+        else return new int[] {0, 0, 0, 0};
     }
+
 }

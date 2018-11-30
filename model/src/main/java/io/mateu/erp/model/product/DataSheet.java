@@ -3,6 +3,7 @@ package io.mateu.erp.model.product;
 import com.vaadin.ui.Component;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Html;
+import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
@@ -33,6 +34,7 @@ public class DataSheet {
     @ManyToOne(cascade = CascadeType.ALL)
     @NotNull
     @TextArea
+    @NoChart
     private Literal description;
 
     @ManyToOne

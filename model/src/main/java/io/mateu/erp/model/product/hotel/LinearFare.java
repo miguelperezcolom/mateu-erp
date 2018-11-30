@@ -1,5 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.model.product.hotel.offer.PriceOffer;
+import io.mateu.mdd.core.annotations.FullWidth;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.interfaces.UseCalendarToEdit;
 import io.mateu.mdd.core.util.DatesRange;
@@ -17,14 +19,21 @@ import java.util.List;
 public class LinearFare implements XMLSerializable, UseCalendarToEdit {
 
     @Ignored
-    @NotNull
     private HotelContractPhoto photo;
+
+    @Ignored
+    private PriceOffer offer;
 
     private List<DatesRange> dates = new ArrayList<>();
 
     private String name;
 
+    @FullWidth
     private List<LinearFareLine> lines = new ArrayList<>();
+
+    public LinearFareLine createLinesInstance() {
+        return new LinearFareLine(this);
+    }
 
     public LinearFare(List<DatesRange> dates, String name, List<LinearFareLine> lines) {
         this.dates = dates;
@@ -35,7 +44,12 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
     public LinearFare() {
     }
 
-    public LinearFare(Element e) {
+    public LinearFare(HotelContractPhoto photo) {
+        this.photo = photo;
+    }
+
+    public LinearFare(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
         fromXml(e);
     }
 
@@ -61,7 +75,7 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
     public void fromXml(Element e) {
         if (e.getAttribute("name") != null) setName(e.getAttributeValue("name"));
         if (e.getChild("dates") != null) for (Element z: e.getChild("dates").getChildren()) getDates().add(new DatesRange(z));
-        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("line")) getLines().add(new LinearFareLine(z));
+        if (e.getChild("lines") != null) for (Element z : e.getChild("lines").getChildren("line")) getLines().add(new LinearFareLine(this, z));
     }
 
     @Override

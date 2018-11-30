@@ -1,7 +1,12 @@
 package io.mateu.erp.model.product;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.PartnerGroup;
+import io.mateu.erp.model.payments.DueDate;
+import io.mateu.erp.model.product.hotel.BoardType;
+import io.mateu.erp.model.product.hotel.RatesType;
+import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Company;
@@ -37,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by miguel on 1/10/16.
@@ -58,14 +64,26 @@ public abstract class AbstractContract {
     private Audit audit;
 
     @NotNull
-    @SearchFilter
+    @MainSearchFilter
     @ListColumn
     private String title;
 
-    @NotNull
     @SearchFilter
     @ListColumn
+    @ColumnWidth(70)
+    private boolean active;
+
+    @NotNull
+    @MainSearchFilter
+    @ListColumn
+    @CellStyleGenerator(ContractTypeCellStyleGenerator.class)
+    @ColumnWidth(70)
     private ContractType type;
+
+    private RatesType ratesType = RatesType.NET;
+
+    private boolean mandatoryRates;
+
 
     @NotNull
     @ManyToOne
@@ -89,9 +107,8 @@ public abstract class AbstractContract {
     @SameLine
     private LocalDate validTo;
 
-    @ListColumn
     private LocalDate bookingWindowFrom;
-    @ListColumn
+
     @SameLine
     private LocalDate bookingWindowTo;
 
@@ -107,12 +124,14 @@ public abstract class AbstractContract {
     @ManyToOne
     @SearchFilter
     @ListColumn
+    @NoChart
     private Partner supplier;
 
     @ManyToOne
-    @NotInEditor
     @SearchFilter
     @ListColumn
+    @NotNull
+    @ColumnWidth(120)
     private Office office;
 
 
@@ -121,12 +140,28 @@ public abstract class AbstractContract {
     private List<PartnerGroup> partnerGroups = new ArrayList<>();
 
     @OneToMany
+    @JoinTable(name = "hotelcontract_bannedpartnergroup")
+    @UseChips
+    private List<PartnerGroup> bannedPartnerGroups = new ArrayList<>();
+
+    @OneToMany
     @UseChips
     private List<Partner> partners = new ArrayList<>();
 
     @OneToMany
+    @JoinTable(name = "hotelcontract_bannedpartner")
+    @UseChips
+    private List<Partner> bannedPartners = new ArrayList<>();
+
+    @OneToMany
     @UseChips
     private List<Market> markets = new ArrayList<>();
+
+
+    @OneToMany
+    @JoinTable(name = "hotelcontract_bannedmarket")
+    @UseChips
+    private List<Market> bannedMarkets = new ArrayList<>();
 
     @OneToMany
     @UseChips
@@ -158,17 +193,29 @@ public abstract class AbstractContract {
     @Tab("Cancellation")
     private CancellationRules cancellationRules;
 
+    @Tab("Clauses")
+    @OneToMany(cascade = CascadeType.ALL)
+    @FullWidth
+    @OrderColumn(name = "_order")
+    private List<ContractClauseItem> clauses = new ArrayList<>();
 
 
 
     @KPI
     private double averagePrice;
 
+    @KPI
+    private double totalSales;
+
+    @KPI
+    private int totalBookings;
+
 
 
     @PrePersist@PreUpdate
     public void pre() throws Error {
         if (ContractType.PURCHASE.equals(getType()) && getSupplier() == null) throw new Error("Supplier is required for purchase contracts");
+        clauses.sort((c1, c2) -> c1.getOrder() - c2.getOrder());
     }
 
     @Override
@@ -183,12 +230,21 @@ public abstract class AbstractContract {
         xml.setAttribute("id", "" + getId());
         if (getTitle() != null) xml.setAttribute("title", getTitle());
         xml.setAttribute("type", "" + getType());
+        xml.setAttribute("ratesType", "" + getRatesType());
         if (getBillingConcept() != null && getBillingConcept().getName() != null) xml.setAttribute("billingConcept", getBillingConcept().getName());
         if (getValidFrom() != null) xml.setAttribute("validFrom", getValidFrom().toString());
         if (getValidTo() != null) xml.setAttribute("validTo", getValidTo().toString());
         if (getBookingWindowFrom() != null) xml.setAttribute("bookingWindowFrom", getBookingWindowFrom().toString());
         if (getBookingWindowTo() != null) xml.setAttribute("bookingWindowTo", getBookingWindowTo().toString());
-        if (getSpecialTerms() != null) xml.setAttribute("specialTerms", getSpecialTerms());
+
+        if (!Strings.isNullOrEmpty(getSpecialTerms())) {
+            Element st;
+            xml.addContent(st = new Element("specialTerms"));
+            for (String s : getSpecialTerms().split("\n")) {
+                xml.addContent(st = new Element("line").setText(s));
+            }
+        }
+
         xml.setAttribute("vat", (isVATIncluded())?"Included":"Not included");
         if (getAudit() != null) xml.setAttribute("audit", getAudit().toString());
 
@@ -208,20 +264,33 @@ public abstract class AbstractContract {
             Element o;
             xml.addContent(o = new Element("office"));
             if (getOffice().getName() != null) o.setAttribute("name", getOffice().getName());
+            o.addContent(getOffice().getCompany().toXml());
         }
 
+        if (ContractType.SALE.equals(getType())) {
+            if (getPartners().size() > 0) xml.addContent(getPartners().get(0).toXml().setName("partner"));
+        } else {
+            if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("partner"));
+        }
 
-        if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("supplier"));
 
         if (getSignedAt() != null) xml.setAttribute("signedAt", getSignedAt());
         if (getPartnerSignatory() != null) xml.setAttribute("partnerSignatory", getPartnerSignatory());
         if (getOwnSignatory() != null) xml.setAttribute("ownSignatory", getOwnSignatory());
-        if (getSignatureDate() != null) xml.setAttribute("signatureDate", getSignatureDate().format(DateTimeFormatter.BASIC_ISO_DATE));
+        if (getSignatureDate() != null) xml.setAttribute("signatureDate", getSignatureDate().format(DateTimeFormatter.ISO_DATE));
 
 
         Element ts;
         xml.addContent(ts = new Element("targets"));
-        for (Partner t : getPartners()) ts.addContent(t.toXml().setName("target"));
+        for (PartnerGroup t : getPartnerGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Partner t : getPartners()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Market t : getMarkets()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Company t : getCompanies()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+
+        xml.addContent(ts = new Element("bannedTargets"));
+        for (PartnerGroup t : getBannedPartnerGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Partner t : getBannedPartners()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Market t : getBannedMarkets()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
 
         if (ContractType.SALE.equals(getType())) {
             if (getPartners().size() > 0) {
@@ -235,12 +304,41 @@ public abstract class AbstractContract {
         }
 
 
+        Element os;
+        xml.addContent(os = new Element("offices"));
+        ((List<Office>)em.createQuery("select x from " + Office.class.getName() + " x order by x.id").getResultList()).forEach(o -> os.addContent(new Element("office").setAttribute("name", "" + o.getName()).setAttribute("tel", o.getTelephone() != null?o.getTelephone():"").setAttribute("fax", o.getFax() != null?o.getFax():"").setAttribute("email", o.getEmail() != null?o.getEmail():"").setAttribute("address", o.getAddress() != null?o.getAddress():"")));
+
+
+        Element clauses;
+        xml.addContent(clauses = new Element("clauses"));
+        getClauses().forEach(o -> clauses.addContent(new Element("clause").setAttribute("text", "" + o.getText())));
+
+
+        if (paymentTerms != null) {
+            Element payment;
+            xml.addContent(payment = new Element("payment"));
+            getPaymentTerms().getLines().forEach(o -> payment.addContent(new Element("line").setAttribute("referenceDate", "" + o.getReferenceDate()).setAttribute("release", "" + o.getRelease()).setAttribute("percent", "" + o.getPercent())));
+        }
+
+        if (cancellationRules != null) {
+            Element cxrs;
+            xml.addContent(cxrs = new Element("cancellation"));
+            cancellationRules.getRules().forEach(o -> cxrs.addContent(new Element("line").setAttribute("start", o.getStart() != null?o.getStart().format(DateTimeFormatter.ISO_DATE):"").setAttribute("end", o.getEnd() != null?o.getEnd().format(DateTimeFormatter.ISO_DATE):"").setAttribute("release", "" + o.getRelease()).setAttribute("firstNights", "" + o.getFirstNights()).setAttribute("percent", "" + o.getPercent())));
+        }
 
         return new Document(xml);
     }
 
 
-    @Action
+    @Action(order = 1)
+    public void addClauses(@NotNull ContractClauseGroup clauseGroup) throws Throwable {
+        if (clauseGroup != null) {
+            clauseGroup.getClauses().forEach(c -> clauses.add(new ContractClauseItem(c.getOrder(), c.getText())));
+        }
+    }
+
+
+    @Action(order = 2)
     public URL pdf() throws Throwable {
         //String xslfo = "contract.xsl";
 
@@ -298,6 +396,17 @@ public abstract class AbstractContract {
     }
 
     public abstract String getXslfo(EntityManager em);
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof  AbstractContract && id == ((AbstractContract)obj).id);
+    }
 
 
 }

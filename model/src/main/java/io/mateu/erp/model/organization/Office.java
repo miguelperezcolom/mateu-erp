@@ -42,6 +42,15 @@ public class Office {
     private Zone city;
 
 
+    private String email;
+
+    private String telephone;
+
+    private String fax;
+
+    private String address;
+
+
     /*
     @NotNull
     @ManyToOne

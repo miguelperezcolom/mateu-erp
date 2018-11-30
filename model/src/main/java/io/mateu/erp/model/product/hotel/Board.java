@@ -56,4 +56,16 @@ public class Board implements IBoard {
         return (getType() != null)?getType().toString():null;
     }
 
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Board && id == ((Board)obj).id);
+    }
+
 }

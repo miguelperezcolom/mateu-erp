@@ -42,7 +42,7 @@ public class EarlyBookingOfferLineConverter implements AttributeConverter<EarlyB
             for (String z : joined.split(",")) {
                 EarlyBookingOfferLine r;
                 l.add(r = new EarlyBookingOfferLine());
-                String[] x = z.split("|");
+                String[] x = z.split("\\|");
                 r.setRelease(Integer.parseInt(x[0]));
                 r.setDiscountPercent(Double.parseDouble(x[1]));
             }

@@ -99,6 +99,23 @@ public class WeekDaysRule implements XMLSerializable {
             StringBuffer sb = new StringBuffer();
             for (boolean v : getWeekDays()) sb.append((v)?"1":"0");
             e.setAttribute("weekDays", sb.toString());
+
+            String s = "";
+            for (int i = 0; i < getWeekDays().length; i++) if (getWeekDays()[i]) {
+                if (!"".equals(s)) s += ", ";
+                switch (i) {
+                    case 0: s += "Mon"; break;
+                    case 1: s += "Tue"; break;
+                    case 2: s += "Wed"; break;
+                    case 3: s += "Thu"; break;
+                    case 4: s += "Fri"; break;
+                    case 5: s += "Sat"; break;
+                    case 6: s += "Sun"; break;
+                    default: s+= "Unknown"; break;
+                }
+            }
+            e.setAttribute("weekDaysString", s);
+
         }
         if (isOnRequest()) e.setAttribute("onRequest", "");
         if (isCheckin()) e.setAttribute("checkin", "");

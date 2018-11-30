@@ -1,18 +1,38 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.OptionsClass;
+import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by miguel on 1/10/16.
  */
 public class Allotment implements XMLSerializable {
 
-    @OptionsClass(RoomType.class)
+    @Ignored
+    @NotNull
+    private HotelContractPhoto photo;
+
+    @NotEmpty
     private String room;
+
+    public DataProvider getRoomDataProvider() {
+        List<RoomType> l = new ArrayList<>();
+        for (Room r : photo.getContract().getHotel().getRooms()) {
+            l.add(r.getType());
+        }
+        return new ListDataProvider<RoomType>(l);
+    }
 
     private LocalDate start;
 
@@ -74,11 +94,14 @@ public class Allotment implements XMLSerializable {
         if (e.getAttribute("quantity") != null) setQuantity(Integer.parseInt(e.getAttributeValue("quantity")));
     }
 
-    public Allotment(Element e) {
-        fromXml(e);
+
+    public Allotment(HotelContractPhoto photo) {
+        this.photo = photo;
     }
 
-    public Allotment() {
+    public Allotment(HotelContractPhoto photo, Element e) {
+        this.photo = photo;
+        fromXml(e);
     }
 
     public Allotment(String room, LocalDate start, LocalDate end, int quantity) {

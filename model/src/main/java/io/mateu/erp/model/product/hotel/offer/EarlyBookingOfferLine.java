@@ -18,4 +18,9 @@ public class EarlyBookingOfferLine {
         this.release = release;
         this.discountPercent = discountPercent;
     }
+
+    @Override
+    public String toString() {
+        return "" + release + " n. -> " + discountPercent + " %";
+    }
 }

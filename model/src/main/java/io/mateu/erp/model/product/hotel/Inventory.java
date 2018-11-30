@@ -1,6 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.ListDataProvider;
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.dispo.interfaces.product.IInventory;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -10,10 +14,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Getter
@@ -39,6 +40,22 @@ public class Inventory implements IInventory {
     private Inventory substractFrom;
 
 
+    @DependsOn("hotel")
+    public ListDataProvider<Inventory> getSubstractFromDataProvider() {
+        List<Inventory> is = new ArrayList<>();
+        if (hotel != null) {
+            is.addAll(hotel.getInventories());
+            is.remove(this);
+        }
+        return new ListDataProvider<Inventory>(is);
+    }
+
+
+    @Ignored
+    @OneToMany(mappedBy = "substractFrom")
+    private List<Inventory> dependantInventories = new ArrayList<>();
+
+
     private int returnRelease;
 
 
@@ -46,11 +63,26 @@ public class Inventory implements IInventory {
     @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL)
     private List<InventoryLine> lines = new ArrayList<>();
 
+    @Ignored
+    @OneToMany(mappedBy = "inventory")
+    private List<HotelContract> contracts = new ArrayList<>();
 
+    @Ignored
+    @OneToMany(mappedBy = "securityInventory")
+    private List<HotelContract> securityContracts = new ArrayList<>();
+
+    @Ignored
+    @OneToMany(mappedBy = "inventory")
+    private List<HotelBookingLine> bookings = new ArrayList<>();
+
+
+
+
+    /*
     @FullWidth
     @Output
     private transient String calendar;
-
+    */
 
     public String getCalendar() {
         StringBuffer sb = new StringBuffer();
@@ -146,7 +178,7 @@ public class Inventory implements IInventory {
 
     @Override
     public String toString() {
-        return (getHotel() != null)?getHotel().getName():"No hotel";
+        return name;
     }
 
 
@@ -161,5 +193,10 @@ public class Inventory implements IInventory {
     @Action(order = 2)
     public void rebuild() throws Throwable {
         Helper.transact(em -> em.find(Inventory.class, getId()).build(em));
+    }
+
+    @Action(icon = VaadinIcons.CALENDAR, order = 3)
+    public InventoryCalendar calendar() {
+        return new InventoryCalendar(this);
     }
 }

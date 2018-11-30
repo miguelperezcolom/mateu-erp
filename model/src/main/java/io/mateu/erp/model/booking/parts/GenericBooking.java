@@ -2,7 +2,6 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.organization.Office;
@@ -13,7 +12,6 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
-import travel.caval._20091127.commons.GetBooking;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

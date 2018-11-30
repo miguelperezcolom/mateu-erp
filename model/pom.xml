@@ -35,11 +35,59 @@
 
             </plugin>
 
+
+            <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <version>${cxf.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sourceRoot>${project.build.directory}/generated-sources/cxf</sourceRoot>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <wsdl>${basedir}/src/main/resources/wsdls/caval/HotelBookingService.wsdl</wsdl>
+                                    <wsdlLocation>classpath:wsdls/caval/HotelBookingService.wsdl</wsdlLocation>
+                                    <!-- you can set the options of wsdl2java command by using the <extraargs> -->
+                                    <!--
+                                    <extraargs>
+                                        <extraarg>-impl</extraarg>
+                                        <extraarg>-verbose</extraarg>
+                                    </extraargs>
+                                    -->
+                                </wsdlOption>
+                                <wsdlOption>
+                                    <wsdl>${basedir}/src/main/resources/wsdls/caval/CommonsBookingService.wsdl</wsdl>
+                                    <wsdlLocation>classpath:wsdls/caval/CommonsBookingService.wsdl</wsdlLocation>
+                                    <!-- you can set the options of wsdl2java command by using the <extraargs> -->
+                                    <!--
+                                    <extraargs>
+                                        <extraarg>-impl</extraarg>
+                                        <extraarg>-verbose</extraarg>
+                                    </extraargs>
+                                    -->
+                                </wsdlOption>
+                            </wsdlOptions>
+                            <defaultOptions>
+                                <asyncMethods />
+                                <bareMethods />
+                            </defaultOptions>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cxf.version>3.2.0</cxf.version>
     </properties>
 
     <repositories>

@@ -648,31 +648,23 @@ public class TestPopulator {
 
         Hotel h = c.getHotel();
 
+        c.setRatesType(RatesType.NET);
+        c.setZeroPricesAllowed(false);
+        c.setMaxRoomsPerBooking(10);
+        c.setMaxPaxPerBooking(30);
+
+
         HotelContractPhoto p = new HotelContractPhoto();
 
-        p.setRatesType(RatesType.NET);
 
-        p.setZeroPricesAllowed(false);
 
-        p.getCommission().add(new DoublePerDateRange(LocalDate.now(), LocalDate.now().plusDays(10), 32.54));
-
-        p.setMaxRoomsPerBooking(10);
-        p.setMaxPaxPerBooking(30);
-        p.setChildStartAge(2);
-        p.setJuniorStartAge(7);
-        p.setAdultStartAge(12);
-        p.setYoungestFirst(false);
+        h.setChildStartAge(2);
+        h.setJuniorStartAge(7);
+        h.setAdultStartAge(12);
+        h.setYoungestFirst(false);
 
         h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> p.getAllotment().add(new Allotment(r, null, null, 10)));
 
-        for (int j = 1; j < 10; j++) {
-            p.getCancellationRules().add(new CancellationRule(null, null, j * 10, j * 5, 0, 0, null));
-        }
-
-        //p.setWeekDaysRules();
-        for (int j = 1; j < 30; j++) {
-            p.getClauses().add("Claúsula contrato nº " + j);
-        }
 
 
         {
@@ -700,7 +692,7 @@ public class TestPopulator {
         }
 
         for (int j = 1; j < 20; j++) {
-            p.getSupplements().add(new Supplement(null, null, false, true, "Suplemento " + j, (j % 2 == 0)?SupplementPer.PAX:SupplementPer.ROOM,
+            p.getSupplements().add(new Supplement(null, null, false, true, (j % 2 == 0)?SupplementPer.PAX:SupplementPer.ROOM,
                     (j % 2 == 0)?SupplementScope.NIGHT:SupplementScope.BOOKING, false, 0, j, 0, bc.getCode(), null, null
             ));
         }
@@ -765,10 +757,6 @@ public class TestPopulator {
             }
         }
 
-
-
-        System.out.println("p.getAdultStartAge() = " + p.getAdultStartAge());
-
     }
 
     public void testContract() throws Throwable {
@@ -804,7 +792,7 @@ public class TestPopulator {
                 }
 
 
-                c.getTerms().setAdultStartAge(3);
+                h.setAdultStartAge(3);
 
 
             }

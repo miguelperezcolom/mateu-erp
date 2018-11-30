@@ -37,11 +37,15 @@ public class FinancialAgent {
 
     private String address;
 
-    private String country;
+    private String postalCode;
 
     private String city;
 
-    private String postalCode;
+    private String state;
+
+    private String country;
+
+    private String telephone;
 
     private String email;
 

@@ -52,6 +52,18 @@ public class InventoryOperation {
     private InventoryAction action;
 
 
+    public InventoryOperation() {
+
+    }
+
+    public InventoryOperation(RoomType room, int quantity, InventoryAction action, LocalDate start, LocalDate end) {
+        this.room = room;
+        this.quantity = quantity;
+        this.action = action;
+        this.start = start;
+        this.end = end;
+    }
+
 
     @PostPersist@PostUpdate@PostRemove
     public void post() {

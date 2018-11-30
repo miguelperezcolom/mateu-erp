@@ -1,22 +1,27 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
-import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.erp.model.world.Zone;
-import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
+import io.mateu.erp.model.caval.CAVALClient;
+import io.mateu.erp.model.caval.CavalIdDataProvider;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.product.DataSheet;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,9 +33,9 @@ import java.util.List;
 @Setter
 public class Hotel extends AbstractProduct implements IHotel {
 
-    private String lon;
-
     private String lat;
+
+    private String lon;
 
     private String address;
 
@@ -44,6 +49,15 @@ public class Hotel extends AbstractProduct implements IHotel {
 
     @ManyToOne
     @NotNull
+    @ListColumn
+    @ColumnWidth(150)
+    private HotelType hotelType;
+
+
+    @ManyToOne
+    @NotNull
+    @ListColumn
+    @ColumnWidth(150)
     private HotelCategory category;
 
     @ManyToOne
@@ -66,8 +80,20 @@ public class Hotel extends AbstractProduct implements IHotel {
     private int adultStartAge;
 
 
+    private boolean youngestFirst;
+
+
     @ManyToOne
     private TransferPoint transferPoint;
+
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @TextArea
+    @Html
+    private Literal importantInfo;
+
+
+    private String idFromCaval;
 
 
 
@@ -79,6 +105,12 @@ public class Hotel extends AbstractProduct implements IHotel {
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
     @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<Board> boards = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    private List<HotelExtra> extras = new ArrayList<>();
+
 
     @ManyToOne(cascade = CascadeType.ALL)
     @Output
@@ -131,7 +163,8 @@ public class Hotel extends AbstractProduct implements IHotel {
             em.persist(getStopSales());
         }
 
-        if (getRealInventory() == null) {
+
+        if (false && getRealInventory() == null) {
             setRealInventory(new Inventory());
             getRealInventory().setHotel(this);
             getRealInventory().setName("Real inventory");
@@ -139,5 +172,31 @@ public class Hotel extends AbstractProduct implements IHotel {
         }
 
     }
+
+
+
+    @Action(order = 1)
+    public URL showInGoogleMaps() throws MalformedURLException {
+        if (!Strings.isNullOrEmpty(getLat()) && !Strings.isNullOrEmpty(getLon())) {
+            // http://www.google.com/maps/place/lat,lng
+            // http://maps.google.com/maps?q=24.197611,120.780512
+            return new URL("http://www.google.com/maps/place/" + getLat() + "," + getLon());
+        } else throw new Error("Latitude and longitude mut not be empty. Please fill and try again");
+    }
+
+    @Action(order = 2)
+    public void importCavalData(EntityManager em, @DataProvider(dataProvider = CavalIdDataProvider.class)@NotNull String idAtCaval) throws IOException {
+        System.out.println("hola!!!" + idAtCaval);
+        if (!Strings.isNullOrEmpty(idAtCaval)) {
+
+            setIdFromCaval(idAtCaval);
+
+            if (getDataSheet() == null) {
+                setDataSheet(new DataSheet());
+            }
+            CAVALClient.get().updateDataSheet(em, idAtCaval, getDataSheet());
+        }
+    }
+
 
 }

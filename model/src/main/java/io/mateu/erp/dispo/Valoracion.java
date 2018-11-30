@@ -592,7 +592,7 @@ public class Valoracion {
                         for (Supplement s : vpd.getSuplementos().keySet()) {
                             Map<String, Object> ddxp;
                             sup.add(ddxp = new HashMap<>());
-                            ddxp.put("suplemento", s.getDescription());
+                            ddxp.put("suplemento", s.getExtra());
                             ddxp.put("total", vpd.getSuplementos().get(s));
                         }
                         ddx.put("suplementos", sup);

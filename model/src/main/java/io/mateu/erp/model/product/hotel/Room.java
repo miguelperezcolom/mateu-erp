@@ -1,12 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.mdd.core.annotations.NoChart;
-import io.mateu.mdd.core.annotations.Unmodifiable;
+import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,6 +40,7 @@ public class Room implements IRoom {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @NoChart
+    @TextArea
     private Literal description;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -115,5 +114,18 @@ public class Room implements IRoom {
     @Override
     public String toString() {
         return (getType() != null)?getType().toString():null;
+    }
+
+
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Room && id == ((Room)obj).id);
     }
 }

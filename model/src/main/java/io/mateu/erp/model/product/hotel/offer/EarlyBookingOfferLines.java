@@ -16,4 +16,14 @@ public class EarlyBookingOfferLines {
     public EarlyBookingOfferLines(List<EarlyBookingOfferLine> l) {
         setLines(l);
     }
+
+    @Override
+    public String toString() {
+        String s = "";
+        for (EarlyBookingOfferLine l : lines) {
+            if (!"".equals(s)) s += ", ";
+            s += l.toString();
+        }
+        return s;
+    }
 }

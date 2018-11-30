@@ -8,6 +8,7 @@ import io.mateu.erp.model.product.DatesRanges;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface IHotelOffer {
     public boolean isActive();
@@ -18,7 +19,7 @@ public interface IHotelOffer {
 
     public LocalDate getLastCheckout();
 
-    public List<? extends IPartner> getTargets();
+    public Set<? extends IPartner> getTargets();
 
     public int getApplicationMinimumNights();
 
@@ -26,9 +27,9 @@ public interface IHotelOffer {
 
     public int getApplicationRelease();
 
-    public List<? extends IHotelContract> getContracts();
+    public Set<? extends IHotelContract> getContracts();
 
-    public List<? extends IHotelOffer> getCumulativeTo();
+    public Set<? extends IHotelOffer> getCumulativeTo();
 
     DatesRanges getStayDates();
 
