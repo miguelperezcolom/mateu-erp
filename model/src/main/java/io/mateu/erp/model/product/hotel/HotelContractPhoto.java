@@ -536,7 +536,7 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
                 Map<String, LinearFareLine> linesMap = new HashMap<>();
                 for (LinearFareLine l : f.getLines()) {
-                    linesMap.put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+                    linesMap.put(l.getRoomTypeCode().getCode() + "-" + l.getBoardTypeCode().getCode(), l);
                 }
 
                 if (pos++ % 8 == 0) {
