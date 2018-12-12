@@ -9,6 +9,7 @@ import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.mdd.core.annotations.DependsOn;
 import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;

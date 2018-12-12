@@ -5,6 +5,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -60,11 +61,13 @@ import java.util.*;
 
 @Entity
 @Getter@Setter
+@UseIdToSelect
 public abstract class Booking {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Order(desc = true, priority = 10)
+    @ListColumn
     private long id;
 
 
@@ -75,15 +78,17 @@ public abstract class Booking {
     @ListColumn(width = 60)
     @ManyToOne
     @QLFilter("x.agency = true")
-    @ColumnWidth(300)
+    @ColumnWidth(100)
     @NoChart
     private File file;
 
     @ManyToOne
     @NotNull
+    @ListColumn
     @ColumnWidth(200)
     @NoChart
     @MainSearchFilter
+    @DataProvider(dataProvider =  AgencyDataProvider.class)
     private Partner agency;
 
     @NotNull
@@ -116,7 +121,7 @@ public abstract class Booking {
     @KPI
     @ListColumn
     @ColumnWidth(80)
-    private boolean confirmed = false;
+    private boolean confirmed = true;
 
     @NotWhenCreating
     @KPI
@@ -156,6 +161,8 @@ public abstract class Booking {
     @ColumnWidth(156)
     private PointOfSale pos;
 
+
+    private LocalDateTime formalizationDate;
 
     private LocalDateTime expiryDate;
 
@@ -213,7 +220,6 @@ public abstract class Booking {
         return valueOverrided;
     }
 
-    @SameLine
     @ManyToOne
     private BillingConcept overridedBillingConcept;
 
@@ -245,7 +251,7 @@ public abstract class Booking {
     private List<Service> services = new ArrayList<>();
 
     @NotWhenCreating
-    @UseLinkToListView
+    @UseLinkToListView(fields = "text,nucs,invoice")
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     private List<BookingCharge> charges = new ArrayList<>();
 
@@ -260,6 +266,7 @@ public abstract class Booking {
 
 
     @ManyToOne
+    @DataProvider(dataProvider =  CommissionAgentDataProvider.class)
     private Partner commissionAgent;
 
     private boolean nonCommissionable;
@@ -278,10 +285,19 @@ public abstract class Booking {
 
 
 
+
+
+    @Ignored
+    private transient boolean updatePending = false;
+    @Ignored
+    private transient boolean updating = false;
+
+
+
     @Override
     public String toString() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return "" + getLeadName() + ": " + Helper.capitalize(getClass().getSimpleName().replaceAll("Booking", "")) + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
+        return "" + getId() + " - " + getLeadName() + ": " + Helper.capitalize(getClass().getSimpleName().replaceAll("Booking", "")) + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
     }
 
     public Map<String,Object> getData() {
@@ -373,7 +389,97 @@ public abstract class Booking {
 
     }
 
+
     @Action(order = 1, icon = VaadinIcons.ENVELOPES)
+    @NotWhenCreating
+    public void sendBooked(String changeEmail, String postscript) throws Throwable {
+
+
+        Helper.transact(em ->{
+
+            long t0 = new Date().getTime();
+
+
+
+            String to = changeEmail;
+            if (Strings.isNullOrEmpty(to)) {
+                to = getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) {
+                to = getAgency().getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
+
+
+
+            Document xml = new Document(new Element("services"));
+
+            for (Service s : services) {
+                xml.getRootElement().addContent(s.toXml());
+            }
+
+            System.out.println(Helper.toString(xml.getRootElement()));
+
+
+            String archivo = UUID.randomUUID().toString();
+
+            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+            System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+            System.out.println("Temp file : " + temp.getAbsolutePath());
+
+            FileOutputStream fileOut = new FileOutputStream(temp);
+            //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+            String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+            System.out.println("xml=" + sxml);
+            fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForVoucher())), new StreamSource(new StringReader(sxml))));
+            fileOut.close();
+
+
+            AppConfig appconfig = AppConfig.get(em);
+
+
+            // Create the email message
+            HtmlEmail email = new HtmlEmail();
+            //Email email = new HtmlEmail();
+            email.setHostName(appconfig.getAdminEmailSmtpHost());
+            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
+            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
+            //email.setSSLOnConnect(true);
+            email.setFrom(appconfig.getAdminEmailFrom());
+            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
+
+            email.setSubject("Booking " + getId() + "");
+
+
+            String msg = postscript;
+
+            String freemark = appconfig.getBookedEmailTemplate();
+
+            if (!Strings.isNullOrEmpty(freemark)) {
+                Map<String, Object> data = Helper.getGeneralData();
+                data.put("postscript", postscript);
+                data.put("leadname", getLeadName());
+                msg = Helper.freemark(freemark, data);
+            }
+
+            email.setMsg(msg);
+
+            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
+
+            java.io.File attachment = temp;
+            if (attachment != null) email.attach(attachment);
+
+            email.send();
+
+
+        });
+
+
+    }
+
+    @Action(order = 2, icon = VaadinIcons.ENVELOPES)
     @NotWhenCreating
     public void sendVouchers(String changeEmail, String postscript) throws Throwable {
 
@@ -443,7 +549,7 @@ public abstract class Booking {
             if (!Strings.isNullOrEmpty(freemark)) {
                 Map<String, Object> data = Helper.getGeneralData();
                 data.put("postscript", postscript);
-                data.put("leadname", getFile().getLeadName());
+                data.put("leadname", getLeadName());
                 msg = Helper.freemark(freemark, data);
             }
 
@@ -462,7 +568,7 @@ public abstract class Booking {
 
     }
 
-    @Action(order = 2, icon = VaadinIcons.ENVELOPE)
+    @Action(order = 3, icon = VaadinIcons.ENVELOPE)
     @NotWhenCreating
     public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) throws Throwable {
 
@@ -485,7 +591,7 @@ public abstract class Booking {
 
     }
 
-    @Action(order = 5, confirmationMessage = "Are you sure you want to confirm this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @Action(order = 6, confirmationMessage = "Are you sure you want to confirm this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
     @NotWhenCreating
     public void confirm(EntityManager em) {
         setConfirmed(true);
@@ -497,7 +603,7 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 5, confirmationMessage = "Are you sure you want to unconfirm this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @Action(order = 6, confirmationMessage = "Are you sure you want to unconfirm this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void unconfirm(EntityManager em) {
         setConfirmed(false);
@@ -509,7 +615,7 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void cancel(EntityManager em) {
         cancel(em, em.find(User.class, MDD.getUserData().getLogin()));
@@ -521,14 +627,16 @@ public abstract class Booking {
 
         setActive(false);
 
-        boolean allCancelled = true;
-        for (Booking b : getFile().getBookings()) if (b.isActive()) {
-            allCancelled = false;
-            break;
-        }
-        if (allCancelled) {
-            getFile().setActive(false);
-            em.merge(getFile());
+        if (getFile() != null) {
+            boolean allCancelled = true;
+            for (Booking b : getFile().getBookings()) if (b.isActive()) {
+                allCancelled = false;
+                break;
+            }
+            if (allCancelled) {
+                getFile().setActive(false);
+                em.merge(getFile());
+            }
         }
 
         em.merge(this);
@@ -539,7 +647,7 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 6, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
     @NotWhenCreating
     public void uncancel(EntityManager em) throws Exception {
         User u = em.find(User.class, MDD.getUserData().getLogin());
@@ -548,14 +656,16 @@ public abstract class Booking {
 
         setActive(false);
 
-        boolean allCancelled = true;
-        for (Booking b : getFile().getBookings()) if (b.isActive()) {
-            allCancelled = false;
-            break;
-        }
-        if (allCancelled) {
-            getFile().setActive(false);
-            em.merge(getFile());
+        if (getFile() != null) {
+            boolean allCancelled = true;
+            for (Booking b : getFile().getBookings()) if (b.isActive()) {
+                allCancelled = false;
+                break;
+            }
+            if (allCancelled) {
+                getFile().setActive(false);
+                em.merge(getFile());
+            }
         }
 
         em.merge(this);
@@ -567,7 +677,7 @@ public abstract class Booking {
 
 
 
-    @Action(order = 3, icon = VaadinIcons.EURO)
+    @Action(order = 4, icon = VaadinIcons.EURO)
     @NotWhenCreating
     public void sendPaymentEmail(EntityManager em, @NotEmpty String toEmail, String subject, String postscript, @NotNull TPV tpv, FastMoney amount) throws Throwable {
         AppConfig appconfig = AppConfig.get(em);
@@ -632,7 +742,7 @@ public abstract class Booking {
 
     }
 
-    @Action(order = 4, icon = VaadinIcons.INVOICE)
+    @Action(order = 5, icon = VaadinIcons.INVOICE)
     @NotWhenCreating
     public BookingInvoiceForm invoice() throws Throwable {
         return new BookingInvoiceForm(this);
@@ -691,14 +801,51 @@ public abstract class Booking {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             setValue(new Amount(overridedValue));
             setValued(true);
-            updateCharges(em);
         } else {
             priceServices();
         }
 
+        updateCharges(em);
+
         updateTotals(em);
 
         em.merge(this);
+    }
+
+
+
+
+
+    @PostLoad
+    public void postload() {
+        updating = updatePending;
+    }
+
+    public synchronized void askForUpdate() {
+        if (!updatePending && !updating) {
+            setUpdatePending(true);
+            WorkflowEngine.add(() -> {
+                try {
+                    Helper.transact(em -> {
+
+                        setUpdating(true);
+
+                        price(em);
+
+                        build(em);
+
+                        updateTotals(em);
+
+                        em.merge(this);
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+                setUpdatePending(false);
+                setUpdating(false);
+            });
+        }
     }
 
     private void updateTotals(EntityManager em) {
@@ -708,6 +855,7 @@ public abstract class Booking {
         double totalCoste = 0;
 
         for (Charge c : getCharges()) {
+            System.out.println("**************************updateTotalsxcharge");
             if (ChargeType.SALE.equals(c.getType())) {
                 total += c.getTotal().getValue();
                 totalNeto += c.getTotal().getValue();
@@ -725,35 +873,40 @@ public abstract class Booking {
     public abstract void priceServices() throws Throwable;
 
 
-    private void updateCharges(EntityManager em) {
-        for (BookingCharge c : getCharges()) {
+    public void updateCharges(EntityManager em) throws Throwable {
+        for (BookingCharge c : new ArrayList<>(getCharges())) {
             c.getBooking().getCharges().remove(c);
-            em.remove(c);
+            if (c.getId() != 0) em.remove(c);
         }
         getCharges().clear();
 
-        BookingCharge c;
-        getCharges().add(c = new BookingCharge());
-        c.setAudit(new Audit(getAudit().getModifiedBy()));
-        c.setTotal(getValue());
+        if (isValueOverrided()) {
+            BookingCharge c;
+            getCharges().add(c = new BookingCharge());
+            c.setAudit(new Audit(getAudit().getModifiedBy()));
+            c.setTotal(getValue());
 
-        c.setText("Booking " + getId());
+            c.setText("Booking " + getId());
 
-        c.setPartner(getAgency());
+            c.setPartner(getAgency());
 
-        c.setType(ChargeType.SALE);
-        c.setBooking(this);
-        c.setFile(getFile());
-        getCharges().add(c);
+            c.setType(ChargeType.SALE);
+            c.setBooking(this);
+            getCharges().add(c);
 
-        c.setInvoice(null);
-        c.setService(null);
+            c.setInvoice(null);
 
 
-        c.setBillingConcept(getOverridedBillingConcept());
+            c.setBillingConcept(getOverridedBillingConcept());
 
-        em.persist(c);
+            em.persist(c);
+        } else {
+            createCharges(em);
+        }
 
+    }
+
+    public void createCharges(EntityManager em) throws Throwable {
     }
 
     public static GridDecorator getGridDecorator() {
@@ -773,7 +926,7 @@ public abstract class Booking {
                             if (o instanceof Booking) {
                                 if (!((Booking)o).isActive()) s = (s != null)?s + " cancelled":"cancelled";
                             } else {
-                                if (!((Boolean)((Object[])o)[7])) {
+                                if (!((Boolean)((Object[])o)[9])) {
                                     s = (s != null)?s + " cancelled":"cancelled";
                                 }
                             }

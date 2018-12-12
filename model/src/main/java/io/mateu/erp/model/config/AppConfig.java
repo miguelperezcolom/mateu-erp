@@ -4,13 +4,11 @@ import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +40,9 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     private String xslfoForIssuedInvoice;
 
     @TextArea
+    private String xslfoForReceivedInvoice;
+
+    @TextArea
     private String xslfoForWorld;
 
     @TextArea
@@ -52,6 +53,9 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @TextArea
     private String purchaseOrderTemplate;
+
+    @TextArea
+    private String bookedEmailTemplate;
 
     @TextArea
     private String vouchersEmailTemplate;
@@ -73,6 +77,9 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     @NotNull
     @ManyToOne
     private Currency nucCurrency;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Resource invoiceWatermark;
 
 
     //@Tab("Currency exchange")

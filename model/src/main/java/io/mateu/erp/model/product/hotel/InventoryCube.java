@@ -1,5 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
@@ -41,17 +43,21 @@ public class InventoryCube {
         // aplicamos las operaciones
 
         for (HotelContract c : inventory.getContracts()) {
-            if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(getRoomFromCode(a.getRoom()), a.getQuantity(), InventoryAction.SET, a.getStart(), a.getEnd()));
+            if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(a.getRoom(), a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()));
         }
 
         for (Inventory dependant : inventory.getDependantInventories()) {
             for (HotelContract c : dependant.getContracts()) {
-                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(getRoomFromCode(a.getRoom()), -1 * a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()));
+                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(a.getRoom(), -1 * a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()));
             }
         }
 
         for (InventoryOperation o : getOperations()) {
             apply(o);
+        }
+
+        for (HotelBookingLine l : inventory.getBookings()) {
+            if (l.getBooking().isActive() && l.isActive()) apply(new InventoryOperation(l.getRoom().getType(), -1 * l.getRooms(), InventoryAction.ADD, l.getStart(), l.getEnd().minusDays(1)));
         }
         
     }
@@ -68,7 +74,6 @@ public class InventoryCube {
     private List<InventoryOperation> getOperations() throws Throwable {
         return Helper.selectObjects("select x from " + InventoryOperation.class.getName() + " x where x.inventory.id = " + inventory.getId() + " order by x.id");
     }
-
 
     private void apply(InventoryOperation o) {
 
@@ -104,13 +109,13 @@ public class InventoryCube {
         for (HotelContract c : inventory.getContracts()) if (c.getTerms() != null) for (Allotment o : c.getTerms().getAllotment()) if (o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
-            if (!rooms.contains(o.getRoom())) rooms.add(getRoomFromCode(o.getRoom()));
+            if (!rooms.contains(o.getRoom())) rooms.add(o.getRoom());
         }
 
         for (HotelContract c : inventory.getSecurityContracts()) if (c.getTerms() != null) for (Allotment o : c.getTerms().getSecurityAllotment()) if (o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
-            if (!rooms.contains(o.getRoom())) rooms.add(getRoomFromCode(o.getRoom()));
+            if (!rooms.contains(o.getRoom())) rooms.add(o.getRoom());
         }
 
         for (InventoryOperation o : getOperations()) if (o.getEnd().isAfter(ayer)) {

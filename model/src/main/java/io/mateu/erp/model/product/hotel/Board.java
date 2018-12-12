@@ -36,6 +36,9 @@ public class Board implements IBoard {
     @NoChart
     private BoardType type;
 
+    @Column(name = "_order")
+    private int order;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @NoChart
     private Literal description;

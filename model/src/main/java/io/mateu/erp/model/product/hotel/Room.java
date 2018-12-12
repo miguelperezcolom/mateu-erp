@@ -38,6 +38,9 @@ public class Room implements IRoom {
     @NoChart
     private RoomType type;
 
+    @Column(name = "_order")
+    private int order;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @NoChart
     @TextArea
@@ -126,6 +129,8 @@ public class Room implements IRoom {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof Room && id == ((Room)obj).id);
+        return this == obj || (id != 0 && obj != null && obj instanceof Room && id == ((Room)obj).id);
     }
+
+
 }

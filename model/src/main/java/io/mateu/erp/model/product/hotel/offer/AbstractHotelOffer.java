@@ -85,11 +85,13 @@ public class AbstractHotelOffer implements IHotelOffer {
 
 
     @TextArea
+    @ManyToOne
     private Literal description;
 
 
     private boolean extras;
     @TextArea
+    @ManyToOne
     private Literal extrasDescription;
 
     @SearchFilter

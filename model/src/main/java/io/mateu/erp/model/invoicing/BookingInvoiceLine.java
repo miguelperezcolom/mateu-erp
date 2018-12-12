@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ public class BookingInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
     @NotNull
-    private File file;
+    private Booking booking;
 
 
     public BookingInvoiceLine() {
@@ -27,7 +28,7 @@ public class BookingInvoiceLine extends AbstractInvoiceLine {
     public BookingInvoiceLine(Invoice invoice, BookingCharge c) {
         super(invoice);
 
-        file = c.getFile();
+        booking = c.getBooking();
 
         setPrice(c.getTotal().getValue());
         setQuantity(1);

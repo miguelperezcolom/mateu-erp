@@ -26,10 +26,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Getter@Setter
 public class BookingInvoiceForm {
@@ -52,13 +49,20 @@ public class BookingInvoiceForm {
     public BookingInvoiceForm(Booking booking) throws Throwable {
         this.booking = booking;
 
+        if (booking.getAgency() == null) throw new Error("Agency must have a financial agent. Please set financial agent for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany() == null) throw new Error("Agency must have a company. Please set company for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany().getFinancialAgent() == null) throw new Error("Company must have a financial agent. Please set financial agent for " + booking.getAgency().getCompany().getName());
 
         Document xml = new Document(new Element("invoices"));
 
         List<Charge> charges = new ArrayList<>();
         charges.addAll(booking.getCharges());
 
-        Helper.notransact(em -> xml.getRootElement().addContent(new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, true).toXml()));
+
+        Helper.notransact(em -> {
+            User u = em.find(User.class, MDD.getUserData().getLogin());
+            xml.getRootElement().addContent(new IssuedInvoice(u, charges, true, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null).toXml(em));
+        });
 
         System.out.println(Helper.toString(xml.getRootElement()));
 
@@ -90,6 +94,10 @@ public class BookingInvoiceForm {
 
     @Action(icon = VaadinIcons.ENVELOPE, order = 1)
     public void sendProforma(EntityManager em) throws Throwable {
+
+        if (booking.getAgency() == null) throw new Error("Agency must have a financial agent. Please set financial agent for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany() == null) throw new Error("Agency must have a company. Please set company for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany().getFinancialAgent() == null) throw new Error("Company must have a financial agent. Please set financial agent for " + booking.getAgency().getCompany().getName());
 
         String to = email;
         //todo: una factura por agencia
@@ -145,12 +153,17 @@ public class BookingInvoiceForm {
     @Action(icon = VaadinIcons.INVOICE, order = 2)
     public void createInvoice() throws Throwable {
 
+        if (booking.getAgency() == null) throw new Error("Agency must have a financial agent. Please set financial agent for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany() == null) throw new Error("Agency must have a company. Please set company for " + booking.getAgency().getName());
+        if (booking.getAgency().getCompany().getFinancialAgent() == null) throw new Error("Company must have a financial agent. Please set financial agent for " + booking.getAgency().getCompany().getName());
+
+
         Helper.transact(em -> {
 
             List<Charge> charges = new ArrayList<>();
             charges.addAll(booking.getCharges());
 
-            Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges);
+            Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, false, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null);
             em.persist(i);
 
             charges.forEach(c -> em.merge(c));

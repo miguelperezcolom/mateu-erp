@@ -51,6 +51,7 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
+@UseIdToSelect
 public class PurchaseOrder {
 
     @Transient
@@ -70,7 +71,6 @@ public class PurchaseOrder {
     @Output
     private Audit audit;
 
-    @Ignored
     @NotNull
     private ServiceType serviceType;
 
@@ -366,6 +366,10 @@ public class PurchaseOrder {
     }
 
 
+    @Override
+    public String toString() {
+        return "" + id + " " + reference + " " + (audit != null?audit.getCreated():"");
+    }
 
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {

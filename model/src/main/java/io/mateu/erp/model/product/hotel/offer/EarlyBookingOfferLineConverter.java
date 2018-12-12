@@ -39,7 +39,7 @@ public class EarlyBookingOfferLineConverter implements AttributeConverter<EarlyB
         else {
             List<EarlyBookingOfferLine> l = new ArrayList<>();
 
-            for (String z : joined.split(",")) {
+            for (String z : joined.split(",")) if (!"".equalsIgnoreCase(z)) {
                 EarlyBookingOfferLine r;
                 l.add(r = new EarlyBookingOfferLine());
                 String[] x = z.split("\\|");

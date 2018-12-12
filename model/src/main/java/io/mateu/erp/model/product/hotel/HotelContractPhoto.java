@@ -1,11 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.annotations.FullWidth;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.StartTabs;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.CSS;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -20,11 +19,13 @@ import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.time.DayOfWeek.*;
 
 /**
  * Created by miguel on 1/10/16.
@@ -37,36 +38,74 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     private HotelContract contract;
 
     @Tab("Fares")
-    @FullWidth
+    @NotInlineEditable
     private List<LinearFare> fares = new ArrayList<>();
 
     public LinearFare createFaresInstance() {
-        return new LinearFare(this);
+        LinearFare f = new LinearFare(this);
+        if (contract != null && contract.getHotel() != null) for (Room r : contract.getHotel().getRooms().stream().sorted((r1, r2) -> r1.getOrder() - r2.getOrder()).collect(Collectors.toList())) {
+            for (Board b : contract.getHotel().getBoards().stream().sorted((r1, r2) -> r1.getOrder() - r2.getOrder()).collect(Collectors.toList())) {
+                LinearFareLine l;
+                f.getLines().add(l = new LinearFareLine(f));
+                l.setRoomTypeCode(r.getType());
+                l.setBoardTypeCode(b.getType());
+            }
+        }
+        return f;
     }
 
 
     @Tab("Min. stay")
-    @FullWidth
     private List<MinimumStayRule> minimumStayRules = new ArrayList<>();
 
     public MinimumStayRule createMinimumStayRulesInstance() {
         return new MinimumStayRule(this);
     }
 
+    public List<String> getMinimumStayRulesRoomsValues() {
+        List<String> l = new ArrayList<>();
+        if (contract != null && contract.getHotel() != null) {
+            Hotel h = contract.getHotel();
+            for (Room r : h.getRooms()) {
+                l.add(r.getType().getCode());
+            }
+        }
+        return l;
+    }
+
+    public List<String> getMinimumStayRulesBoardsValues() {
+        List<String> l = new ArrayList<>();
+        if (contract != null && contract.getHotel() != null) {
+            Hotel h = contract.getHotel();
+            for (Board r : h.getBoards()) {
+                l.add(r.getType().getCode());
+            }
+        }
+        return l;
+    }
+
     @Tab("Release")
-    @FullWidth
     private List<ReleaseRule> releaseRules = new ArrayList<>();
 
     public ReleaseRule createReleaseRulesInstance() {
         return new ReleaseRule(this);
     }
 
+    public List<String> getReleaseRulesRoomsValues() {
+        List<String> l = new ArrayList<>();
+        if (contract != null && contract.getHotel() != null) {
+            Hotel h = contract.getHotel();
+            for (Room r : h.getRooms()) {
+                l.add(r.getType().getCode());
+            }
+        }
+        return l;
+    }
+
     @Tab("Check in/out")
-    @FullWidth
     private List<WeekDaysRule> weekDaysRules = new ArrayList<>();
 
     @Tab("Supplements")
-    @FullWidth
     private List<Supplement> supplements = new ArrayList<>();
 
     public Supplement createSupplementsInstance() {
@@ -74,15 +113,24 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     }
 
     @Tab("Galas")
-    @FullWidth
     private List<Gala> galas = new ArrayList<>();
+
+    public List<String> getGalasBoardsValues() {
+        List<String> l = new ArrayList<>();
+        if (contract != null && contract.getHotel() != null) {
+            Hotel h = contract.getHotel();
+            for (Board r : h.getBoards()) {
+                l.add(r.getType().getCode());
+            }
+        }
+        return l;
+    }
 
     public Gala createGalasInstance() {
         return new Gala(this);
     }
 
     @Tab("Allotment")
-    @FullWidth
     private List<Allotment> allotment = new ArrayList<>();
 
 
@@ -91,7 +139,6 @@ public class HotelContractPhoto implements Serializable, Externalizable {
     }
 
     @Tab("Security allotment")
-    @FullWidth
     private List<Allotment> securityAllotment = new ArrayList<>();
 
 
@@ -174,11 +221,177 @@ public class HotelContractPhoto implements Serializable, Externalizable {
 
     @Override
     public String toString() {
+        return contract != null?contract.getTitle():"--";
+    }
+
+    public String toHtml() {
         StringBuffer html = new StringBuffer();
 
+        html.append("<table class='condicionescontratopreview'>");
+        html.append("<tr><th>Fares nr.</th><th>Min. stay</th><th>Checkin</th><th>Release</th><th>Galas</th><th>Suppl</th><th>Allot.</th><th>Sec. allot.</th></tr>");
+        html.append("<tr class='numero'><td>x" + getFares().size() + "</td><td>x" + getMinimumStayRules().size() + "</td><td>x" + getWeekDaysRules().size() + "</td><td>x" + getReleaseRules().size() + "</td><td>x" + getGalas().size() + "</td><td>x" + getSupplements().size() + "</td><td>x" + getAllotment().size() + "</td><td>x" + getSecurityAllotment().size() + "</td></tr>");
+        html.append("<tr><th colspan='8'>Fares calendar</th></tr>");
+
+        LocalDate d0 = null;
+        LocalDate d1 = null;
+        Map<LocalDate, LinearFare> faresByDate = new HashMap<>();
+        for (LinearFare f : fares) for (DatesRange r : f.getDates()) {
+            LocalDate dx0 = r.getStart();
+            if (dx0 == null && getContract() != null) dx0 = getContract().getBegining();
+            LocalDate dx1 = r.getEnd();
+            if (dx1 == null && getContract() != null) dx1 = getContract().getEnding();
+
+            if (dx0 != null && (d0 == null || d0.isAfter(dx0))) d0 = dx0;
+            if (dx1!= null && (d1 == null || d1.isBefore(dx1))) d1 = dx1;
+
+            if (dx0 != null && dx1 != null) for (LocalDate d = dx0.plusDays(0); !d.isAfter(dx1); d = d.plusDays(1)) faresByDate.put(d, f);
+        }
+        if (d0 != null && d1 != null) {
+            Element tcal = new Element("div");
+            tcal.setAttribute("class", "calendarioprecios");
+            LocalDate d = d0.plusDays(0);
+            Element tmes = null;
+            Element tsem = null;
+            while (!d.isAfter(d1)) {
+
+                if (tmes == null || d.getDayOfMonth() == 1) {
+                    tcal.addContent(tmes = new Element("table").setAttribute("class", "mes"));
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "cabecerames").addContent(new Element("td").setAttribute("colspan", "7").setText(d.getMonth().toString() + " " + d.getYear())));
+                    tsem = null;
+                }
+                if (tsem == null || DayOfWeek.MONDAY.equals(d.getDayOfWeek())) {
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "semana"));
+                    int diasEnBlanco = 0;
+                    switch (d.getDayOfWeek()) {
+                        case TUESDAY: diasEnBlanco = 1; break;
+                        case WEDNESDAY: diasEnBlanco = 2; break;
+                        case THURSDAY: diasEnBlanco = 3; break;
+                        case FRIDAY: diasEnBlanco = 4; break;
+                        case SATURDAY: diasEnBlanco = 5; break;
+                        case SUNDAY: diasEnBlanco = 6; break;
+                    }
+                    if (diasEnBlanco > 0) tsem.addContent(new Element("td").setAttribute("colspan", "" + diasEnBlanco));
+                }
+
+                int pos = fares.indexOf(faresByDate.get(d));
+
+                tsem.addContent(new Element("td").setAttribute("class", "random-" + pos).setText("" + d.getDayOfMonth()));
+                d = d.plusDays(1);
+            }
+
+            html.append("<tr><td colspan='8'>" + new XMLOutputter().outputString(tcal) + "</td></tr>");
+        }
+
+
+        html.append("<tr><th colspan='8'>Release calendar</th></tr>");
+
+        Map<LocalDate, ReleaseRule> releaseByDate = new HashMap<>();
+        for (ReleaseRule r : releaseRules) {
+            LocalDate dx0 = r.getStart();
+            if (dx0 == null && getContract() != null) dx0 = getContract().getBegining();
+            LocalDate dx1 = r.getEnd();
+            if (dx1 == null && getContract() != null) dx1 = getContract().getEnding();
+
+            if (dx0 != null && (d0 == null || d0.isAfter(dx0))) d0 = dx0;
+            if (dx1!= null && (d1 == null || d1.isBefore(dx1))) d1 = dx1;
+
+            if (dx0 != null && dx1 != null) for (LocalDate d = dx0.plusDays(0); !d.isAfter(dx1); d = d.plusDays(1)) releaseByDate.put(d, r);
+        }
+        if (d0 != null && d1 != null) {
+            Element tcal = new Element("div");
+            tcal.setAttribute("class", "calendarioprecios");
+            LocalDate d = d0.plusDays(0);
+            Element tmes = null;
+            Element tsem = null;
+            while (!d.isAfter(d1)) {
+
+                if (tmes == null || d.getDayOfMonth() == 1) {
+                    tcal.addContent(tmes = new Element("table").setAttribute("class", "mes"));
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "cabecerames").addContent(new Element("td").setAttribute("colspan", "7").setText(d.getMonth().toString() + " " + d.getYear())));
+                    tsem = null;
+                }
+                if (tsem == null || DayOfWeek.MONDAY.equals(d.getDayOfWeek())) {
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "semana"));
+                    int diasEnBlanco = 0;
+                    switch (d.getDayOfWeek()) {
+                        case TUESDAY: diasEnBlanco = 1; break;
+                        case WEDNESDAY: diasEnBlanco = 2; break;
+                        case THURSDAY: diasEnBlanco = 3; break;
+                        case FRIDAY: diasEnBlanco = 4; break;
+                        case SATURDAY: diasEnBlanco = 5; break;
+                        case SUNDAY: diasEnBlanco = 6; break;
+                    }
+                    if (diasEnBlanco > 0) tsem.addContent(new Element("td").setAttribute("colspan", "" + diasEnBlanco));
+                }
+
+                String s = "";
+                ReleaseRule r = releaseByDate.get(d);
+                if (r != null) s += r.getRelease();
+
+                tsem.addContent(new Element("td").setText(s));
+                d = d.plusDays(1);
+            }
+
+            html.append("<tr><td colspan='8'>" + new XMLOutputter().outputString(tcal) + "</td></tr>");
+        }
+
+        html.append("<tr><th colspan='8'>Min. stay calendar</th></tr>");
+
+        Map<LocalDate, MinimumStayRule> minStayByDate = new HashMap<>();
+        for (MinimumStayRule r : minimumStayRules) {
+            LocalDate dx0 = r.getStart();
+            if (dx0 == null && getContract() != null) dx0 = getContract().getBegining();
+            LocalDate dx1 = r.getEnd();
+            if (dx1 == null && getContract() != null) dx1 = getContract().getEnding();
+
+            if (dx0 != null && (d0 == null || d0.isAfter(dx0))) d0 = dx0;
+            if (dx1!= null && (d1 == null || d1.isBefore(dx1))) d1 = dx1;
+
+            if (dx0 != null && dx1 != null) for (LocalDate d = dx0.plusDays(0); !d.isAfter(dx1); d = d.plusDays(1)) minStayByDate.put(d, r);
+        }
+        if (d0 != null && d1 != null) {
+            Element tcal = new Element("div");
+            tcal.setAttribute("class", "calendarioprecios");
+            LocalDate d = d0.plusDays(0);
+            Element tmes = null;
+            Element tsem = null;
+            while (!d.isAfter(d1)) {
+
+                if (tmes == null || d.getDayOfMonth() == 1) {
+                    tcal.addContent(tmes = new Element("table").setAttribute("class", "mes"));
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "cabecerames").addContent(new Element("td").setAttribute("colspan", "7").setText(d.getMonth().toString() + " " + d.getYear())));
+                    tsem = null;
+                }
+                if (tsem == null || DayOfWeek.MONDAY.equals(d.getDayOfWeek())) {
+                    tmes.addContent(tsem = new Element("tr").setAttribute("class", "semana"));
+                    int diasEnBlanco = 0;
+                    switch (d.getDayOfWeek()) {
+                        case TUESDAY: diasEnBlanco = 1; break;
+                        case WEDNESDAY: diasEnBlanco = 2; break;
+                        case THURSDAY: diasEnBlanco = 3; break;
+                        case FRIDAY: diasEnBlanco = 4; break;
+                        case SATURDAY: diasEnBlanco = 5; break;
+                        case SUNDAY: diasEnBlanco = 6; break;
+                    }
+                    if (diasEnBlanco > 0) tsem.addContent(new Element("td").setAttribute("colspan", "" + diasEnBlanco));
+                }
+
+                String s = "";
+                MinimumStayRule r = minStayByDate.get(d);
+                if (r != null) s += r.getNights();
+
+                tsem.addContent(new Element("td").setText(s));
+                d = d.plusDays(1);
+            }
+
+            html.append("<tr><td colspan='8'>" + new XMLOutputter().outputString(tcal) + "</td></tr>");
+        }
+
+        html.append("</table>");
 
         return html.toString();
     }
+
 
     public String serialize() {
         Element xml = new Element("terms");
@@ -287,8 +500,8 @@ public class HotelContractPhoto implements Serializable, Externalizable {
         List<String> rooms = new ArrayList<>();
         List<String> boards = new ArrayList<>();
         for (LinearFare f : getFares()) for (LinearFareLine l : f.getLines()) {
-            if (!Strings.isNullOrEmpty(l.getRoomTypeCode()) && !rooms.contains(l.getRoomTypeCode())) rooms.add(l.getRoomTypeCode());
-            if (!Strings.isNullOrEmpty(l.getBoardTypeCode()) && !boards.contains(l.getBoardTypeCode())) boards.add(l.getBoardTypeCode());
+            if (l.getRoomTypeCode() != null && !rooms.contains(l.getRoomTypeCode().getCode())) rooms.add(l.getRoomTypeCode().getCode());
+            if (l.getBoardTypeCode() != null && !boards.contains(l.getBoardTypeCode().getCode())) boards.add(l.getBoardTypeCode().getCode());
         }
 
 

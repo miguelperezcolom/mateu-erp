@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.mdd.core.annotations.DependsOn;
+import io.mateu.mdd.core.annotations.UseIdToSelect;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,9 +21,6 @@ public class BookingCharge extends Charge {
 
 
     @ManyToOne
-    private File file;
-
-    @ManyToOne
     @NotNull
     private Booking booking;
 
@@ -31,15 +29,7 @@ public class BookingCharge extends Charge {
         if (booking != null) setPartner(booking.getAgency());
     }
 
-    @DependsOn("file")
-    public DataProvider getBookingDataProvider() throws Throwable {
-        return new JPQLListDataProvider(
-                "select x from " + File.class.getName() + " y inner join y.bookings x " +
-                        ((getFile() != null)?" where y.id = " + getFile().getId():" where y.id = 0"));
-    }
-
-
-
+    /*
     @ManyToOne
     private Service service;
 
@@ -55,6 +45,7 @@ public class BookingCharge extends Charge {
                 "select x from " + Booking.class.getName() + " y inner join y.services x " +
                         ((getBooking() != null)?" where y.id = " + getBooking().getId():" where y.id = 0"));
     }
+    */
 
 
 

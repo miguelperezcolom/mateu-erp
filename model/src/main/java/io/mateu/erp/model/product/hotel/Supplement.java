@@ -5,7 +5,9 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.ColumnWidth;
 import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -21,7 +23,12 @@ public class Supplement implements XMLSerializable {
     @Ignored
     private HotelContractPhoto photo;
 
+    @ListColumn
+    private int applicationOrder;
+
+    @ListColumn
     private LocalDate start;
+    @ListColumn
     private LocalDate end;
 
     /*
@@ -47,16 +54,23 @@ public class Supplement implements XMLSerializable {
     }
 
 
+    @ListColumn
     private boolean optional;
 
+    @ListColumn
     private boolean affectedByOffers;
 
+    @ListColumn
+    @ColumnWidth(120)
     private SupplementPer per = SupplementPer.PAX;
 
+    @ListColumn
+    @ColumnWidth(120)
     private SupplementScope scope = SupplementScope.NIGHT;
 
     private boolean onRequest;
 
+    @ListColumn
     private double percent;
 
     private boolean onStay;
@@ -65,8 +79,8 @@ public class Supplement implements XMLSerializable {
 
     private boolean onAccumulated;
 
-    private int applicationOrder;
 
+    @ListColumn
     private double value;
 
     @ValueClass(Partner.class)

@@ -6,6 +6,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.ui.ErrorLevel;
 import com.vaadin.ui.*;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.CSS;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
@@ -13,6 +14,7 @@ import io.mateu.mdd.core.util.Helper;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class InventoryCalendar extends VerticalLayout {
@@ -154,9 +156,12 @@ public class InventoryCalendar extends VerticalLayout {
 
 
         Label l;
-        mes.addComponent(l = new Label("" + desde.getMonth().toString() + " " + desde.getYear() + ": occupation = 75%"));
+        Label ltitulomes;
+        mes.addComponent(ltitulomes = l = new Label("" + desde.getMonth().toString() + " " + desde.getYear()));
         l.addStyleName("titulo");
 
+        int totalContratado = 0;
+        int totalReservado = 0;
 
         HorizontalLayout fila;
         {
@@ -201,6 +206,29 @@ public class InventoryCalendar extends VerticalLayout {
             while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
                 int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
                 fila.addComponent(l = new Label("" + cupo[0]));
+                totalContratado += cupo[0];
+                l.addStyleName("dia");
+                if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
+                    l.addStyleName("domingo");
+                }
+                f = f.plusDays(1);
+            }
+        }
+
+        {
+            mes.addComponent(fila = new HorizontalLayout());
+            fila.addStyleName("fila");
+            fila.addStyleName("derivado");
+
+            fila.addComponent(l = new Label("Moved"));
+            l.addStyleName("titulo");
+            l.setWidth("200px");
+
+
+            LocalDate f = desde.plusDays(0);
+            while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
+                int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
+                fila.addComponent(l = new Label("" + cupo[3]));
                 l.addStyleName("dia");
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
@@ -222,7 +250,7 @@ public class InventoryCalendar extends VerticalLayout {
             LocalDate f = desde.plusDays(0);
             while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
                 int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
-                fila.addComponent(l = new Label("" + cupo[2]));
+                fila.addComponent(l = new Label("" + cupo[1]));
                 l.addStyleName("dia");
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
@@ -244,7 +272,8 @@ public class InventoryCalendar extends VerticalLayout {
             LocalDate f = desde.plusDays(0);
             while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
                 int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
-                fila.addComponent(l = new Label("" + cupo[1]));
+                fila.addComponent(l = new Label("" + cupo[2]));
+                totalReservado += cupo[2];
                 l.addStyleName("dia");
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
@@ -253,89 +282,36 @@ public class InventoryCalendar extends VerticalLayout {
             }
         }
 
-        {
-            mes.addComponent(fila = new HorizontalLayout());
+        for (int posAgencia = 0; posAgencia < cubo.getAgencias().size(); posAgencia++) {
+
+            fila = new HorizontalLayout();
+
             fila.addStyleName("fila");
             fila.addStyleName("reservadoagencia");
 
-            fila.addComponent(l = new Label("Turchese"));
+            fila.addComponent(l = new Label(cubo.getAgencias().get(posAgencia).getName()));
             l.addStyleName("titulo");
             l.setWidth("200px");
 
 
             LocalDate f = desde.plusDays(0);
+            boolean hayReservas = false;
             while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
-                fila.addComponent(l = new Label("" + f.getDayOfMonth()));
+                int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
+                fila.addComponent(l = new Label("" + cupo[4 + posAgencia]));
+                hayReservas |= cupo[4 + posAgencia] != 0;
                 l.addStyleName("dia");
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
                 }
                 f = f.plusDays(1);
             }
+
+            if (hayReservas) mes.addComponent(fila);
         }
 
-        {
-            mes.addComponent(fila = new HorizontalLayout());
-            fila.addStyleName("fila");
-            fila.addStyleName("reservadoagencia");
 
-            fila.addComponent(l = new Label("DTS"));
-            l.addStyleName("titulo");
-            l.setWidth("200px");
-
-
-            LocalDate f = desde.plusDays(0);
-            while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
-                fila.addComponent(l = new Label("" + f.getDayOfMonth()));
-                l.addStyleName("dia");
-                if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
-                    l.addStyleName("domingo");
-                }
-                f = f.plusDays(1);
-            }
-        }
-
-        {
-            mes.addComponent(fila = new HorizontalLayout());
-            fila.addStyleName("fila");
-            fila.addStyleName("reservadoagencia");
-
-            fila.addComponent(l = new Label("Muchoviaje"));
-            l.addStyleName("titulo");
-            l.setWidth("200px");
-
-
-            LocalDate f = desde.plusDays(0);
-            while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
-                fila.addComponent(l = new Label("" + f.getDayOfMonth()));
-                l.addStyleName("dia");
-                if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
-                    l.addStyleName("domingo");
-                }
-                f = f.plusDays(1);
-            }
-        }
-
-        {
-            mes.addComponent(fila = new HorizontalLayout());
-            fila.addStyleName("fila");
-            fila.addStyleName("reservadoagencia");
-
-            fila.addComponent(l = new Label("Directos"));
-            l.addStyleName("titulo");
-            l.setWidth("200px");
-
-
-            LocalDate f = desde.plusDays(0);
-            while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
-                fila.addComponent(l = new Label("" + f.getDayOfMonth()));
-                l.addStyleName("dia");
-                if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
-                    l.addStyleName("domingo");
-                }
-                f = f.plusDays(1);
-            }
-        }
+        if (totalContratado != 0) ltitulomes.setValue(ltitulomes.getValue() + ": occupation = " + Math.round(100d * ((0d + totalReservado) / (0d + totalContratado))) + "%");
 
         return mes;
     }
@@ -400,7 +376,7 @@ public class InventoryCalendar extends VerticalLayout {
                 Label disponible;
                 infoCupo.addComponent(disponible = new Label());
                 disponible.addStyleName("disponible");
-                disponible.setValue("" + cupo[2]);
+                disponible.setValue("" + cupo[1]);
 
                 VerticalLayout dcha;
                 infoCupo.addComponent(dcha = new VerticalLayout());
@@ -414,13 +390,13 @@ public class InventoryCalendar extends VerticalLayout {
                 Label vendido;
                 dcha.addComponent(vendido = new Label());
                 vendido.addStyleName("vendido");
-                vendido.setValue("" + cupo[1]);
+                vendido.setValue("" + cupo[2]);
 
 
                 Label desviado;
                 infoCupo.addComponent(desviado = new Label());
                 desviado.addStyleName("desviado");
-                desviado.setValue("15");
+                desviado.setValue("" + cupo[3]);
 
                 dia.addLayoutClickListener(e -> System.out.println("click!!!"));
 

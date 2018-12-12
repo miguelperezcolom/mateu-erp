@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.product.generic.SupplementType;
 import io.mateu.mdd.core.annotations.NoChart;
+import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,6 +33,7 @@ public class HotelExtra {
 
     @ManyToOne
     @NoChart
+    @TextArea
     private Literal description;
 
 

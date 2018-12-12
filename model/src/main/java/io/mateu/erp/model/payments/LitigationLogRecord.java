@@ -26,6 +26,7 @@ public class LitigationLogRecord {
     private LocalDateTime date;
 
     @Output
+    @ManyToOne
     private User user;
 
     private String text;

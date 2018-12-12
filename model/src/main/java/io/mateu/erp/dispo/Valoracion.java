@@ -6,6 +6,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.product.hotel.*;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.DatesRange;
 import lombok.Getter;
 import lombok.Setter;
@@ -86,7 +87,7 @@ public class Valoracion {
                             for (int i = r.getDesde(); i <= r.getHasta(); i++)
                                 if (condiciones.getDias().size() > i) {
                                     CondicionesPorDia cpd = condiciones.getDias().get(i);
-                                    cpd.getFarePerRoomAndBoard().put(l.getRoomTypeCode() + "-" + l.getBoardTypeCode(), l);
+                                    cpd.getFarePerRoomAndBoard().put(l.getRoomTypeCode().getCode() + "-" + l.getBoardTypeCode().getCode(), l);
                                 }
                         }
                     }

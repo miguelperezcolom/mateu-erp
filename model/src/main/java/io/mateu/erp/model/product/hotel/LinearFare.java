@@ -1,8 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.product.hotel.offer.PriceOffer;
-import io.mateu.mdd.core.annotations.FullWidth;
-import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.UseCalendarToEdit;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -24,9 +23,58 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
     @Ignored
     private PriceOffer offer;
 
+    @ColumnWidth(150)
+    private String name;
+
     private List<DatesRange> dates = new ArrayList<>();
 
-    private String name;
+    @Override
+    public String toString() {
+        String s = "" + name + " (";
+        boolean first = true;
+        for (DatesRange r : dates) {
+            if (first) first = false; else s += ",";
+            s += r;
+        }
+        s += "): ";
+        first = true;
+        for (LinearFareLine l : lines) {
+            if (first) first = false; else s += ", ";
+            s += l.getLodgingPrice() + "/" + l.getAdultPrice();
+        }
+        return s;
+    }
+
+
+    @NotInEditor
+    @ColumnWidth(400)
+    private String period;
+
+    public String getPeriod() {
+        String s = "";
+        boolean first = true;
+        for (DatesRange r : dates) {
+            if (first) first = false; else s += ", ";
+            s += r;
+        }
+        return s;
+    }
+
+    @NotInEditor
+    @ColumnWidth(550)
+    private String prices;
+
+    public String getPrices() {
+        String s = "";
+        boolean first = true;
+        for (LinearFareLine l : lines) {
+            if (first) first = false; else s += ", ";
+            s += (l.getRoomTypeCode() != null?l.getRoomTypeCode().getCode():"--") + "x" + (l.getBoardTypeCode() != null?l.getBoardTypeCode().getCode():"--");
+            s += "=" + l.getLodgingPrice() + "/" + l.getAdultPrice();
+        }
+        return s;
+    }
+
 
     @FullWidth
     private List<LinearFareLine> lines = new ArrayList<>();
@@ -103,4 +151,8 @@ public class LinearFare implements XMLSerializable, UseCalendarToEdit {
         return "dates";
     }
 
+
+    public LinearFare cloneAsConverted() {
+        return new LinearFare(photo, toXml());
+    }
 }

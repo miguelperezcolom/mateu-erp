@@ -234,9 +234,6 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
-    @OneToMany(mappedBy = "service")
-    @UseLinkToListView
-    private List<BookingCharge> charges = new ArrayList<>();
 
     @Section("Log")
 

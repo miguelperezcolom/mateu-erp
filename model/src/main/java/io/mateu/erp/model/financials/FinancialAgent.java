@@ -2,10 +2,7 @@ package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.payments.Deposit;
 import io.mateu.erp.model.taxes.VAT;
-import io.mateu.mdd.core.annotations.KPI;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -47,12 +44,17 @@ public class FinancialAgent {
 
     private String telephone;
 
+    private String fax;
+
     private String email;
 
     @NotNull
     @ManyToOne
     @ListColumn
     private Currency currency;
+
+    @TextArea
+    private String comments;
 
 
     @Tab("Taxes")
@@ -74,10 +76,14 @@ public class FinancialAgent {
     @NotNull
     private InvoiceGrouping invoiceGrouping;
 
+    private String customerAccountNumber;
+
     @Tab("As provider")
     private boolean specialRegime;
 
     private boolean invoicesBeforeCheckinAllowed;
+
+    private String providerAccountNumber;
 
     @Tab("Deposits")
     @OneToMany(mappedBy = "agent")
@@ -113,7 +119,6 @@ public class FinancialAgent {
     @Tab("Voxel")
     private String voxelId;
 
-
     @ListColumn
     @KPI
     private double invoiced;
@@ -123,7 +128,7 @@ public class FinancialAgent {
     private double balance;
 
 
-    @Output
+    @Ignored
     private boolean markedForUpdate;
 
 

@@ -2,8 +2,7 @@ package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.ValueClass;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
@@ -23,17 +22,26 @@ public class MinimumStayRule implements XMLSerializable {
     private LocalDate start;
     private LocalDate end;
 
+    @ColumnWidth(80)
     private int nights;
 
+    @ColumnWidth(80)
+    @Caption("OR")
     private boolean onRequest;
 
+    @ColumnWidth(80)
+    @Caption("+%")
     private double supplementPercent;
 
+    @ColumnWidth(80)
+    @Caption("+Value")
     private double supplementValue;
 
     @NotNull
+    @ColumnWidth(100)
     private SupplementPer per = SupplementPer.PAX;
 
+    @UseCheckboxes(editableInline = true)
     private List<String> rooms = new ArrayList<>();
 
     public DataProvider getRoomsDataProvider() {
@@ -45,6 +53,7 @@ public class MinimumStayRule implements XMLSerializable {
         return new ListDataProvider<RoomType>(l);
     }
 
+    @UseCheckboxes(editableInline = true)
     private List<String> boards = new ArrayList<>();
 
     public DataProvider getBoardsDataProvider() {

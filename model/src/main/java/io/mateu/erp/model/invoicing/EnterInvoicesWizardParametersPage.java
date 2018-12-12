@@ -1,6 +1,8 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.model.booking.parts.SupplierDataProvider;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.annotations.DataProvider;
 import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class EnterInvoicesWizardParametersPage implements WizardPage {
 
     @NotNull
+    @DataProvider(dataProvider = SupplierDataProvider.class)
     private Partner provider;
 
     @Override

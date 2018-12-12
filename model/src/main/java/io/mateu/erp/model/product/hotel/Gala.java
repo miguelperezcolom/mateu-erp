@@ -3,7 +3,9 @@ package io.mateu.erp.model.product.hotel;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.UseCheckboxes;
 import io.mateu.mdd.core.annotations.ValueClass;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
@@ -24,6 +26,7 @@ public class Gala implements XMLSerializable {
 
     private FareValue juniorPrice;
 
+    @UseCheckboxes(editableInline = true)
     private List<String> boards = new ArrayList<>();
 
     public DataProvider getBoardsDataProvider() {

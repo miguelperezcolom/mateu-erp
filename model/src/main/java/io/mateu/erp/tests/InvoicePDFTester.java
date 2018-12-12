@@ -1,8 +1,10 @@
 package io.mateu.erp.tests;
 
+import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
@@ -11,20 +13,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
-import java.util.Date;
 import java.util.UUID;
 
-public class ContractPDFTester {
+public class InvoicePDFTester {
 
     public static void main(String[] args) throws Throwable {
 
         System.setProperty("appconf", "/home/miguel/work/erp.properties");
 
 
-        testHtmlPreview(16);
+        //testHtmlPreview(16);
 
-        //test(16, "/home/miguel/work");
+        test(1, "/home/miguel/work");
 
     }
 
@@ -57,7 +57,7 @@ public class ContractPDFTester {
         Helper.notransact(em -> {
 
 
-            HotelContract c = em.find(HotelContract.class, idContrato);
+            IssuedInvoice c = em.find(IssuedInvoice.class, idContrato);
 
             long t0 = System.currentTimeMillis();
 
@@ -65,11 +65,11 @@ public class ContractPDFTester {
             try {
 
 
-                Document xml = c.toXml(em);
+                Document xml = new Document(new Element("invoices").addContent(c.toXml(em)));
 
                 try {
                     String archivo = UUID.randomUUID().toString();
-                    archivo = "testcontratohotel";
+                    archivo = "testfactura";
 
                     File temp = new File(new File(donde), archivo + ".pdf");
 
@@ -79,7 +79,7 @@ public class ContractPDFTester {
                     //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                     String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                     System.out.println("xml=" + sxml);
-                    fileOut.write(Helper.fop(new StreamSource(new StringReader(Helper.leerFichero(HotelContract.class.getResourceAsStream("/io/mateu/erp/xsl/contrato_hotel.xsl")))), new StreamSource(new StringReader(sxml))));
+                    fileOut.write(Helper.fop(new StreamSource(new StringReader(Helper.leerFichero(HotelContract.class.getResourceAsStream("/io/mateu/erp/xsl/factura.xsl")))), new StreamSource(new StringReader(sxml))));
                     fileOut.close();
 
 

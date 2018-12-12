@@ -47,12 +47,12 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
             Document xml = new Document(new Element("invoices"));
             User u = em.find(User.class, MDD.getUserData().getLogin());
-            chargesByPartner.values().forEach(l -> {
-                try {
-                    xml.getRootElement().addContent(new IssuedInvoice(u, l, true).toXml());
-                } catch (Throwable throwable) {
-                    MDD.alert(throwable);
-                }
+            chargesByPartner.keySet().forEach(p -> {
+                    try {
+                        xml.getRootElement().addContent(new IssuedInvoice(u, chargesByPartner.get(p), true, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), null).toXml(em));
+                    } catch (Throwable throwable) {
+                        MDD.alert(throwable);
+                    }
             });
 
 
@@ -112,20 +112,25 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
             Map<Partner, List<Charge>> chargesByPartner = split(em, issueInvoicesParametersPage.getPending());
 
-            chargesByPartner.values().forEach(l -> {
+            chargesByPartner.keySet().forEach(p -> {
 
                 Invoice i = null;
                 try {
 
-                    i = new IssuedInvoice(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()), l);
+                    i = new IssuedInvoice(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()), chargesByPartner.get(p), false, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), null);
 
                     em.persist(i);
 
-                    l.forEach(c -> em.merge(c));
+                    chargesByPartner.get(p).forEach(c -> em.merge(c));
 
                 } catch (Throwable throwable) {
                     MDD.alert(throwable);
                 }
+
+            });
+
+            chargesByPartner.values().forEach(l -> {
+
 
             });
 

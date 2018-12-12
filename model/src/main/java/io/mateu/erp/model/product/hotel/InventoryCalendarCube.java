@@ -1,5 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -25,6 +27,7 @@ public class InventoryCalendarCube {
     private LocalDate fin = null;
     private List<RoomType> rooms = new ArrayList<>();
     int maxdias = 0;
+    private List<Partner> agencias = new ArrayList<>();
 
     public InventoryCalendarCube(Inventory inventory) throws Throwable {
 
@@ -40,19 +43,23 @@ public class InventoryCalendarCube {
         // aplicamos las operaciones
 
         for (HotelContract c : inventory.getContracts()) {
-            if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(getRoomFromCode(a.getRoom()), a.getQuantity(), InventoryAction.SET, a.getStart(), a.getEnd()));
+            if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(a.getRoom(), a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()), c);
         }
 
         for (Inventory dependant : inventory.getDependantInventories()) {
-            for (HotelContract c : dependant.getContracts()) {
-                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(getRoomFromCode(a.getRoom()), -1 * a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()));
+            for (HotelContract c : dependant.getContracts()) if (!inventory.getContracts().contains(c)) {
+                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) apply(new InventoryOperation(a.getRoom(), a.getQuantity(), InventoryAction.ADD, a.getStart(), a.getEnd()), true);
             }
         }
 
         for (InventoryOperation o : getOperations()) {
             apply(o);
         }
-        
+
+        for (HotelBookingLine l : inventory.getBookings()) {
+            if (l.getBooking().isActive() && l.isActive()) apply(new InventoryOperation(l.getRoom().getType(), l.getRooms(), InventoryAction.ADD, l.getStart(), l.getEnd()), l.getBooking().getAgency());
+        }
+
     }
 
     private RoomType getRoomFromCode(String roomCode) {
@@ -70,26 +77,90 @@ public class InventoryCalendarCube {
 
 
     private void apply(InventoryOperation o) {
+        apply(o, false, null, null);
+    }
+
+    private void apply(InventoryOperation o, boolean desviado) {
+        apply(o, desviado, null, null);
+    }
+
+    private void apply(InventoryOperation o, Partner agencia) {
+        apply(o, false, agencia, null);
+    }
+
+    private void apply(InventoryOperation o, HotelContract c) {
+        apply(o, false, null, c);
+    }
+
+    private void apply(InventoryOperation o, boolean desviado, Partner agencia, HotelContract c) {
 
         if (o.getEnd().isAfter(ayer) && o.getRoom() != null) {
 
             int desdeFecha = (o.getStart() != null)?(int) ChronoUnit.DAYS.between(inicio, (o.getStart().isAfter(ayer))?o.getStart():ayer): 0;
             int hastaFecha = (o.getEnd() != null)?(int) ChronoUnit.DAYS.between(inicio, o.getEnd()):maxdias;
+            if (agencia != null) hastaFecha -= 1;
             for (int fecha = desdeFecha; fecha <= hastaFecha; fecha++) {
                 int poshab = rooms.indexOf(o.getRoom());
-                switch (o.getAction()) {
-                    case ADD:
-                        cubo[fecha][poshab][0] += o.getQuantity();
-                        cubo[fecha][poshab][2] += o.getQuantity();
-                        break;
-                    case SUBSTRACT:
-                        cubo[fecha][poshab][1] += o.getQuantity();
-                        cubo[fecha][poshab][2] -= o.getQuantity();
-                        break;
-                    case SET:
-                        cubo[fecha][poshab][0] = o.getQuantity();
-                        cubo[fecha][poshab][2] = o.getQuantity();
-                        break;
+                if (desviado) {
+                    switch (o.getAction()) {
+                        case ADD:
+                            cubo[fecha][poshab][1] -= o.getQuantity();
+                            cubo[fecha][poshab][3] += o.getQuantity();
+                            break;
+                        case SUBSTRACT:
+                            cubo[fecha][poshab][1] += o.getQuantity();
+                            cubo[fecha][poshab][3] -= o.getQuantity();
+                            break;
+                        case SET:
+                            cubo[fecha][poshab][1] = cubo[fecha][poshab][0] - o.getQuantity();
+                            cubo[fecha][poshab][2] = o.getQuantity();
+                            break;
+                    }
+                } else if (agencia != null) {
+                    int posAgencia = agencias.indexOf(agencia);
+                    if (posAgencia < 0) {
+                        agencias.add(agencia);
+                        posAgencia = agencias.indexOf(agencia);
+                    }
+                    switch (o.getAction()) {
+                        case ADD:
+                            cubo[fecha][poshab][1] -= o.getQuantity();
+                            cubo[fecha][poshab][2] += o.getQuantity();
+                            cubo[fecha][poshab][4 + posAgencia] += o.getQuantity();
+                            break;
+                        case SUBSTRACT:
+                            cubo[fecha][poshab][1] += o.getQuantity();
+                            cubo[fecha][poshab][2] -= o.getQuantity();
+                            cubo[fecha][poshab][4 + posAgencia] -= o.getQuantity();
+                            break;
+                    }
+                } else if (c != null) {
+                    switch (o.getAction()) {
+                        case ADD:
+                            cubo[fecha][poshab][0] += o.getQuantity();
+                            cubo[fecha][poshab][1] += o.getQuantity();
+                            break;
+                        case SUBSTRACT:
+                            cubo[fecha][poshab][0] -= o.getQuantity();
+                            cubo[fecha][poshab][1] -= o.getQuantity();
+                            break;
+                        case SET:
+                            cubo[fecha][poshab][0] = o.getQuantity();
+                            cubo[fecha][poshab][1] = o.getQuantity();
+                            break;
+                    }
+                } else {
+                    switch (o.getAction()) {
+                        case ADD:
+                            cubo[fecha][poshab][1] += o.getQuantity();
+                            break;
+                        case SUBSTRACT:
+                            cubo[fecha][poshab][1] -= o.getQuantity();
+                            break;
+                        case SET:
+                            cubo[fecha][poshab][1] = o.getQuantity();
+                            break;
+                    }
                 }
             }
 
@@ -106,13 +177,13 @@ public class InventoryCalendarCube {
         for (HotelContract c : inventory.getContracts()) if (c.getTerms() != null) for (Allotment o : c.getTerms().getAllotment()) if (o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
-            if (!rooms.contains(o.getRoom())) rooms.add(getRoomFromCode(o.getRoom()));
+            if (!rooms.contains(o.getRoom())) rooms.add(o.getRoom());
         }
 
         for (HotelContract c : inventory.getSecurityContracts()) if (c.getTerms() != null) for (Allotment o : c.getTerms().getSecurityAllotment()) if (o.getEnd().isAfter(ayer)) {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
-            if (!rooms.contains(o.getRoom())) rooms.add(getRoomFromCode(o.getRoom()));
+            if (!rooms.contains(o.getRoom())) rooms.add(o.getRoom());
         }
 
         for (InventoryOperation o : getOperations()) if (o.getEnd().isAfter(ayer)) {
@@ -124,7 +195,7 @@ public class InventoryCalendarCube {
 
         if (inicio != null && fin != null) maxdias = (int) ChronoUnit.DAYS.between(inicio, fin);
 
-        cubo = new int[maxdias + 1][rooms.size()][4];
+        cubo = new int[maxdias + 1][rooms.size()][100];
 
     }
 
@@ -133,11 +204,13 @@ public class InventoryCalendarCube {
     }
 
     public int[] getCubo(LocalDate fecha, RoomType room) {
-        int posfecha = (int) ChronoUnit.DAYS.between(inicio, fecha);
-        int poshab = rooms.indexOf(room);
+        if (inicio != null && fecha != null) {
+            int posfecha = (int) ChronoUnit.DAYS.between(inicio, fecha);
+            int poshab = rooms.indexOf(room);
 
-        if (posfecha >= 0 && posfecha < cubo.length && poshab >= 0 && poshab < cubo[posfecha].length) return cubo[posfecha][poshab];
-        else return new int[] {0, 0, 0, 0};
+            if (posfecha >= 0 && posfecha < cubo.length && poshab >= 0 && poshab < cubo[posfecha].length) return cubo[posfecha][poshab];
+            else return new int[100];
+        } else return new int[100];
     }
 
 }

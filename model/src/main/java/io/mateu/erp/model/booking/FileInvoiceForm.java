@@ -62,7 +62,10 @@ public class FileInvoiceForm {
         List<Charge> charges = new ArrayList<>();
         for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
 
-        Helper.notransact(em -> xml.getRootElement().addContent(new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, true).toXml()));
+        Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
+
+
+        if (firstBooking != null) Helper.notransact(em -> xml.getRootElement().addContent(new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, true, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null).toXml(em)));
 
         System.out.println(Helper.toString(xml.getRootElement()));
 
@@ -154,10 +157,17 @@ public class FileInvoiceForm {
             List<Charge> charges = new ArrayList<>();
             for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
 
-            Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges);
-            em.persist(i);
+            Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
 
-            charges.forEach(c -> em.merge(c));
+            if (firstBooking != null) {
+
+                Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, false, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null);
+                em.persist(i);
+
+                charges.forEach(c -> em.merge(c));
+
+            }
+
 
         });
 

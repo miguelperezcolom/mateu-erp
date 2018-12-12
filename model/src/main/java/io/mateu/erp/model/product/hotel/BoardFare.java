@@ -4,6 +4,7 @@ import io.mateu.mdd.core.annotations.FullWidth;
 import io.mateu.mdd.core.annotations.Owned;
 import io.mateu.mdd.core.annotations.OwnedList;
 import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 

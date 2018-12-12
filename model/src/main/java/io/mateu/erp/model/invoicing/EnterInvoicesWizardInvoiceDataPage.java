@@ -63,13 +63,7 @@ public class EnterInvoicesWizardInvoiceDataPage implements WizardPage {
 
             User u = em.find(User.class, MDD.getUserData().getLogin());
 
-            ReceivedInvoice i = new ReceivedInvoice(u, enterInvoicesWizardSelectChargesPage.getPending());
-
-            i.setNumber(invoiceNumber);
-
-            i.setIssuer(enterInvoicesWizardSelectChargesPage.getEnterInvoicesWizardParametersPage().getProvider().getFinancialAgent());
-            i.setRecipient(recipient.getFinancialAgent());
-
+            ReceivedInvoice i = new ReceivedInvoice(u, enterInvoicesWizardSelectChargesPage.getPending(), enterInvoicesWizardSelectChargesPage.getEnterInvoicesWizardParametersPage().getProvider().getFinancialAgent(), recipient.getFinancialAgent(), invoiceNumber);
 
             em.persist(i);
 

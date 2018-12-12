@@ -3,11 +3,6 @@ package io.mateu.common.dispo;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.google.common.collect.Lists;
-import io.mateu.erp.model.partners.PartnerStatus;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.USER_STATUS;
-import io.mateu.mdd.core.model.authentication.User;
-import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
@@ -17,10 +12,19 @@ import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.LocalizationRule;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.PartnerStatus;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.erp.model.product.hotel.offer.*;
+import io.mateu.erp.model.product.hotel.offer.BoardUpgradeOffer;
+import io.mateu.erp.model.product.hotel.offer.FreeChildrenOffer;
+import io.mateu.erp.model.product.hotel.offer.PriceOffer;
+import io.mateu.erp.model.product.hotel.offer.RoomUpgradeOffer;
+import io.mateu.mdd.core.data.FareValue;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.USER_STATUS;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.util.DatesRange;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -232,6 +236,7 @@ public class HotelAvailabilityTest
 
         // creamos un contrato
         hotel.getContracts().add(contratoVenta = new HotelContract());
+        contratoVenta.setHotel(hotel);
         contratoVenta.setType(ContractType.SALE);
         contratoVenta.setId(1);
         contratoVenta.setTitle("Contrato venta");
@@ -244,19 +249,21 @@ public class HotelAvailabilityTest
 
         contratoVenta.setSupplier(proveedor);
         contratoVenta.setTerms(condicionesContrato = new HotelContractPhoto());
+        condicionesContrato.setContract(contratoVenta);
 
         contratos.put(1l, contratoVenta);
 
         {
             LinearFare f;
             condicionesContrato.getFares().add(f = new LinearFare());
+            f.setPhoto(condicionesContrato);
             tarifaEnero = f;
             f.setName("Tarifa Enero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 1, 1), LocalDate.of(2101, 1, 31)));
 
 
             LinearFareLine l;
-            f.getLines().add(l = new LinearFareLine("DBL", "SA", 0, 10, 0, 0, 0));
+            f.getLines().add(l = new LinearFareLine(f, "DBL", "SA", 0, 10, 0, 0, 0));
 
             // uso individual
             l.setSingleUsePrice(new FareValue("+40%"));
@@ -280,17 +287,19 @@ public class HotelAvailabilityTest
         {
             LinearFare f;
             condicionesContrato.getFares().add(f = new LinearFare());
+            f.setPhoto(condicionesContrato);
             f.setName("Tarifa Febrero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 2, 1), LocalDate.of(2101, 2, 28)));
-            f.getLines().add(new LinearFareLine("DBL", "SA", 0, 15));
+            f.getLines().add(new LinearFareLine(f, "DBL", "SA", 0, 15));
         }
 
         {
             LinearFare f;
             condicionesContrato.getFares().add(f = new LinearFare());
+            f.setPhoto(condicionesContrato);
             f.setName("Tarifa Marzo");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 3, 1), LocalDate.of(2101, 3, 31)));
-            f.getLines().add(new LinearFareLine("DBL", "SA", 0, 20, 0, 0, 0));
+            f.getLines().add(new LinearFareLine(f, "DBL", "SA", 0, 20, 0, 0, 0));
 
             Supplement s;
             condicionesContrato.getSupplements().add(s = new Supplement());
@@ -364,11 +373,12 @@ public class HotelAvailabilityTest
         {
             LinearFare f;
             condicionesContrato.getFares().add(f = new LinearFare());
+            f.setPhoto(condicionesContrato);
             fareAbril = f;
             f.setName("Tarifa Febrero");
             f.getDates().add(new DatesRange(LocalDate.of(2101, 4, 1), LocalDate.of(2101, 4, 30)));
             LinearFareLine l;
-            f.getLines().add(l = new LinearFareLine("DBL", "SA", 0, 30, 0, 0, 0));
+            f.getLines().add(l = new LinearFareLine(f, "DBL", "SA", 0, 30, 0, 0, 0));
             rfDobleEnAbril = l;
 
         }
@@ -792,7 +802,7 @@ public class HotelAvailabilityTest
 
 
             BoardFare bf;
-            fareAbril.getLines().add(new LinearFareLine("DBL", "MP", 0, 50, 0, 0, 0));
+            fareAbril.getLines().add(new LinearFareLine(fareAbril, "DBL", "MP", 0, 50, 0, 0, 0));
 
             BoardUpgradeOffer o;
             hotel.getOffers().add(o = new BoardUpgradeOffer());
@@ -833,7 +843,7 @@ public class HotelAvailabilityTest
 
         {
             LinearFare f = fareAbril;
-            f.getLines().add(new LinearFareLine("SUI", "SA", 0, 100, 0, 0, 0));
+            f.getLines().add(new LinearFareLine(f, "SUI", "SA", 0, 100, 0, 0, 0));
         }
 
         {

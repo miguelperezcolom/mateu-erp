@@ -1,6 +1,8 @@
 package io.mateu.erp.model.invoicing;
 
 
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Indelible;
 import io.mateu.mdd.core.annotations.KPI;
@@ -11,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
 import java.util.List;
@@ -28,9 +31,15 @@ public class ReceivedInvoice extends Invoice {
         super();
     }
 
-    public ReceivedInvoice(User u, @NotEmpty Collection<PurchaseCharge> charges) throws Throwable {
-        super(u, charges);
+    public ReceivedInvoice(User u, Collection<PurchaseCharge> charges, FinancialAgent issuer, FinancialAgent recipient, String invoiceNumber) throws Throwable {
+        super(u, charges, false, issuer, recipient, invoiceNumber);
     }
+
+    @Override
+    public String getXslfo(EntityManager em) {
+        return AppConfig.get(em).getXslfoForIssuedInvoice();
+    }
+
 
     @Action("Enter invoices")
     public static WizardPage enter() {

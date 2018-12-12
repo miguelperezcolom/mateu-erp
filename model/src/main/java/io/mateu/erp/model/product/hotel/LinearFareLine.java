@@ -5,9 +5,8 @@ import com.google.common.base.Strings;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.product.hotel.offer.PriceOffer;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.SameLine;
-import io.mateu.mdd.core.annotations.ValueClass;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
 import lombok.Getter;
@@ -25,7 +24,9 @@ public class LinearFareLine implements XMLSerializable {
     @Ignored
     private LinearFare fare;
 
-    private String roomTypeCode;
+    @ListColumn
+    @ColumnWidth(400)
+    private RoomType roomTypeCode;
 
     public DataProvider getRoomTypeCodeDataProvider() {
         List<RoomType> l = new ArrayList<>();
@@ -39,7 +40,9 @@ public class LinearFareLine implements XMLSerializable {
 
 
     @SameLine
-    private String boardTypeCode;
+    @ListColumn
+    @ColumnWidth(400)
+    private BoardType boardTypeCode;
 
     public DataProvider getBoardTypeCodeDataProvider() {
         List<BoardType> l = new ArrayList<>();
@@ -53,10 +56,12 @@ public class LinearFareLine implements XMLSerializable {
 
 
 
+    @ListColumn
     private double lodgingPrice;
     @SameLine
     private FareValue singleUsePrice;
 
+    @ListColumn
     private double adultPrice;
     @SameLine
     private double mealAdultPrice;
@@ -102,16 +107,62 @@ public class LinearFareLine implements XMLSerializable {
     }
 
 
-    public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodging, double adult) {
-        this.roomTypeCode = roomTypeCode;
-        this.boardTypeCode = boardTypeCode;
+    public LinearFareLine(LinearFare fare, String roomTypeCode, String boardTypeCode, double lodging, double adult) {
+        this.fare = fare;
+        this.roomTypeCode = getRoom(roomTypeCode);
+        this.boardTypeCode = getBoard(boardTypeCode);
         this.lodgingPrice = lodging;
         this.adultPrice = adult;
     }
 
-    public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodging, double adult, double junior, double child, double infant) {
-        this.roomTypeCode = roomTypeCode;
-        this.boardTypeCode = boardTypeCode;
+    private RoomType getRoom(String roomTypeCode) {
+        RoomType c = null;
+        if (fare != null
+                && fare.getPhoto() != null
+                && fare.getPhoto().getContract() != null
+                && fare.getPhoto().getContract().getHotel() != null) {
+            for (Room r : fare.getPhoto().getContract().getHotel().getRooms()) {
+                if (r.getType().getCode().equals(roomTypeCode)) {
+                    c = r.getType();
+                    return c;
+                }
+            }
+        } else {
+            try {
+                c = Helper.find(RoomType.class, roomTypeCode);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        return c;
+    }
+
+    private BoardType getBoard(String boardTypeCode) {
+        BoardType c = null;
+        if (fare != null
+                && fare.getPhoto() != null
+                && fare.getPhoto().getContract() != null
+                && fare.getPhoto().getContract().getHotel() != null) {
+            for (Board r : fare.getPhoto().getContract().getHotel().getBoards()) {
+                if (r.getType().getCode().equals(boardTypeCode)) {
+                    c = r.getType();
+                    return c;
+                }
+            }
+        } else {
+            try {
+                c = Helper.find(BoardType.class, boardTypeCode);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        return c;
+    }
+
+    public LinearFareLine(LinearFare fare, String roomTypeCode, String boardTypeCode, double lodging, double adult, double junior, double child, double infant) {
+        this.fare = fare;
+        this.roomTypeCode = getRoom(roomTypeCode);
+        this.boardTypeCode = getBoard(boardTypeCode);
         this.lodgingPrice = lodging;
         this.adultPrice = adult;
         this.juniorPrice = new FareValue("" + junior);
@@ -120,6 +171,7 @@ public class LinearFareLine implements XMLSerializable {
     }
 
     public LinearFareLine(LinearFareLine o) {
+        this.fare = o.fare;
         this.roomTypeCode = o.roomTypeCode;
         this.boardTypeCode = o.boardTypeCode;
         this.lodgingPrice = o.lodgingPrice;
@@ -137,10 +189,11 @@ public class LinearFareLine implements XMLSerializable {
         if (o.extraInfantPrice != null) this.extraInfantPrice = o.extraInfantPrice;
     }
 
-    public LinearFareLine(String roomTypeCode, String boardTypeCode, double lodgingPrice, double adultPrice, FareValue juniorPrice, FareValue childPrice, FareValue infantPrice, double mealAdultPrice, FareValue mealJuniorPrice, FareValue mealChildPrice, FareValue mealInfantPrice, FareValue extraAdultPrice, FareValue extraJuniorPrice, FareValue extraChildPrice, FareValue extraInfantPrice) {
-        this.roomTypeCode = roomTypeCode;
-        this.boardTypeCode = boardTypeCode;
-        this.lodgingPrice = lodgingPrice;
+    public LinearFareLine(LinearFare fare, String roomTypeCode, String boardTypeCode, double lodgingPrice, double adultPrice, FareValue juniorPrice, FareValue childPrice, FareValue infantPrice, double mealAdultPrice, FareValue mealJuniorPrice, FareValue mealChildPrice, FareValue mealInfantPrice, FareValue extraAdultPrice, FareValue extraJuniorPrice, FareValue extraChildPrice, FareValue extraInfantPrice) {
+        this.fare = fare;
+        this.roomTypeCode = getRoom(roomTypeCode);
+        this.boardTypeCode = getBoard(boardTypeCode);
+       this.lodgingPrice = lodgingPrice;
         this.adultPrice = adultPrice;
         this.juniorPrice = juniorPrice;
         this.childPrice = childPrice;
@@ -159,8 +212,8 @@ public class LinearFareLine implements XMLSerializable {
     public Element toXml() {
         Element e = new Element("line");
 
-        if (!Strings.isNullOrEmpty(getRoomTypeCode())) e.setAttribute("room", getRoomTypeCode());
-        if (!Strings.isNullOrEmpty(getBoardTypeCode())) e.setAttribute("board", getBoardTypeCode());
+        if (getRoomTypeCode() != null) e.setAttribute("room", getRoomTypeCode().getCode());
+        if (getBoardTypeCode() != null) e.setAttribute("board", getBoardTypeCode().getCode());
 
 
         e.setAttribute("lodging", "" + getLodgingPrice());
@@ -188,8 +241,8 @@ public class LinearFareLine implements XMLSerializable {
 
     @Override
     public void fromXml(Element e) {
-        if (e.getAttribute("room") != null) setRoomTypeCode(e.getAttributeValue("room"));
-        if (e.getAttribute("board") != null) setBoardTypeCode(e.getAttributeValue("board"));
+        if (e.getAttribute("room") != null) setRoomTypeCode(getRoom(e.getAttributeValue("room")));
+        if (e.getAttribute("board") != null) setBoardTypeCode(getBoard(e.getAttributeValue("board")));
 
 
         setLodgingPrice(Helper.toDouble(e.getAttributeValue("lodging")));

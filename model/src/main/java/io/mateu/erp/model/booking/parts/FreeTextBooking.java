@@ -9,6 +9,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.DataProvider;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.TextArea;
@@ -48,14 +49,17 @@ public class FreeTextBooking extends Booking {
     @NotNull
     @ManyToOne
     @Position(17)
+    @DataProvider(dataProvider = SupplierDataProvider.class)
     private Partner provider;
 
+
     @Position(18)
+    @NotNull
     private FastMoney serviceCost;
 
-    @SameLine
     @ManyToOne
     @Position(19)
+    @NotNull
     private BillingConcept billingConcept;
 
 

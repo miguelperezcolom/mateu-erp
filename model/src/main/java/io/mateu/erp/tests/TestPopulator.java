@@ -5,6 +5,7 @@ import com.google.common.io.CharStreams;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -655,7 +656,7 @@ public class TestPopulator {
 
 
         HotelContractPhoto p = new HotelContractPhoto();
-
+        p.setContract(c);
 
 
         h.setChildStartAge(2);
@@ -663,7 +664,7 @@ public class TestPopulator {
         h.setAdultStartAge(12);
         h.setYoungestFirst(false);
 
-        h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> p.getAllotment().add(new Allotment(r, null, null, 10)));
+        h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> p.getAllotment().add(new Allotment(p, r, null, null, 10)));
 
 
 
@@ -678,17 +679,22 @@ public class TestPopulator {
                 fechas.add(new DatesRange(c.getValidFrom().plusDays(j * 10), c.getValidFrom().plusDays((j + 1) * 10 - 1)));
             }
 
+            LinearFare fare = new LinearFare(p);
+            fare.setName("Fare " + j);
+
             List<LinearFareLine> lineas = new ArrayList<>();
 
             int finalJ = j;
             h.getRooms().stream().map((r) -> r.getCode()).forEach((r) -> {
                 h.getBoards().stream().map((b) -> b.getCode()).forEach((b) -> {
                     double ad;
-                    lineas.add(new LinearFareLine(r, b, 30 + (finalJ * 10), ad = 60.15 + (finalJ * 10), ad, ad / 2, 0));
+                    lineas.add(new LinearFareLine(fare, r, b, 30 + (finalJ * 10), ad = 60.15 + (finalJ * 10), ad, ad / 2, 0));
                 });
             });
 
-            p.getFares().add(new LinearFare(fechas, "Fare " + j, lineas));
+            fare.setLines(lineas);
+
+            p.getFares().add(fare);
         }
 
         for (int j = 1; j < 20; j++) {

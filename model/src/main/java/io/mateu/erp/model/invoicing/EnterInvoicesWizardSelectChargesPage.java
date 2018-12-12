@@ -2,6 +2,7 @@ package io.mateu.erp.model.invoicing;
 
 
 import com.vaadin.data.provider.DataProvider;
+import io.mateu.mdd.core.annotations.FieldsFilter;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import io.mateu.mdd.core.interfaces.WizardPage;
@@ -21,6 +22,7 @@ public class EnterInvoicesWizardSelectChargesPage implements WizardPage {
 
 
     @NotEmpty
+    @FieldsFilter("purchaseOrder, text, nucs")
     private Set<PurchaseCharge> pending = new HashSet<>();
 
 

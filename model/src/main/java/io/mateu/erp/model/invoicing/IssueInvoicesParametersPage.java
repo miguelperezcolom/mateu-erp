@@ -21,7 +21,7 @@ public class IssueInvoicesParametersPage implements WizardPage {
 
 
     public DataProvider getPendingDataProvider() throws Throwable {
-        return new JPQLListDataProvider("select new " + IssueInvoicesItem.class.getName() + "(c.file.agency, sum(c.total.value)) from " + Charge.class.getName() + " c where c.invoice = null group by c.file.agency");
+        return new JPQLListDataProvider("select new " + IssueInvoicesItem.class.getName() + "(c.partner, sum(c.total.value)) from " + Charge.class.getName() + " c where c.type = " + ChargeType.SALE.getClass().getName() + "." + ChargeType.SALE.name() + " and c.invoice = null group by c.partner");
     }
 
 

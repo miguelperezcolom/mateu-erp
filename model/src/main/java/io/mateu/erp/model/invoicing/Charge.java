@@ -51,11 +51,6 @@ public class Charge {
 
 
     @ManyToOne
-    @Output
-    private Invoice invoice;
-
-
-    @ManyToOne
     private Office office;
 
     @NotNull
@@ -80,6 +75,18 @@ public class Charge {
     })
     private Amount total;
 
+
+    @Caption("Total")
+    @NotInEditor
+    private transient double nucs;
+
+    public double getNucs() {
+        return total.getNucValue();
+    }
+
+    @ManyToOne
+    @Output
+    private Invoice invoice;
 
 
     @Override

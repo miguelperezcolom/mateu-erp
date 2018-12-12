@@ -2,12 +2,15 @@ package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.mdd.core.annotations.ColumnWidth;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.OptionsClass;
 import io.mateu.mdd.core.annotations.ValueClass;
+import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -24,7 +27,9 @@ public class Allotment implements XMLSerializable {
     private HotelContractPhoto photo;
 
     @NotEmpty
-    private String room;
+    @ManyToOne
+    @ColumnWidth(400)
+    private RoomType room;
 
     public DataProvider getRoomDataProvider() {
         List<RoomType> l = new ArrayList<>();
@@ -41,11 +46,11 @@ public class Allotment implements XMLSerializable {
     private int quantity;
 
 
-    public String getRoom() {
+    public RoomType getRoom() {
         return room;
     }
 
-    public void setRoom(String room) {
+    public void setRoom(RoomType room) {
         this.room = room;
     }
 
@@ -73,6 +78,50 @@ public class Allotment implements XMLSerializable {
         this.quantity = quantity;
     }
 
+
+    private RoomType getRoom(String roomTypeCode) {
+        RoomType c = null;
+        if (photo != null
+                && photo.getContract() != null
+                && photo.getContract().getHotel() != null) {
+            for (Room r : photo.getContract().getHotel().getRooms()) {
+                if (r.getType().getCode().equals(roomTypeCode)) {
+                    c = r.getType();
+                    return c;
+                }
+            }
+        } else {
+            try {
+                c = Helper.find(RoomType.class, roomTypeCode);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        return c;
+    }
+
+    private BoardType getBoard(String boardTypeCode) {
+        BoardType c = null;
+        if (photo != null
+                && photo.getContract() != null
+                && photo.getContract().getHotel() != null) {
+            for (Board r : photo.getContract().getHotel().getBoards()) {
+                if (r.getType().getCode().equals(boardTypeCode)) {
+                    c = r.getType();
+                    return c;
+                }
+            }
+        } else {
+            try {
+                c = Helper.find(BoardType.class, boardTypeCode);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        return c;
+    }
+
+
     @Override
     public Element toXml() {
         Element e = new Element("allotment");
@@ -80,7 +129,7 @@ public class Allotment implements XMLSerializable {
         if (getStart() != null) e.setAttribute("start", getStart().toString());
         if (getEnd() != null) e.setAttribute("end", getEnd().toString());
 
-        e.setAttribute("room", "" + getRoom());
+        if (getRoom() != null) e.setAttribute("room", getRoom().getCode());
         e.setAttribute("quantity", "" + getQuantity());
 
         return e;
@@ -90,7 +139,7 @@ public class Allotment implements XMLSerializable {
     public void fromXml(Element e) {
         if (e.getAttribute("start") != null) setStart(LocalDate.parse(e.getAttributeValue("start")));
         if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
-        if (e.getAttribute("room") != null) setRoom(e.getAttributeValue("room"));
+        if (e.getAttribute("room") != null) setRoom(getRoom(e.getAttributeValue("room")));
         if (e.getAttribute("quantity") != null) setQuantity(Integer.parseInt(e.getAttributeValue("quantity")));
     }
 
@@ -104,10 +153,15 @@ public class Allotment implements XMLSerializable {
         fromXml(e);
     }
 
-    public Allotment(String room, LocalDate start, LocalDate end, int quantity) {
-        this.room = room;
+    public Allotment(HotelContractPhoto photo, String room, LocalDate start, LocalDate end, int quantity) {
+        this.photo = photo;
+        this.room = getRoom(room);
         this.start = start;
         this.end = end;
         this.quantity = quantity;
+    }
+
+    public Allotment cloneAsConverted() {
+        return new Allotment(photo, toXml());
     }
 }

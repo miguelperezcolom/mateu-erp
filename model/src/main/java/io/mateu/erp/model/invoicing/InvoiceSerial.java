@@ -21,4 +21,15 @@ public class InvoiceSerial {
     private String prefix;
 
     private int nextNumber;
+
+    public String getInvoiceNumber() {
+        int n = nextNumber++;
+        return "" + (prefix != null?prefix:"") + "" + n;
+    }
+
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

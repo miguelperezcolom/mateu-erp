@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.hotel;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.UseCheckboxes;
 import io.mateu.mdd.core.annotations.ValueClass;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -24,6 +25,7 @@ public class ReleaseRule implements XMLSerializable {
 
     private int release;
 
+    @UseCheckboxes(editableInline = true)
     private List<String> rooms = new ArrayList<>();
 
     public DataProvider getRoomsDataProvider() {

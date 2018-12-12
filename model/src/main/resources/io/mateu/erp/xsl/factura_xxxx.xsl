@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:fo="http://www.w3.org/1999/XSL/Format"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output indent="yes"/>
-    <xsl:template match="//invoice">
+    <xsl:template match=".//invoice">
         <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
         <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
         <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>
@@ -32,24 +32,24 @@
                             <fo:table-row>
                                 <fo:table-cell text-align="left"  font-size="8pt">
                                     <fo:block><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
-                                    <fo:block><xsl:value-of select="issuer/@businessName"/> - NIF: <xsl:value-of select="issuer/@vatid"/></fo:block>
-                                    <fo:block><xsl:value-of select="issuer/@address"/> - <xsl:value-of select="issuer/@zip"/> <xsl:value-of select="issuer/@city"/></fo:block>
-                                    <fo:block><xsl:value-of select="issuer/@email"/> - t. <xsl:value-of select="issuer/@telephone"/> - f. <xsl:value-of select="issuer/@fax"/></fo:block>
+                                    <fo:block><xsl:value-of select="facturadopor/@nombrefiscal"/> - NIF: <xsl:value-of select="facturadopor/@cif"/></fo:block>
+                                    <fo:block><xsl:value-of select="facturadopor/@direccion"/> - <xsl:value-of select="facturadopor/@ncp"/> <xsl:value-of select="facturadopor/@ciudad"/></fo:block>
+                                    <fo:block><xsl:value-of select="facturadopor/@email"/> - t. <xsl:value-of select="facturadopor/@telefono"/> - f. <xsl:value-of select="facturadopor/@fax"/></fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell text-align="right" font-weight="bold" padding="1mm">
-                                    <fo:block font-size="9pt" space-after="-2pt">FACTURA Nº <xsl:value-of select="@number"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt">FACTURA Nº <xsl:value-of select="@numero"/></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Invoice number</fo:block>
-                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE EMISIÓN <xsl:value-of select="@date"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE EMISIÓN <xsl:value-of select="@fecha"/></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Emission date</fo:block>
-                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE VENCIMIENTO <xsl:value-of select="@duedate"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE VENCIMIENTO <xsl:value-of select="@fecha"/></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Due date </fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell text-align="right" font-size="8pt" padding="1mm">
-                                    <fo:block font-weight="bold"><xsl:value-of select="recipient/@name"/></fo:block>
-                                    <fo:block><xsl:value-of select="recipient/@businessName"/></fo:block>
-                                    <fo:block>NIF: <xsl:value-of select="recipient/@vatid"/></fo:block>
-                                    <fo:block><xsl:value-of select="recipient/@address"/></fo:block>
-                                    <fo:block><xsl:value-of select="recipient/@zip"/> <xsl:value-of select="recipient/@city"/></fo:block>
+                                    <fo:block font-weight="bold"><xsl:value-of select="destinatario/@nombre"/></fo:block>
+                                    <fo:block><xsl:value-of select="destinatario/@nombrefiscal"/></fo:block>
+                                    <fo:block>NIF: <xsl:value-of select="destinatario/@cif"/></fo:block>
+                                    <fo:block><xsl:value-of select="destinatario/@direccion"/></fo:block>
+                                    <fo:block><xsl:value-of select="destinatario/@cp"/> <xsl:value-of select="destinatario/@ciudad"/></fo:block>
                                 </fo:table-cell>
                             </fo:table-row>
                         </fo:table-body>
@@ -70,11 +70,14 @@
                 <fo:flow flow-name="xsl-region-body" >
 
 
-                    <xsl:for-each select="//invoice">
+                    <xsl:for-each select="invoices/invoice">
 
-                        <!--
                         <fo:block>FACTURA</fo:block>
-                        -->
+
+                    </xsl:for-each>
+
+
+                    <xsl:for-each select="uwhfduwehdfuw">
 
 
                         <!-- TÍTULO -->
@@ -84,7 +87,7 @@
                                 <fo:table-row>
                                     <fo:table-cell border-bottom-style="solid" border-right-width="1px" padding="1mm">
                                         <xsl:choose>
-                                            <xsl:when test="@number = 'PROFORMA'">
+                                            <xsl:when test="@numero = 'PROFORMA'">
                                                 <fo:block font-weight="700" font-size="12pt">PROFORMA <fo:inline font-size="9pt" font-style="italic" font-weight="normal">PRO-FORMA</fo:inline></fo:block>
                                             </xsl:when>
                                             <xsl:otherwise>
@@ -108,7 +111,7 @@
 
                             <!-- CONCEPTOS -->
 
-                            <xsl:for-each select="lines">
+                            <xsl:for-each select="grupo">
 
                                 <fo:table-body>
                                     <fo:table-row>
@@ -142,38 +145,38 @@
                                         </fo:table-cell>
                                     </fo:table-row>
 
-                                    <xsl:for-each select="line">
+                                    <xsl:for-each select="linea">
 
                                         <fo:table-row>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@id"/></fo:block>
+                                                <fo:block><xsl:value-of select="@localizador"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@reference"/></fo:block>
+                                                <fo:block><xsl:value-of select="@referencia"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@start"/>-<xsl:value-of select="@end"/></fo:block>
+                                                <fo:block><xsl:value-of select="@desde"/>-<xsl:value-of select="@hasta"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@leadName"/> / <xsl:value-of select="@service"/></fo:block>
+                                                <fo:block><xsl:value-of select="@titular"/> / <xsl:value-of select="@servicio"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@subject"/></fo:block>
+                                                <fo:block><xsl:value-of select="@texto"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     text-align="right"
@@ -186,7 +189,7 @@
                                     </xsl:for-each>
 
 
-<!--
+
                                     <fo:table-row>
                                         <fo:table-cell
                                                 padding="1mm"
@@ -218,16 +221,26 @@
                                                 border-right-style="solid"
                                                 border-right-width="0.2px">
                                             <fo:block text-align="right">Total servicio:</fo:block>
+                                            <!--
+                                                                                <fo:block text-align="right">IVA / IGIC 7</fo:block>
+                                                                                <fo:block><fo:leader /></fo:block>
+                                                                                <fo:block text-align="right">Total servicio:</fo:block>
+                                            -->
                                         </fo:table-cell>
                                         <fo:table-cell
                                                 text-align="right"
                                                 padding="1mm"
                                                 border-right-style="solid"
                                                 border-right-width="0.2px">
+                                            <!--
+                                                                                <fo:block>1.642,28 €</fo:block>
+                                                                                <fo:block>114,96 €</fo:block>
+                                                                                <fo:block><fo:leader /></fo:block>
+                                            -->
                                             <fo:block text-align="right"><xsl:value-of select="@total"/> €</fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
--->
+
                                 </fo:table-body>
                             </xsl:for-each>
 
@@ -240,11 +253,12 @@
                                     </fo:table-cell>
                                 </fo:table-row>
                                 <fo:table-row>
+
                                     <fo:table-cell
                                             number-columns-spanned="4"
                                             text-align="right"
                                             padding="1mm">
-                                        <fo:block text-align="right"><xsl:if test="@watermark"><fo:external-graphic src="url('{@watermark}')" content-width="scale-to-fit" width="30mm"/></xsl:if></fo:block>
+                                        <fo:block text-align="right">AAAAAAAAAA<fo:external-graphic src="url('http://admin.marjetincoming.com/siar/siar/fileviewer/21886751/cyc_certifica_Es_alta.jpg')" content-width="scale-to-fit" width="30mm"/></fo:block>
                                     </fo:table-cell>
                                     <fo:table-cell
                                             number-columns-spanned="1"
@@ -314,8 +328,8 @@
                                         <xsl:if test="@neto">
                                             <fo:block space-after="3pt"><xsl:value-of select="@neto"/>&#x00A0;<xsl:value-of select="$moneda"/></fo:block>
                                         </xsl:if>
-                                        <fo:block space-after="3pt"><xsl:value-of select="@paid"/>&#x00A0;<xsl:value-of select="$moneda"/> €</fo:block>
-                                        <fo:block space-after="3pt"><xsl:value-of select="@pending"/>&#x00A0;<xsl:value-of select="$moneda"/> €</fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@pagado"/>&#x00A0;<xsl:value-of select="$moneda"/></fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@pendiente"/>&#x00A0;<xsl:value-of select="$moneda"/></fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>
@@ -416,4 +430,5 @@
             </fo:page-sequence>
         </fo:root>
     </xsl:template>
+    <xsl:template match="*"/>
 </xsl:stylesheet>

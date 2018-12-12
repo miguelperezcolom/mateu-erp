@@ -122,7 +122,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @Tab("Offers")
     @SearchFilter
     @ManyToMany(mappedBy = "contracts")
-    @UseLinkToListView
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<AbstractHotelOffer> offers = new ArrayList<>();
 
     @Tab("Warranty")
@@ -152,11 +152,13 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     /**
      * groups related
      */
+    @SameLine
     private int maxRoomsPerBooking;
 
     /**
      * for warranties
      */
+    @SameLine
     private boolean zeroPricesAllowed;
 
     @DoNotIncludeSeparator
