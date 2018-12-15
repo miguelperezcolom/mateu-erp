@@ -1,6 +1,9 @@
 Hello,
 
-please proceed with payment by using the link below:
+${postscript}!
+
+
+Please proceed with payment by using the link below:
 
 
 ${paymentbutton}

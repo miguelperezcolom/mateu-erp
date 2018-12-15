@@ -1,6 +1,8 @@
 package io.mateu.erp.model.product.hotel.contracting;
 
+import com.google.common.collect.Lists;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.config.AppConfig;
@@ -8,7 +10,6 @@ import io.mateu.erp.model.invoicing.WarrantySettlementCharge;
 import io.mateu.erp.model.payments.DueDate;
 import io.mateu.erp.model.payments.DueDateType;
 import io.mateu.erp.model.payments.HotelContractDueDate;
-import io.mateu.erp.model.product.hotel.HotelSalesForecast;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
@@ -27,7 +28,6 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.joda.time.Days;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -89,13 +89,38 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @ManyToOne@Position(6)
     private HotelContract parent;
 
-
     @Position(7)
     private double incrementPercent;
 
 
     @Position(8)
     private boolean pdfInEnglish;
+
+
+    @Tab("Related contracts")
+    @ManyToOne
+    private HotelContract saleOf;
+
+    @DependsOn("type")
+    public boolean isSaleOfVisible() {
+        return ContractType.SALE.equals(getType());
+    }
+
+    @DependsOn("hotel")
+    public DataProvider getSaleOfDataProvider() throws Throwable {
+        if (hotel != null) return new JPQLListDataProvider("select x from " + getClass().getName() + " x where x.hotel.id = " + hotel.getId() + " and x.type = " + ContractType.class.getName() + ".PURCHASE");
+        else return new ListDataProvider(Lists.newArrayList());
+    }
+
+    @OneToMany(mappedBy = "saleOf")
+    private List<HotelContract> sales = new ArrayList<>();
+
+    @DependsOn("type")
+    public boolean isSalesVisible() {
+        return ContractType.PURCHASE.equals(getType());
+    }
+
+
 
 
     @Tab("Due dates")

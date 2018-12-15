@@ -66,15 +66,30 @@ public class FinancialAgent {
     private boolean EU;
 
     @Tab("As customer")
+
+    private boolean directSale;
+
     @NotNull
-    private AutomaticInvoiceBasis automaticInvoiceBasis;
+    private AutomaticInvoiceBasis automaticInvoiceBasis = AutomaticInvoiceBasis.NONE;
 
     private boolean lasMonthDay;
 
     private boolean fortnight;
 
     @NotNull
-    private InvoiceGrouping invoiceGrouping;
+    private InvoiceGrouping invoiceGrouping = InvoiceGrouping.BOOKING;
+
+    @ManyToOne
+    private PaymentTerms customerPaymentTerms;
+
+    private String invoicingEmail;
+
+    private String invoicingEmailCC;
+
+    @NotNull
+    private InvoiceSending invoiceSending = InvoiceSending.EMAIL;
+
+    private boolean invoicePerKey;
 
     private String customerAccountNumber;
 
@@ -82,16 +97,6 @@ public class FinancialAgent {
     private boolean specialRegime;
 
     private boolean invoicesBeforeCheckinAllowed;
-
-    private String providerAccountNumber;
-
-    @Tab("Deposits")
-    @OneToMany(mappedBy = "agent")
-    private List<Deposit> deposits = new ArrayList<>();
-
-    @Tab("Payments")
-    @ManyToOne
-    private PaymentTerms paymentTerms;
 
     @ManyToOne
     private RetentionTerms retention;
@@ -107,11 +112,13 @@ public class FinancialAgent {
 
     private String SWIFT;
 
+    private String providerAccountNumber;
+
 
     @Tab("Credit")
     @NotNull
     @ListColumn
-    private RiskType riskType;
+    private RiskType riskType = RiskType.PREPAYMENT;
 
     @ManyToMany
     private List<CreditLimit> creditLimits = new ArrayList<>();

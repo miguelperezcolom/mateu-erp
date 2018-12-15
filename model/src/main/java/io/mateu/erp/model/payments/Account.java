@@ -30,6 +30,8 @@ public class Account {
 
     private String comments;
 
+    private String account;
+
     @Output
     private double input;
 

@@ -43,6 +43,13 @@ public abstract class AbstractProduct {
 
 
     @ManyToOne
+    @ListColumn
+    @SearchFilter
+    private Office partnerByDefault;
+
+
+
+    @ManyToOne
     @NotNull
     @ListColumn
     @SearchFilter

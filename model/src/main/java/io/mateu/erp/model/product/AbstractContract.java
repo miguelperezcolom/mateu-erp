@@ -1,12 +1,15 @@
 package io.mateu.erp.model.product;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.PartnerGroup;
 import io.mateu.erp.model.payments.DueDate;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.RatesType;
 import io.mateu.erp.model.product.hotel.RoomType;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Company;
@@ -126,6 +129,10 @@ public abstract class AbstractContract {
     @ListColumn
     @NoChart
     private Partner supplier;
+
+    public boolean isSupplierVisible() {
+        return ContractType.PURCHASE.equals(getType());
+    }
 
     @ManyToOne
     @SearchFilter
