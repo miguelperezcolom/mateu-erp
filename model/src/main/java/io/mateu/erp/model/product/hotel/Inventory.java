@@ -163,6 +163,8 @@ public class Inventory implements IInventory {
 
     public void build(EntityManager em) throws Throwable {
 
+        System.out.println("**** building inventory " + getName());
+
         //creamos la estructura
 
         InventoryCube cube = new InventoryCube(this);
@@ -174,7 +176,20 @@ public class Inventory implements IInventory {
 
     }
 
+    public List<InventoryOperation> getOperations() throws Throwable {
+        return Helper.selectObjects("select x from " + InventoryOperation.class.getName() + " x where x.inventory.id = " + getId() + " order by x.id");
+    }
 
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (id != 0 && obj != null && obj instanceof  Inventory && id == ((Inventory)obj).getId());
+    }
 
     @Override
     public String toString() {

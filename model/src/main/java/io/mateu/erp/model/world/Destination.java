@@ -42,6 +42,8 @@ public class Destination {
     @ManyToOne
     private VAT vat;
 
+    private String paymentRemarks;
+
 
     @Override
     public String toString() {

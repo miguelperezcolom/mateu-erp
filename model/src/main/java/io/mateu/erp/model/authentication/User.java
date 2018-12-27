@@ -28,22 +28,4 @@ public class User extends io.mateu.mdd.core.model.authentication.User {
 
 
 
-    @Action
-    public void createToken(EntityManager em, @NotNull @Caption("Partner") Partner p, @Caption("Hotel") Hotel h) throws IOException {
-        AuthToken t = new AuthToken();
-        t.setPartner(p);
-        t.setHotel(h);
-        t.setUser(this);
-        t.setMaturity(null);
-        t.setActive(true);
-
-        t.setId(t.createId(this));
-        em.persist(t);
-
-        System.out.println("token creado para el usuario " + getLogin() + " y el partner " + p.getName() + ": " + t.getId());
-    }
-
-
-
-
 }

@@ -32,7 +32,7 @@ public class SMSTask extends AbstractTask {
     private String answer;
 
     @Override
-    public void run(EntityManager em, User user) throws Throwable {
+    public void run(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable {
         /*
 apiKey Yes This is the authentication key used to call and unlock the specific integration service. Refer to the Platform portal to retrieve this key for the specific HTTP API integration you want to utilize to deliver your messages. (It will be included in the CURL sample in the code library for that integration).
 to Yes The mobile number to which the message must be delivered. The number should be in international format with no + symbol or leading zeros.

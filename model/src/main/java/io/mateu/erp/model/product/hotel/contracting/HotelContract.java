@@ -57,7 +57,6 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @KPI
     private double salePercent;
 
-
     @MainSearchFilter
     @ManyToOne
     @NotNull@Position(3)
@@ -83,6 +82,12 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     public DataProvider getSecurityInventoryDataProvider() throws Throwable {
         return new JPQLListDataProvider("select x from " + Inventory.class.getName() + " x " + ((getHotel() != null)?" where x.hotel.id = " + getHotel().getId():""));
     }
+
+
+    @Ignored
+    private transient Inventory oldInventory;
+    @Ignored
+    private transient Inventory oldSecurityInventory;
 
 
 
@@ -186,7 +191,6 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @SameLine
     private boolean zeroPricesAllowed;
 
-    @DoNotIncludeSeparator
     @Column(name = "terms_hotel")
     @Convert(converter = HotelContractPhotoConverter.class)
     @FullWidth
@@ -464,6 +468,16 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
                         HotelContract h = em.find(HotelContract.class, getId());
 
+                        if (oldInventory != null && !oldInventory.equals(h.getInventory())) {
+                            oldInventory = em.merge(oldInventory);
+                            oldInventory.getContracts().remove(h); // por si acaso
+                            oldInventory.build(em);
+                        }
+                        if (oldSecurityInventory != null && !oldSecurityInventory.equals(h.getSecurityInventory())) {
+                            oldSecurityInventory.getContracts().remove(h); // por si acaso
+                            oldSecurityInventory.build(em);
+                        }
+
                         if (h.getInventory() != null) h.getInventory().build(em);
                         if (h.getSecurityInventory() != null) h.getSecurityInventory().build(em);
 
@@ -482,13 +496,15 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof  HotelContract && getId() == ((HotelContract)obj).getId());
+        return this == obj || (getId() != 0 && obj != null && obj instanceof  HotelContract && getId() == ((HotelContract)obj).getId());
     }
 
     @PostLoad
     public void postLoad() {
         dueDates.sort((c1, c2) -> c1.getDate().compareTo(c2.getDate()));
         forecast.sort((c1, c2) -> c1.getStart().compareTo(c2.getStart()));
+        oldInventory = inventory;
+        oldSecurityInventory = securityInventory;
     }
 
     @PrePersist@PreUpdate

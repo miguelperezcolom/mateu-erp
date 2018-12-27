@@ -6,19 +6,23 @@ import io.mateu.erp.model.product.transfer.PricePer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.easytravelapi.TransferBookingService;
 import org.easytravelapi.common.Amount;
+import org.easytravelapi.common.BestDeal;
 import org.easytravelapi.transfer.*;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by miguel on 27/7/17.
@@ -26,10 +30,12 @@ import java.util.Map;
 public class TransferBookingServiceImpl implements TransferBookingService {
 
     @Override
-    public GetAvailableTransfersRS getAvailabeTransfers(String token, String fromTransferPointId, String toTransferPointId, int pax, List<Integer> ages, int bikes, int golfBaggages, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate) throws Throwable {
+    public GetAvailableTransfersRS getAvailabeTransfers(String token, String fromTransferPointId, String toTransferPointId, int pax, int bikes, int golfBaggages, int skis, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate) throws Throwable {
         GetAvailableTransfersRS rs = new GetAvailableTransfersRS();
 
         //todo: validar auth token
+
+        List<Integer> ages = new ArrayList<>();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
@@ -78,7 +84,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                                 t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
                                 t.setVehicle(p.getVehicle().getName());
                                 Amount a;
-                                t.setNetPrice(a = new Amount());
+                                t.setTotal(new BestDeal());
+                                t.getTotal().setRetailPrice(a = new Amount());
                                 a.setCurrencyIsoCode("EUR");
                                 double valor = p.getPrice();
                                 if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
@@ -139,7 +146,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
     }
 
     @Override
-    public GetTransferPriceDetailsRS getTransferPriceDetails(String token, String key) {
+    public GetTransferPriceDetailsRS getTransferPriceDetails(String token, String key, String coupon) {
 
         //todo: validar auth token
 
@@ -253,6 +260,44 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         rs.setBookingId("5643135431");
 
         return rs;
+    }
+
+
+
+
+
+
+
+    @Override
+    public GetAirportsRS getAirpotsRS(String token) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetAirportsRS getAirpotRS(String token, String airportid) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetAirportsRS getAirpotfromdestRS(String token, String destinationid) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetDestinationRS getDestinationsRS(String token, String key) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetDestinationRS getDestinationRS(String token, String destkey) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetAvailableTransfersRS getFilteredTransfers(String token, String fromTransferPointId, String toTransferPointId, int pax,
+            int bikes, int golfBaggages, int skis, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate, List<String> transfertype, String minPrice, String maxPrice
+    ) throws Throwable {
+        return null;
     }
 
 

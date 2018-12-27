@@ -50,7 +50,7 @@ public class ExcursionBooking extends TourBooking {
     }
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
 
     }
 

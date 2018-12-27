@@ -75,7 +75,7 @@ public class ThirdPartyHotelBooking extends Booking {
     }
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
         FreeTextService s = null;
         if (getServices().size() > 0) {
             s = (FreeTextService) getServices().get(0);
@@ -95,7 +95,7 @@ public class ThirdPartyHotelBooking extends Booking {
 
     }
 
-    private String getDescription() {
+    public String getDescription() {
         String s = "";
         s += hotelName;
         for (ThirdPartyHotelBookingLine l : getLines()) {

@@ -43,6 +43,7 @@ public class BookingInvoiceForm {
     private String postscript;
 
     @IFrame
+    @FullWidth
     private URL proforma;
 
 

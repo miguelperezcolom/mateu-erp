@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:fo="http://www.w3.org/1999/XSL/Format"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output indent="yes"/>
-    <xsl:template match="//invoice">
+    <xsl:template match="/">
         <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
         <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
         <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>

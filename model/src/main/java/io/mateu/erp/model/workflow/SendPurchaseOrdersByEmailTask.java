@@ -44,7 +44,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
 
 
     @Override
-    public void runParticular(EntityManager em, User user) throws Throwable {
+    public void runParticular(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable {
         AppConfig appconfig = AppConfig.get(em);
 
         // Create the attachment
@@ -66,7 +66,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
 
         email.setSubject("Purchase Orders");
         setHtml(getMessage(appconfig));
-        email.setMsg(getHtml());
+        email.setHtmlMsg(getHtml());
 
         email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
 
@@ -236,7 +236,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
         return temp;
     }
 
-    private String getMessage(AppConfig appconfig) throws IOException, TemplateException {
+    public String getMessage(AppConfig appconfig) throws IOException, TemplateException {
         Map<String, Object> data = getData();
         System.out.println("data=" + Helper.toJson(data));
         return Helper.freemark(appconfig.getPurchaseOrderTemplate(), data);

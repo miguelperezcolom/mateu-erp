@@ -5,6 +5,7 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -22,13 +23,13 @@ import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTransaction;
-import io.mateu.erp.model.workflow.AbstractTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
+import io.mateu.erp.model.workflow.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -54,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -121,13 +123,19 @@ public abstract class Booking {
     @KPI
     @ListColumn
     @ColumnWidth(80)
-    private boolean confirmed = true;
+    private boolean confirmed = false;
 
     @NotWhenCreating
     @KPI
     @ListColumn
     @ColumnWidth(60)
     private boolean active = true;
+
+    @NotWhenCreating
+    @KPI
+    @ListColumn
+    @ColumnWidth(60)
+    private boolean available;
 
     @NotNull
     @ListColumn
@@ -154,6 +162,11 @@ public abstract class Booking {
     @SameLine
     private String privateComments;
 
+
+    @ListColumn(width = 60)
+    @ColumnWidth(156)
+    @NotInEditor
+    private String description;
 
     @ManyToOne
     @NotNull
@@ -208,10 +221,6 @@ public abstract class Booking {
     private Currency currency;
 
 
-    @KPI
-    private boolean available;
-
-
     private boolean valueOverrided;
     @SameLine
     private FastMoney overridedValue;
@@ -243,6 +252,9 @@ public abstract class Booking {
     @KPI
     private boolean valued;
 
+    @KPI
+    private boolean paid;
+
     private boolean alreadyInvoiced;
 
     @UseLinkToListView
@@ -257,7 +269,7 @@ public abstract class Booking {
 
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "id")
-    @UseLinkToListView
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<BookingPaymentAllocation> payments = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking")
@@ -273,6 +285,9 @@ public abstract class Booking {
 
     @Embedded
     private BookingInvoiceData invoiceData;
+
+    private String agentName;
+
 
     @ManyToMany
     @JoinTable(
@@ -293,6 +308,10 @@ public abstract class Booking {
     private transient boolean updating = false;
 
 
+    @Ignored
+    private transient boolean summarizing = false;
+
+
 
     @Override
     public String toString() {
@@ -300,8 +319,11 @@ public abstract class Booking {
         return "" + getId() + " - " + getLeadName() + ": " + Helper.capitalize(getClass().getSimpleName().replaceAll("Booking", "")) + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
     }
 
-    public Map<String,Object> getData() {
-        Map<String, Object> d = new HashMap<>();
+    public Map<String,Object> getData() throws Throwable {
+        Map<String, Object> d = Helper.getGeneralData();
+
+        DecimalFormat df = new DecimalFormat("###,###,###,###,##0.00");
+
 
         d.put("start", getStart());
         DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -351,19 +373,129 @@ public abstract class Booking {
         d.put("id", getId());
         d.put("locator", getId());
         d.put("leadName", getLeadName());
+        d.put("telephone", getTelephone());
+        d.put("email", getEmail());
         //d.put("agency", getAgency().getName());
         //d.put("agencyReference", getAgencyReference());
         d.put("status", (todoCancelado)?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        if (getFormalizationDate() != null) d.put("formalization", getFormalizationDate().toString());
+        else d.put("formalization", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", "");
 
         d.put("comments", comentarios);
         d.put("direction", String.join(",", points));
         d.put("pax", pax);
 
+
+
+        d.put("availstatus", confirmed?available?"CONFIRMADA":"ON REQUEST":"PRESUPUESTO");
+        d.put("paymentstatus", paid?"PAGADA":"PENDIENTE DE PAGO");
+
+
+        d.put("paymentamounttxt", df.format(getTotalNetValue()) + " &euro;");
+
+        if (agency.getCompany() != null) {
+            d.put("bankname", agency.getCompany().getBankName());
+            d.put("bankaddress", agency.getCompany().getBankAddress());
+            d.put("recipient", agency.getCompany().getRecipient());
+            d.put("accountnumber", agency.getCompany().getAccountNumber());
+            d.put("swift", agency.getCompany().getSwift());
+        }
+
+        d.put("agency", agency.getName());
+        if (agency.getFinancialAgent() != null && agency.getFinancialAgent().isDirectSale()) {
+            d.put("agencyaddress", agency.getName());
+            d.put("agencyvatid", agency.getName());
+            d.put("agentname", agentName);
+            d.put("agencyemail", agency.getName());
+            d.put("agencytelephone", agency.getName());
+        } else if (getInvoiceData() != null) {
+            d.put("agencyaddress", getInvoiceData().getCompanyName());
+            d.put("agencyvatid", getInvoiceData().getVatId());
+            d.put("agentname", agentName);
+            d.put("agencyemail", getEmail());
+            d.put("agencytelephone", getTelephone());
+        }
+
+
+        d.put("servicedata", getServiceDataHtml());
+
+        d.put("productdata", getProductDataHtml());
+
+        d.put("totalretail", df.format(getTotalValue()) + " &euro;");
+        d.put("totalnet", df.format(getTotalNetValue()) + " &euro;");
+        if (agency.getFinancialAgent() != null) d.put("paymentmethod", agency.getFinancialAgent().getPaymentMethod());
+        d.put("payments", getPaymentsDataHtml());
+
+        d.put("paymentremarks", getPaymentRemarksHtml());
+
+        d.put("bookingterms", getBookingTermsHtml());
+
+        d.put("cancellationterms", getCancellationTermsHtml());
+
         return d;
     }
 
+    public String getCancellationTermsHtml() {
+        String h = "";
+
+        h +=
+                "                <p>- Devolución total del depósito cuando la anulación se realice con más de 20 días de antelación sobre la fecha de entrada.</p>\n" +
+                "                <p>- Pérdida del depósito cuando la anulación se realice durante los 20 días anteriores a la fecha de entrada.</p>\n";
+
+        return h;
+    }
+
+    public String getBookingTermsHtml() {
+        String h = "";
+
+        h +=
+                "<p>Usted está reservando directamente con el Hotel.</p>\n" +
+                "                <p>- Usted autoriza al Hotel Voramar a realizar un cobro, en concepto de depósito, mediante la tarjeta de crédito facilitada.</p>\n" +
+                "                <p>- El pago de la parte pendiente de la reserva se ralizará una vez lleguen al hotel.</p>\n" +
+                "                <p>- Esta es una confirmación de rserva para habitación estándard (twin bedroom), si desea un nº de habitación concreto o posición, lamentamos no poder garantizarla, sin embargo haremos lo posible para asignarla si tenemos disponibilidad el día de su entrada.</p>\n" +
+                "                <p>- Check-in a partir de las 14:00 horas, chak-out máximo a las 12:00 horas.</p>";
+
+        return h;
+    }
+
+    public String getPaymentRemarksHtml() {
+        String h = "";
+
+        h =
+                "                        <p>Tasa turística no incluida en el precio de la habitación.</p>\n" +
+                "\n" +
+                "                        <p>Se cargará la tasa en el momento del check-in.</p>\n" +
+                "\n" +
+                "                        <p>Menores de 16 años, exentos de dicha tasa.</p>\n" +
+                "\n" +
+                "                        <p>Del 1 de Noviembre al 30 de Abril, la tasa turística es de 0,55 € por persona por noche.</p>\n" +
+                "\n" +
+                "                        <p>Del 1 de Mayo al 31 de Octubre, la tasa turística es de 2,2 € por persona por noche.</p>\n" +
+                "\n" +
+                "                        <p>A partir del 9º día de estancia este impuesto se reduce al 50%</p>\n";
+
+        return h;
+    }
+
+    public String getPaymentsDataHtml() {
+        String h = "";
+
+        h +=
+                "                            <tr><td>Depósito a pagar ahora</td><td align='right'>1.152,00 &euro;</td></tr>\n" +
+                "                            <tr><td>A pagar el 13/07/2018</td><td align='right'>2.567,00 &euro;</td></tr>\n";
+
+        return h;
+    }
+
+    public String getProductDataHtml() {
+        return "";
+    }
+
+    public String getServiceDataHtml() {
+        return "";
+    }
 
 
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
@@ -390,7 +522,7 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 1, icon = VaadinIcons.ENVELOPES)
+    @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
     public void sendBooked(String changeEmail, String postscript) throws Throwable {
 
@@ -399,7 +531,7 @@ public abstract class Booking {
 
             long t0 = new Date().getTime();
 
-
+            AppConfig appconfig = AppConfig.get(em);
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
@@ -411,75 +543,38 @@ public abstract class Booking {
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
 
+            SendEmailTask t;
+            tasks.add(t = new SendEmailTask());
 
-            Document xml = new Document(new Element("services"));
-
-            for (Service s : services) {
-                xml.getRootElement().addContent(s.toXml());
+            if (getPos() != null && getPos().getOffice() != null) {
+                t.setOffice(getPos().getOffice());
             }
-
-            System.out.println(Helper.toString(xml.getRootElement()));
-
-
-            String archivo = UUID.randomUUID().toString();
-
-            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-            System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-            System.out.println("Temp file : " + temp.getAbsolutePath());
-
-            FileOutputStream fileOut = new FileOutputStream(temp);
-            //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
-            String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-            System.out.println("xml=" + sxml);
-            fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForVoucher())), new StreamSource(new StringReader(sxml))));
-            fileOut.close();
-
-
-            AppConfig appconfig = AppConfig.get(em);
-
-
-            // Create the email message
-            HtmlEmail email = new HtmlEmail();
-            //Email email = new HtmlEmail();
-            email.setHostName(appconfig.getAdminEmailSmtpHost());
-            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-            //email.setSSLOnConnect(true);
-            email.setFrom(appconfig.getAdminEmailFrom());
-            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
-
-            email.setSubject("Booking " + getId() + "");
-
+            t.setSubject("Booking " + getId() + "");
+            t.setTo(to);
+            t.setAudit(new Audit(MDD.getCurrentUser()));
+            t.setDescription("Send booked email");
+            t.getBookings().add(this);
 
             String msg = postscript;
 
             String freemark = appconfig.getBookedEmailTemplate();
 
             if (!Strings.isNullOrEmpty(freemark)) {
-                Map<String, Object> data = Helper.getGeneralData();
+                Map<String, Object> data = getData();
                 data.put("postscript", postscript);
-                data.put("leadname", getLeadName());
                 msg = Helper.freemark(freemark, data);
             }
 
-            email.setMsg(msg);
+            t.setMessage(msg);
 
-            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
-
-            java.io.File attachment = temp;
-            if (attachment != null) email.attach(attachment);
-
-            email.send();
-
+            em.merge(this);
 
         });
 
 
     }
 
-    @Action(order = 2, icon = VaadinIcons.ENVELOPES)
+    @Action(order = 2, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
     public void sendVouchers(String changeEmail, String postscript) throws Throwable {
 
@@ -488,7 +583,7 @@ public abstract class Booking {
 
             long t0 = new Date().getTime();
 
-
+            AppConfig appconfig = AppConfig.get(em);
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
@@ -500,8 +595,35 @@ public abstract class Booking {
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
 
+            SendEmailTask t;
+            tasks.add(t = new SendEmailTask());
+
+            if (getPos() != null && getPos().getOffice() != null) {
+                t.setOffice(getPos().getOffice());
+            }
+            t.setSubject("Vouchers for booking " + getId() + "");
+            t.setTo(to);
+            t.setAudit(new Audit(MDD.getCurrentUser()));
+            t.setDescription("Send vouchers email");
+            t.getBookings().add(this);
+
+            String msg = postscript;
+
+            String freemark = appconfig.getVouchersEmailTemplate();
+
+            if (!Strings.isNullOrEmpty(freemark)) {
+                Map<String, Object> data = getData();
+                msg = Helper.freemark(freemark, data);
+            }
+
+            t.setMessage(msg);
+
+
+            // creamos vouchers
 
             Document xml = new Document(new Element("services"));
+
+            if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
             for (Service s : services) {
                 xml.getRootElement().addContent(s.toXml());
@@ -526,41 +648,12 @@ public abstract class Booking {
             fileOut.close();
 
 
-            AppConfig appconfig = AppConfig.get(em);
+            if (temp != null) t.getAttachments().add(new Resource(temp));
 
 
-            // Create the email message
-            HtmlEmail email = new HtmlEmail();
-            //Email email = new HtmlEmail();
-            email.setHostName(appconfig.getAdminEmailSmtpHost());
-            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-            //email.setSSLOnConnect(true);
-            email.setFrom(appconfig.getAdminEmailFrom());
-            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
+            // fin crear vouchers
 
-            email.setSubject("Booking " + getId() + " vouchers");
-
-
-            String msg = postscript;
-
-            String freemark = appconfig.getVouchersEmailTemplate();
-
-            if (!Strings.isNullOrEmpty(freemark)) {
-                Map<String, Object> data = Helper.getGeneralData();
-                data.put("postscript", postscript);
-                data.put("leadname", getLeadName());
-                msg = Helper.freemark(freemark, data);
-            }
-
-            email.setMsg(msg);
-
-            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
-
-            java.io.File attachment = temp;
-            if (attachment != null) email.attach(attachment);
-
-            email.send();
+            em.merge(this);
 
 
         });
@@ -568,26 +661,64 @@ public abstract class Booking {
 
     }
 
-    @Action(order = 3, icon = VaadinIcons.ENVELOPE)
+    @Action(order = 3, icon = VaadinIcons.ENVELOPE, saveBefore = true, saveAfter = true)
     @NotWhenCreating
     public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) throws Throwable {
 
-        String to = changeEmail;
-        if (Strings.isNullOrEmpty(to)) {
-            to = getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) {
-            to = getAgency().getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
-        if (template != null) {
-            Map<String, Object> data = Helper.getGeneralData();
-            data.put("postscript", postscript);
-            EmailHelper.sendEmail(to, !Strings.isNullOrEmpty(subject) ? subject : template.getSubject(), Helper.freemark(template.getFreemarker(), data), false);
-        } else {
-            EmailHelper.sendEmail(to, subject, postscript, false);
-        }
+        Helper.transact(em ->{
+
+            long t0 = new Date().getTime();
+
+            AppConfig appconfig = AppConfig.get(em);
+
+            String to = changeEmail;
+            if (Strings.isNullOrEmpty(to)) {
+                to = getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) {
+                to = getAgency().getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
+
+
+            SendEmailTask t;
+            tasks.add(t = new SendEmailTask());
+
+            if (getPos() != null && getPos().getOffice() != null) {
+                t.setOffice(getPos().getOffice());
+            }
+            t.setTo(to);
+            t.setAudit(new Audit(MDD.getCurrentUser()));
+            t.getBookings().add(this);
+
+            String msg = postscript;
+
+            String freemark = appconfig.getVouchersEmailTemplate();
+
+            if (template != null) {
+                Map<String, Object> data = Helper.getGeneralData();
+                data.put("postscript", postscript);
+                data.put("leadname", getLeadName());
+                t.setDescription("Send email from template " + template.getName());
+                t.setSubject(!Strings.isNullOrEmpty(subject) ? subject : template.getSubject());
+                msg = Helper.freemark(template.getFreemarker(), data);
+            } else {
+                t.setDescription("Send email from void template");
+                t.setSubject(subject);
+                msg = postscript;
+            }
+
+            t.setMessage(msg);
+
+            // fin crear vouchers
+
+
+
+            em.merge(this);
+
+
+        });
 
     }
 
@@ -603,6 +734,7 @@ public abstract class Booking {
     }
 
 
+    /*
     @Action(order = 6, confirmationMessage = "Are you sure you want to unconfirm this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void unconfirm(EntityManager em) {
@@ -613,6 +745,7 @@ public abstract class Booking {
     public boolean isUnconfirmVisible() {
         return isConfirmed();
     }
+    */
 
 
     @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
@@ -677,68 +810,69 @@ public abstract class Booking {
 
 
 
-    @Action(order = 4, icon = VaadinIcons.EURO)
+    @Action(order = 4, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
     @NotWhenCreating
-    public void sendPaymentEmail(EntityManager em, @NotEmpty String toEmail, String subject, String postscript, @NotNull TPV tpv, FastMoney amount) throws Throwable {
-        AppConfig appconfig = AppConfig.get(em);
-
-
-        String to = toEmail;
-        if (Strings.isNullOrEmpty(to)) {
-            to = getEmail();
-        }
-        //todo: enviar cada voucher a cada agencia
-        /*
-        if (Strings.isNullOrEmpty(to)) {
-            to = getAgency().getEmail();
-        }
-        */
-        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address.");
+    public void sendPaymentEmail(@NotEmpty String changeEmail, String subject, String postscript, @NotNull TPV tpv, FastMoney amount) throws Throwable {
 
 
 
-        // Create the email message
-        HtmlEmail email = new HtmlEmail();
-        //Email email = new HtmlEmail();
-        email.setHostName(appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
+        Helper.transact(em ->{
 
-        email.setSubject("Payment request for booking file " + getId() + "");
+            long t0 = new Date().getTime();
 
+            AppConfig appconfig = AppConfig.get(em);
 
-        TPVTransaction t = new TPVTransaction();
-        t.setValue(amount.getNumber().doubleValueExact());
-        t.setCurrency(em.find(Currency.class, amount.getCurrency().getCurrencyCode()));
-        t.setBooking(this);
-        TPVTransactions.add(t);
-        t.setLanguage("es");
-        t.setSubject((!Strings.isNullOrEmpty(subject))?subject:"");
-        t.setTpv(tpv);
-        em.merge(t);
+            String to = changeEmail;
+            if (Strings.isNullOrEmpty(to)) {
+                to = getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) {
+                to = getAgency().getEmail();
+            }
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
 
-        String msg = postscript;
+            SendEmailTask t;
+            tasks.add(t = new SendEmailTask());
 
-        String freemark = appconfig.getPaymentEmailTemplate();
-
-        if (!Strings.isNullOrEmpty(freemark)) {
-            Map<String, Object> data = Helper.getGeneralData();
-            data.put("postscript", postscript);
-            data.put("leadname", getLeadName());
-            data.put("paymentbutton", t.getBoton(em));
-            msg = Helper.freemark(freemark, data);
-        }
-
-        email.setMsg(msg);
-
-        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
+            if (getPos() != null && getPos().getOffice() != null) {
+                t.setOffice(getPos().getOffice());
+            }
+            t.setSubject(subject);
+            t.setTo(to);
+            t.setAudit(new Audit(MDD.getCurrentUser()));
+            t.setDescription("Send payment email for " + amount);
+            t.getBookings().add(this);
 
 
-        email.send();
+            TPVTransaction tt = new TPVTransaction();
+            tt.setValue(amount.getNumber().doubleValueExact());
+            tt.setCurrency(em.find(Currency.class, amount.getCurrency().getCurrencyCode()));
+            tt.setBooking(this);
+            TPVTransactions.add(tt);
+            tt.setLanguage("es");
+            tt.setSubject((!Strings.isNullOrEmpty(subject))?subject:"Payment for booking " + getId() + " for " + amount);
+            tt.setTpv(tpv);
+            em.merge(t);
+
+            String msg = postscript;
+
+            String freemark = appconfig.getPaymentEmailTemplate();
+
+            if (!Strings.isNullOrEmpty(freemark)) {
+                Map<String, Object> data = Helper.getGeneralData();
+                data.put("postscript", postscript);
+                data.put("leadname", getLeadName());
+                data.put("paymentbutton", tt.getBoton(em));
+                msg = Helper.freemark(freemark, data);
+            }
+
+            t.setMessage(msg);
+
+            em.merge(this);
+
+        });
+
 
     }
 
@@ -758,21 +892,7 @@ public abstract class Booking {
             }
             validate();
 
-            WorkflowEngine.add(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Helper.transact(em -> {
-                            if (isConfirmed()) {
-                                Booking.this.generateServices(em);
-                            }
-                            Booking.this.price(em);
-                        });
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-                }
-            });
+            setDescription(getParticularDescription());
 
         } catch (Throwable e) {
             throw new Error(e);
@@ -780,9 +900,66 @@ public abstract class Booking {
     }
 
 
+    @PostPersist@PostUpdate
+    public void post() {
+        if (Helper.getEMFromThreadLocal().getTransaction().isActive()) WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Helper.transact(em -> {
+                        Booking b = em.merge(Booking.this);
+                        if (b.isConfirmed()) {
+                            b.generateServices(em);
+                        }
+                        b.price(em);
+                        b.summarize(em);
+                        b.getAgency().setUpdatePending(true);
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
+    }
+
+    public void summarize(EntityManager em) {
+
+        if (summarizing) {
+            System.out.println("Booking " + getId() + " already summarizing");
+        } else {
+            summarizing = true;
+            System.out.println("booking " + getId() + ".summarize");
+
+            //todo: actualizar estado, balances, etc
+
+            if (true) {
+                for (Service x : services) {
+                    if (x.getStart() != null) {
+                        if (start == null || start.isAfter(x.getStart())) start = x.getStart();
+                        if (end == null || end.isBefore(x.getStart())) end = x.getStart();
+                    }
+
+                    if (x.getFinish() != null) {
+                        if (start == null || start.isAfter(x.getFinish())) start = x.getFinish();
+                        if (end == null || end.isBefore(x.getFinish())) end = x.getFinish();
+                    }
+
+                    if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
+                    else x.setServiceDateForInvoicing(x.getStart());
+                }
+            }
+            summarizing = false;
+        }
+
+    }
 
 
-    @Action(order = 8, icon = VaadinIcons.SPLIT)
+    public String getParticularDescription() {
+        return Helper.capitalize(getClass().getSimpleName());
+    }
+
+
+    //@Action(order = 8, icon = VaadinIcons.SPLIT)
     @NotWhenCreating
     public void build(EntityManager em) {
         generateServices(em);
@@ -790,10 +967,10 @@ public abstract class Booking {
 
     public abstract void validate() throws Exception;
 
-    protected abstract void generateServices(EntityManager em);
+    public abstract void generateServices(EntityManager em);
 
 
-    @Action(order = 7, icon = VaadinIcons.EURO)
+    //@Action(order = 7, icon = VaadinIcons.EURO)
     @NotWhenCreating
     public void price(EntityManager em) throws Throwable {
 
@@ -936,6 +1113,26 @@ public abstract class Booking {
                 });
             }
         };
+    }
+
+
+    @Action(order = 10)
+    public static void updateAll() throws Throwable {
+        Helper.transact(em -> {
+
+            ((List<HotelBooking>)em.createQuery("select x from " + HotelBooking.class.getName() + " x").getResultList()).forEach(b -> {
+                b.getLines().forEach(l -> {
+                    try {
+                        l.check();
+                        l.price();
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
+                });
+                b.updateData();
+            });
+
+        });
     }
 
 

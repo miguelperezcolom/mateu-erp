@@ -87,7 +87,8 @@ public class Valoracion {
                             for (int i = r.getDesde(); i <= r.getHasta(); i++)
                                 if (condiciones.getDias().size() > i) {
                                     CondicionesPorDia cpd = condiciones.getDias().get(i);
-                                    cpd.getFarePerRoomAndBoard().put(l.getRoomTypeCode().getCode() + "-" + l.getBoardTypeCode().getCode(), l);
+                                    if (l.getRoomTypeCode() != null && l.getBoardTypeCode() != null)
+                                        cpd.getFarePerRoomAndBoard().put(l.getRoomTypeCode().getCode() + "-" + l.getBoardTypeCode().getCode(), l);
                                 }
                         }
                     }

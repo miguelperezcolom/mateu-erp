@@ -80,6 +80,8 @@ public class Pagina2b implements WizardPage {
         List<PriceOption> options = new ArrayList<>();
         for (Hotel h : hoteles) {
             AvailableHotel ah = new HotelAvailabilityRunner().check(agencia, h, pagina2.getPagina1().getAgency().getId(), 1, modelo, rq);
+
+            /*
             if (ah != null) for (org.easytravelapi.hotel.Option xo : ah.getOptions()) {
 
                 StringBuffer sb = new StringBuffer();
@@ -105,6 +107,7 @@ public class Pagina2b implements WizardPage {
                     options.add(o);
                 }
             }
+            */
         }
 
         long t = System.currentTimeMillis();

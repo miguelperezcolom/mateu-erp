@@ -103,7 +103,7 @@ public class DispoTest {
                     }
                 };
 
-                DispoRQ rq = new DispoRQ(LocalDate.now(), 20180601, 20180615, Arrays.asList(new Occupancy(1, 2, null)), false);
+                DispoRQ rq = new DispoRQ(LocalDate.now(), 20190601, 20190615, Arrays.asList(new Occupancy(1, 2, null)), false);
 
 
 

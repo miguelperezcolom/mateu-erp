@@ -60,7 +60,7 @@ public class ArrivalBooking extends Booking {
     }
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
 
         for (ArrivalBookingLine l : getLines()) {
 

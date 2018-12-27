@@ -1,8 +1,11 @@
 package io.mateu.erp.services.easytravelapi;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.product.DataSheetImage;
+import io.mateu.erp.model.product.FeatureValue;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -10,10 +13,13 @@ import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.swagger.annotations.ApiParam;
 import org.easytravelapi.CommonsService;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -31,7 +37,6 @@ public class CommonsServiceImpl implements CommonsService {
         rs.setStatusCode(200);
 
 
-
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
@@ -43,8 +48,8 @@ public class CommonsServiceImpl implements CommonsService {
                     Country c;
                     rs.getCountries().add(c = new Country());
 
-                    c.setResourceId("cou_" + ec.getIsoCode());
-                    c.setName(ec.getName());
+                    c.setResourceId("cou-" + ec.getIsoCode());
+                    c.setName(new MultilingualText("es", ec.getName(), "en", ec.getName(), "it", ec.getName()));
                     c.setUrlFriendlyName("spain");
 
 
@@ -53,28 +58,28 @@ public class CommonsServiceImpl implements CommonsService {
                         State s;
                         c.getStates().add(s = new State());
 
-                        s.setResourceId("stt_" + es.getId());
-                        s.setName(es.getName());
-                        s.setUrlFriendlyName("majorca");
+                        s.setResourceId("des-" + es.getId());
+                        s.setName(new MultilingualText("es", es.getName(), "en", es.getName(), "it", es.getName()));
+                        s.setUrlFriendlyName(Helper.urlize(es.getName()));
 
                         for (Zone el : es.getZones()) {
 
                             City l;
                             s.getCities().add(l = new City());
-                            l.setResourceId("cty_" + el.getId());
-                            l.setName(el.getName());
-                            l.setUrlFriendlyName("palma");
+                            l.setResourceId("zon-" + el.getId());
+                            l.setName(new MultilingualText("es", el.getName()));
+                            l.setUrlFriendlyName(Helper.urlize(el.getName()));
 
                             for (Hotel eh : el.getHotels()) {
 
                                 Resource r;
                                 l.getResources().add(r = new Resource());
-                                r.setResourceId("hot_" + eh.getId());
-                                r.setName(eh.getName());
+                                r.setResourceId("hot-" + eh.getId());
+                                r.setName(new MultilingualText("es", eh.getName(), "en", eh.getName(), "it", eh.getName()));
                                 r.setLatitude(eh.getLat());
                                 r.setLongitude(eh.getLon());
                                 r.setType("hotel");
-                                r.setDescription("City hotel. 4 stars");
+                                r.setDescription(new MultilingualText("es", eh.getDataSheet() != null && eh.getDataSheet().getDescription() != null?eh.getDataSheet().getDescription().get("es"):"No description"));
 
                                 totalRecursos++;
                             }
@@ -84,11 +89,11 @@ public class CommonsServiceImpl implements CommonsService {
                                 Resource r;
                                 l.getResources().add(r = new Resource());
                                 r.setResourceId("tp_" + p.getId());
-                                r.setName(p.getName());
+                                r.setName(new MultilingualText("es", p.getName()));
                                 //r.setLatitude(p.getLat());
                                 //r.setLongitude(p.getLon());
                                 r.setType("transferpoint");
-                                r.setDescription("City hotel. 4 stars");
+                                r.setDescription(new MultilingualText("es", p.getInstructions()));
 
                                 totalRecursos++;
                             }
@@ -109,7 +114,7 @@ public class CommonsServiceImpl implements CommonsService {
     }
 
     @Override
-    public GetDataSheetRS getDataSheet(String token, String resourceId) throws Throwable {
+    public GetDataSheetRS getDataSheet(String token, String resourceId, String language) throws Throwable {
 
         GetDataSheetRS rs = new GetDataSheetRS();
 
@@ -125,8 +130,18 @@ public class CommonsServiceImpl implements CommonsService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                if (resourceId.startsWith("hot_")) {
-                    Hotel h = em.find(Hotel.class, Long.parseLong(resourceId.substring("hot_".length())));
+                if (resourceId.startsWith("hot")) {
+                    Hotel h = em.find(Hotel.class, Long.parseLong(resourceId.substring("hot-".length())));
+
+                    /*
+                    case 'name' -->  nombre del hotel
+case 'images/image' --> Imagenes genericas del hotel
+case 'images/main' --> Imagen Principal del hotel
+case 'images/map' --> Imagen mapa localizacion de hotel (si no hay utiliza longitud y latitud)
+case 'description': --> descripcion del hotel
+case 'longitude': -->longitud
+case: 'latitude': --> latitud
+                     */
 
                     Pair p;
                     rs.getValues().add(p = new Pair());
@@ -135,6 +150,16 @@ public class CommonsServiceImpl implements CommonsService {
                     rs.getValues().add(p = new Pair());
                     p.setKey("name");
                     p.setValue(h.getName());
+                    if (!Strings.isNullOrEmpty(h.getLon())) {
+                        rs.getValues().add(p = new Pair());
+                        p.setKey("longitude");
+                        p.setValue(h.getLon());
+                    }
+                    if (!Strings.isNullOrEmpty(h.getLat())) {
+                        rs.getValues().add(p = new Pair());
+                        p.setKey("latitude");
+                        p.setValue(h.getLat());
+                    }
                     rs.getValues().add(p = new Pair());
                     p.setKey("city/id");
                     p.setValue("" + h.getZone().getId());
@@ -163,8 +188,43 @@ public class CommonsServiceImpl implements CommonsService {
                     p.setKey("category/name/es");
                     p.setValue(h.getCategory().getName().getEs());
 
+                    if (h.getDataSheet() != null) {
+                        if (h.getDataSheet().getDescription() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("description");
+                            p.setValue(h.getDataSheet().getDescription().get(language));
+                        }
 
-                } else if (resourceId.startsWith("tp_")) {
+                        if (h.getDataSheet().getMainImage() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("images/main");
+                            p.setValue(h.getDataSheet().getMainImage().toFileLocator().getUrl());
+                        }
+
+                        for (DataSheetImage i : h.getDataSheet().getImages()) if (i != null && i.getImage() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("images/image");
+                            p.setValue(i.getImage().toFileLocator().getUrl());
+                        }
+
+
+                        for (FeatureValue i : h.getDataSheet().getFeatures()) if (i != null && i.getFeature() != null) {
+                            rs.getValues().add(p = new Pair());
+                            String k = "";
+                            if (i.getFeature() != null && i.getFeature().getGroup() != null) k += "" + i.getFeature().getGroup().getName().get(language);
+                            if (i.getFeature() != null && i.getFeature().getGroup() != null)  {
+                                if (!"".equals(k)) k += "/";
+                                k += "" + i.getFeature().getName().get(language);
+                            }
+                            p.setKey(k);
+                            p.setValue(i.getValue());
+                        }
+
+
+                    }
+
+
+                } else if (resourceId.startsWith("tp")) {
                     TransferPoint h = em.find(TransferPoint.class, Long.parseLong(resourceId.substring("tp_".length())));
 
                     Pair p;
@@ -220,28 +280,28 @@ public class CommonsServiceImpl implements CommonsService {
                 List<io.mateu.erp.model.booking.Service> l = em.createQuery("select s from " + Service.class.getName() + " s order by s.id").getResultList();
                 for (io.mateu.erp.model.booking.Service s : l) {
 
-                        Booking b;
-                        rs.getBookings().add(b = new Booking());
+                    Booking b;
+                    rs.getBookings().add(b = new Booking());
 
-                        b.setBookingId("" + s.getId());
-                        b.setCreated(s.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
-                        b.setCreatedBy(s.getAudit().getCreatedBy().getLogin());
-                        b.setModified(s.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
-                        b.setLeadName(s.getBooking().getLeadName());
-                        b.setStart(s.getStart().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-                        b.setEnd(s.getFinish().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
-                        Amount a;
-                        b.setNetValue(a = new Amount());
-                        a.setCurrencyIsoCode("EUR");
-                        //a.setValue(s.getTotalNetValue());
-                        String desc = "Service file";
-                        b.setServiceType("GENERIC");
-                        if (s instanceof TransferService) {
-                            desc = "Transfer service";
-                            b.setServiceType("TRANSFER");
-                        }
-                        b.setServiceDescription(desc);
-                        b.setStatus((s.isActive())?"OK":"CANCELLED");
+                    b.setBookingId("" + s.getId());
+                    b.setCreated(s.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
+                    b.setCreatedBy(s.getAudit().getCreatedBy().getLogin());
+                    b.setModified(s.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
+                    b.setLeadName(s.getBooking().getLeadName());
+                    b.setStart(s.getStart().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                    b.setEnd(s.getFinish().format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+                    Amount a;
+                    b.setNetValue(a = new Amount());
+                    a.setCurrencyIsoCode("EUR");
+                    //a.setValue(s.getTotalNetValue());
+                    String desc = "Service file";
+                    b.setServiceType("GENERIC");
+                    if (s instanceof TransferService) {
+                        desc = "Transfer service";
+                        b.setServiceType("TRANSFER");
+                    }
+                    b.setServiceDescription(desc);
+                    b.setStatus((s.isActive()) ? "OK" : "CANCELLED");
 
                     if (pos++ > 300) break;
                 }
@@ -290,7 +350,7 @@ public class CommonsServiceImpl implements CommonsService {
                         b.setServiceType("TRANSFER");
                     }
                     b.setServiceDescription(desc);
-                    b.setStatus((s.isActive())?"OK":"CANCELLED");
+                    b.setStatus((s.isActive()) ? "OK" : "CANCELLED");
 
 
                 }
@@ -350,5 +410,17 @@ public class CommonsServiceImpl implements CommonsService {
     @Override
     public MealPlansListRS getMealPlans(String token) throws Throwable {
         return null;
+    }
+
+
+    public SearchPortfolioRS searchPortfolio(String token,
+                                             String language,
+                                             String query) throws Throwable {
+        return new SearchPortfolioRS();
+    }
+
+
+    public GetLocatorRS getFromLocator(String token, String locatorid) throws Throwable {
+        return new GetLocatorRS();
     }
 }

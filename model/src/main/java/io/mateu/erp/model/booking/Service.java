@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -58,10 +59,6 @@ import java.util.stream.Collectors;
 @NewNotAllowed
 @Indelible
 public abstract class Service {
-
-    @Transient
-    @Ignored
-    private boolean preventAfterSet;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -143,6 +140,8 @@ public abstract class Service {
     private boolean held;
 
 
+    @TextArea
+    private String specialRequests;
 
     @TextArea
     private String operationsComment;
@@ -193,6 +192,7 @@ public abstract class Service {
 
     @SearchFilter(value="Purchase Order Id", field = "id")
     @ManyToMany
+    @OrderColumn(name = "_orderInService")
     @UseLinkToListView
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
@@ -234,14 +234,22 @@ public abstract class Service {
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
 
+    @KPI
+    private boolean available;
 
     @Section("Log")
 
     @Output
     private String changeLog;
 
+    @Ignored
+    public transient boolean summarizing = false;
+
 
     public void updateProcessingStatus(EntityManager em) {
+
+        updateSentTime(em);
+
         ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
             ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
@@ -281,6 +289,13 @@ public abstract class Service {
             // finished service. Nothing to do
         }
         setProcessingStatus(ps);
+    }
+
+    private void updateSentTime(EntityManager em) {
+        if (purchaseOrders.size() > 0) {
+            PurchaseOrder po = purchaseOrders.get(purchaseOrders.size() - 1);
+            setSentToProvider(po.getSentTime());
+        } else setSentToProvider(null);
     }
 
     public boolean isAllMapped(EntityManager em) {
@@ -668,18 +683,6 @@ public abstract class Service {
 
 
 
-    @Links
-    public List<MDDLink> getLinks() {
-        List<MDDLink> l = new ArrayList<>();
-        if (this.getBooking() != null) {
-            l.add(new MDDLink("Booking", Booking.class, ActionType.OPENEDITOR, new Data("_id", this.getBooking().getId())));
-            l.add(new MDDLink("Tasks", AbstractTask.class, ActionType.OPENLIST, new Data("services.id", getId())));
-            l.add(new MDDLink("Purchase orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("services.id", getId())));
-        }
-        return l;
-    }
-
-
     public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
         return rate(em, sale, null, report);
     }
@@ -767,7 +770,9 @@ public abstract class Service {
 
         d.put("id", getId());
         d.put("locator", this.getBooking().getId());
+        d.put("leadname", this.getBooking().getLeadName());
         d.put("agency", this.getBooking().getAgency().getName());
+        d.put("market", this.getBooking().getAgency().getMarket().getName());
         d.put("agencyReference", this.getBooking().getAgencyReference());
         d.put("status", (isActive())?"ACTIVE":"CANCELLED");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
@@ -842,36 +847,30 @@ public abstract class Service {
         setValidationMessage("");
     }
 
-    @PostUpdate
-    public void postUpdate() throws Throwable {
-
-        System.out.println("service.postupdate()");
-
-        if (!isPreventAfterSet()) {
-
-            WorkflowEngine.add(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        Helper.transact(new JPATransaction() {
-                            @Override
-                            public void run(EntityManager em) throws Throwable {
-                                em.find(Service.class, getId()).postUpdate(em);
-                            }
-                        });
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-
+    @PostPersist@PostUpdate
+    public void post() {
+        if (!summarizing) WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Helper.transact(em -> {
+                        Service s = em.merge(Service.this);
+                        s.complete(em);
+                        s.logChanges(em);
+                        s.purchase(em);
+                        s.summarize(em);
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
-            });
-
-        }
-
+            }
+        });
     }
 
-    public void postUpdate(EntityManager em) throws Throwable {
+    public void complete(EntityManager em) throws Throwable {
+    }
+
+    public void logChanges(EntityManager em) throws Throwable {
 
         String l = getChangeLog();
         if (l == null) l = "";
@@ -924,76 +923,17 @@ public abstract class Service {
             update = true;
         }
         setChangeLog(l);
-
-        afterSet();
     }
 
-    @PostPersist
-    public void afterSet() throws Throwable {
+    public void purchase(EntityManager em) {
 
-        System.out.println("service.afterset()");
-
-        long finalId = getId();
-
-        WorkflowEngine.add(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            em.find(Service.class, finalId).afterSetAsService(em);
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-
-    }
-
-    public void afterSetAsService(EntityManager em) {
-
-        System.out.println("service " + getId() + ".afterset");
-
-        if (true || this.getBooking().getEnd() == null) {
-            for (Service x : this.getBooking().getServices()) {
-                if (x.getStart() != null) {
-                    if (this.getBooking().getStart() == null || this.getBooking().getStart().isAfter(x.getStart())) this.getBooking().setStart(x.getStart());
-                    if (this.getBooking().getEnd() == null || this.getBooking().getEnd().isBefore(x.getStart())) this.getBooking().setEnd(x.getStart());
-                }
-
-                if (x.getFinish() != null) {
-                    if (this.getBooking().getStart() == null || this.getBooking().getStart().isAfter(x.getFinish())) this.getBooking().setStart(x.getFinish());
-                    if (this.getBooking().getEnd() == null || this.getBooking().getEnd().isBefore(x.getFinish())) this.getBooking().setEnd(x.getFinish());
-                }
-
-                if (this.getBooking().getAgency().isOneLinePerBooking()) x.setServiceDateForInvoicing(this.getBooking().getEnd());
-                else x.setServiceDateForInvoicing(x.getStart());
-            }
-        }
+        System.out.println("service " + getId() + ".purchase");
 
         if (isAlreadyPurchased() && getAlreadyPurchasedDate() == null) {
             setAlreadyPurchasedDate(LocalDateTime.now());
         } else if (!isAlreadyPurchased() && getAlreadyPurchasedDate() != null) {
             setAlreadyPurchasedDate(null);
         }
-
-        /*
-        try {
-            price(em, getAudit().getModifiedBy());
-        } catch (Throwable e) {
-            String error = "" + e.getClass().getName() + ":" + e.getMessage();
-            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
-            else error = error.substring(error.indexOf(":"));
-            System.out.println(error);
-        }
-        */
 
         try {
             checkPurchase(em, getAudit().getModifiedBy());
@@ -1004,32 +944,25 @@ public abstract class Service {
             System.out.println(error);
         }
 
-        /*
+    }
 
-        boolean laFirmaHaCambiado = getSignature() == null || !getSignature().equals(createSignature());
-        setSignature(createSignature());
+    public void summarize(EntityManager em) {
 
-        if (laFirmaHaCambiado) {
-            try {
-                price(em, getAudit().getModifiedBy());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
+        if (summarizing) {
+            System.out.println("service " + getId() + " is already summarizing");
+        } else {
+            summarizing = true;
+            System.out.println("service " + getId() + ".summarize");
 
-            try {
-                refreshPurchaseOrders(em, getAudit().getModifiedBy());
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
+            updateProcessingStatus(em);
+            validate(em);
 
+            setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
+
+            booking.summarize(em);
+            summarizing = false;
         }
-        */
 
-        updateProcessingStatus(em);
-        validate(em);
-
-
-        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
     }
 
 
@@ -1037,12 +970,37 @@ public abstract class Service {
         Element xml = new Element("service");
         xml.setAttribute("id", "" + getId());
         xml.setAttribute("status", isActive()?"OK":"CANCELLED");
+        xml.setAttribute("header", getDescription());
         xml.setAttribute("description", getDescription());
+        if (booking.getLeadName() != null) xml.setAttribute("leadname", booking.getLeadName());
+        xml.setAttribute("formalization", "" + (booking.getFormalizationDate() != null?booking.getFormalizationDate().toLocalDate():booking.getAudit().getCreated().toLocalDate()));
+        if (booking.getAgencyReference() != null) xml.setAttribute("fileto", booking.getAgencyReference());
+        xml.setAttribute("remarks", Strings.isNullOrEmpty(booking.getSpecialRequests())?"None":booking.getSpecialRequests());
+
+        Element supplxml;
+        xml.addContent(supplxml = getSupplierXml());
+        if (getProviderReference() != null) supplxml.setAttribute("hisreference", getProviderReference());
+
+
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         if (getStart() != null) xml.setAttribute("start", getStart().format(dtf));
         if (getFinish() != null) xml.setAttribute("finish", getFinish().format(dtf));
 
+        return xml;
+    }
+
+    public Element getSupplierXml() {
+        Element xml = new Element("supplier");
+        if (getPreferredProvider() != null) {
+            Partner p = getPreferredProvider();
+            if (p.getName() != null) xml.setAttribute("name", p.getName());
+            if (p.getFullAddress() != null) xml.setAttribute("address", p.getFullAddress());
+            if (p.getTelephone() != null) xml.setAttribute("telephone", p.getTelephone());
+            if (p.getEmail() != null) xml.setAttribute("telephone", p.getEmail());
+            xml.setAttribute("gps", "---");
+
+        }
         return xml;
     }
 

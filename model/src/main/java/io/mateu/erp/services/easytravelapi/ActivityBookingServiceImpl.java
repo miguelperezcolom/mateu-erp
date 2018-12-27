@@ -1,11 +1,15 @@
 package io.mateu.erp.services.easytravelapi;
 
+import io.swagger.annotations.ApiParam;
 import org.easytravelapi.ActivityBookingService;
 import org.easytravelapi.activity.*;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.CancellationCost;
+import org.easytravelapi.common.GetPortfolioRS;
 import org.easytravelapi.common.Remark;
 
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -17,7 +21,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
 
     @Override
-    public GetAvailableActivitiesRS getAvailableActivities(String token, int start, int end, String resourceId, int pax, List<Integer> ages) {
+    public GetAvailableActivitiesRS getAvailableActivities(String token, int start, String resourceId, String language) {
         GetAvailableActivitiesRS rs = new GetAvailableActivitiesRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -33,6 +37,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             a.setName("Vuelta a Mallorca");
             a.setDescription("Excursión muy interesante para ver los principales puntos de interés de la isla. Muy recomendada!");
             a.setImage("http://www.click-mallorca.com/imgdb/mapa_are1945.jpg");
+            /*
             {
                 ActivityDate d;
                 a.getAvailableDates().add(d = new ActivityDate());
@@ -66,6 +71,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 p.setCurrencyIsoCode("EUR");
                 p.setValue(200.01);
             }
+            */
 
         }
 
@@ -77,6 +83,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             a.setName("Buceo en Cala Millor");
             a.setDescription("Excursión muy interesante para ver los principales puntos de interés de la isla. Muy recomendada!");
             a.setImage("http://www.click-mallorca.com/imgdb/imagen_listado_exc10309.png");
+            /*
             {
                 ActivityDate d;
                 a.getAvailableDates().add(d = new ActivityDate());
@@ -107,6 +114,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 p.setCurrencyIsoCode("EUR");
                 p.setValue(250.4);
             }
+            */
         }
 
 
@@ -118,6 +126,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             a.setName("Aventuras en Jungle Park");
             a.setDescription("Excursión muy interesante para ver los principales puntos de interés de la isla. Muy recomendada!");
             a.setImage("http://www.click-mallorca.com/imgdb/imagen_listado_exc9234.png");
+            /*
             {
                 ActivityDate d;
                 a.getAvailableDates().add(d = new ActivityDate());
@@ -128,7 +137,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 p.setCurrencyIsoCode("EUR");
                 p.setValue(100);
             }
-
+            */
         }
 
 
@@ -136,7 +145,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
     }
 
     @Override
-    public GetActivityPriceDetailsRS getActivityPriceDetails(String token, String key) {
+    public GetActivityPriceDetailsRS getActivityPriceDetails(String token, String key, String language, int adults, int children, int vehicles, String supplements, String coupon) {
         GetActivityPriceDetailsRS rs = new GetActivityPriceDetailsRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -200,4 +209,25 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         return rs;
     }
 
+
+    @Override
+    public GetPortfolioRS getPortfolio(String token) throws Throwable {
+        return null;
+    }
+
+
+    @Override
+    public GetActivityPriceRS getExcursionPrice(String token, String key, String language, int adults, int children, int infants, String datekey, String variantkeykey, String shiftdate, String pickup, String supplements) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetActivityRatesRS getActivityRates(String token, String key, String language) throws Throwable {
+        return null;
+    }
+
+    @Override
+    public GetAvailableActivitiesRS getFilteredActivities(String token, int start, String resourceId, String language, String minPrice, String maxPrice) throws Throwable {
+        return null;
+    }
 }

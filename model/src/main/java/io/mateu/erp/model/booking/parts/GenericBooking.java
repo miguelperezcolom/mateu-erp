@@ -52,7 +52,7 @@ public class GenericBooking extends Booking {
     }
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
         GenericService s = null;
         if (getServices().size() > 0) {
             s = (GenericService) getServices().get(0);

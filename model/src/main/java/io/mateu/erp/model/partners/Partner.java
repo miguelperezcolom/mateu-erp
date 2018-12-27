@@ -95,6 +95,11 @@ public class Partner implements IPartner {
     @ManyToOne
     private Company company;
 
+
+    private String fullAddress;
+
+    private String telephone;
+
     private String email;
 
     private String comments;
@@ -154,6 +159,9 @@ public class Partner implements IPartner {
     @ListColumn
     @KPI
     private double balance;
+
+    @Ignored
+    private boolean updatePending;
 
 
     @Override

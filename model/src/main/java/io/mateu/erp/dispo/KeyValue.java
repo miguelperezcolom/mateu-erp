@@ -55,7 +55,7 @@ public class KeyValue {
         sb.append(",sc:" + getSaleContractId());
         int pos = 0;
         for (Allocation a : getAllocation()) {
-            sb.append(",al" + pos++ + ":" + a.getNumberOfRooms() + "x" + a.getRoomId().replaceAll(":", "__dospuntos__").replaceAll(",", "__coma__").replaceAll("x", "__equis__") + "x" + a.getPaxPerRoom());
+            //sb.append(",al" + pos++ + ":" + a.getNumberOfRooms() + "x" + a.getRoomId().replaceAll(":", "__dospuntos__").replaceAll(",", "__coma__").replaceAll("x", "__equis__") + "x" + a.getPaxPerRoom());
             if (a.getAges() != null) {
                 for (int age : a.getAges()) {
                     sb.append("/" + age);
@@ -100,7 +100,7 @@ public class KeyValue {
                 Allocation a;
                 getAllocation().add(a = new Allocation());
                 a.setNumberOfRooms(Integer.parseInt(ts[0]));
-                a.setRoomId(ts[1].replaceAll("__dospuntos__", ":").replaceAll("__coma__", ",").replaceAll( "__equis__", "x"));
+                //a.setRoomId(ts[1].replaceAll("__dospuntos__", ":").replaceAll("__coma__", ",").replaceAll( "__equis__", "x"));
                 String[] xs = ts[2].split("/");
                 a.setPaxPerRoom(Integer.parseInt(xs[0]));
                 if (xs.length > 1) {

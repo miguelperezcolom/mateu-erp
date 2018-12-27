@@ -1,16 +1,19 @@
 package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
+import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.world.Zone;
-import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CMSService;
@@ -20,7 +23,6 @@ import org.easytravelapi.cms.HotelAvailabilityCalendarMonth;
 import org.easytravelapi.cms.HotelAvailabilityCalendarWeek;
 import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
-import org.easytravelapi.hotel.Occupancy;
 import org.easytravelapi.hotel.Option;
 
 import javax.persistence.EntityManager;
@@ -30,11 +32,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CMSServiceImpl implements CMSService {
     @Override
-    public GetHotelAvailabilityCalendarRS getHotelAvailabilityCalendar(String token, String resorts, int checkIn, int checkout, String occupancies) throws Throwable {
+    public GetHotelAvailabilityCalendarRS getHotelAvailabilityCalendar(String token, String resorts, int checkIn, int checkOut, String occupancies) throws Throwable {
         final GetHotelAvailabilityCalendarRS rs = new GetHotelAvailabilityCalendarRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -47,8 +51,8 @@ public class CMSServiceImpl implements CMSService {
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            idAgencia = Long.parseLong(creds.getAgentId());
-            idHotel = Long.parseLong(creds.getHotelId());
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
             //rq.setPassword(creds.getPass());
@@ -69,19 +73,23 @@ public class CMSServiceImpl implements CMSService {
 
                     List<Destination> l = new ArrayList<>();
 
+                    List<Hotel> hoteles = new ArrayList<>();
+
                     for (String s : Splitter.on(',')
                             .trimResults()
                             .omitEmptyStrings()
                             .split(resorts)) {
-                        l.add(em.find(Destination.class, Long.parseLong(s)));
+                        if (s.startsWith("cou")) {
+                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> hoteles.addAll(z.getHotels())));
+                        } else if (s.startsWith("des")) {
+                            em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> hoteles.addAll(z.getHotels()));
+                        } else if (s.startsWith("zon")) {
+                            hoteles.addAll(em.find(Zone.class, Long.parseLong(s.substring(4))).getHotels());
+                        } else if (s.startsWith("hot")) {
+                            hoteles.add(em.find(Hotel.class, Long.parseLong(s.substring(4))));
+                        }
                     };
 
-
-                    List<Hotel> hoteles = new ArrayList<>();
-
-                    for (Destination s : l) for (Zone c : s.getZones()) hoteles.addAll(c.getHotels());
-
-                    System.out.println("" + hoteles.size() + " hoteles encontrados");
 
                     int numContratos = 0;
                     for (Hotel h : hoteles) {
@@ -110,16 +118,20 @@ public class CMSServiceImpl implements CMSService {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
+                Hotel h = hoteles.get(0);
+
                 Partner a = em.find(Partner.class, finalIdAgencia);
 
+                System.out.println("checkIn=" + checkIn);
+                System.out.println("checkOut=" + checkOut);
+
+                LocalDate desde = LocalDate.parse("" + checkIn, DateTimeFormatter.ofPattern("yyyyMMdd"));
+                desde = LocalDate.parse(desde.format(DateTimeFormatter.ofPattern("yyyyMM")) + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
-                ModeloDispo modelo = new ModeloDispo() {
-                    @Override
-                    public IHotelContract getHotelContract(long id) {
-                        return em.find(HotelContract.class, id);
-                    }
-                };
+                List<StopSalesOperation> ops = StopSalesCalendar.getOperations(h, desde, desde.plusMonths(2));
+                Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, desde, desde.plusMonths(2).minusDays(1), null, null, a);
+
 
                 List<? extends Occupancy> ocs = HotelBookingServiceImpl.getOccupancies(occupancies);
 
@@ -130,7 +142,19 @@ public class CMSServiceImpl implements CMSService {
 
                 LocalDate hoy = LocalDate.now();
 
-                for (Hotel h : hoteles) { // solo hay 1 hotel
+                { // solo hay 1 hotel
+
+
+                    Map<RoomType, int[]> cupos = new HashMap<>();
+
+                    List<InventoryCalendarCube> cubosCupo = new ArrayList<>();
+                    for (Inventory i : h.getInventories()) cubosCupo.add(new InventoryCalendarCube(i));
+
+                    for (Room r : h.getRooms()) {
+                        //cupos.put(r.getType(), );
+                    }
+
+
                     for (int posmes = 0; posmes < 2; posmes++) {
                         int mesActual = checkInLocalDate.getMonthValue() + posmes;
                         LocalDate d = LocalDate.of(checkInLocalDate.getYear(), mesActual, 1);
@@ -163,6 +187,11 @@ public class CMSServiceImpl implements CMSService {
 
                             cw.getDays().add(cd = new HotelAvailabilityCalendarDay(nd, d.getDayOfWeek().getValue(), d.getDayOfMonth(), d.format(df), "na"));
 
+
+                            if (!cuboParos[0].getOrDefault(d, false)) cd.setStyleName("av");
+
+                            /*
+
                             DispoRQ rq = new DispoRQ(hoy, nd, ndx, ocs, false);
                             AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq, true, hoy);
                             if (ah != null) {
@@ -181,6 +210,8 @@ public class CMSServiceImpl implements CMSService {
                                 if (!or) cd.setStyleName("av");
                                 diasConDIsponibilidad[0]++;
                             }
+                            */
+
                             d = d.plusDays(1);
                         }
                     }

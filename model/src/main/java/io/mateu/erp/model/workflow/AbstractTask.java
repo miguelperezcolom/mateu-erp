@@ -2,8 +2,8 @@ package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.mdd.core.annotations.*;
@@ -11,6 +11,9 @@ import io.mateu.mdd.core.app.ActionType;
 import io.mateu.mdd.core.app.MDDLink;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -82,13 +85,6 @@ public abstract class AbstractTask {
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
 
-    @Links
-    public List<MDDLink> getLinks() {
-        List<MDDLink> l = new ArrayList<>();
-        l.add(new MDDLink("Purchase Orders", PurchaseOrder.class, ActionType.OPENLIST, new Data("sendingTasks.id", getId())));
-        return l;
-    }
-
     public void execute(EntityManager em, User user) {
         try {
             getAudit().touch(user);
@@ -113,7 +109,7 @@ public abstract class AbstractTask {
         }
     }
 
-    public abstract void run(EntityManager em, User user) throws Throwable;
+    public abstract void run(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable;
 
 
 
@@ -125,5 +121,24 @@ public abstract class AbstractTask {
             t.execute(em, u);
         }
     }
+
+
+    @PostPersist@PostUpdate
+    public void post() {
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Helper.transact(em -> {
+                        AbstractTask b = em.merge(AbstractTask.this);
+                        b.execute(em, MDD.getCurrentUser());
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
+    }
+
 
 }

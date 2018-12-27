@@ -45,4 +45,9 @@ public class TPV {
     @ManyToOne
     private Office office;
 
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

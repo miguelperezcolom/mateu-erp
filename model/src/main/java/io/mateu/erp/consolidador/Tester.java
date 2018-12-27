@@ -1,10 +1,8 @@
 package io.mateu.erp.consolidador;
 
-import io.mateu.erp.dispo.interfaces.auth.IAuthToken;
-import io.mateu.erp.dispo.interfaces.portfolio.IResource;
+import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.hotel.Hotel;
-import org.easytravelapi.hotel.Occupancy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +32,7 @@ public class Tester {
                 , Arrays.asList("")
                 ,20180601
                 , 20180615
-                , Arrays.asList(new Occupancy())
+                , Arrays.asList(new Occupancy(1, 2, null))
                 , false
 
         ), (rs) -> {

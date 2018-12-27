@@ -65,9 +65,9 @@ public class ContratosYOfertas {
 
             boolean ok = o.getBookingWindowFrom() == null || !o.getBookingWindowFrom().isBefore(formalizationDate);
 
-            ok = ok && o.getBookingWindowTo() == null || !o.getBookingWindowTo().isAfter(formalizationDate);
+            ok = ok && (o.getBookingWindowTo() == null || !o.getBookingWindowTo().isAfter(formalizationDate));
 
-            ok = ok && o.getLastCheckout() == null || !o.getLastCheckout().isBefore(salida);
+            ok = ok && (o.getLastCheckout() == null || !o.getLastCheckout().isBefore(salida));
 
             ok = ok && o.getApplicationMinimumNights() <= noches;
 
@@ -75,7 +75,7 @@ public class ContratosYOfertas {
 
             ok = ok && o.getApplicationMinimumNights() <= noches;
 
-            ok = ok && o.getTargets().size() == 0 || o.getTargets().contains(agency);
+            ok = ok && (o.getTargets().size() == 0 || o.getTargets().contains(agency));
 
             //todo: filtrar más en este paso (fechas estancia, entrada y habitaciones)
 

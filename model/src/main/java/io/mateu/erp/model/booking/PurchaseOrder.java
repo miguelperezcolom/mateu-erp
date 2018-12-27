@@ -147,6 +147,7 @@ public class PurchaseOrder {
             joinColumns=@JoinColumn(name="purchaseorders_ID"),
             inverseJoinColumns=@JoinColumn(name="sendingtasks_ID"))
     @SearchFilter(value="Task Id", field = "id")
+    @OrderColumn(name = "_orderInPO")
     @UseLinkToListView
     private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
 
@@ -192,6 +193,9 @@ public class PurchaseOrder {
     @OneToMany(mappedBy = "purchaseOrder")
     @UseLinkToListView
     private List<PurchaseCharge> charges = new ArrayList<>();
+
+    @Ignored
+    private transient boolean summarizing = false;
 
 
 
@@ -372,36 +376,76 @@ public class PurchaseOrder {
     }
 
     @PostPersist@PostUpdate
-    public void afterSet() throws Exception, Throwable {
+    public void post() throws Exception, Throwable {
 
         long finalId = getId();
 
-        if (!isPreventAfterSet()) {
-            WorkflowEngine.add(new Runnable() {
-                @Override
-                public void run() {
+        if (!summarizing) WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
 
-                    try {
-                        Helper.transact(new JPATransaction() {
-                            @Override
-                            public void run(EntityManager em) throws Throwable {
-                                em.find(PurchaseOrder.class, finalId).afterSet(em);
+                try {
+                    Helper.transact(new JPATransaction() {
+                        @Override
+                        public void run(EntityManager em) throws Throwable {
+                            PurchaseOrder po = em.find(PurchaseOrder.class, finalId);
+                            try {
+                                po.price(em);
+                            } catch (Throwable e) {
+                                e.printStackTrace();
                             }
-                        });
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-
+                            po.summarize(em);
+                        }
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
-            });
-        }
 
+            }
+        });
 
     }
 
-    public void afterSet(EntityManager em) throws Exception, Throwable {
+    public void summarize(EntityManager em) {
+        if (summarizing) {
+            System.out.println("PO " + getId() + " is already summarizing");
+        } else {
+            summarizing = true;
+            System.out.println("PO " + getId() + ".summarize");
 
-        System.out.println("po " + getId() + ".afterset");
+            updateStatusFromTasks(em);
+
+            try {
+                summarizeServices(em);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            summarizing = false;
+        }
+    }
+
+    private void updateStatusFromTasks(EntityManager em) {
+        if (sendingTasks.size() > 0) {
+            SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
+            if (TaskStatus.FINISHED.equals(t.getStatus())) {
+                setSent(true);
+                if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
+                setSentTime(t.getFinished());
+            } else {
+                setSent(false);
+                if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
+                setSentTime(t.getFinished());
+            }
+        }
+    }
+
+    public void summarizeServices(EntityManager em) throws Exception, Throwable {
+
+        System.out.println("po " + getId() + ".summarizeServices");
+
+
+        /*
 
         for (Service s : getServices()) {
             if (s.getEffectiveProcessingStatus() < 300) {
@@ -421,10 +465,11 @@ public class PurchaseOrder {
                 s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
             }
         }
-        try {
-            price(em);
-        } catch (Throwable e) {
-            e.printStackTrace();
+
+         */
+
+        for (Service s : getServices()) {
+            s.summarize(em);
         }
 
     }

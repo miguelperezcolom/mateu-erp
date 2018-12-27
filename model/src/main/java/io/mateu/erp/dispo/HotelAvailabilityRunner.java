@@ -5,12 +5,11 @@ import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.partners.PartnerStatus;
-import io.mateu.erp.model.product.hotel.CancellationRule;
 import org.easytravelapi.common.Amount;
+import org.easytravelapi.common.BestDeal;
 import org.easytravelapi.common.CancellationCost;
 import org.easytravelapi.common.Remark;
 import org.easytravelapi.hotel.*;
-import org.easytravelapi.hotel.Occupancy;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -30,7 +29,7 @@ public class HotelAvailabilityRunner {
 
         AvailableHotel ah = new AvailableHotel();
 
-        ah.setBestDeal("NOTAVAILABLE");
+        ah.setBestDeal(null);
 
         Amount bestDeal = null;
 
@@ -91,6 +90,7 @@ public class HotelAvailabilityRunner {
                                 }
 
                                 if (opcionesValidas.size() > 0) {
+                                    /*
                                     Option o;
                                     ah.getOptions().add(o = new Option());
                                     StringBuffer sb = new StringBuffer();
@@ -119,11 +119,14 @@ public class HotelAvailabilityRunner {
                                     }
 
                                     o.setDistributionString(sb.toString());
+                                    */
 
                                     for (BoardPrice x : preciosMasBaratosPorRegimen.values()) {
+                                        /*
                                         KeyValue k = new KeyValue(rq, idAgencia, idPos, hotel.getId(), combinacionContratosOfertas.getContratos().get(0).getId(), o.getDistribution(), x);
                                         x.setKey(k.toString());
                                         o.getPrices().add(x);
+                                        */
                                         if (bestDeal == null || bestDeal.getValue() < x.getNetPrice().getValue()) bestDeal = x.getNetPrice();
                                     }
                                 }
@@ -144,19 +147,21 @@ public class HotelAvailabilityRunner {
 
         // si hay resultados completar el hotel. Si no, devolver null
 
-        if (true || ah.getOptions().size() > 0) {
-            ah.setHotelId("" + hotel.getId());
+        if (true) { // || ah.getOptions().size() > 0) {
+            ah.setHotelId("hot-" + hotel.getId());
             ah.setHotelName(hotel.getName());
             ah.setLatitude(hotel.getLat());
             ah.setLongitude(hotel.getLon());
             ah.setHotelCategoryId(hotel.getCategoryId());
             ah.setHotelCategoryName(hotel.getCategoryName());
 
-            if (bestDeal != null) ah.setBestDeal("" + bestDeal.getValue() + " " + bestDeal.getCurrencyIsoCode());
+            if (bestDeal != null) {
+                ah.setBestDeal(new BestDeal());
+                ah.getBestDeal().setRetailPrice(bestDeal);
+            }
 
             return ah;
         } else return null;
-
     }
 
     private List<LineaReserva> traducirParaPrecio(IHotel hotel, DispoRQ rq) {

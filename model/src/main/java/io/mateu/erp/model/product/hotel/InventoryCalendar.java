@@ -6,22 +6,37 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.ui.ErrorLevel;
 import com.vaadin.ui.*;
+import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.CSS;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.apache.fop.fonts.type1.AdobeStandardEncoding.q;
 
 public class InventoryCalendar extends VerticalLayout {
 
     private final ComboBox<Inventory> comboCupo;
-    private final ComboBox<RoomType> comboHabitacion;
+    private ComboBox<RoomType> comboHabitacion;
     private final ComboBox<String> modo;
+    private final Panel capaDetalle;
+    private final VerticalLayout listaDetalle;
+    private final Panel panelScrollable;
+    private final VerticalLayout contenidoPanel;
+    private final DateField del;
+    private final DateField al;
+    private final ComboBox<Integer> qt;
     private Button botonRefrescar;
     private final CssLayout capaCalendario;
     private final InventoryCalendarNavigator nav;
@@ -36,6 +51,7 @@ public class InventoryCalendar extends VerticalLayout {
 
         setSizeFull();
         addStyleName(CSS.NOPADDING);
+        addStyleName("calendariocupoocierres");
 
         HorizontalLayout hl;
         addComponent(hl = new HorizontalLayout());
@@ -49,6 +65,38 @@ public class InventoryCalendar extends VerticalLayout {
 
         hl.addComponent(comboCupo = new ComboBox<Inventory>("Inventory", (inventory != null)?inventory.getHotel().getInventories():new ArrayList<>()));
         comboCupo.setWidth("400px");
+
+        Button botonRefrescarCupo;
+        HorizontalLayout aux;
+        hl.addComponent(aux = new HorizontalLayout(botonRefrescarCupo = new Button(VaadinIcons.REFRESH)));
+        aux.setCaption("Refresh");
+        botonRefrescarCupo.addClickListener(e -> {
+
+            try {
+
+                Hotel h = comboHotel.getValue();
+                Inventory i = comboCupo.getValue();
+                RoomType rt = comboHabitacion.getValue();
+
+                comboHotel.setValue(null);
+                comboCupo.setValue(null);
+                comboHabitacion.setValue(null);
+
+                comboHotel.setDataProvider(new ListDataProvider<Hotel>(Helper.selectObjects("select x from " + Hotel.class.getName() + " x order by x.name")));
+                comboCupo.setDataProvider(new ListDataProvider<>((h != null)?h.getInventories():new ArrayList<>()));
+                comboHabitacion.setDataProvider(new ListDataProvider<>((h != null)?h.getRooms().stream().map(r -> r.getType()).collect(Collectors.toList()):new ArrayList<>()));
+
+                for (Hotel x : ((ListDataProvider<Hotel>)comboHotel.getDataProvider()).getItems()) if (x.getId() == h.getId()) comboHotel.setValue(x);
+                for (Inventory x : ((ListDataProvider<Inventory>)comboCupo.getDataProvider()).getItems()) if (x.getId() == h.getId()) comboCupo.setValue(x);
+                for (RoomType x : ((ListDataProvider<RoomType>)comboHabitacion.getDataProvider()).getItems()) if (x.getCode() == rt.getCode()) comboHabitacion.setValue(x);
+
+
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            refrescar();
+        });
 
         addComponent(hl = new HorizontalLayout());
 
@@ -78,8 +126,35 @@ public class InventoryCalendar extends VerticalLayout {
         modo.addValueChangeListener(e -> refrescar());
 
 
+        addComponent(hl = new HorizontalLayout());
+        hl.addStyleName("formulario");
+        hl.addComponent(new Label("From: "));
+        hl.addComponent(del = new DateField());
+        hl.addComponent(new Label("To: "));
+        hl.addComponent(al = new DateField());
+        hl.addComponent(new Label("Quantity: "));
+        Collection<Integer> qts = new ArrayList<>();
+        for (int i = 1; i < 100; i++) qts.add(i);
+        hl.addComponent(qt = new ComboBox<Integer>(null, qts));
+        qt.setEmptySelectionAllowed(false);
+        qt.setTextInputAllowed(false);
+        qt.setValue(1);
 
-        addComponent(capaCalendario = new CssLayout());
+
+        Button botonAbrir;
+        hl.addComponent(botonAbrir = new Button("set", VaadinIcons.CHECK_CIRCLE_O));
+        botonAbrir.addStyleName(ValoTheme.BUTTON_PRIMARY);
+        botonAbrir.addClickListener(e -> set());
+
+
+
+        addComponent(panelScrollable = new Panel(contenidoPanel = new VerticalLayout()));
+        panelScrollable.addStyleName("panelcalendario");
+        panelScrollable.addStyleName(ValoTheme.PANEL_BORDERLESS);
+        panelScrollable.addStyleName(CSS.NOPADDING);
+        contenidoPanel.addStyleName(CSS.NOPADDING);
+
+        contenidoPanel.addComponent(capaCalendario = new CssLayout());
         capaCalendario.addStyleName("calendariocupo");
 
         comboHotel.addValueChangeListener(e -> {
@@ -105,14 +180,46 @@ public class InventoryCalendar extends VerticalLayout {
         });
 
 
+        contenidoPanel.addComponent(capaDetalle = new Panel(listaDetalle = new VerticalLayout()));
+        setExpandRatio(panelScrollable, 1);
+
+        /*
         CssLayout espaciador;
         addComponent(espaciador = new CssLayout());
         setExpandRatio(espaciador, 1);
+        */
 
         refrescar();
     }
 
+    private void set() {
+        Inventory h;
+        RoomType r;
+        if ((h = comboCupo.getValue()) != null && (r = comboHabitacion.getValue()) != null && del.getValue() != null && al.getValue() != null) {
+            try {
+
+                Helper.transact(em -> {
+                    InventoryOperation o = new InventoryOperation();
+                    o.setInventory(h);
+                    o.setAction(InventoryAction.SET);
+                    o.setStart(del.getValue());
+                    o.setEnd(al.getValue());
+                    if (comboHabitacion.getValue() != null) o.setRoom(comboHabitacion.getValue());
+                    o.setQuantity(qt.getValue());
+                    o.setCreated(LocalDateTime.now());
+                    o.setCreatedBy(MDD.getCurrentUser());
+                    em.persist(o);
+                });
+            } catch (Throwable throwable) {
+                MDD.alert(throwable);
+            }
+            refrescar();
+        }
+    }
+
     protected void refrescar() {
+
+        listaDetalle.removeAllComponents();
 
         capaCalendario.removeAllComponents();
         capaCalendario.addStyleName("calendariocupo");
@@ -143,17 +250,20 @@ public class InventoryCalendar extends VerticalLayout {
 
     }
 
-    private Component construirMes(LocalDate desde) {
+    private Component construirMes(LocalDate desde) throws Throwable {
         if ("weekly".equalsIgnoreCase(modo.getValue())) return construirMesWeekly(desde);
         else return construirMesMonthly(desde);
     }
 
-    private Component construirMesMonthly(LocalDate desde) {
+    private Component construirMesMonthly(LocalDate desde) throws Throwable {
         VerticalLayout mes = new VerticalLayout();
         mes.addStyleName("mes");
         mes.addStyleName("monthly");
         mes.setWidthUndefined();
 
+
+        List<StopSalesOperation> ops = (comboHotel.getValue() != null)?StopSalesCalendar.getOperations(comboHotel.getValue(), desde, desde.plusMonths(2)):new ArrayList<>();
+        Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, desde, desde.plusMonths(1).minusDays(1), comboHabitacion.getValue(), null, null);
 
         Label l;
         Label ltitulomes;
@@ -169,7 +279,8 @@ public class InventoryCalendar extends VerticalLayout {
             fila.addStyleName("fila");
             fila.addStyleName("calendario");
 
-            fila.addComponent(l = new Label("" + desde.getMonth().toString() + " " + desde.getYear()));
+            fila.addComponent(l = new Label(""));
+            //fila.addComponent(l = new Label("" + desde.getMonth().toString() + " " + desde.getYear()));
             l.addStyleName("titulo");
             l.setWidth("200px");
 
@@ -208,6 +319,7 @@ public class InventoryCalendar extends VerticalLayout {
                 fila.addComponent(l = new Label("" + cupo[0]));
                 totalContratado += cupo[0];
                 l.addStyleName("dia");
+
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
                 }
@@ -252,6 +364,9 @@ public class InventoryCalendar extends VerticalLayout {
                 int[] cupo = cubo.getCubo(f, comboHabitacion.getValue());
                 fila.addComponent(l = new Label("" + cupo[1]));
                 l.addStyleName("dia");
+
+                if (cuboParos[0].getOrDefault(f, false)) l.addStyleName("cerrado");
+
                 if (DayOfWeek.SUNDAY.equals(f.getDayOfWeek())) {
                     l.addStyleName("domingo");
                 }
@@ -294,6 +409,8 @@ public class InventoryCalendar extends VerticalLayout {
             l.setWidth("200px");
 
 
+
+
             LocalDate f = desde.plusDays(0);
             boolean hayReservas = false;
             while (f.getMonth().equals(desde.getMonth()) || f.getDayOfMonth() != 1) {
@@ -316,7 +433,7 @@ public class InventoryCalendar extends VerticalLayout {
         return mes;
     }
 
-    private Component construirMesWeekly(LocalDate desde) {
+    private Component construirMesWeekly(LocalDate desde) throws Throwable {
         VerticalLayout vl = new VerticalLayout();
         vl.addStyleName("mes");
         vl.addStyleName("weekly");
@@ -328,6 +445,10 @@ public class InventoryCalendar extends VerticalLayout {
         titulo.setValue("" + desde.getMonth().toString() + " " + desde.getYear());
 
         LocalDate f = desde.plusDays(0);
+
+        List<StopSalesOperation> ops = (comboHotel.getValue() != null)?StopSalesCalendar.getOperations(comboHotel.getValue(), desde, desde.plusMonths(2)):new ArrayList<>();
+        Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, desde, desde.plusMonths(1).minusDays(1), comboHabitacion.getValue(), null, null);
+
 
         int diasEnBlanco = 0;
         switch (desde.getDayOfWeek()) {
@@ -378,6 +499,8 @@ public class InventoryCalendar extends VerticalLayout {
                 disponible.addStyleName("disponible");
                 disponible.setValue("" + cupo[1]);
 
+                if (cuboParos[0].getOrDefault(f, false)) disponible.addStyleName("cerrado");
+
                 VerticalLayout dcha;
                 infoCupo.addComponent(dcha = new VerticalLayout());
                 dcha.addStyleName("dcha");
@@ -398,7 +521,14 @@ public class InventoryCalendar extends VerticalLayout {
                 desviado.addStyleName("desviado");
                 desviado.setValue("" + cupo[3]);
 
-                dia.addLayoutClickListener(e -> System.out.println("click!!!"));
+                LocalDate finalF = f;
+                dia.addLayoutClickListener(e -> {
+                    try {
+                        verDetalle(finalF);
+                    } catch (Throwable throwable) {
+                        MDD.alert(throwable);
+                    }
+                });
 
             } else {
 
@@ -413,6 +543,51 @@ public class InventoryCalendar extends VerticalLayout {
 
         return vl;
     }
+
+    public void verDetalle(LocalDate f) throws Throwable {
+
+        listaDetalle.removeAllComponents();
+
+        Label lt;
+        listaDetalle.addComponent(lt = new Label("Inventory operations for " + f + ":"));
+        lt.addStyleName(ValoTheme.LABEL_H3);
+
+        if (comboCupo.getValue() != null && comboHabitacion.getValue() != null) {
+
+            Inventory inventory = comboCupo.getValue();
+            RoomType room = comboHabitacion.getValue();
+
+            for (HotelContract c : inventory.getContracts()) {
+                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom() != null && a.getRoom().equals(room) && (a.getStart() == null || !a.getStart().isAfter(f)) && (a.getEnd() == null || !a.getEnd().isBefore(f))) listaDetalle.addComponent(new Label("" + c + " " + (a.getQuantity() >= 0?"+":"") + a.getQuantity()));
+            }
+
+
+            for (Inventory dependant : inventory.getDependantInventories()) {
+                for (HotelContract c : dependant.getContracts()) if (!inventory.getContracts().contains(c)) {
+                    if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom() != null && a.getRoom().equals(room) && (a.getStart() == null || !a.getStart().isAfter(f)) && (a.getEnd() == null || !a.getEnd().isBefore(f))) listaDetalle.addComponent(new Label("" + c + " " + (a.getQuantity() > 0?"":"+") + (-1 * a.getQuantity())));
+                }
+            }
+
+            for (InventoryOperation a : inventory.getOperations()) {
+                int q = a.getQuantity();
+                if (InventoryAction.SUBSTRACT.equals(a.getAction())) q *= -1;
+                if (a.getRoom() != null && a.getRoom().equals(room) && (a.getStart() == null || !a.getStart().isAfter(f)) && (a.getEnd() == null || !a.getEnd().isBefore(f))) listaDetalle.addComponent(new Label("" + a + " " + (InventoryAction.SET.equals(a.getAction())?"=":(q >= 0?"+":"")) + q));
+            }
+
+            for (HotelBookingLine l : inventory.getBookings()) {
+                if (l.getBooking().isActive() && l.isActive()) {
+                    HotelBookingLine a = l;
+                    int q = -1 * a.getRooms();
+                    if (a.getRoom() != null && a.getRoom().getType().equals(room) && (a.getStart() == null || !a.getStart().isAfter(f)) && (a.getEnd() == null || !a.getEnd().isBefore(f))) listaDetalle.addComponent(new Label("" + a.getBooking() + " " + (q >= 0?"+":"") + q));
+                }
+            }
+
+        }
+
+        if (listaDetalle.getComponentCount() <= 1) listaDetalle.addComponent(new Label("No inventory operation for " + f));
+
+    }
+
 
 
     @Override

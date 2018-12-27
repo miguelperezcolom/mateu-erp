@@ -2,7 +2,6 @@ package io.mateu.erp.dispo;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.hotel.Occupancy;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

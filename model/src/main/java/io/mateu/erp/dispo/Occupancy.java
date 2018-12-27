@@ -1,24 +1,38 @@
 package io.mateu.erp.dispo;
 
-public class Occupancy extends org.easytravelapi.hotel.Occupancy {
+public class Occupancy {
 
-    private String boardId;
-
+    private int numberOfRooms;
+    private int paxPerRoom;
+    private int[] ages;
 
     public Occupancy(int numberOfRooms, int paxPerRoom, int[] ages) {
-        super(numberOfRooms, paxPerRoom, ages);
+        this.numberOfRooms = numberOfRooms;
+        this.paxPerRoom = paxPerRoom;
+        this.ages = ages;
     }
 
-    public Occupancy(int numberOfRooms, int paxPerRoom, int[] ages, String boardId) {
-        super(numberOfRooms, paxPerRoom, ages);
-        this.boardId = boardId;
+    public int getNumberOfRooms() {
+        return numberOfRooms;
     }
 
-    public String getBoardId() {
-        return boardId;
+    public void setNumberOfRooms(int numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
     }
 
-    public void setBoardId(String boardId) {
-        this.boardId = boardId;
+    public int getPaxPerRoom() {
+        return paxPerRoom;
+    }
+
+    public void setPaxPerRoom(int paxPerRoom) {
+        this.paxPerRoom = paxPerRoom;
+    }
+
+    public int[] getAges() {
+        return ages;
+    }
+
+    public void setAges(int[] ages) {
+        this.ages = ages;
     }
 }

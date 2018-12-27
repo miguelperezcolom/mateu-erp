@@ -14,6 +14,7 @@ import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -151,28 +152,24 @@ public class Hotel extends AbstractProduct implements IHotel {
     }
 
 
-
-    @PrePersist@PreUpdate
+    @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
-
         if (getStopSales() == null) {
-            setStopSales(new StopSales());
-            getStopSales().setHotel(this);
-            em.persist(getStopSales());
-        }
-
-
-        if (false && getRealInventory() == null) {
-            setRealInventory(new Inventory());
-            getRealInventory().setHotel(this);
-            getRealInventory().setName("Real inventory");
-            em.persist(getRealInventory());
+            WorkflowEngine.add((() -> {
+                try {
+                    Helper.transact(em -> {
+                        Hotel h = em.merge(this);
+                        h.setStopSales(new StopSales());
+                        h.getStopSales().setHotel(this);
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }));
         }
 
     }
-
 
 
     @Action(order = 1)

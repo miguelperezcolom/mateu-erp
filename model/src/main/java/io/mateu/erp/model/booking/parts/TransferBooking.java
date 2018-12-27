@@ -96,7 +96,7 @@ public class TransferBooking extends Booking {
     }
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
         //el primer servicio siempre
         if (arrivalFlightTime != null) {
             TransferService s = null;

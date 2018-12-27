@@ -8,12 +8,10 @@ import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.DependsOn;
-import io.mateu.mdd.core.annotations.KPI;
-import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +20,8 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.Adler32;
 
@@ -65,6 +65,9 @@ public class HotelBookingLine {
         return new ListDataProvider(booking != null && booking.getHotel() != null?booking.getHotel().getBoards():new ArrayList());
     }
 
+    @Ignored
+    private transient int roomsBefore;
+
     private int rooms;
     private int adultsPerRoon;
     private int childrenPerRoom;
@@ -81,6 +84,9 @@ public class HotelBookingLine {
 
     @ManyToOne
     private Inventory inventory;
+
+    @Ignored
+    private transient Inventory oldInventory;
 
     @DependsOn("contract")
     public DataProvider getInventoryDataProvider() {
@@ -117,167 +123,273 @@ public class HotelBookingLine {
     @KPI
     private double value;
 
-    @Action()
-    public void check() {
+    @KPI
+    private boolean valued;
 
-        occupationOk = true;
-        salesClosed = true;
-        enoughRooms = true;
-        release = true;
-        minStay = true;
-        weekDays = true;
+    @KPI
+    private boolean available;
 
-        LocalDate effectiveEnd = end != null?end.minusDays(1):null;
 
-        if (booking.getHotel() != null) {
+    @Action(order = 1)
+    @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract, inventory")
+    public void check() throws Throwable {
 
-            if (room != null) {
+        if (active) {
 
-                int pax = adultsPerRoon + childrenPerRoom;
-                int infants = 0;
-                if (ages != null) for (int i = 0; i < ages.length; i++) if (ages[i] < 2) infants++;
-                infants = infants / rooms;
-                int effectiveChildren = childrenPerRoom - infants;
+            occupationOk = true;
+            salesClosed = true;
+            enoughRooms = true;
+            release = true;
+            minStay = true;
+            weekDays = true;
 
-                if (pax < room.getMinPax()) occupationOk = false;
-                else if (infants > 0 && !room.isInfantsAllowed()) occupationOk = false;
-                else if (effectiveChildren > 0 && !room.isChildrenAllowed()) occupationOk = false;
-                else {
-                    for (MaxCapacity c : room.getMaxCapacities().getCapacities()) {
-                        int resChildren = effectiveChildren;
-                        if (room.isInfantsInBed() && infants > c.getInfants()) resChildren += infants - c.getInfants();
-                        int resAdults = adultsPerRoon;
-                        if (resChildren > c.getChildren()) resAdults += resChildren - c.getChildren();
-                        if (c.getAdults() < resAdults) {
-                            occupationOk = false;
-                            break;
+            LocalDate effectiveEnd = end != null?end.minusDays(1):null;
+
+            if (booking.getHotel() != null) {
+
+                if (room != null) {
+
+                    int pax = adultsPerRoon + childrenPerRoom;
+                    int infants = 0;
+                    if (ages != null) for (int i = 0; i < ages.length; i++) if (ages[i] < 2) infants++;
+                    if (rooms > 0) infants = infants / rooms;
+                    int effectiveChildren = childrenPerRoom - infants;
+
+                    if (pax < room.getMinPax()) occupationOk = false;
+                    else if (infants > 0 && !room.isInfantsAllowed()) occupationOk = false;
+                    else if (effectiveChildren > 0 && !room.isChildrenAllowed()) occupationOk = false;
+                    else {
+                        for (MaxCapacity c : room.getMaxCapacities().getCapacities()) {
+                            int resChildren = effectiveChildren;
+                            if (room.isInfantsInBed() && infants > c.getInfants()) resChildren += infants - c.getInfants();
+                            int resAdults = adultsPerRoon;
+                            if (resChildren > c.getChildren()) resAdults += resChildren - c.getChildren();
+                            if (c.getAdults() < resAdults) {
+                                occupationOk = false;
+                                break;
+                            }
                         }
                     }
-                }
-            }
 
-            for (StopSalesLine l : booking.getHotel().getStopSales().getLines()) {
-                if (start == null || end == null || l.getStart().isBefore(effectiveEnd) && l.getEnd().isAfter(start)) {
-                    if (booking.getAgency() == null || l.getActors().size() == 0 || l.getActors().contains(booking.getAgency())) {
-                        if (room == null || l.getRooms().size() == 0 || l.getRooms().contains(room.getType())) {
-                            if (contract == null || l.getContracts().size() == 0 || l.getContracts().contains(contract)) {
+                    if (board != null && booking != null) {
+
+                        List<StopSalesOperation> ops = new ArrayList<>();
+                        try {
+                            ops = StopSalesCalendar.getOperations(booking.getHotel(), start, effectiveEnd);
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
+                        }
+                        Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, start, effectiveEnd, room.getType(), board.getType(), booking.getAgency());
+
+
+                        for (LocalDate d = start.plusDays(0); d.isBefore(end); d = d.plusDays(1)) {
+                            if (cuboParos[0].getOrDefault(d, false)) {
                                 salesClosed = false;
                                 break;
                             }
                         }
+
                     }
+
+
                 }
-            }
-            if (contract != null) {
-                if (start != null) {
-                    long releaseReserva = DAYS.between(LocalDate.now(), start);
-                    if (booking.getFormalizationDate() != null) releaseReserva = DAYS.between(booking.getFormalizationDate(), start);
-                    else if (booking.getAudit() != null && booking.getAudit().getCreated() != null) releaseReserva = DAYS.between(booking.getAudit().getCreated().toLocalDate(), start);
-                    if (releaseReserva < 0) release = false;
-                    else for (ReleaseRule r : contract.getTerms().getReleaseRules()) {
-                        if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
-                            if (room == null || r.getRooms().size() == 0 || r.getRooms().contains(room.getType().getCode())) {
-                                release = releaseReserva <= r.getRelease();
-                                break;
-                            }
-                        }
-                    }
-                    if (end != null) {
-                        long noches = DAYS.between(start, end);
-                        for (MinimumStayRule r : contract.getTerms().getMinimumStayRules()) {
+
+                if (contract != null) {
+                    if (start != null) {
+                        long releaseReserva = DAYS.between(LocalDate.now(), start);
+                        if (booking.getFormalizationDate() != null) releaseReserva = DAYS.between(booking.getFormalizationDate().toLocalDate(), start);
+                        else if (booking.getAudit() != null && booking.getAudit().getCreated() != null) releaseReserva = DAYS.between(booking.getAudit().getCreated().toLocalDate(), start);
+                        if (releaseReserva < 0) release = false;
+                        else for (ReleaseRule r : contract.getTerms().getReleaseRules()) {
                             if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
                                 if (room == null || r.getRooms().size() == 0 || r.getRooms().contains(room.getType().getCode())) {
-                                    if (board == null || r.getBoards().size() == 0 || r.getBoards().contains(board.getType().getCode())) {
-                                        minStay = false;
-                                        break;
-                                    }
+                                    release = releaseReserva >= r.getRelease();
+                                    break;
                                 }
                             }
                         }
-                        minStay = true;
-
-                        for (WeekDaysRule r : contract.getTerms().getWeekDaysRules()) {
-                            if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
-                                weekDays = false;
-                                break;
+                        if (end != null) {
+                            long noches = DAYS.between(start, end);
+                            for (MinimumStayRule r : contract.getTerms().getMinimumStayRules()) {
+                                if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
+                                    if (room == null || r.getRooms().size() == 0 || r.getRooms().contains(room.getType().getCode())) {
+                                        if (board == null || r.getBoards().size() == 0 || r.getBoards().contains(board.getType().getCode())) {
+                                            minStay = false;
+                                            break;
+                                        }
+                                    }
+                                }
                             }
-                        }
+                            minStay = true;
 
-                    }
-                }
-            }
-            if (inventory != null && start != null && end != null && room != null) {
-
-                int noches = new Long(DAYS.between(start, end)).intValue() - 1;
-
-                int[] cupo = new int[noches];
-
-                for (InventoryLine l : inventory.getLines()) {
-                    if (l.getRoom().equals(room.getType())) {
-                        if (l.getStart().isBefore(effectiveEnd) && l.getEnd().isAfter(start)) {
-                            int desde = new Long(DAYS.between(start, l.getStart())).intValue();
-                            if (desde < 0) desde = 0;
-                            int hasta = new Long(DAYS.between(start, l.getEnd())).intValue();
-                            if (hasta > noches) hasta = noches;
-                            for (int i = desde; i < hasta; i++) {
-                                cupo[i] += l.getQuantity();
+                            for (WeekDaysRule r : contract.getTerms().getWeekDaysRules()) {
+                                if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
+                                    weekDays = false;
+                                    break;
+                                }
                             }
+
                         }
                     }
                 }
+                if (inventory != null && start != null && end != null && room != null) {
 
-                int max = 0;
-                for (int i =  0; i < cupo.length; i++) {
-                    if (i == 0 || max > cupo[i]) max = cupo[i];
+                    int noches = new Long(DAYS.between(start, end)).intValue() - 1;
+
+                    if (noches > 0) {
+
+                        int[] cupo = getAvailableInventory();
+
+                        int max = 0;
+                        for (int i =  0; i < cupo.length; i++) {
+                            if (i == 0 || max > cupo[i]) max = cupo[i];
+                        }
+
+                        roomsLeft = max + roomsBefore - rooms;
+
+                        enoughRooms = rooms - roomsBefore <= 0 || (rooms - roomsBefore) <= roomsLeft;
+
+                    }
+
                 }
-                roomsLeft = max;
-                enoughRooms = rooms <= max;
             }
+
+            validationMessages = "checked! ;)";
+
+            available = occupationOk && salesClosed && enoughRooms && release && minStay && weekDays;
+
+            booking.updateData();
+
         }
-
-        validationMessages = "checked! ;)";
-
-        booking.updateData();
 
     }
 
+    private int[] getAvailableInventory() throws Throwable {
+        int noches = new Long(DAYS.between(start, end)).intValue() - 1;
+        int[] cupo = getAvailableInventory(inventory);
+        if (contract != null && contract.getSaleOf() != null && !contract.getSaleOf().getInventory().equals(inventory)) {
+            int[] cupoCompra = getAvailableInventory(contract.getSaleOf().getInventory());
+            for (int i = 0; i < noches; i++) if (cupoCompra[i] < cupo[i]) cupo[i] = cupoCompra[i];
+        }
+        return cupo;
+    }
+
+    private int[] getAvailableInventory(Inventory inventory) throws Throwable {
+        LocalDate effectiveEnd = end.minusDays(1);
+        int noches = new Long(DAYS.between(start, effectiveEnd)).intValue();
+        int[] cupo = new int[noches];
+
+        for (HotelContract c : inventory.getContracts()) {
+            if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom().equals(room.getType())) {
+                if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                    int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                    if (desde < 0) desde = 0;
+                    int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                    if (hasta > noches) hasta = noches;
+                    for (int i = desde; i < hasta; i++) {
+                        cupo[i] += a.getQuantity();
+                    }
+                }
+            }
+        }
+
+        for (Inventory dependant : inventory.getDependantInventories()) {
+            for (HotelContract c : dependant.getContracts()) if (!inventory.getContracts().contains(c)) {
+                if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom().equals(room.getType())) {
+                    if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                        int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                        if (desde < 0) desde = 0;
+                        int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                        if (hasta > noches) hasta = noches;
+                        for (int i = desde; i < hasta; i++) {
+                            cupo[i] += a.getQuantity();
+                        }
+                    }
+                }
+            }
+        }
+
+        for (InventoryOperation a : inventory.getOperations()) {
+            if (a.getRoom().equals(room.getType())) {
+                if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                    int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                    if (desde < 0) desde = 0;
+                    int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                    if (hasta > noches) hasta = noches;
+                    for (int i = desde; i < hasta; i++) {
+                        if (InventoryAction.ADD.equals(a.getAction())) cupo[i] += a.getQuantity();
+                        else if (InventoryAction.SUBSTRACT.equals(a.getAction())) cupo[i] -= a.getQuantity();
+                        if (InventoryAction.SET.equals(a.getAction())) cupo[i] = a.getQuantity();
+                    }
+                }
+            }
+        }
+
+        for (HotelBookingLine a : inventory.getBookings()) {
+            if (a.getBooking().isActive() && a.isActive()) {
+                if (a.getRoom().getType().equals(room.getType())) {
+                    if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                        int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                        if (desde < 0) desde = 0;
+                        int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                        if (hasta > noches) hasta = noches;
+                        for (int i = desde; i < hasta; i++) {
+                            cupo[i] -= a.getRoomsBefore();
+                        }
+                    }
+                }
+            }
+        }
+
+        return cupo;
+    }
+
     @Action(order = 2)
+    @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract")
     public void price() {
+        value = 0;
+        valued = false;
         if (start != null && end != null && room != null && board != null && contract != null && contract.getTerms() != null) {
 
             LocalDate effectiveEnd = end != null?end.minusDays(1):null;
 
             int noches = new Long(DAYS.between(start, end)).intValue();
 
-            int y = adultsPerRoon + childrenPerRoom + 1;
-            int totaly = rooms * y;
-            double[][] v = new double[noches][totaly];
-            for (int i = 0; i < v.length; i++) v[i] = new double[totaly];
+            if (noches > 0) {
+                int y = adultsPerRoon + childrenPerRoom + 1;
+                int totaly = rooms * y;
+                double[][] v = new double[noches][totaly];
+                boolean[] vd = new boolean[noches];
+                for (int i = 0; i < v.length; i++) v[i] = new double[totaly];
 
-            for (LinearFare f : contract.getTerms().getFares()) {
-                for (DatesRange dr : f.getDates()) {
-                    if (dr.getStart().isBefore(effectiveEnd) && dr.getEnd().isAfter(start)) {
-                        int desde = new Long(DAYS.between(start, dr.getStart())).intValue();
-                        if (desde < 0) desde = 0;
-                        int hasta = new Long(DAYS.between(start, dr.getEnd())).intValue();
-                        if (hasta > noches) hasta = noches;
-                        for (int noche = desde; noche < hasta; noche++) {
+                for (LinearFare f : contract.getTerms().getFares()) {
+                    for (DatesRange dr : f.getDates()) {
+                        if (!dr.getStart().isAfter(effectiveEnd) && !dr.getEnd().isBefore(start)) {
+                            int desde = new Long(DAYS.between(start, dr.getStart())).intValue();
+                            if (desde < 0) desde = 0;
+                            int hasta = new Long(DAYS.between(start, dr.getEnd())).intValue();
+                            if (hasta >= noches) hasta = noches - 1;
+                            for (int noche = desde; noche <= hasta; noche++) {
 
-                            for (LinearFareLine l : f.getLines()) {
+                                for (LinearFareLine l : f.getLines()) {
 
-                                if (l.getRoomTypeCode() == null || l.getRoomTypeCode().equals(room.getType())) {
+                                    if (l.getRoomTypeCode() == null || l.getRoomTypeCode().equals(room.getType())) {
 
-                                    if (l.getBoardTypeCode() == null || l.getBoardTypeCode().equals(board.getType())) {
+                                        if (l.getBoardTypeCode() == null || l.getBoardTypeCode().equals(board.getType())) {
 
-                                        for (int hab = 0; hab < rooms; hab++) {
-                                            v[noche][hab * y] += l.getLodgingPrice();
+                                            vd[noche] = true;
 
-                                            for (int adult = 0; adult < adultsPerRoon; adult++) {
-                                                v[noche][hab * y + 1 + adult] += l.getAdultPrice();
-                                            }
+                                            for (int hab = 0; hab < rooms; hab++) {
+                                                v[noche][hab * y] += l.getLodgingPrice();
 
-                                            for (int child = 0; child < childrenPerRoom; child++) {
-                                                v[noche][hab * y + 1 + adultsPerRoon + child] += l.getChildPrice().applicarA(l.getAdultPrice());
+                                                for (int adult = 0; adult < adultsPerRoon; adult++) {
+                                                    v[noche][hab * y + 1 + adult] += l.getAdultPrice();
+                                                }
+
+                                                for (int child = 0; child < childrenPerRoom; child++) if (l.getChildPrice() != null) {
+                                                    v[noche][hab * y + 1 + adultsPerRoon + child] += l.getChildPrice().applicarA(l.getAdultPrice());
+                                                }
+
                                             }
 
                                         }
@@ -287,17 +399,22 @@ public class HotelBookingLine {
                                 }
 
                             }
-
                         }
                     }
                 }
+
+                double total = 0;
+                for (int i = 0; i < v.length; i++) for (int j = 0; j < v[i].length; j++) {
+                    total += v[i][j];
+                }
+                value = Helper.roundEuros(total);
+                valued = true;
+                for (int i =  0; i < vd.length; i++) if (!vd[i]) {
+                    valued = false;
+                    break;
+                }
             }
 
-            double total = 0;
-            for (int i = 0; i < v.length; i++) for (int j = 0; j < v[i].length; j++) {
-                total += v[i][j];
-            }
-            value = Helper.roundEuros(total);
 
         }
         booking.updateData();
@@ -370,12 +487,52 @@ public class HotelBookingLine {
 
     @Override
     public String toString() {
-        String h = rooms + " x " + room + " in " + board + " from " + start + " to " + end + " occupied by " + adultsPerRoon + " adults";
-        if (childrenPerRoom > 0) h += " and " + childrenPerRoom + " children";
-        h += " per room ";
-        if (ages != null) h += " (" + Arrays.toString(ages) + " years old)";
-        h += " (" + (contract != null ? contract : "NO CONTRACT");
-        h += "/" + (inventory != null ? inventory : "NO INVENTORY") + ")";
+        String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
+        h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
+        h += "<tr><th>Nr of rooms:</th><td>" + rooms + "</td></tr>";
+        h += "<tr><th>Room type:</th><td>" + room + "</td></tr>";
+        h += "<tr><th>Board type:</th><td>" + board + "</td></tr>";
+        h += "<tr><th>Pax per room:</th><td>" + adultsPerRoon + " adults + " +  childrenPerRoom + " children</td></tr>";
+        h += "<tr><th>Children ages:</th><td>" + (ages != null?Arrays.toString(ages):"-") + "</td></tr>";
+        h += "<tr><th>Contract:</th><td>" + (contract != null ? contract : "NO CONTRACT") + "</td></tr>";
+        h += "<tr><th>Inventory:</th><td>" + (inventory != null ? inventory : "NO INVENTORY") + "</td></tr>";
+        h += "<tr><th>Available:</th><td>" + (available?"YES":"ON REQUEST") + "</td></tr>";
+        h += "<tr><th>Value:</th><td>" + (valued?value:"-") + "</td></tr>";
+        h += "</table>";
         return h;
     }
+
+
+    @PostLoad
+    public void postLoad() {
+        oldInventory = inventory;
+        roomsBefore = rooms;
+    }
+
+    @PostUpdate@PostPersist@PostRemove
+    public void post() {
+        WorkflowEngine.add(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Helper.transact(em -> {
+
+                        HotelBookingLine h = em.find(HotelBookingLine.class, getId());
+
+                        if (oldInventory != null && !oldInventory.equals(h.getInventory())) {
+                            oldInventory = em.merge(oldInventory);
+                            oldInventory.getBookings().remove(h); // por si acaso
+                            oldInventory.build(em);
+                        }
+
+                        if (h.getInventory() != null) h.getInventory().build(em);
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        });
+    }
+
 }

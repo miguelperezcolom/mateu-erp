@@ -173,7 +173,7 @@ public class Tester {
             k.setCheckIn(20180115);
             k.setCheckOut(20180123);
             Allocation a;
-            k.getAllocation().add(a = new Allocation(1, 2, null, "DBL", ""));
+            //k.getAllocation().add(a = new Allocation(1, 2, null, "DBL", ""));
             BoardPrice bp;
             k.setBoardPrice(bp = new BoardPrice());
             bp.setBoardBasisId("HB");

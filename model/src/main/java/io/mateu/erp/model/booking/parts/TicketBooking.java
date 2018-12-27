@@ -89,7 +89,7 @@ public class TicketBooking extends Booking {
 
 
     @Override
-    protected void generateServices(EntityManager em) {
+    public void generateServices(EntityManager em) {
 
     }
 

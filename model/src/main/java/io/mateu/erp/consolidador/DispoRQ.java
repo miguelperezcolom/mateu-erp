@@ -1,8 +1,8 @@
 package io.mateu.erp.consolidador;
 
+import io.mateu.erp.dispo.Occupancy;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.hotel.Occupancy;
 
 import java.util.ArrayList;
 import java.util.List;

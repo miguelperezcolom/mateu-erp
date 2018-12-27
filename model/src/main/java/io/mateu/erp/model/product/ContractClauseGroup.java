@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product;
 
+import io.mateu.mdd.core.annotations.FullWidth;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,6 +22,7 @@ public class ContractClauseGroup {
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
+    @FullWidth
     private List<ContractClause> clauses = new ArrayList<>();
 
 

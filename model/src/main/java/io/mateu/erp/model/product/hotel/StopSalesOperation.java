@@ -65,11 +65,11 @@ public class StopSalesOperation {
 
     @SearchFilter
     @OneToMany
-    private List<Partner> actors = new ArrayList<>();
+    private List<Partner> agencies = new ArrayList<>();
 
     @SearchFilter
     @OneToMany
-    private List<HotelContract> contracts = new ArrayList<>();
+    private List<BoardType> boards = new ArrayList<>();
 
 
     @PostPersist@PostUpdate@PostRemove
@@ -84,5 +84,23 @@ public class StopSalesOperation {
                 }
             }
         });
+    }
+
+    @Override
+    public String toString() {
+        String aux = "";
+        for (RoomType r : rooms) {
+            if (!"".equals(aux)) aux += ", ";
+            aux += r.getCode();
+        }
+        for (BoardType r : boards) {
+            if (!"".equals(aux)) aux += ", ";
+            aux += r.getCode();
+        }
+        for (Partner r : agencies) {
+            if (!"".equals(aux)) aux += ", ";
+            aux += r;
+        }
+        return "" + action + " from " + start + " to " + end + (!"".equals(aux)?" on " + aux:"") + (createdBy != null?" by " + createdBy.getLogin():"");
     }
 }

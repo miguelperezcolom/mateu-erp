@@ -81,7 +81,8 @@ public class Pagina2 implements WizardPage {
                 o.setId(ah.getHotelId());
                 o.setCategory(ah.getHotelCategoryName());
                 o.setHotelName(ah.getHotelName());
-                o.setBestDeal(ah.getBestDeal());
+                if (ah.getBestDeal() != null && ah.getBestDeal().getRetailPrice() != null) o.setBestDeal("" + ah.getBestDeal().getRetailPrice().toString());
+                else o.setBestDeal("NOT AVAILABLE");
 
                 options.add(o);
 

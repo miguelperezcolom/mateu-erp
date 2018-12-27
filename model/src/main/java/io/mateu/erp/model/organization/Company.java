@@ -3,6 +3,7 @@ package io.mateu.erp.model.organization;
 import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.invoicing.InvoiceSerial;
+import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,18 @@ public class Company {
 
     @ManyToOne
     private InvoiceSerial selfBillingSerial;
+
+
+
+    @Section("Payment data")
+    private String bankName;
+    private String bankAddress;
+    private String recipient;
+    private String accountNumber;
+    private String swift;
+
+
+
 
     @Override
     public String toString() {

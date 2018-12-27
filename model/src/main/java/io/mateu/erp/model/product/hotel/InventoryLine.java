@@ -37,4 +37,9 @@ public class InventoryLine implements IInventoryLine {
     public String getRoomCode() {
         return getRoom().getCode();
     }
+
+    @Override
+    public String toString() {
+        return "" + inventory + " from " + start + " to " + end + " " + quantity + " x " + room;
+    }
 }

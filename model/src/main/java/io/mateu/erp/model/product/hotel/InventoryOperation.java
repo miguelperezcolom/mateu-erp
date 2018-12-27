@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
@@ -36,7 +37,7 @@ public class InventoryOperation {
     @ManyToOne
     @NotInEditor
     @NoChart
-    private io.mateu.erp.model.authentication.User createdBy;
+    private User createdBy;
 
     private LocalDate start;
     @Column(name = "_end")
@@ -77,5 +78,11 @@ public class InventoryOperation {
                 }
             }
         });
+    }
+
+
+    @Override
+    public String toString() {
+        return "" + action + " from " + start + " to " + end + " on " + room + (createdBy != null?" by " + createdBy.getLogin():"");
     }
 }

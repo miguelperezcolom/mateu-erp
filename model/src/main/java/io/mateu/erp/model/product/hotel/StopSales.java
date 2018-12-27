@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.mdd.core.CSS;
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -118,5 +118,10 @@ public class StopSales {
     @Action(order = 2)
     public void rebuild() throws Throwable {
         Helper.transact(em -> em.find(StopSales.class, getId()).build(em));
+    }
+
+    @Action(icon = VaadinIcons.CALENDAR, order = 3)
+    public StopSalesCalendar calendar() {
+        return new StopSalesCalendar(getHotel());
     }
 }

@@ -155,29 +155,6 @@ public class TransferService extends Service {
     }
 
 
-    @Links
-    public List<MDDLink> getLinks() {
-        List<MDDLink> l = super.getLinks();
-
-        if (this.getBooking() != null) {
-
-            TransferService r = null;
-            for (Service s : this.getBooking().getServices()) {
-                if (s.getId() != getId() && s instanceof TransferService) {
-                    r = (TransferService) s;
-                    break;
-                }
-            }
-            if (r != null) l.add(new MDDLink((TransferDirection.OUTBOUND.equals(r.getDirection()))?"Outbound":"Inbound", TransferService.class, ActionType.OPENEDITOR, new Data("_id", r.getId())));
-
-        }
-
-
-
-        return l;
-    }
-
-
     /*
     public static void price(UserData user, @Selection List<Data> _selection) throws Throwable {
         Helper.transact(new JPATransaction() {
@@ -510,47 +487,15 @@ public class TransferService extends Service {
         setFinish(s);
     }
 
-    @PostUpdate@PostPersist
-    public void afterSet() throws Throwable {
-
-        System.out.println("transferservice.afterset()");
-
-        long finalId = getId();
-
-        if (!isPreventAfterSet()) {
-            WorkflowEngine.add(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        Helper.transact(new JPATransaction() {
-                            @Override
-                            public void run(EntityManager em) throws Throwable {
-
-                                em.find(TransferService.class, finalId).afterSet(em);
-
-                            }
-                        });
-                    } catch (Throwable throwable) {
-                        throwable.printStackTrace();
-                    }
-
-                }
-            });
-        }
-
-
-    }
-
     @Override
     protected String getDescription() {
         String d = "" + getTransferType() + " transfer";
         return d;
     }
 
-    public void afterSet(EntityManager em) throws Throwable {
+    public void complete(EntityManager em) throws Throwable {
 
-        System.out.println("transferservice " + getId() + ".afterset");
+        System.out.println("transferservice " + getId() + ".complete");
 
         setAndMapTransferPoints(em);
 
@@ -565,8 +510,6 @@ public class TransferService extends Service {
         }
 
         setDirection(d);
-
-        afterSetAsService(em);
 
     }
 
@@ -993,74 +936,6 @@ public class TransferService extends Service {
                 em.persist(t);
             } else throw new Exception("No telephone or clickatell api. Please set before sending the sms");
         } else throw new Exception("No pickup time. Please set before sending the sms");
-    }
-
-
-    @Action("Solo miguel")
-    public static void repair() throws Throwable {
-
-        List<Long> ids = new ArrayList<>();
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-//                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x where x.audit.created >= :f").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
-                for (TransferService s : (List<TransferService>) em.createQuery("select x from " + TransferService.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
-                    ids.add(s.getId());
-                }
-            }
-        });
-
-
-        for (long id : ids) {
-            try {
-                Helper.transact(new JPATransaction() {
-                    @Override
-                    public void run(EntityManager em) throws Throwable {
-                        TransferService s = em.find(TransferService.class, id);
-                        s.setPreventAfterSet(true);
-                        s.setSignature(s.createSignature());
-                    }
-                });
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
-
-
-
-        ids.clear();
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                //for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x where (x.audit.created >= :f or x.sentTime > :f)").setFlushMode(FlushModeType.COMMIT).setParameter("f", LocalDateTime.of(2018, 4, 14, 0, 0)).getResultList()) {
-                for (PurchaseOrder s : (List<PurchaseOrder>) em.createQuery("select x from " + PurchaseOrder.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
-                    ids.add(s.getId());
-                }
-            }
-        });
-
-
-        for (long id : ids) {
-            try {
-                Helper.transact(new JPATransaction() {
-                    @Override
-                    public void run(EntityManager em) throws Throwable {
-                        PurchaseOrder s = em.find(PurchaseOrder.class, id);
-                        if (PurchaseOrderStatus.CONFIRMED.equals(s.getStatus())) {
-                            s.setPreventAfterSet(true);
-                            s.setSignature(s.createSignature());
-                        }
-                    }
-                });
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
-
     }
 
 }

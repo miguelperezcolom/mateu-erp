@@ -1,7 +1,6 @@
 package io.mateu.erp.services
 
-import io.mateu.erp.services.easytravelapi.CMSServiceImpl
-import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl
+import io.mateu.erp.services.easytravelapi.*
 import org.glassfish.jersey.jackson.JacksonFeature
 import org.glassfish.jersey.server.ResourceConfig
 
@@ -19,6 +18,9 @@ class MyApplication : ResourceConfig() {
 
         //packages("io.mateu.common.services"); // no funciona si registramos las clases una a una
         register(PickupConfirmationService::class.java)
+        register(CommonsServiceImpl::class.java)
+        register(TransferBookingServiceImpl::class.java)
+        register(ActivityBookingServiceImpl::class.java)
         register(HotelBookingServiceImpl::class.java)
         register(StatsResource::class.java)
         register(CMSServiceImpl::class.java)

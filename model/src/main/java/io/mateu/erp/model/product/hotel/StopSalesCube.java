@@ -71,7 +71,7 @@ public class StopSalesCube {
                     }
                 }
 
-                List<Partner> acts = (o.getActors().size() > 0)?o.getActors():actors;
+                List<Partner> acts = (o.getAgencies().size() > 0)?o.getAgencies():actors;
                 for (Partner a : acts) {
                     int posact = actors.indexOf(a);
                     switch (o.getAction()) {
@@ -100,7 +100,7 @@ public class StopSalesCube {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             for (RoomType r : o.getRooms()) if (!rooms.contains(r)) rooms.add(r);
-            for (Partner r : o.getActors()) if (!actors.contains(r)) actors.add(r);
+            for (Partner r : o.getAgencies()) if (!actors.contains(r)) actors.add(r);
         }
 
         if (rooms.size() == 0) rooms.add(new RoomType()); // dummy room

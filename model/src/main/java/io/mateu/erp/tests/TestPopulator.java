@@ -1035,7 +1035,7 @@ public class TestPopulator {
                             l.getRooms().add(h.getRooms().get((h.getRooms().size() > 1)?random.nextInt(h.getRooms().size() - 1):0).getType());
                         }
                         if (i % 10 == 0) {
-                            l.getActors().add(actores.get(random.nextInt(10) % actores.size()));
+                            l.getAgencies().add(actores.get(random.nextInt(10) % actores.size()));
                         }
 
                     }

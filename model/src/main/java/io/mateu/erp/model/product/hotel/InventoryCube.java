@@ -165,5 +165,7 @@ public class InventoryCube {
         l.setInventory(getInventory());
         l.setRoom(rooms.get(poshab));
         l.setQuantity(cubo[desdefecha][poshab]);
+
+        System.out.println("**** saving inventory line " + l);
     }
 }

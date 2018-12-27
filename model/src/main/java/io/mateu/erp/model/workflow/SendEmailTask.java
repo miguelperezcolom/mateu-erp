@@ -1,9 +1,11 @@
 package io.mateu.erp.model.workflow;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -11,11 +13,10 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.HtmlEmail;
 
 import javax.mail.internet.InternetAddress;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by miguel on 28/4/17.
@@ -26,15 +27,25 @@ import java.net.URL;
 public class SendEmailTask extends AbstractTask {
 
     @Column(name = "_to")
+    @Output
     private String to;
+    @Output
     private String cc;
     @Column(name = "_from")
+    @Output
     private String from;
+    @Output
     private String subject;
+    @Output
     private String message;
 
     @ManyToOne
+    @Output
     private Office office;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @Output
+    private List<Resource> attachments = new ArrayList<>();
 
     @Override
     public void run(EntityManager em, User user) throws Throwable {
@@ -58,7 +69,7 @@ public class SendEmailTask extends AbstractTask {
             msg = msg.replaceAll("mylogosrc", "cid:" + cid);
         }
 
-        email.setMsg(msg);
+        email.setHtmlMsg(msg);
 
         if (!Strings.isNullOrEmpty(System.getProperty("allemailsto"))) {
             email.addTo(System.getProperty("allemailsto"));
@@ -74,6 +85,14 @@ public class SendEmailTask extends AbstractTask {
                 if (!Strings.isNullOrEmpty(s)) email.addTo(s);
             }
         }
+
+        attachments.forEach(r -> {
+            try {
+                email.attach(new URL(r.toFileLocator().getUrl()), r.getName(), "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
 
 
         email.send();

@@ -1,6 +1,5 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.mdd.core.annotations.KeyClass;
 import io.mateu.mdd.core.annotations.OwnedList;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
@@ -10,7 +9,6 @@ import java.util.Map;
 
 public class RoomFare implements XMLSerializable {
 
-    @KeyClass(BoardType.class)
     @OwnedList
     private Map<String, BoardFare> farePerBoard = new HashMap<>();
 

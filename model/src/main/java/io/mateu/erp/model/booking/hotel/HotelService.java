@@ -7,6 +7,8 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.Service;
@@ -24,6 +26,7 @@ import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.AvailableHotel;
 import org.easytravelapi.hotel.BoardPrice;
 import org.easytravelapi.hotel.Option;
+import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -32,6 +35,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Entity
 @Getter
 @Setter
@@ -39,24 +44,31 @@ import java.util.*;
 @Indelible
 public class HotelService extends Service {
 
-    @Tab("Service")
     @ManyToOne
     @NotNull
     @SearchFilter
     @ListColumn
+    @Position(9)
+    @Output
     private Hotel hotel;
 
-    @ManyToOne
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Position(10)
     @Output
-    private HotelContract saleContract;
-
-    @ManyToOne
-    @Output
-    private HotelContract purchaseContract;
-
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
-    @OwnedList
     private List<HotelServiceLine> lines = new ArrayList<>();
+
+    public String getLinesHtml() {
+
+        String h = "<div class='lines'>";
+        for (HotelServiceLine l : lines) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
 
 
     public HotelService() {
@@ -96,6 +108,7 @@ public class HotelService extends Service {
 
     @Override
     public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
+        /*
         AvailableHotel ah = new HotelAvailabilityRunner().check(this.getBooking().getAgency(), getHotel(), this.getBooking().getAgency().getId(), 1, new ModeloDispo() {
             @Override
             public IHotelContract getHotelContract(long id) {
@@ -116,29 +129,34 @@ public class HotelService extends Service {
             throw new Exception("It is not possible to valuate this service");
         }
         return value;
+        */
+        return 0;
     }
 
     private boolean matches(Option o) {
         boolean matches = true;
+        /*
         int pos = 0;
         for (HotelServiceLine l : getLines()) {
             matches &= l.getRoom().getCode().equals(o.getDistribution().get(pos).getRoomId());
         }
         matches &= getLines().size() == o.getDistribution().size();
+        */
         return matches;
     }
 
     private DispoRQ createDispoRQ() {
         List<Occupancy> ocs = new ArrayList<>();
+        /*
         for (HotelServiceLine l : getLines()) {
             ocs.add(new Occupancy(l.getNumberOfRooms(), l.getAdultsPerRoom() + l.getChildrenPerRoom(), l.getAges(), l.getBoard().getCode()));
         }
+        */
         DispoRQ rq = new DispoRQ(LocalDate.now(), io.mateu.erp.dispo.Helper.toInt(getStart()), io.mateu.erp.dispo.Helper.toInt(getFinish()), ocs, false);
         return rq;
     }
 
 
-    @PostUpdate@PostPersist
     public void afterSet() throws Throwable {
 
         EntityManager em = io.mateu.mdd.core.util.Helper.getEMFromThreadLocal();
@@ -153,49 +171,6 @@ public class HotelService extends Service {
         setStart(s);
         setFinish(f);
         setActive(algunaLineaActiva);
-
-        afterSetAsService(em);
-        
-        
-        /*
-
-        WorkflowEngine.add(new Runnable() {
-
-            long serviceId = getId();
-
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            HotelService hs = em.find(HotelService.class, serviceId);
-
-                            LocalDate s = null, f = null;
-                            boolean algunaLineaActiva = false;
-                            for (HotelServiceLine l : hs.getLines()) {
-                                if (l.getStart() != null && (s == null || l.getStart().isBefore(s))) s = l.getStart();
-                                if (l.getEnd() != null && (f == null || l.getEnd().isAfter(f))) f = l.getEnd();
-                                algunaLineaActiva |= l.isActive();
-                            }
-                            hs.setStart(s);
-                            hs.setFinish(f);
-                            hs.setCancelled(!algunaLineaActiva);
-
-                            hs.afterSetAsService(em);
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-        */
-
-
     }
 
     @Override
@@ -255,11 +230,6 @@ public class HotelService extends Service {
             //s.setPos(pos);
             s.setAudit(new Audit(u));
             //s.setComment(comments);
-            if (k.getSaleContractId() > 0) s.setSaleContract(em.find(HotelContract.class, k.getSaleContractId()));
-            if (s.getSaleContract() != null) {
-                //todo: corregir!!!!
-                s.setPurchaseContract(s.getSaleContract());
-            }
 
 
             for (Allocation a : k.getAllocation()) {
@@ -276,7 +246,7 @@ public class HotelService extends Service {
                 l.setNumberOfRooms(a.getNumberOfRooms());
                 l.setAdultsPerRoom(a.getPaxPerRoom());
                 l.setChildrenPerRoom(0);
-                l.setRoom(em.find(Room.class, Long.parseLong(a.getRoomId())));
+                //l.setRoom(em.find(Room.class, Long.parseLong(a.getRoomId())));
 
             }
 
@@ -298,10 +268,94 @@ public class HotelService extends Service {
 
     @Override
     public Partner findBestProvider(EntityManager em) throws Throwable {
-        if (getPurchaseContract() != null) return getPurchaseContract().getSupplier();
-        else if (getSaleContract() != null) return getSaleContract().getSupplier();
-        else return null;
+        {
+
+            Partner p = null;
+            for (HotelContract c : hotel.getContracts()) {
+                if (ContractType.PURCHASE.equals(c.getType())) {
+                    p = c.getSupplier();
+                    if (p != null) break;
+                }
+            }
+
+            return p;
+        }
     }
 
 
+    @Override
+    public Element toXml() {
+        Element xml = super.toXml();
+
+        xml.setAttribute("type", "hotel");
+
+        xml.setAttribute("header", "" + hotel.getHotelType().getName() + " " + hotel.getName() + " " + hotel.getCategoryName());
+
+        Element els;
+        xml.addContent(els = new Element("lines"));
+
+        int pos = 0;
+        for (HotelServiceLine l : lines) {
+            Element el;
+            els.addContent(el = new Element("line"));
+            el.setAttribute("units", "" + l.getNumberOfRooms());
+            el.setAttribute("adultsperroom", "" + l.getAdultsPerRoom());
+            el.setAttribute("childrenperroom", "" + l.getChildrenPerRoom());
+            if (l.getAges() != null) el.setAttribute("ages", Arrays.toString(l.getAges()));
+            el.setAttribute("start", "" + l.getStart());
+            el.setAttribute("end", "" + l.getEnd());
+            el.setAttribute("nights", "" + DAYS.between(l.getStart(), l.getEnd().minusDays(1)));
+            el.setAttribute("room", "" + l.getRoom().getType());
+            el.setAttribute("board", "" + l.getBoard().getType());
+
+            if (pos++ > 2) break;
+        }
+
+        return xml;
+    }
+
+    public Element getSupplierXml() {
+        Element xml = new Element("supplier");
+        if (hotel != null) {
+            if (hotel.getName() != null) xml.setAttribute("name", "" + hotel.getHotelType().getName() + " " + hotel.getName() + " " + hotel.getCategoryName());
+            if (hotel.getAddress() != null) xml.setAttribute("address", hotel.getAddress() + " - " + hotel.getZone().getName() + " - " + hotel.getZone().getDestination() + " - " + hotel.getZip() + " - " + hotel.getZone().getDestination().getCountry());
+            if (hotel.getTelephone() != null) xml.setAttribute("telephone", hotel.getTelephone());
+            if (hotel.getEmail() != null) xml.setAttribute("email", hotel.getEmail());
+            if (hotel.getLat() != null && hotel.getLon() != null) xml.setAttribute("gps", hotel.getLat() + ", " + hotel.getLon());
+
+        }
+        return xml;
+    }
+
+    @Override
+    public Map<String, Object> getData() {
+        Map<String, Object> d = super.getData();
+
+        d.put("type", "hotel");
+
+        int totalpax = 0;
+        for (HotelServiceLine l: lines) totalpax += l.getNumberOfRooms() * (l.getAdultsPerRoom() + l.getChildrenPerRoom());
+        d.put("totalpax", totalpax);
+
+        List<Map<String, Object>> ls;
+        d.put("lines", ls = new ArrayList<>());
+        for (HotelServiceLine l: lines) {
+            Map<String, Object> dx = new HashMap<>();
+            dx.put("rooms", l.getNumberOfRooms());
+            dx.put("room", l.getRoom().getType().getName().toString());
+            dx.put("board", l.getBoard().getType().getName().toString());
+            dx.put("pax", l.getNumberOfRooms() * (l.getAdultsPerRoom() + l.getChildrenPerRoom()));
+            dx.put("adults", l.getNumberOfRooms() * (l.getAdultsPerRoom()));
+            dx.put("children", l.getNumberOfRooms() * (l.getChildrenPerRoom()));
+            dx.put("ages", l.getAges() != null?Arrays.toString(l.getAges()):"");
+            dx.put("start", l.getStart().toString());
+            dx.put("end", l.getEnd().toString());
+            dx.put("nights", DAYS.between(l.getStart(), l.getEnd().minusDays(1)));
+            ls.add(dx);
+        }
+
+
+
+        return d;
+    }
 }

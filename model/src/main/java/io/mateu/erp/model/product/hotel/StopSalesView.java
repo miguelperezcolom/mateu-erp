@@ -45,8 +45,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
                     @NotNull LocalDate start,
                     @NotNull LocalDate end,
                     @Tab("Rooms") List<RoomType> rooms,
-                    @Tab("Actors") List<Partner> actors,
-                    @Tab("Contracts") List<HotelContract> contracts) throws Throwable {
+                    @Tab("Actors") List<Partner> agencies) throws Throwable {
 
         StopSalesOperation o = new StopSalesOperation();
         o.setStopSales(getHotel().getStopSales());
@@ -54,9 +53,8 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
         o.setCreated(LocalDateTime.now());
         o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));
         o.setAction(action);
-        o.getActors().addAll(actors);
+        o.getAgencies().addAll(agencies);
         o.getRooms().addAll(rooms);
-        o.getContracts().addAll(contracts);
         o.setStart(start);
         o.setEnd(end);
         o.setOnNormalInventory(true);
