@@ -1,25 +1,24 @@
 package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.DataSheetImage;
 import io.mateu.erp.model.product.FeatureValue;
 import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
-import io.swagger.annotations.ApiParam;
 import org.easytravelapi.CommonsService;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -150,6 +149,12 @@ case: 'latitude': --> latitud
                     rs.getValues().add(p = new Pair());
                     p.setKey("name");
                     p.setValue(h.getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("keys");
+                    p.setValue("" + h.getKeys());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("stars");
+                    p.setValue("" + h.getStars());
                     if (!Strings.isNullOrEmpty(h.getLon())) {
                         rs.getValues().add(p = new Pair());
                         p.setKey("longitude");
@@ -307,6 +312,74 @@ case: 'latitude': --> latitud
                 }
 
                 rs.setMsg("" + l.size() + " files found.");
+            }
+        });
+
+
+        return rs;
+    }
+
+    @Override
+    public GetBookingRS getBooking(String token, String email, String bookingId) throws Throwable {
+        final GetBookingRS rs = new GetBookingRS();
+
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+
+
+        Helper.transact(new JPATransaction() {
+            @Override
+            public void run(EntityManager em) throws Throwable {
+
+
+                io.mateu.erp.model.booking.Booking bkg = em.find(io.mateu.erp.model.booking.Booking.class, Long.parseLong(bookingId));
+
+                if (bkg != null) {
+
+                    if (!email.equalsIgnoreCase(bkg.getEmail())) {
+
+                        rs.setStatusCode(404);
+                        rs.setMsg("Email " + email + " not valid for booking " + bookingId + ".");
+
+                    } else {
+                        Booking b;
+                        rs.setBooking(b = new Booking());
+
+                        b.setBookingId("" + bkg.getId());
+                        if (bkg.getAudit() != null) {
+                            b.setCreated(bkg.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
+                            b.setCreatedBy(bkg.getAudit().getCreatedBy().getLogin());
+                            b.setModified(bkg.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
+                        }
+                        b.setLeadName(bkg.getLeadName());
+                        b.setStart(bkg.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                        b.setEnd(bkg.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                        Amount a;
+                        b.setNetValue(a = new Amount());
+                        a.setCurrencyIsoCode("EUR");
+                        //a.setValue(s.getTotalNetValue());
+                        String desc = "Service file";
+                        b.setServiceType("GENERIC");
+                        if (bkg instanceof HotelBooking) {
+                            desc = "Hotel service";
+                            b.setServiceType("HOTEL");
+                        } else if (bkg instanceof TransferBooking) {
+                            desc = "Transfer service";
+                            b.setServiceType("TRANSFER");
+                        }
+                        b.setServiceDescription(desc);
+                        b.setStatus((bkg.isActive()) ? "OK" : "CANCELLED");
+
+                        rs.setMsg("Booking found.");
+                    }
+
+
+                } else {
+                    rs.setStatusCode(404);
+                    rs.setMsg("Booking " + bookingId + " not found.");
+                }
+
+
             }
         });
 

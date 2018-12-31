@@ -1,8 +1,8 @@
 package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.authentication.User;
-import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.erp.model.importing.TransferImportQueue;
+import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 

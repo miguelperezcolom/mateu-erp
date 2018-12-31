@@ -1,6 +1,5 @@
 package io.mateu.erp.model.booking;
 
-import com.vaadin.data.provider.AbstractDataProvider;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 

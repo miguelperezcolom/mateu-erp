@@ -1,11 +1,12 @@
 package io.mateu.erp.model.product.hotel;
 
 
-import com.google.common.base.Strings;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import io.mateu.erp.model.product.hotel.offer.PriceOffer;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.ColumnWidth;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.ListColumn;
+import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -13,9 +14,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Getter@Setter

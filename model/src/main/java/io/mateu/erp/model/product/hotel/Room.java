@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IRoom;
-import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;

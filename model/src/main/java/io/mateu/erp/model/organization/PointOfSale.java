@@ -1,5 +1,6 @@
 package io.mateu.erp.model.organization;
 
+import io.mateu.erp.model.tpv.TPV;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +26,9 @@ public class PointOfSale {
 
     @ManyToOne
     private Office office;
+
+    @ManyToOne
+    private TPV tpv;
 
 
     @Override

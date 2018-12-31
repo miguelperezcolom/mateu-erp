@@ -1,10 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
 import lombok.Setter;
 

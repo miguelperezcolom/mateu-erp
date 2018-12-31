@@ -1,13 +1,11 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.mdd.core.model.multilanguage.Literal;
-import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.generic.SupplementType;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 /**
  * Created by miguel on 31/1/17.

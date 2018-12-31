@@ -1,13 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.product.hotel.RoomType;
-
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Caption;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.interfaces.RpcCrudView;
-import io.mateu.mdd.core.interfaces.RpcView;
 import io.mateu.mdd.core.reflection.ReflectionHelper;
 import lombok.Getter;
 import lombok.Setter;

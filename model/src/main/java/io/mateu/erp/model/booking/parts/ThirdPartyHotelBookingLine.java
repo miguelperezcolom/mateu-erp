@@ -1,8 +1,6 @@
 package io.mateu.erp.model.booking.parts;
 
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.product.hotel.Board;
-import io.mateu.erp.model.product.hotel.Room;
 import lombok.Getter;
 import lombok.Setter;
 

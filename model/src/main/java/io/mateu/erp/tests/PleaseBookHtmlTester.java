@@ -1,25 +1,12 @@
 package io.mateu.erp.tests;
 
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
-import javax.xml.transform.stream.StreamSource;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
-import java.nio.file.Files;
 import java.util.UUID;
 
 public class PleaseBookHtmlTester {

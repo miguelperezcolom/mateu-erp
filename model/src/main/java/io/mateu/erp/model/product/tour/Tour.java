@@ -2,18 +2,19 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Section;
+import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
 import java.net.URL;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Entity
 @Getter@Setter

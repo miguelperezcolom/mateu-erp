@@ -1,6 +1,5 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.mdd.core.annotations.OwnedList;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;

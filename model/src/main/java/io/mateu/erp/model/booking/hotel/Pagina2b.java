@@ -13,9 +13,7 @@ import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.hotel.Allocation;
 import org.easytravelapi.hotel.AvailableHotel;
-import org.easytravelapi.hotel.BoardPrice;
 
 import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;

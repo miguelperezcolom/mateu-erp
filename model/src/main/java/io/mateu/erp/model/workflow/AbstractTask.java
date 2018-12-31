@@ -2,15 +2,12 @@ package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.File;
-import io.mateu.mdd.core.MDD;
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
@@ -24,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by miguel on 28/4/17.
@@ -58,6 +56,18 @@ public abstract class AbstractTask {
     @SearchFilter
     @Output
     private TaskStatus status = TaskStatus.PENDING;
+
+
+    public void setStatus(TaskStatus status) {
+        if (!Helper.equals(this.status, status)) {
+            statusChanged();
+        }
+        this.status = status;
+    }
+
+    public void statusChanged() {
+    }
+
     @ListColumn
     @SearchFilter
     @Output
@@ -66,21 +76,25 @@ public abstract class AbstractTask {
     @Output
     private String log;
     @ManyToMany
-    @SearchFilter(value="Service Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Service Id")
     @NotInEditor
     private List<Service> services = new ArrayList<>();
     @ManyToMany
-    @SearchFilter(value="File Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("File Id")
     @NotInEditor
     private List<File> files = new ArrayList<>();
 
     @ManyToMany(mappedBy = "tasks")
-    @SearchFilter(value="Booking Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Booking Id")
     @NotInEditor
     private List<Booking> bookings = new ArrayList<>();
 
     @ManyToMany(mappedBy = "sendingTasks")
-    @SearchFilter(value="Purchase Order Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Purchase Order Id")
     @NotInEditor
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
 
@@ -114,10 +128,9 @@ public abstract class AbstractTask {
 
 
     @Action("Run")
-    public static void launch(EntityManager em, UserData _user, @Selection List<Data> selection) {
+    public static void launch(EntityManager em, UserData _user, Set<AbstractTask> selection) {
         User u = em.find(User.class, _user.getLogin());
-        for (Data d : selection) {
-            AbstractTask t = em.find(AbstractTask.class, d.get("_id"));
+        for (AbstractTask t : selection) {
             t.execute(em, u);
         }
     }
@@ -125,13 +138,13 @@ public abstract class AbstractTask {
 
     @PostPersist@PostUpdate
     public void post() {
-        WorkflowEngine.add(new Runnable() {
+        if (TaskStatus.PENDING.equals(status)) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
                 try {
                     Helper.transact(em -> {
-                        AbstractTask b = em.merge(AbstractTask.this);
-                        b.execute(em, MDD.getCurrentUser());
+                        AbstractTask t = em.find(AbstractTask.class, AbstractTask.this.getId());
+                        if (TaskStatus.PENDING.equals(t.getStatus())) t.execute(em, MDD.getCurrentUser());
                     });
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();

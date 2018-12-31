@@ -4,7 +4,6 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.mdd.core.annotations.KPI;
 import io.mateu.mdd.core.annotations.NotWhenCreating;
-import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
 import lombok.Setter;

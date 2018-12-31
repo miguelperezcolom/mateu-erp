@@ -7,7 +7,6 @@ import io.mateu.mdd.core.interfaces.WizardPage;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 @Getter

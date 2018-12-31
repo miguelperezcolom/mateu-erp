@@ -3,9 +3,9 @@ package io.mateu.erp.model.product.transfer;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.world.Zone;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -34,7 +34,6 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@UseAutocompleteToSelect
 public class TransferPoint {
 
     @Id

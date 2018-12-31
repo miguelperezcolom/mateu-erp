@@ -2,10 +2,9 @@ package io.mateu.erp.model.cms;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import io.mateu.erp.model.product.hotel.Room;
 import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.product.hotel.Room;
 import io.mateu.erp.model.tpv.TPV;
-import io.mateu.mdd.core.annotations.Owned;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.util.Helper;
@@ -38,43 +37,35 @@ public class HotelWebSite extends HugoWebSite {
 
     @Tab("Home")
     @OneToOne
-    @Owned
     private HotelHomePage home;
 
     @Tab("Offers")
     @OneToOne
-    @Owned
     private HotelOffersPage offers;
 
     @Tab("Rooms")
     @OneToOne
-    @Owned
     private AbstractPage rooms;
 
     @Tab("Services")
     @OneToOne
-    @Owned
     private HotelServicesPage services;
 
     @Tab("Fotos")
     @OneToOne
-    @Owned
     private AbstractPage fotos;
 
     @Tab("Map")
     @OneToOne
-    @Owned
     private AbstractPage map;
 
     @Tab("Contact")
     @OneToOne
-    @Owned
     private HotelContactPage contact;
 
 
     @Tab("Booking")
     @OneToOne
-    @Owned
     private HotelBookingPage booking;
 
     @Override

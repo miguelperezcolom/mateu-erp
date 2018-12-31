@@ -1,8 +1,5 @@
 package io.mateu.erp.model.booking.parts;
 
-import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.erp.model.product.tour.TourVariant;

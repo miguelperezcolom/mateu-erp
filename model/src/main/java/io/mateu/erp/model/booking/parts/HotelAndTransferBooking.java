@@ -1,7 +1,6 @@
 package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;

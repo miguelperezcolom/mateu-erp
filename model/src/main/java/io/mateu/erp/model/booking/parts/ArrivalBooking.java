@@ -2,13 +2,8 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.generic.GenericService;
-import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
 

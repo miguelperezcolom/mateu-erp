@@ -1,6 +1,5 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.swagger.annotations.ApiParam;
 import org.easytravelapi.ActivityBookingService;
 import org.easytravelapi.activity.*;
 import org.easytravelapi.common.Amount;
@@ -8,11 +7,8 @@ import org.easytravelapi.common.CancellationCost;
 import org.easytravelapi.common.GetPortfolioRS;
 import org.easytravelapi.common.Remark;
 
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 /**
  * Created by miguel on 27/7/17.

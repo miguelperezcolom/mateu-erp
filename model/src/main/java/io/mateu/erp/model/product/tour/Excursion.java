@@ -3,7 +3,6 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Ignored;
 import lombok.Getter;
 import lombok.Setter;
 

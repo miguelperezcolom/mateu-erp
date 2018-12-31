@@ -7,7 +7,6 @@ import io.mateu.erp.model.product.tour.TourPriceZone;
 import io.mateu.mdd.core.annotations.SameLine;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.Document;
 import org.jdom2.Element;
 
 import javax.persistence.*;

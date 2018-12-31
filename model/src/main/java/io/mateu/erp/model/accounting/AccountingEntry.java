@@ -1,8 +1,8 @@
 package io.mateu.erp.model.accounting;
 
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
 

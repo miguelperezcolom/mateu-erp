@@ -21,11 +21,11 @@ public class CommonsTester {
 
         testPortfolio(token);
 
-        testAvailHotels(token);
+        //testAvailHotels(token);
 
-        testHotelRates(token);
+        //testHotelRates(token);
 
-        testHotelDetails(token);
+        //testHotelDetails(token);
 
         testHotelConfirm(token);
 

@@ -2,8 +2,8 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.erp.model.product.ProductType;
+import io.mateu.erp.model.product.generic.Extra;
 import lombok.Getter;
 import lombok.Setter;
 

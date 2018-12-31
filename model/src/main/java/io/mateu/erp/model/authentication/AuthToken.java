@@ -1,13 +1,13 @@
 package io.mateu.erp.model.authentication;
 
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Caption;
-import io.mateu.mdd.core.model.authentication.Permission;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Caption;
 import io.mateu.mdd.core.annotations.Indelible;
 import io.mateu.mdd.core.annotations.NewNotAllowed;
+import io.mateu.mdd.core.model.authentication.Permission;
 import lombok.Getter;
 import lombok.Setter;
 

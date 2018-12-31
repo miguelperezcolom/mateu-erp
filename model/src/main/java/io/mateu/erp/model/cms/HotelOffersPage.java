@@ -1,6 +1,5 @@
 package io.mateu.erp.model.cms;
 
-import io.mateu.mdd.core.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +14,6 @@ import java.util.List;
 public class HotelOffersPage extends AbstractPage {
 
     @OneToMany
-    @OwnedList
     @JoinColumn(name = "page_id")
     private List<Card> offers = new ArrayList<>();
 

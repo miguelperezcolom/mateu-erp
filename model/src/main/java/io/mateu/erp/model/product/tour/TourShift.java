@@ -3,7 +3,6 @@ package io.mateu.erp.model.product.tour;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.OwnedList;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.WeekDays;
 import lombok.Getter;
@@ -65,7 +64,6 @@ public class TourShift {
 
     @Tab("Pickup times")
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "shift")
-    @OwnedList
     private List<TourPickupTime> pickupTimes = new ArrayList<>();
 
 

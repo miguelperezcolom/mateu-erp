@@ -3,15 +3,12 @@ package io.mateu.erp.model.booking.parts;
 import com.google.common.collect.Lists;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.Adler32;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -356,11 +352,12 @@ public class HotelBookingLine {
             int noches = new Long(DAYS.between(start, end)).intValue();
 
             if (noches > 0) {
-                int y = adultsPerRoon + childrenPerRoom + 1;
-                int totaly = rooms * y;
-                double[][] v = new double[noches][totaly];
+                int paxPerRoom = adultsPerRoon + childrenPerRoom + 1;
+                int totalPax = rooms * paxPerRoom;
+                double[][] valorEstancia = new double[noches][totalPax];
+                double[][] valorRegimen = new double[noches][totalPax];
                 boolean[] vd = new boolean[noches];
-                for (int i = 0; i < v.length; i++) v[i] = new double[totaly];
+                for (int i = 0; i < valorEstancia.length; i++) valorEstancia[i] = new double[totalPax];
 
                 for (LinearFare f : contract.getTerms().getFares()) {
                     for (DatesRange dr : f.getDates()) {
@@ -380,14 +377,20 @@ public class HotelBookingLine {
                                             vd[noche] = true;
 
                                             for (int hab = 0; hab < rooms; hab++) {
-                                                v[noche][hab * y] += l.getLodgingPrice();
+                                                valorEstancia[noche][hab * paxPerRoom] += l.getLodgingPrice();
 
                                                 for (int adult = 0; adult < adultsPerRoon; adult++) {
-                                                    v[noche][hab * y + 1 + adult] += l.getAdultPrice();
+                                                    valorEstancia[noche][hab * paxPerRoom + 1 + adult] += l.getAdultPrice();
+                                                    valorRegimen[noche][hab * paxPerRoom + 1 + adult] += l.getMealAdultPrice();
                                                 }
 
-                                                for (int child = 0; child < childrenPerRoom; child++) if (l.getChildPrice() != null) {
-                                                    v[noche][hab * y + 1 + adultsPerRoon + child] += l.getChildPrice().applicarA(l.getAdultPrice());
+                                                for (int child = 0; child < childrenPerRoom; child++) {
+                                                    if (l.getChildPrice() != null) valorEstancia[noche][hab * paxPerRoom + 1 + adultsPerRoon + child] += l.getChildPrice().applicarA(l.getAdultPrice());
+                                                    if (l.getMealChildPrice() != null) valorRegimen[noche][hab * paxPerRoom + 1 + adultsPerRoon + child] += l.getMealChildPrice().applicarA(l.getMealAdultPrice());
+                                                }
+
+                                                for (int pax = adultsPerRoon; pax > 2; pax--) {
+                                                    if (l.getExtraAdultPrice() != null) valorEstancia[noche][hab * paxPerRoom + 1 + pax] += l.getExtraAdultPrice().applicarA(l.getAdultPrice());
                                                 }
 
                                             }
@@ -404,8 +407,9 @@ public class HotelBookingLine {
                 }
 
                 double total = 0;
-                for (int i = 0; i < v.length; i++) for (int j = 0; j < v[i].length; j++) {
-                    total += v[i][j];
+                for (int i = 0; i < valorEstancia.length; i++) for (int j = 0; j < valorEstancia[i].length; j++) {
+                    total += valorEstancia[i][j];
+                    total += valorRegimen[i][j];
                 }
                 value = Helper.roundEuros(total);
                 valued = true;
@@ -430,16 +434,19 @@ public class HotelBookingLine {
 
 
     public void setStart(LocalDate start) {
+        if (inventory != null) inventory.setUpdatePending(true);
         this.start = start;
         if (booking != null) booking.updateData();
     }
 
     public void setEnd(LocalDate end) {
+        if (inventory != null) inventory.setUpdatePending(true);
         this.end = end;
         if (booking != null) booking.updateData();
     }
 
     public void setRoom(Room room) {
+        if (inventory != null) inventory.setUpdatePending(true);
         this.room = room;
         if (booking != null) booking.updateData();
     }
@@ -450,6 +457,7 @@ public class HotelBookingLine {
     }
 
     public void setRooms(int rooms) {
+        if (inventory != null) inventory.setUpdatePending(true);
         this.rooms = rooms;
         if (booking != null) booking.updateData();
     }
@@ -471,6 +479,7 @@ public class HotelBookingLine {
 
     public void setActive(boolean active) {
         this.active = active;
+        if (inventory != null) inventory.setUpdatePending(true);
         if (booking != null) booking.updateData();
     }
 
@@ -480,6 +489,8 @@ public class HotelBookingLine {
     }
 
     public void setInventory(Inventory inventory) {
+        if (this.inventory != null && !this.inventory.equals(inventory)) this.inventory.setUpdatePending(true);
+        if (inventory != null && !inventory.equals(this.inventory)) inventory.setUpdatePending(true);
         this.inventory = inventory;
         if (booking != null) booking.updateData();
     }
@@ -502,6 +513,11 @@ public class HotelBookingLine {
         return h;
     }
 
+    public String toSimpleString() {
+        String s = "" + rooms + " x " + room.getName() + " each occupied by " + adultsPerRoon + " adults and " + childrenPerRoom + " children (" + (ages != null?Arrays.toString(ages):"") + ") from " + start + " to " + end + " (contract: " + contract + ", inventory: " + inventory + ")";
+        return s;
+    }
+
 
     @PostLoad
     public void postLoad() {
@@ -511,6 +527,7 @@ public class HotelBookingLine {
 
     @PostUpdate@PostPersist@PostRemove
     public void post() {
+        /*
         WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
@@ -533,6 +550,7 @@ public class HotelBookingLine {
                 }
             }
         });
+        */
     }
 
 }

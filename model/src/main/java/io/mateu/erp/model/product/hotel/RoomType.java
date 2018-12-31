@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
 
-import io.mateu.erp.model.world.Country;
 import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;

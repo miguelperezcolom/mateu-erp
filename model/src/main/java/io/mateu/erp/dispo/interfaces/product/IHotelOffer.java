@@ -7,7 +7,6 @@ import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.model.product.DatesRanges;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 public interface IHotelOffer {

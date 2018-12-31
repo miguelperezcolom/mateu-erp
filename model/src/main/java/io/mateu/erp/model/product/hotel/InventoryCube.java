@@ -1,8 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.hotel.RoomType;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;

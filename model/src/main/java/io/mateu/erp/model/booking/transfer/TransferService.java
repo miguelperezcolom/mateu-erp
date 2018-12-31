@@ -2,8 +2,8 @@ package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
-import io.mateu.erp.model.booking.*;
-import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.partners.Partner;
@@ -13,13 +13,9 @@ import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
-import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -63,7 +59,7 @@ public class TransferService extends Service {
     @ManyToOne
     private Vehicle preferredVehicle;
 
-    @Separator("Pickup")
+    @Section("Pickup")
     private String pickupText;
     @ManyToOne
     @SameLine
@@ -79,7 +75,7 @@ public class TransferService extends Service {
     }
 
 
-    @Separator("Dropoff")
+    @Section("Dropoff")
     private String dropoffText;
     @ManyToOne
     @SameLine
@@ -94,7 +90,7 @@ public class TransferService extends Service {
         this.effectiveDropoff = effectiveDropoff;
     }
 
-    @Separator("Flight")
+    @Section("Flight")
     private String flightNumber;
     @NotNull
     @ListColumn
@@ -103,7 +99,7 @@ public class TransferService extends Service {
     @SameLine
     private String flightOriginOrDestination;
 
-    @Separator("Pickup info")
+    @Section("Pickup info")
     @ListColumn
     private LocalDateTime pickupTime;
     @Output
@@ -761,7 +757,6 @@ public class TransferService extends Service {
 
 
 
-    @Subtitle
     public String getSubitle() {
         String s = super.toString();
         TransferService r = null;
@@ -783,9 +778,8 @@ public class TransferService extends Service {
     }
 
     @Action("Inform pickup time")
-    public static void informPickupTimeBatch(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
-        for (Data d : selection) {
-            TransferService s = em.find(TransferService.class, d.get("_id"));
+    public static void informPickupTimeBatch(UserData user, EntityManager em, Set<TransferService> selection) throws Throwable {
+        for (TransferService s : selection) {
 
             s.informPickupTime(user, em);
 
@@ -794,9 +788,8 @@ public class TransferService extends Service {
 
 
     @Action("Mark as purchased")
-    public static void markAsConfirmed(UserData user, EntityManager em, @Selection List<Data> selection) throws Throwable {
-        for (Data d : selection) {
-            TransferService s = em.find(TransferService.class, d.get("_id"));
+    public static void markAsConfirmed(UserData user, EntityManager em, Set<TransferService> selection) throws Throwable {
+        for (TransferService s : selection) {
 
             s.setAlreadyPurchased(true);
 

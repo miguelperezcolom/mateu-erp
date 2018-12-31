@@ -3,7 +3,6 @@ package io.mateu.erp.model.importing;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.parts.TransferBooking;
@@ -34,7 +33,7 @@ import java.util.List;
 @Setter
 public class TransferBookingRequest {
 
-    @ListColumn(order = true)
+    @ListColumn
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -111,7 +110,7 @@ public class TransferBookingRequest {
     public enum STATUS {OK, CANCELLED};
 
 
-    @Separator("ArrivalBooking")
+    @Section("ArrivalBooking")
     @ListColumn
     @Output
     private STATUS arrivalStatus;
@@ -184,7 +183,7 @@ public class TransferBookingRequest {
         arrivalPickupTime= checkTimeFormat(time);
     }
 
-    @Separator("Departure")
+    @Section("Departure")
     @ListColumn
     @Output
     private STATUS departureStatus;
@@ -262,7 +261,7 @@ public class TransferBookingRequest {
         departurePickupTime= checkTimeFormat(time);
     }
 
-    @Separator("Others")
+    @Section("Others")
     private String source; //xml origen o csv
 
     @Output

@@ -1,6 +1,5 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import lombok.Getter;
 import lombok.Setter;

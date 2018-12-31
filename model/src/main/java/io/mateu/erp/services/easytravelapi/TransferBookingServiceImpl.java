@@ -6,18 +6,12 @@ import io.mateu.erp.model.product.transfer.PricePer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.easytravelapi.TransferBookingService;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.BestDeal;
 import org.easytravelapi.transfer.*;
 
 import javax.persistence.EntityManager;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

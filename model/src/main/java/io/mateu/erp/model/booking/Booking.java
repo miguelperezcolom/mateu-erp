@@ -6,24 +6,24 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
-import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Amount;
-import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.invoicing.ExtraBookingCharge;
 import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.erp.model.product.AbstractContract;
+import io.mateu.erp.model.payments.DueDateType;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTransaction;
-import io.mateu.erp.model.workflow.*;
+import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -31,30 +31,23 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.Template;
-import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.HtmlEmail;
+import org.easytravelapi.common.PaymentLine;
 import org.javamoney.moneta.FastMoney;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import javax.mail.internet.InternetAddress;
-import javax.mail.util.ByteArrayDataSource;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,7 +70,7 @@ public abstract class Booking {
     @Embedded
     private Audit audit;
 
-    @ListColumn(width = 60)
+    @ListColumn
     @ManyToOne
     @QLFilter("x.agency = true")
     @ColumnWidth(100)
@@ -94,7 +87,7 @@ public abstract class Booking {
     private Partner agency;
 
     @NotNull
-    @MainSearchFilter(exactMatch = true)
+    @MainSearchFilter
     @ListColumn
     @ColumnWidth(120)
     private String agencyReference;
@@ -112,7 +105,7 @@ public abstract class Booking {
 
     private String telephone;
 
-    @ListColumn(width = 60)
+    @ListColumn
     @NotInEditor
     @HtmlCol
     @ColumnWidth(100)
@@ -163,14 +156,14 @@ public abstract class Booking {
     private String privateComments;
 
 
-    @ListColumn(width = 60)
+    @ListColumn
     @ColumnWidth(156)
     @NotInEditor
     private String description;
 
     @ManyToOne
     @NotNull
-    @ListColumn(width = 60)
+    @ListColumn
     @ColumnWidth(156)
     private PointOfSale pos;
 
@@ -178,6 +171,10 @@ public abstract class Booking {
     private LocalDateTime formalizationDate;
 
     private LocalDateTime expiryDate;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
+    @Output
+    private List<BookingDueDate> dueDates = new ArrayList<>();
 
 
 
@@ -239,7 +236,7 @@ public abstract class Booking {
     @Output
     private String priceReport;
 
-    @ListColumn(width = 60)
+    @ListColumn
     @CellStyleGenerator(ValidCellStyleGenerator.class)
     @Output
     @ColumnWidth(120)
@@ -265,16 +262,25 @@ public abstract class Booking {
     @NotWhenCreating
     @UseLinkToListView(fields = "text,nucs,invoice")
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    private List<BookingCharge> charges = new ArrayList<>();
+    private List<BookingCharge> serviceCharges = new ArrayList<>();
+
+    @NotWhenCreating
+    @UseLinkToListView(fields = "text,nucs,invoice", addEnabled = true, deleteEnabled = true)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    private List<ExtraBookingCharge> extraCharges = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking")
     @OrderColumn(name = "id")
     @UseLinkToListView(addEnabled = true, deleteEnabled = true)
     private List<BookingPaymentAllocation> payments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @UseLinkToListView
     private List<TPVTransaction> TPVTransactions = new ArrayList<>();
+
+    @NotWhenCreating
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CancellationTerm> cancellationTerms = new ArrayList<>();
 
 
     @ManyToOne
@@ -289,12 +295,13 @@ public abstract class Booking {
     private String agentName;
 
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name="booking_task",
             joinColumns=@JoinColumn(name="bookings_ID"),
             inverseJoinColumns=@JoinColumn(name="tasks_ID"))
-    @SearchFilter(value="Task Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Task Id")
     @UseLinkToListView
     private List<AbstractTask> tasks = new ArrayList<>();
 
@@ -303,14 +310,11 @@ public abstract class Booking {
 
 
     @Ignored
-    private transient boolean updatePending = false;
-    @Ignored
-    private transient boolean updating = false;
+    private boolean updatePending = true;
 
-
-    @Ignored
-    private transient boolean summarizing = false;
-
+    public void setUpdatePending(boolean updatePending) {
+        this.updatePending = updatePending;
+    }
 
 
     @Override
@@ -524,52 +528,45 @@ public abstract class Booking {
 
     @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
-    public void sendBooked(String changeEmail, String postscript) throws Throwable {
+    public void sendBooked(EntityManager em, String changeEmail, String postscript) throws Throwable {
+
+        long t0 = new Date().getTime();
+
+        AppConfig appconfig = AppConfig.get(em);
+
+        String to = changeEmail;
+        if (Strings.isNullOrEmpty(to)) {
+            to = getEmail();
+        }
+        if (Strings.isNullOrEmpty(to)) {
+            to = getAgency().getEmail();
+        }
+        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
 
-        Helper.transact(em ->{
+        SendEmailTask t;
+        tasks.add(t = new SendEmailTask());
 
-            long t0 = new Date().getTime();
+        if (getPos() != null && getPos().getOffice() != null) {
+            t.setOffice(getPos().getOffice());
+        }
+        t.setSubject("Booking " + getId() + "");
+        t.setTo(to);
+        t.setAudit(new Audit(MDD.getCurrentUser()));
+        t.setDescription("Send booked email");
+        t.getBookings().add(this);
 
-            AppConfig appconfig = AppConfig.get(em);
+        String msg = postscript;
 
-            String to = changeEmail;
-            if (Strings.isNullOrEmpty(to)) {
-                to = getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) {
-                to = getAgency().getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
+        String freemark = appconfig.getBookedEmailTemplate();
 
+        if (!Strings.isNullOrEmpty(freemark)) {
+            Map<String, Object> data = getData();
+            data.put("postscript", postscript);
+            msg = Helper.freemark(freemark, data);
+        }
 
-            SendEmailTask t;
-            tasks.add(t = new SendEmailTask());
-
-            if (getPos() != null && getPos().getOffice() != null) {
-                t.setOffice(getPos().getOffice());
-            }
-            t.setSubject("Booking " + getId() + "");
-            t.setTo(to);
-            t.setAudit(new Audit(MDD.getCurrentUser()));
-            t.setDescription("Send booked email");
-            t.getBookings().add(this);
-
-            String msg = postscript;
-
-            String freemark = appconfig.getBookedEmailTemplate();
-
-            if (!Strings.isNullOrEmpty(freemark)) {
-                Map<String, Object> data = getData();
-                data.put("postscript", postscript);
-                msg = Helper.freemark(freemark, data);
-            }
-
-            t.setMessage(msg);
-
-            em.merge(this);
-
-        });
+        t.setMessage(msg);
 
 
     }
@@ -902,18 +899,24 @@ public abstract class Booking {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (Helper.getEMFromThreadLocal().getTransaction().isActive()) WorkflowEngine.add(new Runnable() {
+        if (updatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
                 try {
                     Helper.transact(em -> {
-                        Booking b = em.merge(Booking.this);
-                        if (b.isConfirmed()) {
-                            b.generateServices(em);
+                        if (updatePending) {
+                            Booking b = em.merge(Booking.this);
+
+                            b.price(em);
+
+                            b.build(em);
+
+                            b.summarize(em);
+
+                            b.getAgency().setUpdatePending(true);
+
+                            b.setUpdatePending(false);
                         }
-                        b.price(em);
-                        b.summarize(em);
-                        b.getAgency().setUpdatePending(true);
                     });
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
@@ -924,31 +927,27 @@ public abstract class Booking {
 
     public void summarize(EntityManager em) {
 
-        if (summarizing) {
-            System.out.println("Booking " + getId() + " already summarizing");
-        } else {
-            summarizing = true;
-            System.out.println("booking " + getId() + ".summarize");
+        System.out.println("booking " + getId() + ".summarize");
 
-            //todo: actualizar estado, balances, etc
+        //todo: actualizar estado, balances, etc
 
-            if (true) {
-                for (Service x : services) {
-                    if (x.getStart() != null) {
-                        if (start == null || start.isAfter(x.getStart())) start = x.getStart();
-                        if (end == null || end.isBefore(x.getStart())) end = x.getStart();
-                    }
-
-                    if (x.getFinish() != null) {
-                        if (start == null || start.isAfter(x.getFinish())) start = x.getFinish();
-                        if (end == null || end.isBefore(x.getFinish())) end = x.getFinish();
-                    }
-
-                    if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
-                    else x.setServiceDateForInvoicing(x.getStart());
+        if (true) {
+            for (Service x : services) {
+                if (x.getStart() != null) {
+                    if (start == null || start.isAfter(x.getStart())) start = x.getStart();
+                    if (end == null || end.isBefore(x.getStart())) end = x.getStart();
                 }
+
+                if (x.getFinish() != null) {
+                    if (start == null || start.isAfter(x.getFinish())) start = x.getFinish();
+                    if (end == null || end.isBefore(x.getFinish())) end = x.getFinish();
+                }
+
+                if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
+                else x.setServiceDateForInvoicing(x.getStart());
             }
-            summarizing = false;
+
+            updateTotals(em);
         }
 
     }
@@ -962,7 +961,7 @@ public abstract class Booking {
     //@Action(order = 8, icon = VaadinIcons.SPLIT)
     @NotWhenCreating
     public void build(EntityManager em) {
-        generateServices(em);
+        if (confirmed) generateServices(em);
     }
 
     public abstract void validate() throws Exception;
@@ -990,39 +989,16 @@ public abstract class Booking {
     }
 
 
-
-
-
-    @PostLoad
-    public void postload() {
-        updating = updatePending;
+    public List<BookingCharge> getCharges() {
+        List<BookingCharge> l = new ArrayList<>();
+        l.addAll(getServiceCharges());
+        l.addAll(getExtraCharges());
+        return l;
     }
 
+
     public synchronized void askForUpdate() {
-        if (!updatePending && !updating) {
-            setUpdatePending(true);
-            WorkflowEngine.add(() -> {
-                try {
-                    Helper.transact(em -> {
-
-                        setUpdating(true);
-
-                        price(em);
-
-                        build(em);
-
-                        updateTotals(em);
-
-                        em.merge(this);
-
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-                setUpdatePending(false);
-                setUpdating(false);
-            });
-        }
+        updatePending = true;
     }
 
     private void updateTotals(EntityManager em) {
@@ -1045,21 +1021,69 @@ public abstract class Booking {
         setTotalNetValue(Helper.roundEuros(totalNeto));
         setTotalCost(Helper.roundEuros(totalCoste));
         setCurrency(em.find(Currency.class, "EUR"));
+
+        updateCancellationTerms(em);
+
+        updateDueDates(em);
+
+    }
+
+    private void updateDueDates(EntityManager em) {
+        dueDates.clear();
+        if (agency.getFinancialAgent() != null && agency.getFinancialAgent().getCustomerPaymentTerms() != null) {
+            if (!RiskType.CREDIT.equals(agency.getFinancialAgent().getRiskType())) {
+
+                PaymentTerms pts = agency.getFinancialAgent().getCustomerPaymentTerms();
+                if (pts != null) for (PaymentTermsLine l : pts.getLines()) if (PaymentReferenceDate.ARRIVAL.equals(l.getReferenceDate())) {
+                    BookingDueDate pl;
+                    dueDates.add(pl = new BookingDueDate());
+                    pl.setBooking(this);
+                    pl.setDate(start.minusDays(l.getRelease()));
+                    pl.setAmount(Helper.roundEuros(totalValue * l.getPercent() / 100d));
+                    pl.setAgent(agency.getFinancialAgent());
+                    pl.setCurrency(agency.getCurrency());
+                    pl.setPartner(agency);
+                    pl.setType(DueDateType.COLLECTION);
+                }
+            }
+        }
+    }
+
+    protected void updateCancellationTerms(EntityManager em) {
+        cancellationTerms.clear();
+        if (agency.getCancellationRules() != null) {
+            for (CancellationRule r : agency.getCancellationRules().getRules()) {
+
+                if ((r.getStart() == null || !r.getStart().isAfter(end))
+                        && (r.getEnd() == null || !r.getEnd().isBefore(start))) {
+                    CancellationTerm t;
+                    cancellationTerms.add(t = new CancellationTerm());
+                    t.setBooking(this);
+
+                    t.setDate(start.minusDays(r.getRelease()));
+
+                    //todo: completar cálculos
+                    //todo: buscar en contrato y en compra
+                    t.setAmount(Helper.roundEuros(100d * totalValue / r.getPercent()));
+                }
+
+            }
+        }
     }
 
     public abstract void priceServices() throws Throwable;
 
 
     public void updateCharges(EntityManager em) throws Throwable {
-        for (BookingCharge c : new ArrayList<>(getCharges())) {
-            c.getBooking().getCharges().remove(c);
+        for (BookingCharge c : new ArrayList<>(getServiceCharges())) {
+            c.getBooking().getServiceCharges().remove(c);
             if (c.getId() != 0) em.remove(c);
         }
-        getCharges().clear();
+        getServiceCharges().clear();
 
         if (isValueOverrided()) {
             BookingCharge c;
-            getCharges().add(c = new BookingCharge());
+            getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(getAudit().getModifiedBy()));
             c.setTotal(getValue());
 
@@ -1069,7 +1093,7 @@ public abstract class Booking {
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);
-            getCharges().add(c);
+            getServiceCharges().add(c);
 
             c.setInvoice(null);
 
@@ -1136,4 +1160,8 @@ public abstract class Booking {
     }
 
 
+    @PostLoad
+    public void postload() {
+
+    }
 }

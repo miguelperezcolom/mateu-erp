@@ -1,27 +1,18 @@
 package io.mateu.erp.model.product;
 
 import com.google.common.base.Strings;
-import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.PartnerGroup;
-import io.mateu.erp.model.payments.DueDate;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.RatesType;
-import io.mateu.erp.model.product.hotel.RoomType;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.financials.CommissionTerms;
-import io.mateu.erp.model.financials.PaymentTerms;
 import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.PartnerGroup;
+import io.mateu.erp.model.product.hotel.RatesType;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
@@ -45,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Created by miguel on 1/10/16.
@@ -416,4 +406,17 @@ public abstract class AbstractContract {
     }
 
 
+    public boolean isValidForSale(Partner agency, LocalDate start, LocalDate end) {
+        boolean ok = isActive();
+        ok = ok && (ContractType.SALE.equals(type) || (agency.getMarkup() != null && agency.getMarkup().getLine(productLine) != null));
+        ok = ok && (partners.size() == 0 || partners.contains(agency));
+        ok = ok && (bannedPartners.size() == 0 || !bannedPartners.contains(agency));
+        ok = ok && (partnerGroups.size() == 0 || partnerGroups.contains(agency.getGroup()));
+        ok = ok && (bannedPartnerGroups.size() == 0 || !bannedPartnerGroups.contains(agency.getGroup()));
+        ok = ok && (markets.size() == 0 || markets.contains(agency.getMarket()));
+        ok = ok && (bannedMarkets.size() == 0 || !bannedMarkets.contains(agency.getMarket()));
+        ok = ok && (companies.size() == 0 || companies.contains(agency.getCompany()));
+        ok = ok && (!start.isBefore(validFrom) && !end.isAfter(validTo));
+        return ok;
+    }
 }

@@ -2,8 +2,6 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.generic.GenericService;
-import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;

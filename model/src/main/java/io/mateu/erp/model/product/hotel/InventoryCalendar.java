@@ -3,12 +3,9 @@ package io.mateu.erp.model.product.hotel;
 import com.google.common.collect.Lists;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.ErrorMessage;
-import com.vaadin.shared.ui.ErrorLevel;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.CSS;
 import io.mateu.mdd.core.MDD;
@@ -22,8 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static org.apache.fop.fonts.type1.AdobeStandardEncoding.q;
 
 public class InventoryCalendar extends VerticalLayout {
 

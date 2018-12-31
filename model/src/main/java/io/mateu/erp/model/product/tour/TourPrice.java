@@ -2,13 +2,10 @@ package io.mateu.erp.model.product.tour;
 
 import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.product.generic.Price;
-import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.mdd.core.annotations.DependsOn;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.Document;
 import org.jdom2.Element;
 
 import javax.persistence.*;

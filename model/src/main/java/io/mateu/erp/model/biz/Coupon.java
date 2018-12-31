@@ -2,10 +2,8 @@ package io.mateu.erp.model.biz;
 
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.KPI;
-import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

@@ -12,7 +12,6 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.time.LocalDate;
 
 @Getter@Setter

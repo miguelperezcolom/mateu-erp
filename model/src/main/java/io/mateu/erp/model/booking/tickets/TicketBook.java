@@ -1,6 +1,5 @@
 package io.mateu.erp.model.booking.tickets;
 
-import io.mateu.erp.model.booking.parts.TicketBooking;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Output;
@@ -8,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Entity

@@ -1,8 +1,8 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.mdd.core.annotations.NoChart;
-import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.annotations.QLForCombo;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +30,11 @@ public class HotelCategory {
     @NotNull
     @NoChart
     private Literal name;
+
+    private int keys;
+
+    private int stars;
+
 
     @Override
     public String toString() {

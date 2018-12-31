@@ -2,12 +2,9 @@ package io.mateu.erp.model.invoicing;
 
 
 import com.vaadin.data.provider.DataProvider;
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.mdd.core.annotations.DependsOn;
-import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;

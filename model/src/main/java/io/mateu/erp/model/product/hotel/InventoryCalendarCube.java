@@ -7,7 +7,6 @@ import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;

@@ -1,6 +1,5 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.config.AppConfig;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +9,8 @@ import javax.persistence.Embeddable;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by miguel on 1/10/16.
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 @Embeddable
 @Getter@Setter
 public class Amount {
+
+    private transient List<AmountChangeListener> listeners = new ArrayList<>();
 
     private double value;
 
@@ -72,4 +75,12 @@ public class Amount {
     public String toString() {
         return (currency != null?currency.getIsoCode():"No currency") + " " + value;
     }
+
+    public void setValue(double value) {
+        this.value = value;
+        if (this.value != value) for (AmountChangeListener l : listeners) l.changed();
+    }
+
+
+
 }

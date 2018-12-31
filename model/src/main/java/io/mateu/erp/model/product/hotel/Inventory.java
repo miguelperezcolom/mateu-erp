@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +15,10 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -76,6 +80,9 @@ public class Inventory implements IInventory {
     private List<HotelBookingLine> bookings = new ArrayList<>();
 
 
+
+    @Ignored
+    private boolean updatePending = false;
 
 
     /*
@@ -213,5 +220,21 @@ public class Inventory implements IInventory {
     @Action(icon = VaadinIcons.CALENDAR, order = 3)
     public InventoryCalendar calendar() {
         return new InventoryCalendar(this);
+    }
+
+
+    @PostPersist@PostUpdate
+    public void post() {
+        if (updatePending) WorkflowEngine.add(() -> {
+            try {
+                if (updatePending) Helper.transact(em -> {
+                    Inventory i = em.merge(this);
+                    i.build(em);
+                    i.setUpdatePending(false);
+                });
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
     }
 }

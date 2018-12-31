@@ -1,7 +1,7 @@
-package io.mateu.erp.model.payments;
+package io.mateu.erp.model.invoicing;
+
 
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,9 +11,10 @@ import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter@Setter
-public class BookingDueDate extends DueDate {
+public class ExtraBookingCharge extends BookingCharge {
 
-    @ManyToOne@Position(1)
-    @NotNull
-    private Booking booking;
+    public ExtraBookingCharge() {
+        super(); setExtra(true);
+    }
+
 }

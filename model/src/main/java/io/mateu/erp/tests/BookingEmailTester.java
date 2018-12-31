@@ -2,7 +2,6 @@ package io.mateu.erp.tests;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 
@@ -37,7 +36,7 @@ public class BookingEmailTester {
 
             Booking b = em.find(Booking.class, id);
 
-            b.sendBooked("miguelperezcolom@gmail.com", "test " + LocalDateTime.now());
+            b.sendBooked(em, "miguelperezcolom@gmail.com", "test " + LocalDateTime.now());
 
 
         });

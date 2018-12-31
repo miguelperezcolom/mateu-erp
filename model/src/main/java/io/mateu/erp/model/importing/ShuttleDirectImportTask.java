@@ -1,11 +1,11 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
 import lombok.Getter;
 import lombok.Setter;

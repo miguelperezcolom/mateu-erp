@@ -2,9 +2,9 @@ package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.mdd.core.annotations.NoChart;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import io.mateu.mdd.core.annotations.Unmodifiable;
 import io.mateu.mdd.core.model.multilanguage.Literal;
-import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 

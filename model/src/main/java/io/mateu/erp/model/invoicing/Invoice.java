@@ -2,16 +2,15 @@ package io.mateu.erp.model.invoicing;
 
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
-import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.taxes.VATSettlement;
+import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;

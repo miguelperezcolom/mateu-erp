@@ -2,7 +2,6 @@ package io.mateu.erp.model.tpv;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.webpay.Digest;
 import io.mateu.mdd.core.util.Helper;
@@ -292,10 +291,10 @@ Para ambos protocolos:
 
 
     public String getBoton(EntityManager em) throws Exception {
-        return getBoton(em, this.getBooking().getId(), getValue(), "" + getCurrency().getIsoNumericCode());
+        return getBoton(em, this.getBooking().getId(), getValue(), "" + getCurrency().getIsoNumericCode(), "" + getCurrency().getIsoCode());
     }
 
-    public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency) throws Exception {
+    public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency, final String currencyIsoCode) throws Exception {
         if (TPVTYPE.SERMEPA.equals(getTpv().getType()) || TPVTYPE.WEBPAY.equals(getTpv().getType())) {
             ApiMacSha256 apiMacSha256 = new ApiMacSha256();
 
@@ -334,7 +333,7 @@ Para ambos protocolos:
                     + "<input type='hidden' name='item_number' value='" + getId() + "'>"
                     + "<input type='hidden' name='item_name' value='BOOKING NR " + bookingId + "'>"
                     + "<input type='hidden' name='amount' value='" + Helper.roundOffEuros(amount) + "'>"
-                    + "<input type='hidden' name='currency_code' value='" + currency + "'>"
+                    + "<input type='hidden' name='currency_code' value='" + currencyIsoCode + "'>"
                     + "<!-- Display the payment button. -->"
                     + "<input type='image' name='submit' border='0' src='http://www.paypalobjects.com/en_US/i/btn/btn_paynowCC_LG.gif' alt='PayPal - The safer, easier way to pay online'>"
                     + "<img alt='' border='0' width='1' height='1' src='http://www.paypalobjects.com/en_US/i/scr/pixel.gif' >"

@@ -3,32 +3,23 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
-import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.Amount;
-import io.mateu.erp.model.invoicing.BookingCharge;
-import io.mateu.mdd.core.interfaces.GridDecorator;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
-import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.interfaces.GridDecorator;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +32,10 @@ import org.jdom2.output.XMLOutputter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -84,6 +78,11 @@ public abstract class Service {
     @NotNull
     private Booking booking;
 
+    public void setBooking(Booking booking) {
+        if (!Helper.equals(this.booking, booking)) updatePending = true;
+        this.booking = booking;
+    }
+
     @ManyToOne
     @Output
     private ManagedEvent managedEvent;
@@ -104,15 +103,18 @@ public abstract class Service {
     private ProcessingStatus processingStatus = ProcessingStatus.INITIAL;
 
     public void setProcessingStatus(ProcessingStatus processingStatus) {
-        this.processingStatus = processingStatus;
-        if (getProcessingStatus() != null) switch (getProcessingStatus()) {
-            case INITIAL: setEffectiveProcessingStatus(100); break;
-            case DATA_OK: setEffectiveProcessingStatus(200); break;
-            case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
-            case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
-            case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
-            case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
-            default: setEffectiveProcessingStatus(0);
+        if (!Helper.equals(this.processingStatus, processingStatus)) {
+            this.processingStatus = processingStatus;
+            if (getProcessingStatus() != null) switch (getProcessingStatus()) {
+                case INITIAL: setEffectiveProcessingStatus(100); break;
+                case DATA_OK: setEffectiveProcessingStatus(200); break;
+                case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
+                case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
+                case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
+                case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
+                default: setEffectiveProcessingStatus(0);
+            }
+            if (booking != null) booking.setUpdatePending(true);
         }
     }
 
@@ -121,6 +123,11 @@ public abstract class Service {
     @ColumnWidth(106)
     @KPI
     private boolean active = true;
+
+    public void setActive(boolean active) {
+        if (this.active != active) updatePending = true;
+        this.active = active;
+    }
 
     @ListColumn
     @CellStyleGenerator(NoShowCellStyleGenerator.class)
@@ -178,10 +185,9 @@ public abstract class Service {
     @Output
     private LocalDateTime sentToProvider;
 
-
     @NotInEditor
     @SearchFilter
-    @ListColumn(order = true)
+    @ListColumn
     private LocalDate start;
 
     @Ignored
@@ -190,7 +196,8 @@ public abstract class Service {
     @Ignored
     private LocalDate serviceDateForInvoicing;
 
-    @SearchFilter(value="Purchase Order Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Purchase Order Id")
     @ManyToMany
     @OrderColumn(name = "_orderInService")
     @UseLinkToListView
@@ -200,6 +207,11 @@ public abstract class Service {
     @Ignored
     private String signature;
 
+    public void setSignature(String signature) {
+        if (!Helper.equals(this.signature, signature)) updatePending = true;
+        this.signature = signature;
+    }
+
     @Transient
     @Ignored
     private String signatureBefore;
@@ -208,7 +220,7 @@ public abstract class Service {
     private boolean visibleInSummary;
 
 
-    @ListColumn(width = 60)
+    @ListColumn
     @CellStyleGenerator(ValidCellStyleGenerator.class)
     @Output
     @ColumnWidth(120)
@@ -243,7 +255,7 @@ public abstract class Service {
     private String changeLog;
 
     @Ignored
-    public transient boolean summarizing = false;
+    private boolean updatePending = true;
 
 
     public void updateProcessingStatus(EntityManager em) {
@@ -849,16 +861,17 @@ public abstract class Service {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (!summarizing) WorkflowEngine.add(new Runnable() {
+        if (updatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Helper.transact(em -> {
+                    if (updatePending) Helper.transact(em -> {
                         Service s = em.merge(Service.this);
                         s.complete(em);
                         s.logChanges(em);
                         s.purchase(em);
                         s.summarize(em);
+                        s.setUpdatePending(false);
                     });
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
@@ -948,20 +961,14 @@ public abstract class Service {
 
     public void summarize(EntityManager em) {
 
-        if (summarizing) {
-            System.out.println("service " + getId() + " is already summarizing");
-        } else {
-            summarizing = true;
-            System.out.println("service " + getId() + ".summarize");
+        System.out.println("service " + getId() + ".summarize");
 
-            updateProcessingStatus(em);
-            validate(em);
+        updateProcessingStatus(em);
+        validate(em);
 
-            setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
+        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
 
-            booking.summarize(em);
-            summarizing = false;
-        }
+        booking.summarize(em);
 
     }
 

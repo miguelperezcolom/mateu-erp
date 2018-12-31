@@ -8,13 +8,10 @@ import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.revenue.ProductLine;
-import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.DataProvider;
 import io.mateu.mdd.core.annotations.Position;
-import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.javamoney.moneta.FastMoney;
@@ -24,7 +21,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 
 @Entity
 @Getter@Setter

@@ -6,35 +6,19 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.invoicing.BookingCharge;
-import io.mateu.erp.model.payments.Payment;
-import io.mateu.erp.model.tpv.TPV;
-import io.mateu.erp.model.tpv.TPVTransaction;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
-import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.importing.TransferBookingRequest;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
-import io.mateu.mdd.core.data.Data;
-import io.mateu.mdd.core.data.Pair;
 import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
-import org.javamoney.moneta.FastMoney;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -43,13 +27,10 @@ import org.jdom2.output.XMLOutputter;
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
-import java.net.MalformedURLException;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -117,7 +98,7 @@ public class File {
     @ManyToOne
     private Currency currency;
 
-    @ListColumn(width = 60)
+    @ListColumn
     @ColumnWidth(80)
     @SearchFilter
     @KPI

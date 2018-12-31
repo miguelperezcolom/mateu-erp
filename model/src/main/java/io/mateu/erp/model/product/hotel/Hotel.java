@@ -137,6 +137,17 @@ public class Hotel extends AbstractProduct implements IHotel {
 
 
     @Override
+    public int getStars() {
+        return (getCategory() != null)?getCategory().getStars():0;
+    }
+
+    @Override
+    public int getKeys() {
+        return (getCategory() != null)?getCategory().getKeys():0;
+    }
+
+
+    @Override
     public String getCategoryId() {
         return (getCategory() != null)?getCategory().getCode():null;
     }

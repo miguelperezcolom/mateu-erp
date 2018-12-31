@@ -5,7 +5,6 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Indelible;
-import io.mateu.mdd.core.annotations.KPI;
 import io.mateu.mdd.core.annotations.NewNotAllowed;
 import io.mateu.mdd.core.interfaces.WizardPage;
 import io.mateu.mdd.core.model.authentication.User;
@@ -14,10 +13,7 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.validation.constraints.NotEmpty;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter

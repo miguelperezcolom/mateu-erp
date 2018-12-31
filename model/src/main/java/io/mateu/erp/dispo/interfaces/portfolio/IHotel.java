@@ -17,6 +17,10 @@ public interface IHotel {
 
     public String getCategoryName();
 
+    int getStars();
+
+    int getKeys();
+
     public List<? extends IStopSaleLine> getStopSalesLines();
 
     List <? extends IInventory> getInventories();

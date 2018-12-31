@@ -3,7 +3,6 @@ package io.mateu.erp.tests;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import org.jdom2.Document;

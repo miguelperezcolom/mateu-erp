@@ -10,7 +10,6 @@ import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.MDD;
-import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -18,7 +17,6 @@ import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 import org.javamoney.moneta.FastMoney;
-import org.joda.time.Days;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -104,7 +102,6 @@ public class HotelBooking extends Booking {
         s.setHotel(hotel);
         for (HotelBookingLine e : getLines()) s.getLines().add(new HotelServiceLine(s, e));
         s.setSpecialRequests(getSpecialRequests());
-        em.merge(s);
     }
 
     @Override
@@ -130,17 +127,17 @@ public class HotelBooking extends Booking {
     public void createCharges(EntityManager em) throws Throwable {
         for (HotelBookingLine l : lines) if (l.getContract() != null) {
             BookingCharge c;
-            getCharges().add(c = new BookingCharge());
+            getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(getAudit().getModifiedBy()));
             c.setTotal(new Amount(FastMoney.of(l.getValue(), "EUR")));
 
-            c.setText(l.toString());
+            c.setText(l.toSimpleString());
 
             c.setPartner(getAgency());
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);
-            getCharges().add(c);
+            getServiceCharges().add(c);
 
             c.setInvoice(null);
 
@@ -178,6 +175,7 @@ public class HotelBooking extends Booking {
             setTotalNetValue(Helper.roundEuros(v));
             setTotalValue(Helper.roundEuros(v));
         }
+        setUpdatePending(true);
     }
 
 

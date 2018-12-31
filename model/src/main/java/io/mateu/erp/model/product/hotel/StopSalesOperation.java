@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.User;

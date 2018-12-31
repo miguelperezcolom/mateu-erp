@@ -1,10 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.google.common.base.Strings;
-import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.mdd.core.CSS;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.NotInlineEditable;
+import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -14,18 +14,17 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.time.DayOfWeek.*;
 
 /**
  * Created by miguel on 1/10/16.

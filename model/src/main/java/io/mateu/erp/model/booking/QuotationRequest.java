@@ -1,9 +1,12 @@
 package io.mateu.erp.model.booking;
 
-import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.workflow.AbstractTask;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.Section;
+import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
 import org.javamoney.moneta.FastMoney;

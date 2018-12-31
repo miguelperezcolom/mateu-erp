@@ -3,40 +3,31 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
-import io.mateu.erp.model.financials.Amount;
-import io.mateu.erp.model.invoicing.PurchaseCharge;
-import io.mateu.erp.model.product.AbstractContract;
-import io.mateu.mdd.core.interfaces.GridDecorator;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
-import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
-import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.invoicing.PurchaseCharge;
 import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
 import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.app.ActionType;
-import io.mateu.mdd.core.app.MDDLink;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.interfaces.GridDecorator;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
-import javax.persistence.Parameter;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -104,9 +95,10 @@ public class PurchaseOrder {
 
 
 
-    @SearchFilter(value="Service Id", field = "id")
+    @SearchFilter(field = "id")
     @UseLinkToListView
     @ManyToMany(mappedBy = "purchaseOrders")
+    @Caption("Service Id")
     private List<Service> services = new ArrayList<>();
 
 
@@ -141,12 +133,13 @@ public class PurchaseOrder {
     @Ignored
     private String signature;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name="purchaseorder_task",
             joinColumns=@JoinColumn(name="purchaseorders_ID"),
             inverseJoinColumns=@JoinColumn(name="sendingtasks_ID"))
-    @SearchFilter(value="Task Id", field = "id")
+    @SearchFilter(field = "id")
+    @Caption("Task Id")
     @OrderColumn(name = "_orderInPO")
     @UseLinkToListView
     private List<SendPurchaseOrdersTask> sendingTasks = new ArrayList<>();
@@ -195,7 +188,7 @@ public class PurchaseOrder {
     private List<PurchaseCharge> charges = new ArrayList<>();
 
     @Ignored
-    private transient boolean summarizing = false;
+    private boolean updatePending = true;
 
 
 
@@ -260,8 +253,6 @@ public class PurchaseOrder {
 
             t.getPurchaseOrders().add(this);
             getSendingTasks().add(t);
-
-            em.persist(t);
 
         }
 
@@ -358,9 +349,8 @@ public class PurchaseOrder {
 
 
     @Action
-    public static void price(EntityManager em, @Selection List<Data> selection) {
-        for (Data d : selection) {
-            PurchaseOrder po = em.find(PurchaseOrder.class, d.get("_id"));
+    public static void price(EntityManager em, Set<PurchaseOrder> selection) {
+        for (PurchaseOrder po : selection) {
             try {
                 po.price(em);
             } catch (Throwable e) {
@@ -375,26 +365,35 @@ public class PurchaseOrder {
         return "" + id + " " + reference + " " + (audit != null?audit.getCreated():"");
     }
 
+    @PrePersist@PreUpdate
+    public void pre() {
+        LocalDate d = null;
+        for (Service s : services) if (d == null || d.isAfter(s.getStart())) d = s.getStart();
+        start = d;
+    }
+
     @PostPersist@PostUpdate
     public void post() throws Exception, Throwable {
 
-        long finalId = getId();
-
-        if (!summarizing) WorkflowEngine.add(new Runnable() {
+        if (updatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    Helper.transact(new JPATransaction() {
+                    if (updatePending) Helper.transact(new JPATransaction() {
                         @Override
                         public void run(EntityManager em) throws Throwable {
-                            PurchaseOrder po = em.find(PurchaseOrder.class, finalId);
+                            PurchaseOrder po = em.merge(PurchaseOrder.this);
                             try {
                                 po.price(em);
                             } catch (Throwable e) {
                                 e.printStackTrace();
                             }
                             po.summarize(em);
+
+
+
+                            po.setUpdatePending(false);
                         }
                     });
                 } catch (Throwable throwable) {
@@ -407,21 +406,14 @@ public class PurchaseOrder {
     }
 
     public void summarize(EntityManager em) {
-        if (summarizing) {
-            System.out.println("PO " + getId() + " is already summarizing");
-        } else {
-            summarizing = true;
-            System.out.println("PO " + getId() + ".summarize");
+        System.out.println("PO " + getId() + ".summarize");
 
-            updateStatusFromTasks(em);
+        updateStatusFromTasks(em);
 
-            try {
-                summarizeServices(em);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-
-            summarizing = false;
+        try {
+            summarizeServices(em);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 
@@ -443,30 +435,6 @@ public class PurchaseOrder {
     public void summarizeServices(EntityManager em) throws Exception, Throwable {
 
         System.out.println("po " + getId() + ".summarizeServices");
-
-
-        /*
-
-        for (Service s : getServices()) {
-            if (s.getEffectiveProcessingStatus() < 300) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_READY);
-            }
-
-            if (isSent() && s.getEffectiveProcessingStatus() < 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_SENT);
-                s.setSentToProvider(getSentTime());
-            }
-
-            if (PurchaseOrderStatus.REJECTED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_REJECTED);
-            }
-
-            if (PurchaseOrderStatus.CONFIRMED.equals(getStatus()) && s.getEffectiveProcessingStatus() <= 400) {
-                s.setProcessingStatus(ProcessingStatus.PURCHASEORDERS_CONFIRMED);
-            }
-        }
-
-         */
 
         for (Service s : getServices()) {
             s.summarize(em);

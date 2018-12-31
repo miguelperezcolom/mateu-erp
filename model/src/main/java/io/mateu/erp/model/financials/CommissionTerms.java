@@ -1,6 +1,5 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.mdd.core.annotations.OwnedList;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +19,5 @@ public class CommissionTerms {
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "terms")
-    @OwnedList
     private List<CommissionTermsLine> lines = new ArrayList<>();
 }

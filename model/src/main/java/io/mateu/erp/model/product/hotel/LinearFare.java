@@ -1,7 +1,10 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.product.hotel.offer.PriceOffer;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.ColumnWidth;
+import io.mateu.mdd.core.annotations.FullWidth;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.NotInEditor;
 import io.mateu.mdd.core.interfaces.UseCalendarToEdit;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.XMLSerializable;
@@ -9,7 +12,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

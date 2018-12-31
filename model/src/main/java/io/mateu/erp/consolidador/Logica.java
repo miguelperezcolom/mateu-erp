@@ -1,20 +1,9 @@
 package io.mateu.erp.consolidador;
 
-import com.google.common.primitives.Ints;
-import io.mateu.erp.dispo.interfaces.auth.IAuthToken;
-import io.mateu.erp.dispo.interfaces.common.IPartner;
-import io.mateu.erp.dispo.interfaces.integrations.IIntegration;
-import io.mateu.erp.dispo.interfaces.portfolio.IResource;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.partners.PartnerStatus;
-import org.easytravelapi.common.Amount;
-import org.easytravelapi.hotel.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.easytravelapi.hotel.GetAvailableHotelsRS;
 
 public class Logica {
 

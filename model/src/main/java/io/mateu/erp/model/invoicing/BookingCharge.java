@@ -1,13 +1,9 @@
 package io.mateu.erp.model.invoicing;
 
 
-import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
-import io.mateu.erp.model.booking.Service;
-import io.mateu.mdd.core.annotations.DependsOn;
-import io.mateu.mdd.core.annotations.UseIdToSelect;
-import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
+import io.mateu.erp.model.financials.Amount;
+import io.mateu.mdd.core.annotations.KPI;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +19,9 @@ public class BookingCharge extends Charge {
     @ManyToOne
     @NotNull
     private Booking booking;
+
+    @KPI
+    private boolean extra = false;
 
     public void setBooking(Booking booking) {
         this.booking = booking;
@@ -49,8 +48,19 @@ public class BookingCharge extends Charge {
 
 
 
+
+    @Override
+    public void setTotal(Amount total) {
+        super.setTotal(total);
+        if (booking != null) booking.setUpdatePending(true);
+    }
+
     public BookingCharge() {
         setType(ChargeType.SALE);
     }
 
+    @Override
+    public void totalChanged() {
+        if (booking != null) booking.setUpdatePending(true);
+    }
 }

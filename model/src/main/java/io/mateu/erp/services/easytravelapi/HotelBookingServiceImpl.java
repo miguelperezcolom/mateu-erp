@@ -3,24 +3,34 @@ package io.mateu.erp.services.easytravelapi;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
-import io.mateu.erp.dispo.*;
-import io.mateu.erp.dispo.interfaces.product.IHotelContract;
+import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.booking.hotel.HotelService;
+import io.mateu.erp.model.booking.CancellationTerm;
+import io.mateu.erp.model.booking.Passenger;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.financials.PaymentReferenceDate;
+import io.mateu.erp.model.financials.PaymentTerms;
+import io.mateu.erp.model.financials.PaymentTermsLine;
+import io.mateu.erp.model.financials.RiskType;
 import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.ContractType;
+import io.mateu.erp.model.product.ZoneProductRemark;
 import io.mateu.erp.model.product.hotel.Board;
+import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.product.hotel.Room;
-import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.Zone;
-import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.services.HotelAvailabilityStats;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.tpv.TPVTransaction;
+import io.mateu.erp.model.world.Country;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.services.HotelAvailabilityStats;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.HotelBookingService;
@@ -33,6 +43,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -129,7 +140,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         if (idHotel > 0) idsHoteles.add(idHotel);
         else {
 
-            Helper.transact(new JPATransaction() {
+            long finalIdAgencia = idAgencia;
+            Helper.notransact(new JPATransaction() {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
@@ -162,50 +174,140 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     System.out.println("" + numContratos + " contratos encontrados");
 
                     for (Hotel h : hoteles) idsHoteles.add(h.getId());
+
+                    List<? extends Occupancy> ocups = getOccupancies(occupancies);
+
+
+                    Partner a = em.find(Partner.class, finalIdAgencia);
+
+                    HotelBooking hb = new HotelBooking();
+                    hb.setAgency(a);
+
+                    HotelBookingLine l;
+                    hb.getLines().add(l = new HotelBookingLine());
+                    l.setBooking(hb);
+                    l.setStart(io.mateu.erp.dispo.Helper.toDate(checkIn));
+                    l.setEnd(io.mateu.erp.dispo.Helper.toDate(checkOut));
+                    hb.setStart(l.getStart());
+                    hb.setEnd(l.getEnd());
+                    l.setActive(true);
+                    hb.setActive(true);
+
+
+                    for (Hotel h : hoteles) {
+
+                        AvailableHotel ah = new AvailableHotel();
+                        ah.setHotelId("hot-" + h.getId());
+                        ah.setHotelName(h.getName());
+                        ah.setLatitude(h.getLat());
+                        ah.setLongitude(h.getLon());
+                        ah.setHotelCategoryId(h.getCategoryId());
+                        ah.setHotelCategoryName(h.getCategoryName());
+                        ah.setStars(h.getStars());
+                        ah.setKeys(h.getKeys());
+                        ah.setAddress("" + h.getAddress() + ", " + h.getZone().getName() + ", " + h.getZone().getDestination().getName() + " - " + h.getZone().getDestination().getCountry().getName());
+                        if (h.getDataSheet() != null && h.getDataSheet().getMainImage() != null) ah.setMainImage(h.getDataSheet().getMainImage().toFileLocator().getUrl());
+                        rs.getHotels().add(ah);
+
+                        hb.setHotel(h);
+
+                        List<HotelContract> contratosValidos = new ArrayList<>();
+                        for (HotelContract c : h.getContracts()) {
+                            if (c.isValidForSale(a, l.getStart(), l.getEnd())) {
+                                contratosValidos.add(c);
+                            }
+                        }
+
+                        if (contratosValidos.size() > 0) {
+
+                            Collections.sort(contratosValidos, (c1, c2) -> {
+                                int peso1 = getPeso(c1);
+                                int peso2 = getPeso(c2);
+                                return peso1 - peso2;
+                            });
+
+                            boolean allok = true;
+                            double minTotal = 0;
+
+                            for (Occupancy o : ocups) {
+                                allok = false;
+
+                                int adultos = o.getPaxPerRoom();
+                                int ninos = 0;
+                                int bebes = 0;
+                                if (o.getAges() != null) {
+                                    for (int e : o.getAges()) {
+                                        if (e < h.getChildStartAge()) bebes++;
+                                        else if (h.getJuniorStartAge() > 0 && e < h.getJuniorStartAge()) ninos++;
+                                        else if (h.getAdultStartAge() > 0 && e < h.getAdultStartAge()) ninos++;
+                                    }
+                                    ninos = ninos / o.getNumberOfRooms();
+                                    bebes = bebes / o.getNumberOfRooms();
+                                    //todo: repartir mejor
+                                }
+                                adultos -= ninos + bebes;
+
+                                double minValue = 0;
+
+                                for (Room r : h.getRooms()) {
+                                    if (r.fits(adultos, ninos, bebes)) {
+
+                                        l.setRoom(r);
+                                        l.setRooms(o.getNumberOfRooms());
+                                        l.setAdultsPerRoon(adultos);
+                                        l.setChildrenPerRoom(ninos);
+                                        l.setAges(o.getAges());
+
+                                        for (Board b : h.getBoards()) {
+                                            l.setBoard(b);
+
+                                            for (HotelContract c : contratosValidos) {
+
+                                                l.setContract(c);
+                                                l.setInventory(c.getInventory());
+
+                                                l.check();
+                                                l.price();
+
+                                                allok = l.isAvailable() && l.isValued();
+
+                                                if (allok) if (minValue == 0 || minValue > l.getValue()) minValue = l.getValue();
+
+                                            }
+
+                                        }
+
+                                    }
+                                    if (allok) break;
+                                }
+                                if (allok) minTotal += minValue;
+                            }
+                            if (allok) {
+
+                                if (minTotal > 0) {
+                                    ah.setBestDeal(new BestDeal());
+                                    ah.getBestDeal().setRetailPrice(new Amount(a.getCurrency().getIsoCode(), Helper.roundEuros(minTotal)));
+                                }
+
+                            }
+
+                        }
+                    }
+
+                }
+
+                private int getPeso(HotelContract c) {
+                    int peso = 0;
+                    if (ContractType.SALE.equals(c.getType())) peso += 10000;
+                    if (c.getPartners().size() > 0) peso += 1000;
+                    if (c.getPartnerGroups().size() > 0) peso += 500;
+                    if (c.getMarkets().size() > 0) peso += 100;
+                    return peso;
                 }
             });
 
 
         }
-
-        long finalIdAgencia = idAgencia;
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                List<Hotel> hoteles = new ArrayList<>();
-                for (long idHotel : idsHoteles) {
-                    hoteles.add(em.find(Hotel.class, idHotel));
-                }
-
-                Partner a = em.find(Partner.class, finalIdAgencia);
-
-                //System.out.println("" + hoteles.size() + " hoteles encontrados");
-
-                ModeloDispo modelo = new ModeloDispo() {
-                    @Override
-                    public IHotelContract getHotelContract(long id) {
-                        return em.find(HotelContract.class, id);
-                    }
-                };
-
-                DispoRQ rq = new DispoRQ(formalizationDate, checkIn, checkOut, getOccupancies(occupancies), includeStaticInfo);
-
-
-                for (Hotel h : hoteles) {
-                    AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq);
-                    if (ah != null) {
-                        rs.getHotels().add(ah);
-                        ah.setAddress("" + h.getAddress() + ", " + h.getZone().getName() + ", " + h.getZone().getDestination().getName() + " - " + h.getZone().getDestination().getCountry().getName());
-                        if (h.getDataSheet() != null && h.getDataSheet().getMainImage() != null) ah.setMainImage(h.getDataSheet().getMainImage().toFileLocator().getUrl());
-                    }
-                }
-
-
-                //System.out.println(Helper.toJson(dispo));
-
-            }
-        });
 
         long t = System.currentTimeMillis();
 
@@ -300,8 +402,15 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 l.setStart(LocalDate.parse("" + rq.getCheckin(), dfx));
                 l.setEnd(LocalDate.parse("" + rq.getCheckout(), dfx));
 
+                List<HotelContract> contratosValidos = new ArrayList<>();
+                for (HotelContract c : h.getContracts()) {
+                    if (c.isValidForSale(hb.getAgency(), l.getStart(), l.getEnd())) {
+                        contratosValidos.add(c);
+                    }
+                }
 
-                for (Room r : h.getRooms()) {
+
+                if (contratosValidos.size() > 0) for (Room r : h.getRooms()) {
                     if (r.fits(adults + juniors, children, infants)) {
 
                         l.setRoom(r);
@@ -319,12 +428,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                             l.setBoard(b);
 
 
-                            BoardPrice bp = new BoardPrice();
-                            bp.setBoardBasisId(b.getCode());
-                            bp.setBoardBasisName(b.getType().getName().get(rq.getLanguage()));
-
-
-                            for (HotelContract c : h.getContracts()) {
+                            for (HotelContract c : contratosValidos) {
 
                                 l.setContract(c);
                                 l.setInventory(c.getInventory());
@@ -335,6 +439,10 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                     l.price();
 
                                     if (l.isValued()) {
+
+                                        BoardPrice bp = new BoardPrice();
+                                        bp.setBoardBasisId(b.getCode());
+                                        bp.setBoardBasisName(b.getType().getName().get(rq.getLanguage()));
 
                                         bp.setNonRefundable(false);
                                         bp.setOffer(false);
@@ -351,6 +459,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                         bp.setKey(BaseEncoding.base64().encode(k.getBytes()));
 
                                         op.getPrices().add(bp);
+                                        break;
                                     }
 
                                 }
@@ -483,15 +592,42 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 hb.summarize(em);
 
-                CancellationCost cc;
-                rs.getCancellationCosts().add(cc = new CancellationCost());
-                cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), Helper.roundEuros(hb.getTotalValue() * 0.3d)));
-                cc.setGMTtime(hb.getEnd().minusDays(7).toString());
+                for (CancellationTerm t : hb.getCancellationTerms()) {
+                    CancellationCost cc;
+                    rs.getCancellationCosts().add(cc = new CancellationCost());
+                    cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), t.getAmount()));
+                    cc.setGMTtime(t.getDate().toString());
+                }
 
-                Remark rmk;
-                rs.getRemarks().add(rmk = new Remark());
-                rmk.setType("WARNING");
-                rmk.setText("Esto es una reserva de prueba");
+                {
+                    Remark rmk;
+                    rs.getRemarks().add(rmk = new Remark());
+                    rmk.setType("WARNING");
+                    rmk.setText("Esto es una reserva de prueba");
+                }
+
+                if (!Strings.isNullOrEmpty(hb.getHotel().getZone().getDestination().getPaymentRemarks())) {
+                    Remark rmk;
+                    rs.getRemarks().add(rmk = new Remark());
+                    rmk.setType("WARNING");
+                    rmk.setText(hb.getHotel().getZone().getDestination().getPaymentRemarks());
+                }
+
+                for (ZoneProductRemark r : (List<ZoneProductRemark>)Helper.selectObjects("select x from " + ZoneProductRemark.class.getName() + " x where x.active = true")) {
+                    if ((r.isActive())
+                            && (r.getCountry() == null || r.getCountry().equals(hb.getHotel().getZone().getDestination().getCountry()))
+                            && (r.getDestination() == null || r.getCountry().equals(hb.getHotel().getZone().getDestination()))
+                            && (r.getZone() == null || r.getCountry().equals(hb.getHotel().getZone()))
+                            && (r.getProductType() == null || r.getProductType().equals(hb.getHotel().getType()))
+                            && (r.getStart() == null || !r.getStart().isAfter(hb.getEnd()))
+                            && (r.getEnd() == null || !r.getEnd().isBefore(hb.getStart()))
+                            ) {
+                        Remark rmk;
+                        rs.getRemarks().add(rmk = new Remark());
+                        rmk.setType("WARNING");
+                        rmk.setText(r.getText().get(rq.getLanguage()));
+                    }
+                }
 
                 int pos = 1;
                 for (Charge l : hb.getCharges()) {
@@ -503,18 +639,17 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
                 }
 
-                {
-                    PaymentLine pl;
-                    rs.getPaymentLines().add(pl = new PaymentLine());
-                    pl.setDate(Integer.parseInt(hb.getStart().minusDays(7).format(DateTimeFormatter.ofPattern("yyyyMMdd"))));
-                    pl.setPaymentMethod("WEB");
-                    pl.setAmount(new Amount(hb.getAgency().getCurrency().getIsoCode(), Helper.roundEuros(hb.getTotalValue() * 0.5d)));
 
-                    rs.getPaymentLines().add(pl = new PaymentLine());
-                    pl.setDate(Integer.parseInt(hb.getStart().minusDays(0).format(DateTimeFormatter.ofPattern("yyyyMMdd"))));
-                    pl.setPaymentMethod("HOTEL");
-                    pl.setAmount(new Amount(hb.getAgency().getCurrency().getIsoCode(), Helper.roundEuros(hb.getTotalValue() * 0.5d)));
+                for (BookingDueDate dd : hb.getDueDates()) {
+                    if (!dd.isPaid()) {
+                        PaymentLine pl;
+                        rs.getPaymentLines().add(pl = new PaymentLine());
+                        pl.setDate(Integer.parseInt(dd.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"))));
+                        pl.setPaymentMethod("WEB");
+                        pl.setAmount(new Amount(dd.getCurrency().getIsoCode(), dd.getAmount()));
+                    }
                 }
+
 
 
                 //rs.setAvailableServices(); //todo: comprobar si esto sobra
@@ -552,7 +687,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("File confirmed");
+        rs.setMsg("Booking confirmed");
 
         long idPos = Long.parseLong(System.getProperty("idpos", "1"));
 
@@ -581,15 +716,23 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
 
+                User user = em.find(User.class, u.getLogin());
+
+                hb.setAudit(new Audit(user));
+                hb.setConfirmed(true);
                 hb.setAgency(em.find(Partner.class, finalIdAgencia));
+                hb.setCurrency(hb.getAgency().getCurrency());
                 hb.setAgencyReference(rq.getBookingReference());
+                if (hb.getAgencyReference() == null) hb.setAgencyReference("");
                 hb.setSpecialRequests(rq.getCommentsToProvider());
                 hb.setEmail(rq.getEmail());
                 hb.setLeadName(rq.getLeadName());
                 hb.setPrivateComments(rq.getPrivateComments());
                 hb.setPos(em.find(AuthToken.class, token).getPos());
 
-                //todo: faltan los pasajeros, el cupon,
+                hb.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
+
+                //todo: falta el cupon,
 
 
                 for (BookingKey bk : rq.getRateKeys()) {
@@ -597,7 +740,6 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                     String k = new String(BaseEncoding.base64().decode(rk));
                     String[] tks = k.split("-");
-
 
                     HotelBookingLine l;
                     hb.getLines().add(l = new HotelBookingLine());
@@ -638,14 +780,44 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 hb.summarize(em);
 
-                em.persist(hb);
 
+                for (BookingKey bk : rq.getRateKeys()) {
+                    if (bk.getOccupancy() != null) for (PaxDetails pd : bk.getOccupancy()) {
+                        Passenger p;
+                        hb.getPassengers().add(p = new Passenger());
+                        p.setBooking(hb);
+                        p.setAge(pd.getAge());
+                        p.setFirstName(pd.getName());
+                        p.setSurname(pd.getSurname());
+
+                        if (Strings.isNullOrEmpty(p.getFirstName())) p.setFirstName("N/A");
+                        if (Strings.isNullOrEmpty(p.getSurname())) p.setSurname("N/A");
+                    }
+                }
+
+
+                if (hb.getPos().getTpv() != null) {
+                    TPVTransaction t;
+                    hb.getTPVTransactions().add(t = new TPVTransaction());
+                    t.setBooking(hb);
+                    t.setTpv(hb.getPos().getTpv());
+                    t.setSubject("Booking " + hb.getLeadName());
+                    t.setValue(Helper.roundEuros(hb.getTotalValue() / 2));
+                    t.setLanguage("es");
+                    t.setCurrency(hb.getCurrency());
+                }
+
+
+                em.persist(hb);
 
             });
 
 
             rs.setBookingId("" + hb.getId());
-            rs.setPaymentUrl(""); //todo: añadir url pago
+            if (hb.getTPVTransactions().size() > 0) Helper.notransact(em -> {
+                rs.setPaymentUrl(hb.getTPVTransactions().get(0).getBoton(em));
+            });
+            else rs.setPaymentUrl("");
             //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
 
 
@@ -656,6 +828,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             System.out.println(msg);
 
             rs.setMsg(msg);
+
+
+            if (!Strings.isNullOrEmpty(hb.getEmail())) {
+                try {
+                    Helper.transact(em -> {
+                        em.find(HotelBooking.class, hb.getId()).sendBooked(em, null, null);
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+
 
         } catch (Throwable throwable) {
             rs.setStatusCode(500);

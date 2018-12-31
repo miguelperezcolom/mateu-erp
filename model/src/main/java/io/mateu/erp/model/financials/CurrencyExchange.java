@@ -2,7 +2,6 @@ package io.mateu.erp.model.financials;
 
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.NotInList;
-import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.util.Constants;
@@ -11,13 +10,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.List;

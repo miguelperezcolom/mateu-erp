@@ -45,4 +45,9 @@ public class Markup {
     public String toString() {
         return getName();
     }
+
+    public MarkupLine getLine(ProductLine productLine) {
+        for (MarkupLine l : lines) if (l.getProductLine().equals(productLine)) return l;
+        return null;
+    }
 }

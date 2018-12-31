@@ -1,7 +1,10 @@
 package io.mateu.erp.model.booking.transfer;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.util.Helper;
@@ -37,7 +40,6 @@ public class TransferPointMapping {
     private String text;
 
     @ManyToOne
-    @SearchFilterIsNull(value = "Unmapped")
     private TransferPoint point;
 
     @Output

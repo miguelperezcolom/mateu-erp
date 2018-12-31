@@ -3,13 +3,14 @@ package io.mateu.erp.dispo;
 import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.partners.PartnerStatus;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.BestDeal;
 import org.easytravelapi.common.CancellationCost;
 import org.easytravelapi.common.Remark;
-import org.easytravelapi.hotel.*;
+import org.easytravelapi.hotel.AvailableHotel;
+import org.easytravelapi.hotel.BoardPrice;
+import org.easytravelapi.hotel.GetHotelPriceDetailsRS;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -154,6 +155,8 @@ public class HotelAvailabilityRunner {
             ah.setLongitude(hotel.getLon());
             ah.setHotelCategoryId(hotel.getCategoryId());
             ah.setHotelCategoryName(hotel.getCategoryName());
+            ah.setStars(hotel.getStars());
+            ah.setKeys(hotel.getKeys());
 
             if (bestDeal != null) {
                 ah.setBestDeal(new BestDeal());

@@ -1,20 +1,18 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
-import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Antonia on 26/03/2017.
@@ -25,7 +23,7 @@ import java.util.List;
 @UseIdToSelect
 public abstract class TransferImportTask {
     @Id
-    @ListColumn(order = true)
+    @ListColumn
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
@@ -33,7 +31,7 @@ public abstract class TransferImportTask {
     private String name;
 
     @Embedded
-    @ListColumn(width = 300)
+    @ListColumn
     @Output
     @SearchFilter(field="modified")
     private Audit audit;
@@ -134,33 +132,19 @@ public abstract class TransferImportTask {
 
 
     @Action
-    public static void retry(UserData _user, @Selection List<Data> _selection) throws Throwable {
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-                for (Data x : _selection) {
-                    Object id = x.get("_id");
-                    TransferImportTask t = em.find(TransferImportTask.class, id);
-                    t.setStatus(STATUS.PENDING);
-                    t.getAudit().touch(em, _user.getLogin());
-                }
-            }
-        });
+    public static void retry(EntityManager em, UserData _user, Set<TransferImportTask> _selection) throws Throwable {
+        for (TransferImportTask t : _selection) {
+            t.setStatus(STATUS.PENDING);
+            t.getAudit().touch(em, _user.getLogin());
+        }
     }
 
     @Action
-    public static void cancel(UserData _user, @Selection List<Data> _selection) throws Throwable {
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-                for (Data x : _selection) {
-                    Object id = x.get("_id");
-                    TransferImportTask t = em.find(TransferImportTask.class, id);
-                    t.setStatus(STATUS.CANCELLED);
-                    t.getAudit().touch(em, _user.getLogin());
-                }
-            }
-        });
+    public static void cancel(EntityManager em, UserData _user, Set<TransferImportTask> _selection) throws Throwable {
+        for (TransferImportTask t : _selection) {
+            t.setStatus(STATUS.CANCELLED);
+            t.getAudit().touch(em, _user.getLogin());
+        }
     }
 
 }

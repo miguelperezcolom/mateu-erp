@@ -2,16 +2,16 @@ package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.Section;
-import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Created by miguel on 19/3/17.

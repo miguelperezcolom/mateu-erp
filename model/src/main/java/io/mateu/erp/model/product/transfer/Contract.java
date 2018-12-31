@@ -1,35 +1,22 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.erp.model.product.tour.TourPrice;
-import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
-import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -50,10 +37,9 @@ public class Contract extends AbstractContract {
 
 
     @Action
-    public static void cloneContracts(EntityManager em, UserData user, @Selection List<Data> selection, @Parameter(name = "% increment") double percent, @Parameter(name = "Value increment") double amount) throws CloneNotSupportedException {
+    public static void cloneContracts(EntityManager em, UserData user, Set<Contract> selection, @Caption("% increment") double percent, @Caption("Value increment") double amount) throws CloneNotSupportedException {
         User u = em.find(User.class, user.getLogin());
-        for (Data d : selection) {
-            Contract c0 = em.find(Contract.class, d.get("_id"));
+        for (Contract c0 : selection) {
             Contract c1 = c0.clone(em, u);
             c1.increment(percent, amount);
             em.persist(c1);

@@ -53,11 +53,14 @@ public class SendEmailTask extends AbstractTask {
         AppConfig appconfig = AppConfig.get(em);
 
         HtmlEmail email = new HtmlEmail();
-        email.setHostName((getOffice() != null)?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort((getOffice() != null)?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator((getOffice() != null)?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), (getOffice() != null)?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
+
+        boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
+
+        email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
+        email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
+        email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
         //email.setSSLOnConnect(true);
-        email.setFrom((getOffice() != null)?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
+        email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
 
         email.setSubject(getSubject());
 
@@ -75,8 +78,8 @@ public class SendEmailTask extends AbstractTask {
             email.addTo(System.getProperty("allemailsto"));
         } else {
 
-            if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
-                for (String s : ((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
+            if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
+                for (String s : (utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
                     if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
                 }
             }

@@ -1,21 +1,15 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
 import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.financials.AmountChangeListener;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.erp.model.taxes.VAT;
-import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -74,6 +68,19 @@ public class Charge {
             @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "total_currency"))
     })
     private Amount total;
+
+    public void setTotal(Amount total) {
+        this.total = total;
+        if (total != null) total.getListeners().add(new AmountChangeListener() {
+            @Override
+            public void changed() {
+                Charge.this.totalChanged();
+            }
+        });
+    }
+
+    public void totalChanged() {
+    }
 
 
     @Caption("Total")

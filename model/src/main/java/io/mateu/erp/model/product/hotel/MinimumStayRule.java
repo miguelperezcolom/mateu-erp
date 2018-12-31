@@ -2,7 +2,10 @@ package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.Caption;
+import io.mateu.mdd.core.annotations.ColumnWidth;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.UseCheckboxes;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 

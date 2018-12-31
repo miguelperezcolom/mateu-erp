@@ -2,8 +2,10 @@ package io.mateu.erp.model.workflow;
 
 import com.google.common.base.Strings;
 import freemarker.template.TemplateException;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.IslandbusHelper;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.util.Helper;
@@ -57,12 +59,15 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
         // Create the email message
         HtmlEmail email = new HtmlEmail();
         //Email email = new HtmlEmail();
-        email.setHostName((getOffice() != null)?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort((getOffice() != null)?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator((getOffice() != null)?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), (getOffice() != null)?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
+
+        boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
+
+        email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
+        email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
+        email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
         //email.setSSLOnConnect(true);
-        email.setFrom((getOffice() != null)?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress((getOffice() != null)?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
+        email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
+        if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
 
         email.setSubject("Purchase Orders");
         setHtml(getMessage(appconfig));
@@ -70,11 +75,16 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
 
         email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
 
-        File attachment = createExcel();
-        if (attachment != null) email.attach(attachment);
+        boolean incluyeTraslados = false;
+        for (PurchaseOrder po : getPurchaseOrders()) for (Service s : po.getServices()) if (s instanceof TransferService) incluyeTraslados = true;
 
-        email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toPrivateXml(getPurchaseOrders())).getBytes(), "text/xml"), "private.xml", "xml for privates");
-        email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
+        if (incluyeTraslados) {
+            File attachment = createExcel();
+            if (attachment != null) email.attach(attachment);
+
+            email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toPrivateXml(getPurchaseOrders())).getBytes(), "text/xml"), "private.xml", "xml for privates");
+            email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
+        }
 
         email.send();
 

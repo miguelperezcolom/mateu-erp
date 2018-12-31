@@ -1,20 +1,16 @@
 package io.mateu.erp.model.workflow;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.util.Helper;
-import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,8 +56,6 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         runParticular(em, user);
         switch (getMethod()) {
             case EMAIL:
-
-
                 break;
             case XMLISLANDBUS:
                 break;
@@ -71,22 +65,6 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         }
     }
 
-    @PostPersist@PostUpdate
-    public void post() {
-        WorkflowEngine.add(() -> {
-            try {
-                Helper.transact(em -> {
-
-                    for (PurchaseOrder po : getPurchaseOrders()) {
-                        po.summarize(em);
-                    }
-
-                });
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
-    }
 
 
     public Map<String,Object> getData() {
@@ -147,4 +125,13 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
         return d;
     }
+
+    @Override
+    public void statusChanged() {
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            po.setUpdatePending(true);
+        }
+    }
+
+
 }
