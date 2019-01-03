@@ -55,6 +55,12 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     private String purchaseOrderTemplate;
 
     @TextArea
+    private String roomingTemplate;
+
+    @TextArea
+    private String manifestTemplate;
+
+    @TextArea
     private String bookedEmailTemplate;
 
     @TextArea
