@@ -1,14 +1,21 @@
 package io.mateu.erp.services.easytravelapi;
 
-import io.mateu.erp.model.product.transfer.Contract;
-import io.mateu.erp.model.product.transfer.Price;
-import io.mateu.erp.model.product.transfer.PricePer;
-import io.mateu.erp.model.product.transfer.TransferPoint;
+import com.google.common.base.Strings;
+import com.google.common.io.BaseEncoding;
+import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.transfer.*;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.TransferBookingService;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.BestDeal;
+import org.easytravelapi.common.MultilingualText;
+import org.easytravelapi.common.Resource;
 import org.easytravelapi.transfer.*;
 
 import javax.persistence.EntityManager;
@@ -40,8 +47,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                TransferPoint tp0 = em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp_".length())));
-                TransferPoint tp1 = em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp_".length())));
+                TransferPoint tp0 = em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length())));
+                TransferPoint tp1 = em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp-".length())));
 
                 List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
 
@@ -55,8 +62,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                     boolean contratoOk = true;
 
-                    contratoOk = contratoOk && c.getValidFrom().isAfter(llegada);
-                    contratoOk = contratoOk && c.getValidTo().isBefore(salida);
+                    contratoOk = contratoOk && !c.getValidFrom().isAfter(llegada);
+                    contratoOk = contratoOk && !c.getValidTo().isBefore(salida);
 
                     //todo: comprobar file window y demás condiciones
 
@@ -72,8 +79,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                             if (precioOk) {
 
-                                AvailableTransfer t;
-                                rs.getAvailableTransfers().add(t = new AvailableTransfer());
+                                AvailableTransfer t = new AvailableTransfer();
                                 t.setType("" + p.getTransferType());
                                 t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
                                 t.setVehicle(p.getVehicle().getName());
@@ -83,13 +89,18 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                                 a.setCurrencyIsoCode("EUR");
                                 double valor = p.getPrice();
                                 if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
+
+                                if (incomingDate != 0 && outgoingDate != 0) valor *= 2;
+                                else if (incomingDate == 0 && outgoingDate == 0) valor = 0;
                                 valor = Helper.roundEuros(valor);
-                                a.setValue(valor);
+                                if (valor != 0) {
+                                    a.setValue(valor);
+                                    rs.getAvailableTransfers().add(t);
 
-                                t.setKey(buildKey(token, fromTransferPointId, toTransferPointId, pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, incomingDate, outgoingDate, p, valor));
+                                    t.setKey(getKey(token, fromTransferPointId, toTransferPointId, pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, incomingDate, outgoingDate, p, valor));
 
-
-                                encontrados++;
+                                    encontrados++;
+                                }
 
                             }
 
@@ -150,6 +161,76 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Price details");
 
+        try {
+            Helper.notransact(em -> {
+
+                TransferBooking b = buildBookingFromKey(em, key);
+
+                // todo: meter todo esto en el priceFromServices de TransferBooking
+
+                //b.price(em);
+
+                List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
+
+                int encontrados = 0;
+
+                for (Contract c : contratos) {
+
+                    boolean contratoOk = true;
+
+                    contratoOk = contratoOk && !c.getValidFrom().isAfter(b.getStart());
+                    contratoOk = contratoOk && !c.getValidTo().isBefore(b.getEnd());
+
+                    //todo: comprobar file window y demás condiciones
+
+                    if (contratoOk) {
+
+                        for (Price p : c.getPrices()) {
+
+                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getCities().contains(b.getOrigin().getZone());
+
+                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getCities().contains(b.getDestination().getZone()));
+
+                            precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
+
+                            if (precioOk) {
+
+                                AvailableTransfer t = new AvailableTransfer();
+                                t.setType("" + p.getTransferType());
+                                t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
+                                t.setVehicle(p.getVehicle().getName());
+                                Amount a;
+                                t.setTotal(new BestDeal());
+                                t.getTotal().setRetailPrice(a = new Amount());
+                                a.setCurrencyIsoCode("EUR");
+                                double valor = p.getPrice();
+                                if (PricePer.PAX.equals(p.getPricePer())) valor = valor * b.getAdults();
+
+                                if (b.getArrivalFlightTime() != null && b.getDepartureFlightTime() != null) valor *= 2;
+                                else if (b.getArrivalFlightTime() == null && b.getDepartureFlightTime() == null) valor = 0;
+                                valor = Helper.roundEuros(valor);
+                                if (valor != 0) {
+                                    rs.setTotal(new BestDeal());
+                                    rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            rs.setStatusCode(500);
+            rs.setMsg(throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+        }
+
         /*
 
         {
@@ -195,6 +276,69 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         return rs;
     }
 
+    private TransferBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
+        Map<String, Object> data = Helper.fromJson(new String((Base64.getDecoder().decode(key))));
+
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /*
+                data.put("token", token);
+        data.put("fromTransferPointId", fromTransferPointId);
+        data.put("toTransferPointId", toTransferPointId);
+        data.put("pax", pax);
+        data.put("ages", ages);
+        data.put("bikes", bikes);
+        data.put("golfBaggages", golfBaggages);
+        data.put("bigLuggages", bigLuggages);
+        data.put("wheelChairs", wheelChairs);
+        data.put("incomingDate", incomingDate);
+        data.put("outgoingDate", outgoingDate);
+        data.put("priceId", p.getId());
+        data.put("valor", valor);
+         */
+
+        int incomingDate = (int) data.get("incomingDate");
+        int outgoingDate = (int) data.get("outgoingDate");
+
+        TransferBooking b = new TransferBooking();
+        User user = em.find(User.class, login);
+        b.setAudit(new Audit(user));
+        b.setAgency(em.find(Partner.class, idAgencia));
+        b.setCurrency(b.getAgency().getCurrency());
+
+        b.setOrigin(em.find(TransferPoint.class, new Long(String.valueOf(data.get("fromTransferPointId")).split("-")[1])));
+        b.setDestination(em.find(TransferPoint.class, new Long(String.valueOf(data.get("toTransferPointId")).split("-")[1])));
+        b.setAdults((Integer) data.get("pax"));
+
+        Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
+
+        b.setTransferType(p.getTransferType());
+
+        LocalDate llegada = LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100);
+        LocalDate salida = LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100);
+
+        if (incomingDate != 0) {
+            b.setArrivalFlightTime(llegada.atTime(0, 0));
+        }
+        if (outgoingDate != 0) {
+            b.setDepartureFlightTime(salida.atTime(0, 0));
+        }
+
+        return b;
+    }
+
     @Override
     public BookTransferRS bookTransfer(String token, BookTransferRQ rq) throws Throwable {
 
@@ -204,54 +348,39 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
-        rs.setMsg("File confirmed ok");
+        rs.setMsg("Booking confirmed ok");
 
+
+        TransferBooking[] bs = {null};
 
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                /*
-                File b = new File();
-                b.setAgency();
-                b.setAgencyReference();
-                b.setAudit();
-                b.setConfirmed();
-                b.setCurrency();
-                b.setEmail();
-                b.setFinish();
-                b.setLeadName();
-                b.setStart();
-                b.setTelephone();
-                b.setTotal();
+                TransferBooking b = buildBookingFromKey(em, rq.getKey());
+
+                b.setConfirmed(true);
+                b.setAgencyReference(rq.getBookingReference());
+                if (b.getAgencyReference() == null) b.setAgencyReference("");
+                b.setSpecialRequests(rq.getCommentsToProvider());
+                b.setEmail(rq.getEmail());
+                b.setLeadName(rq.getLeadName());
+                b.setPrivateComments(rq.getPrivateComments());
+                b.setPos(em.find(AuthToken.class, token).getPos());
+
+                b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
+
 
                 em.persist(b);
 
-                TransferService s = new TransferService();
-                s.setAirport();
-                s.setDirection();
-                s.setDropoff();
-                s.setFlightNumber();
-                s.setFlightOriginOrDestination();
-                s.setFlightTime();
-                s.setPax();
-                s.setPreferredVehicle();
-                s.setTransferType();
-                s.setAudit();
-                s.setFile();
-                s.setFinish();
-                s.setOverridedValue();
-                s.setComment();
-                s.setStart();
-
-                em.persist(s);
-                */
+                bs[0] = b;
 
             }
         });
 
 
-        rs.setBookingId("5643135431");
+        rs.setBookingId("" + bs[0].getId());
+
 
         return rs;
     }
@@ -263,28 +392,50 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
 
     @Override
-    public GetAirportsRS getAirpotsRS(String token) throws Throwable {
-        return null;
+    public GetAirportsRS getAirports(String token) throws Throwable {
+        GetAirportsRS rs = new GetAirportsRS();
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+        rs.setMsg("Airports returned");
+
+        ((List<TransferPoint>) Helper.selectObjects("select x from " + TransferPoint.class.getName() + " x order by x.order")).stream().filter(p -> TransferPointType.AIRPORT.equals(p.getType()) || TransferPointType.PORT.equals(p.getType())).forEach(p -> {
+            Resource r;
+            rs.getAirports().add(r = new Resource());
+            r.setResourceId("tp-" + p.getId());
+            r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
+            r.setType("transferpoint");
+            r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+        });
+
+        return rs;
     }
 
-    @Override
-    public GetAirportsRS getAirpotRS(String token, String airportid) throws Throwable {
-        return null;
-    }
 
     @Override
-    public GetAirportsRS getAirpotfromdestRS(String token, String destinationid) throws Throwable {
-        return null;
-    }
+    public GetDestinationRS getDestinationsForAirport(String token, String originId) throws Throwable {
+        GetDestinationRS rs = new GetDestinationRS();
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+        rs.setMsg("Possible destinations filtered");
 
-    @Override
-    public GetDestinationRS getDestinationsRS(String token, String key) throws Throwable {
-        return null;
-    }
+        Helper.notransact(em -> {
+            TransferPoint origin = em.find(TransferPoint.class, Long.parseLong(originId.split("-")[1]));
 
-    @Override
-    public GetDestinationRS getDestinationRS(String token, String destkey) throws Throwable {
-        return null;
+            origin.getZone().getDestination().getZones().forEach(z -> z.getTransferPoints().forEach(p -> {
+                if (!p.equals(origin)) {
+                    Resource r;
+                    rs.getDestination().add(r = new Resource());
+                    r.setResourceId("tp-" + p.getId());
+                    r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
+                    r.setType("transferpoint");
+                    r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+                }
+            }));
+
+        });
+
+
+        return rs;
     }
 
     @Override

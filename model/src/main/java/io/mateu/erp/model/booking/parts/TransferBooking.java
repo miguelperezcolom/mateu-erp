@@ -64,6 +64,14 @@ public class TransferBooking extends Booking {
     @Position(21)
     private LocalDateTime arrivalFlightTime;
 
+    public void setArrivalFlightTime(LocalDateTime arrivalFlightTime) {
+        this.arrivalFlightTime = arrivalFlightTime;
+        if (arrivalFlightTime != null) {
+            setStart(arrivalFlightTime.toLocalDate());
+            if (getEnd() == null) setEnd(arrivalFlightTime.toLocalDate());
+        }
+    }
+
     @Position(22)
     private String arrivalFlightNumber;
 
@@ -75,6 +83,14 @@ public class TransferBooking extends Booking {
 
     @Position(24)
     private LocalDateTime departureFlightTime;
+
+    public void setDepartureFlightTime(LocalDateTime departureFlightTime) {
+        this.departureFlightTime = departureFlightTime;
+        if (departureFlightTime != null) {
+            setEnd(departureFlightTime.toLocalDate());
+            if (getStart() == null) setStart(departureFlightTime.toLocalDate());
+        }
+    }
 
     @Position(25)
     private String departureFlightNumber;
@@ -104,7 +120,7 @@ public class TransferBooking extends Booking {
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
-                s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+                s.setAudit(new Audit(MDD.getCurrentUser()));
             }
             s.setOffice(origin.getOffice());
             s.setFinish(getStart());

@@ -54,6 +54,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Entity
 @Getter@Setter
 @UseIdToSelect
@@ -172,7 +174,7 @@ public abstract class Booking {
 
     private LocalDateTime expiryDate;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking", orphanRemoval = true)
     @Output
     private List<BookingDueDate> dueDates = new ArrayList<>();
 
@@ -207,6 +209,11 @@ public abstract class Booking {
     @SameLine
     @Sum
     private double totalCost;
+
+    @KPI
+    @SameLine
+    @Sum
+    private double totalPaid;
 
     @KPI
     @SameLine
@@ -261,7 +268,7 @@ public abstract class Booking {
 
     @NotWhenCreating
     @UseLinkToListView(fields = "text,nucs,invoice")
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingCharge> serviceCharges = new ArrayList<>();
 
     @NotWhenCreating
@@ -1064,7 +1071,12 @@ public abstract class Booking {
 
                     //todo: completar cálculos
                     //todo: buscar en contrato y en compra
-                    t.setAmount(Helper.roundEuros(100d * totalValue / r.getPercent()));
+                    double v = r.getPercent() * totalValue / 100d;
+                    v += r.getAmount();
+                    long de = DAYS.between(start, end) - 1;
+                    long noches = r.getFirstNights() < de?r.getFirstNights():de;
+                    v += noches * totalValue / de;
+                    t.setAmount(Helper.roundEuros(v));
                 }
 
             }
@@ -1162,6 +1174,37 @@ public abstract class Booking {
 
     @PostLoad
     public void postload() {
+
+    }
+
+    public void createDueDates(EntityManager em) {
+
+        getDueDates().clear();
+
+        if (getAgency() != null && getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().getCustomerPaymentTerms() != null) {
+
+            if (RiskType.PREPAYMENT.equals(getAgency().getFinancialAgent().getRiskType())) {
+                getAgency().getFinancialAgent().getCustomerPaymentTerms().getLines().forEach(l -> {
+                    if (!PaymentReferenceDate.INVOICE.equals(l.getReferenceDate())) { // solo tiene sentido si la fecha de referencia no es la fecha de factura, y si el cliente no es prepago / directo
+                        BookingDueDate dd;
+                        getDueDates().add(dd = new BookingDueDate());
+                        dd.setBooking(this);
+                        dd.setType(DueDateType.COLLECTION);
+                        dd.setPartner(getAgency());
+                        dd.setCurrency(getAgency().getCurrency());
+                        dd.setAgent(getAgency().getFinancialAgent());
+                        LocalDate d = LocalDate.now();
+                        if (PaymentReferenceDate.CONFIRMATION.equals(l.getReferenceDate())) d = LocalDate.now();
+                        else if (PaymentReferenceDate.ARRIVAL.equals(l.getReferenceDate())) d = getStart();
+                        else if (PaymentReferenceDate.DEPARTURE.equals(l.getReferenceDate())) d = getEnd();
+                        dd.setDate(d.plusDays(l.getRelease()));
+                        dd.setAmount(Helper.roundEuros(l.getPercent() * getTotalNetValue() / 100d));
+                    }
+                });
+            }
+
+        }
+
 
     }
 }

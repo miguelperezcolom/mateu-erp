@@ -14,6 +14,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -50,6 +51,8 @@ public class Charge {
     @NotNull
     @ManyToOne
     private BillingConcept billingConcept;
+
+    private LocalDate serviceDate;
 
     @TextArea
     private String text;

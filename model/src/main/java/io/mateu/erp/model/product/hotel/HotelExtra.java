@@ -40,4 +40,9 @@ public class HotelExtra {
 
     private boolean internalUseOnly;
 
+
+    @Override
+    public String toString() {
+        return (type != null)?type.toString():"Hotel extra " + id;
+    }
 }

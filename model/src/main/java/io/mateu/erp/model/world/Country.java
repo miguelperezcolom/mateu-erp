@@ -36,6 +36,9 @@ public class Country {
     @ElementCollection
     private List<String> nationalAirportsIATACodes;
 
+    @Column(name = "_order")
+    private int order;
+
 
     @Override
     public String toString() {

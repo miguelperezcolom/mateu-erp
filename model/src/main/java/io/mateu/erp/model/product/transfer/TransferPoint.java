@@ -83,6 +83,9 @@ public class TransferPoint {
     private int minutesForInternationalFlights;
 
 
+    @Column(name = "_order")
+    private int order;
+
 
     public boolean isMinutesForNationalFlightsVisible() {
         return isAirport();

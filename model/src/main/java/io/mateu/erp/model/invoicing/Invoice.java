@@ -9,6 +9,7 @@ import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.taxes.VATSettlement;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -381,5 +382,6 @@ public abstract class Invoice {
 
         return url[0];
     }
+
 
 }

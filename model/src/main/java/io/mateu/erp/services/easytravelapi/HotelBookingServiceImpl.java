@@ -2,6 +2,7 @@ package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.authentication.AuthToken;
@@ -18,10 +19,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.ZoneProductRemark;
-import io.mateu.erp.model.product.hotel.Board;
-import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.product.hotel.Inventory;
-import io.mateu.erp.model.product.hotel.Room;
+import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.world.Country;
@@ -45,6 +43,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by miguel on 27/7/17.
@@ -83,6 +82,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 .split(occupancies.toLowerCase())) {
 
             //1x4-4-8
+            //num habs x pax por hab - edades
 
             //System.out.println("occ=" + s);
 
@@ -228,6 +228,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                             boolean allok = true;
                             double minTotal = 0;
+                            double offerValueForMinTotal = 0;
 
                             for (Occupancy o : ocups) {
                                 allok = false;
@@ -248,6 +249,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                 adultos -= ninos + bebes;
 
                                 double minValue = 0;
+                                double offerValueForMinValue = 0;
 
                                 for (Room r : h.getRooms()) {
                                     if (r.fits(adultos, ninos, bebes)) {
@@ -271,7 +273,10 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                                                 allok = l.isAvailable() && l.isValued();
 
-                                                if (allok) if (minValue == 0 || minValue > l.getValue()) minValue = l.getValue();
+                                                if (allok) if (minValue == 0 || minValue > l.getValue()) {
+                                                    minValue = l.getValue();
+                                                    offerValueForMinValue = l.getOffersValue();
+                                                }
 
                                             }
 
@@ -280,13 +285,20 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                     }
                                     if (allok) break;
                                 }
-                                if (allok) minTotal += minValue;
+                                if (allok) {
+                                    minTotal += minValue;
+                                    offerValueForMinTotal += offerValueForMinValue;
+                                }
                             }
                             if (allok) {
 
                                 if (minTotal > 0) {
                                     ah.setBestDeal(new BestDeal());
                                     ah.getBestDeal().setRetailPrice(new Amount(a.getCurrency().getIsoCode(), Helper.roundEuros(minTotal)));
+                                    if (offerValueForMinTotal != 0) {
+                                        ah.getBestDeal().setOffer(true);
+                                        ah.getBestDeal().setBeforeOfferPrice(new Amount(a.getCurrency().getIsoCode(), Helper.roundEuros(minTotal - offerValueForMinTotal)));
+                                    }
                                 }
 
                             }
@@ -457,6 +469,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                             k += l.getAges()[pos];
                                         }
                                         bp.setKey(BaseEncoding.base64().encode(k.getBytes()));
+                                        bp.setOffer(l.getOffersValue() != 0);
+                                        bp.setOfferText(l.getAppliedOffers());
 
                                         op.getPrices().add(bp);
                                         break;
@@ -534,6 +548,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 String[] rks = rq.getRatekeys().split("[\\,\\;\\- ]");
 
+                List<Supplement> supls = new ArrayList<>();
+
 
                 for (String rk : rks) {
 
@@ -580,6 +596,9 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     l.price();
 
 
+                    if (l.getContract() != null) l.getContract().getTerms().getSupplements().stream().filter(s -> s.isOptional()).filter(s -> s.getExtra() != null).filter(s -> !supls.contains(s)).forEach(s -> supls.add(s));
+
+
                     RateKey rkx;
                     rs.getRateKeys().add(rkx = new RateKey());
                     rkx.setKey(rk);
@@ -590,14 +609,17 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 }
 
-                hb.summarize(em);
+                rs.setAvailableServices(new ArrayList<>());
+                supls.forEach(s -> {
+                    Service x;
+                    rs.getAvailableServices().add(x = new Service());
+                    x.setId("" + s.getExtra().getId());
+                    x.setDescription("" + s.getExtra().getDescription());
+                    x.setRetailPrice(new Amount("EUR", s.getValue()));
+                });
 
-                for (CancellationTerm t : hb.getCancellationTerms()) {
-                    CancellationCost cc;
-                    rs.getCancellationCosts().add(cc = new CancellationCost());
-                    cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), t.getAmount()));
-                    cc.setGMTtime(t.getDate().toString());
-                }
+                hb.createCharges(em);
+                hb.summarize(em);
 
                 {
                     Remark rmk;
@@ -616,8 +638,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 for (ZoneProductRemark r : (List<ZoneProductRemark>)Helper.selectObjects("select x from " + ZoneProductRemark.class.getName() + " x where x.active = true")) {
                     if ((r.isActive())
                             && (r.getCountry() == null || r.getCountry().equals(hb.getHotel().getZone().getDestination().getCountry()))
-                            && (r.getDestination() == null || r.getCountry().equals(hb.getHotel().getZone().getDestination()))
-                            && (r.getZone() == null || r.getCountry().equals(hb.getHotel().getZone()))
+                            && (r.getDestination() == null || r.getDestination().equals(hb.getHotel().getZone().getDestination()))
+                            && (r.getZone() == null || r.getZone().equals(hb.getHotel().getZone()))
                             && (r.getProductType() == null || r.getProductType().equals(hb.getHotel().getType()))
                             && (r.getStart() == null || !r.getStart().isAfter(hb.getEnd()))
                             && (r.getEnd() == null || !r.getEnd().isBefore(hb.getStart()))
@@ -639,7 +661,6 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
                 }
 
-
                 for (BookingDueDate dd : hb.getDueDates()) {
                     if (!dd.isPaid()) {
                         PaymentLine pl;
@@ -651,8 +672,13 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 }
 
 
+                for (CancellationTerm t : hb.getCancellationTerms()) {
+                    CancellationCost cc;
+                    rs.getCancellationCosts().add(cc = new CancellationCost());
+                    cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), t.getAmount()));
+                    cc.setGMTtime(t.getDate().toString());
+                }
 
-                //rs.setAvailableServices(); //todo: comprobar si esto sobra
 
                 rs.setTotal(new BestDeal());
                 rs.getTotal().setRetailPrice(new Amount(hb.getAgency().getCurrency().getIsoCode(), hb.getTotalValue()));
@@ -669,7 +695,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             rs.setMsg(msg);
 
         } catch (Throwable throwable) {
-            rs.setStatusCode(200);
+            rs.setStatusCode(500);
             rs.setMsg("" + throwable.getClass().getName() + ":" + throwable.getMessage());
             throwable.printStackTrace();
         }
@@ -853,9 +879,27 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         return rs;
     }
 
+
     @Override
-    public GetAvailableHotelsRS getFilteredHotels(String s, String s1, String s2, int i, int i1, String s3, List<String> list, String s4, String s5) throws Throwable {
-        return null;
+    public GetAvailableHotelsRS getFilteredHotels(String token, String language, String resorts, int checkIn, int checkOut, String occupancies, String categories, double minPrice, double maxPrice) throws Throwable {
+        GetAvailableHotelsRS rs = getAvailableHotels(token, language, resorts, checkIn, checkOut, occupancies, true);
+        System.out.println("antes de filtro hoteles = " + rs.getHotels());
+        if (!Strings.isNullOrEmpty(categories)) {
+            List<String> catIds = Lists.newArrayList(categories.split(","));
+            List<Integer> stars = new ArrayList<>();
+            catIds.forEach(s -> stars.add(Integer.parseInt(s)));
+            rs.setHotels(rs.getHotels().stream().filter(h -> stars.contains(h.getStars()) || stars.contains(h.getKeys())).collect(Collectors.toList()));
+        }
+        System.out.println("después filtro categorías hoteles = " + rs.getHotels());
+        if (minPrice != 0) {
+            rs.setHotels(rs.getHotels().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() >= minPrice).collect(Collectors.toList()));
+        }
+        System.out.println("después filtro precio mínimo hoteles = " + rs.getHotels());
+        if (maxPrice != 0) {
+            rs.setHotels(rs.getHotels().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() <= maxPrice).collect(Collectors.toList()));
+        }
+        System.out.println("después filtro precio máximo hoteles = " + rs.getHotels());
+        return rs;
     }
 
 }

@@ -5,14 +5,17 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.product.generic.Extra;
 import io.mateu.mdd.core.annotations.ColumnWidth;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.ValueClass;
+import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -42,15 +45,15 @@ public class Supplement implements XMLSerializable {
     private LocalDate checkoutEnd;
      */
 
-    @NotEmpty
-    private String extra;
+    @NotNull
+    private HotelExtra extra;
 
     public DataProvider getExtraDataProvider() {
-        List<HotelExtraType> l = new ArrayList<>();
+        List<HotelExtra> l = new ArrayList<>();
         for (HotelExtra r : photo.getContract().getHotel().getExtras()) {
-            l.add(r.getType());
+            l.add(r);
         }
-        return new ListDataProvider<HotelExtraType>(l);
+        return new ListDataProvider<HotelExtra>(l);
     }
 
 
@@ -257,6 +260,7 @@ public class Supplement implements XMLSerializable {
         if (getEnd() != null) e.setAttribute("end", getEnd().toString());
         if (isOptional()) e.setAttribute("optional", "");
         if (isAffectedByOffers()) e.setAttribute("affectedByOffers", "");
+        if (getExtra() != null) e.setAttribute("extra", "" + getExtra().getId());
         e.setAttribute("per", "" + getPer());
         e.setAttribute("scope", "" + getScope());
         if (isOnRequest()) e.setAttribute("onRequest", "");
@@ -274,7 +278,7 @@ public class Supplement implements XMLSerializable {
 
         StringBuffer sb = new StringBuffer();
 
-        if (!Strings.isNullOrEmpty(getExtra())) {
+        if (getExtra() != null) {
             if (sb.length() > 0) sb.append(" ");
             sb.append(getExtra());
         }
@@ -345,6 +349,7 @@ public class Supplement implements XMLSerializable {
         if (e.getAttribute("end") != null) setEnd(LocalDate.parse(e.getAttributeValue("end")));
         if (e.getAttribute("optional") != null) setOptional(true);
         if (e.getAttribute("affectedByOffers") != null) setAffectedByOffers(true);
+        if (e.getAttribute("extra") != null) setExtra(getExtraById(Long.parseLong(e.getAttributeValue("extra"))));
         if (e.getAttribute("per") != null) setPer(SupplementPer.valueOf(e.getAttributeValue("per")));
         if (e.getAttribute("scope") != null) setScope(SupplementScope.valueOf(e.getAttributeValue("scope")));
         if (e.getAttribute("onRequest") != null) setOnRequest(true);
@@ -395,11 +400,33 @@ public class Supplement implements XMLSerializable {
         this.applicationOrder = applicationOrder;
     }
 
-    public String getExtra() {
+    public HotelExtra getExtra() {
         return extra;
     }
 
-    public void setExtra(String extra) {
+    public void setExtra(HotelExtra extra) {
         this.extra = extra;
+    }
+
+
+    private HotelExtra getExtraById(long id) {
+        HotelExtra c = null;
+        if (photo != null
+                && photo.getContract() != null
+                && photo.getContract().getHotel() != null) {
+            for (HotelExtra r : photo.getContract().getHotel().getExtras()) {
+                if (r.getId() == id) {
+                    c = r;
+                    return c;
+                }
+            }
+        } else {
+            try {
+                c = Helper.find(HotelExtra.class, id);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        return c;
     }
 }

@@ -48,6 +48,10 @@ public class Zone {
     @Ignored
     private List<Hotel> hotels = new ArrayList<>();
 
+    @Column(name = "_order")
+    private int order;
+
+
     @Override
     public String toString() {
         return getName();

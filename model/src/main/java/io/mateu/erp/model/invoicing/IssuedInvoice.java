@@ -14,7 +14,9 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Collection;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -64,8 +66,19 @@ public class IssuedInvoice extends Invoice {
     }
 
 
+    @Action(icon = VaadinIcons.ENVELOPE)
+    public static void sendSelection(EntityManager em, Set<IssuedInvoice> selection) {
+        selection.forEach(i -> {
+            i.setSent(true);
+            em.merge(i);
+        });
+    }
 
 
+    @Action(icon = VaadinIcons.ENVELOPE)
+    public static SelfBillForm selfBill(Set<IssuedInvoice> selection) {
+        return new SelfBillForm(selection);
+    }
 
 
 }

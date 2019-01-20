@@ -2,12 +2,14 @@ package io.mateu.erp.services.easytravelapi.test;
 
 import io.mateu.erp.services.easytravelapi.CommonsServiceImpl;
 import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl;
+import io.mateu.erp.services.easytravelapi.TransferBookingServiceImpl;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import org.easytravelapi.hotel.BookHotelRQ;
 import org.easytravelapi.hotel.BookingKey;
 import org.easytravelapi.hotel.GetHotelPriceDetailsRQ;
 import org.easytravelapi.hotel.GetHotelRatesRQ;
+import org.easytravelapi.transfer.BookTransferRQ;
 
 import java.time.LocalDateTime;
 
@@ -15,11 +17,11 @@ public class CommonsTester {
 
 
     public static void main(String[] args) {
-        System.setProperty("appconf", "/home/miguel/work/erp.properties");
+        System.setProperty("appconf", "/home/miguel/work/demo.properties");
 
         String token = "eyAiY3JlYXRlZCI6ICJUaHUgRGVjIDI3IDE1OjE5OjQ0IENFVCAyMDE4IiwgInVzZXJJZCI6ICJ3ZWJ4IiwgInBhcnRuZXJJZCI6ICI0In0=";
 
-        testPortfolio(token);
+        //testPortfolio(token);
 
         //testAvailHotels(token);
 
@@ -27,9 +29,50 @@ public class CommonsTester {
 
         //testHotelDetails(token);
 
-        testHotelConfirm(token);
+        //testHotelConfirm(token);
+
+        //testAvailTransfers(token);
+
+        //testTransferDetails(token);
+
+        testTransferConfirm(token);
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testTransferConfirm(String token) {
+        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xIiwKICAiYmlrZXMiIDogMCwKICAicGF4IiA6IDIsCiAgInZhbG9yIiA6IDE2MS4xLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTIiLAogICJvdXRnb2luZ0RhdGUiIDogMjAxOTA1MTMsCiAgImluY29taW5nRGF0ZSIgOiAyMDE5MDUwMSwKICAiYWdlcyIgOiBbIF0sCiAgImdvbGZCYWdnYWdlcyIgOiAwLAogICJwcmljZUlkIiA6IDIsCiAgImJpZ0x1Z2dhZ2VzIiA6IDAKfQ==";
+        try {
+            BookTransferRQ rq = new BookTransferRQ();
+            rq.setBookingReference("Test " + LocalDateTime.now());
+            rq.setCommentsToProvider("Test");
+            rq.setEmail("miguelperezcolom@gmail.com");
+            rq.setLeadName("Mr test");
+            rq.setPrivateComments("Test");
+            rq.setKey(key);
+
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().bookTransfer(token, rq)));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testTransferDetails(String token) {
+        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xIiwKICAiYmlrZXMiIDogMCwKICAicGF4IiA6IDIsCiAgInZhbG9yIiA6IDE2MS4xLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTIiLAogICJvdXRnb2luZ0RhdGUiIDogMjAxOTA1MTMsCiAgImluY29taW5nRGF0ZSIgOiAyMDE5MDUwMSwKICAiYWdlcyIgOiBbIF0sCiAgImdvbGZCYWdnYWdlcyIgOiAwLAogICJwcmljZUlkIiA6IDIsCiAgImJpZ0x1Z2dhZ2VzIiA6IDAKfQ==";
+        try {
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getTransferPriceDetails(token, key, "")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testAvailTransfers(String token) {
+        try {
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-1", "tp-2", 2, 0, 0, 0, 0, 0, 20190501, 20190513)));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     private static void testHotelConfirm(String token) {

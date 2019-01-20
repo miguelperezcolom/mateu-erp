@@ -1,11 +1,14 @@
 package io.mateu.erp.model.booking.parts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.erp.model.product.AbstractOffer;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
@@ -126,6 +129,12 @@ public class HotelBookingLine {
     private boolean available;
 
 
+    @KPI
+    private double offersValue;
+
+    @Output
+    private String appliedOffers;
+
     @Action(order = 1)
     @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract, inventory")
     public void check() throws Throwable {
@@ -205,7 +214,7 @@ public class HotelBookingLine {
                             }
                         }
                         if (end != null) {
-                            long noches = DAYS.between(start, end);
+                            long noches = DAYS.between(start, end) - 1;
                             for (MinimumStayRule r : contract.getTerms().getMinimumStayRules()) {
                                 if (start == null || end == null || ((r.getStart() == null || r.getStart().isBefore(effectiveEnd)) && (r.getEnd() == null || r.getEnd().isAfter(start)))) {
                                     if (room == null || r.getRooms().size() == 0 || r.getRooms().contains(room.getType().getCode())) {
@@ -343,6 +352,8 @@ public class HotelBookingLine {
     @Action(order = 2)
     @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract")
     public void price() {
+        offersValue = 0;
+        appliedOffers = "";
         value = 0;
         valued = false;
         if (start != null && end != null && room != null && board != null && contract != null && contract.getTerms() != null) {
@@ -406,12 +417,23 @@ public class HotelBookingLine {
                     }
                 }
 
+                double[] valorOfertas = new double[noches];
+
+                aplicarOfertas(valorEstancia, valorRegimen, valorOfertas);
+
+
                 double total = 0;
-                for (int i = 0; i < valorEstancia.length; i++) for (int j = 0; j < valorEstancia[i].length; j++) {
-                    total += valorEstancia[i][j];
-                    total += valorRegimen[i][j];
+                double totalOfertas = 0;
+                for (int i = 0; i < valorEstancia.length; i++) {
+                    for (int j = 0; j < valorEstancia[i].length; j++) {
+                        total += valorEstancia[i][j];
+                        total += valorRegimen[i][j];
+                    }
+                    total += valorOfertas[i];
+                    totalOfertas += valorOfertas[i];
                 }
                 value = Helper.roundEuros(total);
+                offersValue = Helper.roundEuros(totalOfertas);
                 valued = true;
                 for (int i =  0; i < vd.length; i++) if (!vd[i]) {
                     valued = false;
@@ -424,6 +446,16 @@ public class HotelBookingLine {
         booking.updateData();
     }
 
+    private void aplicarOfertas(double[][] valorEstancia, double[][] valorRegimen, double[] valorOfertas) {
+        for (AbstractHotelOffer o : getBooking().getHotel().getOffers()) {
+            double totalOferta = o.aplicar(this, valorEstancia, valorRegimen, valorOfertas);
+            if (totalOferta != 0) {
+                //todo: gestionar oferta aplicada
+                if (!"".equals(appliedOffers)) appliedOffers += ", ";
+                appliedOffers += o.getName();
+            }
+        }
+    }
 
 
     @Override
@@ -509,6 +541,10 @@ public class HotelBookingLine {
         h += "<tr><th>Inventory:</th><td>" + (inventory != null ? inventory : "NO INVENTORY") + "</td></tr>";
         h += "<tr><th>Available:</th><td>" + (available?"YES":"ON REQUEST") + "</td></tr>";
         h += "<tr><th>Value:</th><td>" + (valued?value:"-") + "</td></tr>";
+        if (valued && !Strings.isNullOrEmpty(appliedOffers)) {
+            h += "<tr><th>Applied offers:</th><td>" + appliedOffers + "</td></tr>";
+            h += "<tr><th>Offers value:</th><td>" + offersValue + "</td></tr>";
+        }
         h += "</table>";
         return h;
     }

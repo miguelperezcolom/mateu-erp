@@ -4,8 +4,10 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.*;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Zone;
@@ -27,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class CMSServiceImpl implements CMSService {
     @Override
@@ -117,12 +121,12 @@ public class CMSServiceImpl implements CMSService {
                 System.out.println("checkIn=" + checkIn);
                 System.out.println("checkOut=" + checkOut);
 
-                LocalDate desde = LocalDate.parse("" + checkIn, DateTimeFormatter.ofPattern("yyyyMMdd"));
+                LocalDate desde = LocalDate.now(); //LocalDate.parse("" + checkIn, DateTimeFormatter.ofPattern("yyyyMMdd"));
                 desde = LocalDate.parse(desde.format(DateTimeFormatter.ofPattern("yyyyMM")) + "01", DateTimeFormatter.ofPattern("yyyyMMdd"));
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
-                List<StopSalesOperation> ops = StopSalesCalendar.getOperations(h, desde, desde.plusMonths(2));
-                Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, desde, desde.plusMonths(2).minusDays(1), null, null, a);
+                List<StopSalesOperation> ops = StopSalesCalendar.getOperations(h, desde, desde.plusMonths(20));
+                Map<LocalDate, Boolean>[] cuboParos = StopSalesCalendar.construirCubo(ops, desde, desde.plusMonths(20).minusDays(1), null, null, a);
 
 
                 List<? extends Occupancy> ocs = HotelBookingServiceImpl.getOccupancies(occupancies);
@@ -142,14 +146,13 @@ public class CMSServiceImpl implements CMSService {
                     List<InventoryCalendarCube> cubosCupo = new ArrayList<>();
                     for (Inventory i : h.getInventories()) cubosCupo.add(new InventoryCalendarCube(i));
 
-                    for (Room r : h.getRooms()) {
-                        //cupos.put(r.getType(), );
-                    }
 
+                    LocalDate fechaInicioCupo = LocalDate.of(checkInLocalDate.getYear(), checkInLocalDate.getMonthValue(), 1);
+                    int[] cupo = getCupo(h, fechaInicioCupo);
 
-                    for (int posmes = 0; posmes < 2; posmes++) {
-                        int mesActual = checkInLocalDate.getMonthValue() + posmes;
-                        LocalDate d = LocalDate.of(checkInLocalDate.getYear(), mesActual, 1);
+                    for (int posmes = 0; posmes < 20; posmes++) {
+                        LocalDate d = desde.plusMonths(posmes);
+                        int mesActual = d.getMonthValue();
 
                         HotelAvailabilityCalendarMonth cm;
                         rs.getMonths().add(cm = new HotelAvailabilityCalendarMonth(d.getMonth().toString() + " " + d.getYear(), d.getYear(), d.getMonthValue()));
@@ -164,6 +167,7 @@ public class CMSServiceImpl implements CMSService {
                             cw.getDays().add(cd = new HotelAvailabilityCalendarDay());
                             cd.setBlank(true);
                         }
+
 
 
                         while (d.getMonthValue() == mesActual) {
@@ -182,8 +186,13 @@ public class CMSServiceImpl implements CMSService {
 
                             if (!cuboParos[0].getOrDefault(d, false)) cd.setStyleName("av");
 
-                            /*
 
+                            int posFecha = new Long(DAYS.between(fechaInicioCupo, d)).intValue();
+                            if (posFecha >= 0 && posFecha < cupo.length) {
+                                if (cupo[posFecha] <= 0) cd.setStyleName("or");
+                            } else cd.setStyleName("or");
+
+                            /*
                             DispoRQ rq = new DispoRQ(hoy, nd, ndx, ocs, false);
                             AvailableHotel ah = new HotelAvailabilityRunner().check(a, h, finalIdAgencia, idPos, modelo, rq, true, hoy);
                             if (ah != null) {
@@ -224,5 +233,86 @@ public class CMSServiceImpl implements CMSService {
         rs.setMsg(msg);
 
         return rs;
+    }
+
+    private int[] getCupo(Hotel h, LocalDate start) throws Throwable {
+
+        int noches = 1200;
+        LocalDate effectiveEnd = start.plusDays(noches);
+
+
+        int[] cupo = new int[noches];
+
+        for (Inventory inventory : h.getInventories()) {
+
+            for (Room room : h.getRooms()) {
+
+                for (HotelContract c : inventory.getContracts()) {
+                    if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom().equals(room.getType())) {
+                        if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                            int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                            if (desde < 0) desde = 0;
+                            int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                            if (hasta > noches) hasta = noches;
+                            for (int i = desde; i < hasta; i++) {
+                                cupo[i] += a.getQuantity();
+                            }
+                        }
+                    }
+                }
+
+                for (Inventory dependant : inventory.getDependantInventories()) {
+                    for (HotelContract c : dependant.getContracts()) if (!inventory.getContracts().contains(c)) {
+                        if (c.getTerms() != null) for (Allotment a : c.getTerms().getAllotment()) if (a.getRoom().equals(room.getType())) {
+                            if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                                int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                                if (desde < 0) desde = 0;
+                                int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                                if (hasta > noches) hasta = noches;
+                                for (int i = desde; i < hasta; i++) {
+                                    cupo[i] += a.getQuantity();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (InventoryOperation a : inventory.getOperations()) {
+                    if (a.getRoom().equals(room.getType())) {
+                        if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                            int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                            if (desde < 0) desde = 0;
+                            int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                            if (hasta > noches) hasta = noches;
+                            for (int i = desde; i < hasta; i++) {
+                                if (InventoryAction.ADD.equals(a.getAction())) cupo[i] += a.getQuantity();
+                                else if (InventoryAction.SUBSTRACT.equals(a.getAction())) cupo[i] -= a.getQuantity();
+                                if (InventoryAction.SET.equals(a.getAction())) cupo[i] = a.getQuantity();
+                            }
+                        }
+                    }
+                }
+
+                for (HotelBookingLine a : inventory.getBookings()) {
+                    if (a.getBooking().isActive() && a.isActive()) {
+                        if (a.getRoom().getType().equals(room.getType())) {
+                            if (!a.getStart().isAfter(effectiveEnd) && !a.getEnd().isBefore(start)) {
+                                int desde = new Long(DAYS.between(start, a.getStart())).intValue();
+                                if (desde < 0) desde = 0;
+                                int hasta = new Long(DAYS.between(start, a.getEnd())).intValue();
+                                if (hasta > noches) hasta = noches;
+                                for (int i = desde; i < hasta; i++) {
+                                    cupo[i] -= a.getRoomsBefore();
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        return cupo;
     }
 }

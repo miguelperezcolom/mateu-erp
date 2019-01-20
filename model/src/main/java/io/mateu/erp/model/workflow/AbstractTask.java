@@ -40,7 +40,7 @@ public abstract class AbstractTask {
     @Embedded
     @NotInList
     @Output
-    private Audit audit;
+    private Audit audit = new Audit(MDD.getCurrentUser());
 
     @ListColumn
     @Output

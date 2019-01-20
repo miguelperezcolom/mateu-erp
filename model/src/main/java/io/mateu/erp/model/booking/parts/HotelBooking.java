@@ -125,10 +125,11 @@ public class HotelBooking extends Booking {
 
     @Override
     public void createCharges(EntityManager em) throws Throwable {
+        getServiceCharges().clear();
         for (HotelBookingLine l : lines) if (l.getContract() != null) {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(getAudit().getModifiedBy()));
+            c.setAudit(new Audit(MDD.getCurrentUser()));
             c.setTotal(new Amount(FastMoney.of(l.getValue(), "EUR")));
 
             c.setText(l.toSimpleString());
@@ -137,13 +138,10 @@ public class HotelBooking extends Booking {
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);
-            getServiceCharges().add(c);
 
             c.setInvoice(null);
 
             c.setBillingConcept(l.getContract().getBillingConcept());
-
-            em.persist(c);
         }
     }
 

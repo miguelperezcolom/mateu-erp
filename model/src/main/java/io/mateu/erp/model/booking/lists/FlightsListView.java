@@ -1,10 +1,9 @@
-package io.mateu.erp.model.booking.hotel;
+package io.mateu.erp.model.booking.lists;
 
-import io.mateu.erp.model.booking.parts.HotelBooking;
-import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.workflow.SendRoomingByEmailTask;
+import com.google.common.base.Strings;
+import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -14,16 +13,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 @Getter@Setter
-public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
+public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
 
-    private Hotel hotel;
+    private TransferPoint arrival;
+
+    private TransferPoint departure;
 
     private LocalDate checkInFrom = LocalDate.now();
 
@@ -31,28 +33,27 @@ public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
 
     @Getter@Setter
     public class Row {
-        @Ignored
-        private long hotelId;
+        private String flightNumber;
 
-        private String hotelName;
+        private String flightTime;
 
         private long bookings;
 
-        private LocalDate checkInFrom = RoomingListView.this.getCheckInFrom();
-
-        private LocalDate checkInTo = RoomingListView.this.getCheckInTo();
+        private long pax;
     }
 
     @Override
     public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
         String ql = "";
 
-        ql += " select h.id, h.name, count(*) ";
+        ql += " select b.arrivalflightnumber as fn, to_char(b.arrivalflighttime, 'yyyy-MM-dd HH:mi') as ft, count(*), sum(b.adults + b.children) ";
 
-        ql+= " from booking b inner join product h on h.id = b.hotel_id ";
+        ql+= " from booking b ";
 
         Map<String, Object> params = new HashMap<>();
         String w = "";
+
+        w += " b.dtype = 'TransferBooking' and b.active = true ";
 
         if (checkInFrom != null) {
             if (!"".equals(w)) w += " and ";
@@ -64,18 +65,20 @@ public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
             w += " b.end <= ?t";
             params.put("t", checkInTo);
         }
+        /*
         if (hotel != null) {
             if (!"".equals(w)) w += " and ";
-            w += " b.hotel.id <= ?h";
+            w += " x.hotel.id <= :h";
             params.put("h", hotel.getId());
         }
+        */
 
         if (!"".equals(w)) ql += " where " + w + " ";
 
 
 
-        ql += " group by h.id, h.name ";
-        ql += " order by h.name ";
+        ql += " group by fn, ft ";
+        ql += " order by ft, fn ";
 
         if (forCount) {
             ql = " select count(*) from (" + ql + ") x";
@@ -89,32 +92,27 @@ public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
 
 
     @Action
-    public static void send(String email, String postscript, Set<Row> selection) throws Throwable {
+    public static void changeFlightInfo(String flightNumber, LocalDateTime flightTime, Set<Row> selection) throws Throwable {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Row r : selection) {
             Helper.transact(em -> {
 
-                Hotel h = em.find(Hotel.class, r.getHotelId());
-
-                String s = "select x from " + HotelBooking.class.getName() + " x ";
+                String s = "select x from " + TransferBooking.class.getName() + " x ";
 
                 Map<String, Object> params = new HashMap<>();
 
                 String w = "";
 
-                if (r.getCheckInFrom() != null) {
+                if (r.getFlightNumber() != null) {
                     if (!"".equals(w)) w += " and ";
-                    w += " x.start >= :s";
-                    params.put("s", r.getCheckInFrom());
+                    w += " x.arrivalFlightNumber = :fn";
+                    params.put("fn", r.getFlightNumber());
                 }
-                if (r.getCheckInTo() != null) {
+
+                if (r.getFlightTime() != null) {
                     if (!"".equals(w)) w += " and ";
-                    w += " x.end <= :t";
-                    params.put("t", r.getCheckInTo());
-                }
-                if (r.getHotelId() != 0) {
-                    if (!"".equals(w)) w += " and ";
-                    w += " x.hotel.id = :h";
-                    params.put("h", r.getHotelId());
+                    w += " x.arrivalFlightTime = :ft";
+                    params.put("ft", LocalDateTime.parse(r.getFlightTime(), dtf));
                 }
 
                 if (!"".equals(w)) s += " where " + w + " ";
@@ -123,12 +121,11 @@ public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
 
                 Query q = em.createQuery(s);
                 params.keySet().forEach(k -> q.setParameter(k, params.get(k)));
-                List<HotelBooking> bookings = q.getResultList();
+                List<TransferBooking> bookings = q.getResultList();
 
-                SendRoomingByEmailTask t = new SendRoomingByEmailTask(email, postscript, h, bookings);
-                for (HotelBooking b : bookings) {
-                    b.getTasks().add(t);
-                    t.getBookings().add(b);
+                for (TransferBooking b : bookings) {
+                    if (!Strings.isNullOrEmpty(flightNumber)) b.setArrivalFlightNumber(flightNumber);
+                    if (flightTime != null) b.setArrivalFlightTime(flightTime);
                 }
 
             });

@@ -7,13 +7,22 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.util.Helper;
+import lombok.Getter;
+import lombok.Setter;
 
+import javax.persistence.Entity;
 import java.io.IOException;
 import java.util.*;
 
+@Entity@Getter@Setter
 public class SendRoomingByEmailTask extends SendEmailTask {
 
+    public SendRoomingByEmailTask() {
+
+    }
+
     public SendRoomingByEmailTask(String email, String postscript, Hotel hotel, Collection<HotelBooking> bookings) throws Throwable {
+        setSubject("Rooming list");
         setMessage(createMessage(email, postscript, hotel, bookings));
         if (!Strings.isNullOrEmpty(email)) setTo(email);
         else setTo(hotel.getEmail());
@@ -42,7 +51,7 @@ public class SendRoomingByEmailTask extends SendEmailTask {
 
             db.put("bokingId", b.getId());
             db.put("leadName", b.getLeadName());
-            db.put("formalizated", b.getFormalizationDate() != null?b.getFormalizationDate().toLocalDate().toString():b.getAudit().getCreated().toLocalDate().toString());
+            db.put("formalizated", b.getFormalizationDate() != null?b.getFormalizationDate().toLocalDate().toString():(b.getAudit() != null && b.getAudit().getCreated() != null?b.getAudit().getCreated().toLocalDate().toString():"---"));
 
             ArrayList<Object> ldls;
             db.put("lines", ldls = new ArrayList<>());

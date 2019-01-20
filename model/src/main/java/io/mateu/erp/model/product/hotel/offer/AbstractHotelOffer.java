@@ -8,6 +8,7 @@ import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.DatesRanges;
 import io.mateu.erp.model.product.hotel.BoardType;
@@ -154,6 +155,10 @@ public class AbstractHotelOffer implements IHotelOffer {
 
 
 
+        return 0;
+    }
+
+    public double aplicar(HotelBookingLine l, double[][] valorEstancia, double[][] valorRegimen, double[] valorOfertas) {
         return 0;
     }
 

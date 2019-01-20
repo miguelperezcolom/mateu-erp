@@ -44,6 +44,10 @@ public class Destination {
 
     private String paymentRemarks;
 
+    @Column(name = "_order")
+    private int order;
+
+
 
     @Override
     public String toString() {

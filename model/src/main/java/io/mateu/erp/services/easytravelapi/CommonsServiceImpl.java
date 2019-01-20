@@ -11,8 +11,6 @@ import io.mateu.erp.model.product.DataSheetImage;
 import io.mateu.erp.model.product.FeatureValue;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CommonsService;
@@ -22,6 +20,7 @@ import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by miguel on 27/7/17.
@@ -40,9 +39,9 @@ public class CommonsServiceImpl implements CommonsService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                int totalRecursos = 0;
+                AtomicReference<Integer> totalRecursos = new AtomicReference<>(0);
 
-                for (io.mateu.erp.model.world.Country ec : (List<io.mateu.erp.model.world.Country>) em.createQuery("select s from " + io.mateu.erp.model.world.Country.class.getName() + " s order by s.isoCode").getResultList()) {
+                for (io.mateu.erp.model.world.Country ec : (List<io.mateu.erp.model.world.Country>) em.createQuery("select s from " + io.mateu.erp.model.world.Country.class.getName() + " s order by s.order, s.isoCode").getResultList()) {
 
                     Country c;
                     rs.getCountries().add(c = new Country());
@@ -52,7 +51,7 @@ public class CommonsServiceImpl implements CommonsService {
                     c.setUrlFriendlyName("spain");
 
 
-                    for (Destination es : ec.getDestinations()) {
+                    ec.getDestinations().stream().sorted((o1, o2) -> o1.getOrder() - o2.getOrder()).forEach(es -> {
 
                         State s;
                         c.getStates().add(s = new State());
@@ -61,8 +60,7 @@ public class CommonsServiceImpl implements CommonsService {
                         s.setName(new MultilingualText("es", es.getName(), "en", es.getName(), "it", es.getName()));
                         s.setUrlFriendlyName(Helper.urlize(es.getName()));
 
-                        for (Zone el : es.getZones()) {
-
+                        es.getZones().stream().sorted((z1, z2) -> z1.getOrder() - z2.getOrder()).forEach(el -> {
                             City l;
                             s.getCities().add(l = new City());
                             l.setResourceId("zon-" + el.getId());
@@ -80,31 +78,30 @@ public class CommonsServiceImpl implements CommonsService {
                                 r.setType("hotel");
                                 r.setDescription(new MultilingualText("es", eh.getDataSheet() != null && eh.getDataSheet().getDescription() != null?eh.getDataSheet().getDescription().get("es"):"No description"));
 
-                                totalRecursos++;
+                                totalRecursos.getAndSet(totalRecursos.get() + 1);
                             }
 
                             for (TransferPoint p : el.getTransferPoints()) {
 
                                 Resource r;
                                 l.getResources().add(r = new Resource());
-                                r.setResourceId("tp_" + p.getId());
-                                r.setName(new MultilingualText("es", p.getName()));
+                                r.setResourceId("tp-" + p.getId());
+                                r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
                                 //r.setLatitude(p.getLat());
                                 //r.setLongitude(p.getLon());
                                 r.setType("transferpoint");
-                                r.setDescription(new MultilingualText("es", p.getInstructions()));
+                                r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
 
-                                totalRecursos++;
+                                totalRecursos.getAndSet(totalRecursos.get() + 1);
                             }
+                        });
 
-                        }
-
-                    }
+                    });
 
                 }
 
 
-                rs.setMsg("" + totalRecursos + " resouces found.");
+                rs.setMsg("" + totalRecursos.get() + " resouces found.");
 
             }
         });
