@@ -6,10 +6,12 @@ import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
+import io.mateu.erp.model.booking.parts.CircuitBooking;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
@@ -18,8 +20,9 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
-import org.easytravelapi.ActivityBookingService;
+import org.easytravelapi.CircuitBookingService;
 import org.easytravelapi.activity.*;
+import org.easytravelapi.circuit.*;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;
@@ -30,21 +33,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Created by miguel on 27/7/17.
- */
-public class ActivityBookingServiceImpl implements ActivityBookingService {
-
-
+public class CircuitBookingServiceImpl implements CircuitBookingService {
     @Override
-    public GetAvailableActivitiesRS getAvailableActivities(String token, int start, String resorts, String language) {
-        GetAvailableActivitiesRS rs = new GetAvailableActivitiesRS();
+    public GetAvailableCircuitsRS getAvailableCircuits(String token, String language) throws Throwable {
+        GetAvailableCircuitsRS rs = new GetAvailableCircuitsRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
-        System.out.println("available activities. token = " + token);
+        System.out.println("available circuits. token = " + token);
 
         LocalDate formalizationDate = LocalDate.now();
 
@@ -68,30 +66,26 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
             Helper.notransact(em -> {
 
-                List<Excursion> excursions = new ArrayList<>();
 
-                for (String s : Splitter.on(',')
-                        .trimResults()
-                        .omitEmptyStrings()
-                        .split(resorts)) {
-                    if (s.startsWith("cou")) {
-                        em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p))));
-                    } else if (s.startsWith("des")) {
-                        em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p)));
-                    } else if (s.startsWith("zon")) {
-                        em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p));
-                    } else if (s.startsWith("exc")) {
-                        excursions.add(em.find(Excursion.class, Long.parseLong(s.substring(4))));
-                    }
-                };
+                List<ProductLabel> labels = em.createQuery("select x from " + ProductLabel.class.getName() + " x order by x.name").getResultList();
+
+                labels.forEach(x -> {
+                    Label l;
+                    rs.getLabels().add(l = new Label());
+                    l.setId("" + x.getId());
+                    l.setName(x.getName());
+                });
+
+
+                List<Circuit> excursions = em.createQuery("select x from " + Circuit.class.getName() + " x order by x.name").getResultList();
 
 
                 excursions.forEach(e -> {
                     {
-                        AvailableActivity a;
-                        rs.getAvailableActivities().add(a = new AvailableActivity());
+                        AvailableCircuit a;
+                        rs.getAvailableCircuits().add(a = new AvailableCircuit());
 
-                        a.setActivityId("exc-" + e.getId());
+                        a.setCircuitId("cir-" + e.getId());
                         a.setName(e.getName());
                         if (e.getDataSheet() != null) {
                             if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
@@ -107,6 +101,14 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                         a.setBestDeal(bd = new BestDeal());
                         bd.setRetailPrice(new Amount("EUR", 200.34));
 
+                        e.getLabels().forEach(x -> {
+                            Label l;
+                            a.getLabels().add(l = new Label());
+                            l.setId("" + x.getId());
+                            l.setName(x.getName());
+                        });
+
+
                     }
 
                 });
@@ -120,13 +122,13 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         }
 
 
+
         return rs;
     }
 
     @Override
-    public GetActivityRatesRS getActivityRates(String token, String activityId, int date, String language) throws Throwable {
-
-        GetActivityRatesRS rs = new GetActivityRatesRS();
+    public GetCircuitRatesRS getCircuitRates(String token, String key, int date, String language) throws Throwable {
+        GetCircuitRatesRS rs = new GetCircuitRatesRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
@@ -155,7 +157,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
             Helper.notransact(em -> {
 
-                Excursion e = em.find(Excursion.class, Long.parseLong(activityId.split("-")[1]));
+                Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
                 rs.setVariants(new ArrayList<>());
                 e.getVariants().forEach(v -> {
@@ -167,74 +169,6 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                     av.setBestDeal(new BestDeal());
                     av.getBestDeal().setRetailPrice(new Amount("EUR", 200.34));
                 });
-
-                LocalDate d = LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
-
-
-                rs.setShifts(new ArrayList<>());
-                e.getShifts().forEach(x -> {
-
-                    if ((x.getStart() == null || !x.getStart().isBefore(d)) && (x.getEnd() == null || !x.getEnd().isAfter(d)) && (x.getWeekdays() == null || x.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
-
-                        ActivityShift s;
-                        rs.getShifts().add(s = new ActivityShift());
-                        s.setId("" + x.getId());
-                        s.setName(x.getName());
-
-                        if (x.getLanguages() != null) {
-                            if (x.getLanguages().contains("es")) {
-                                ActivityLanguage l;
-                                s.getLanguages().add(l = new ActivityLanguage());
-                                l.setId("es");
-                                l.setName("Español");
-                            }
-                            if (x.getLanguages().contains("en")) {
-                                ActivityLanguage l;
-                                s.getLanguages().add(l = new ActivityLanguage());
-                                l.setId("en");
-                                l.setName("English");
-                            }
-                            if (x.getLanguages().contains("it")) {
-                                ActivityLanguage l;
-                                s.getLanguages().add(l = new ActivityLanguage());
-                                l.setId("it");
-                                l.setName("Italiano");
-                            }
-                            if (x.getLanguages().contains("de")) {
-                                ActivityLanguage l;
-                                s.getLanguages().add(l = new ActivityLanguage());
-                                l.setId("de");
-                                l.setName("Deutsch");
-                            }
-                        };
-
-                        if (s.getLanguages().size() == 0) {
-                            ActivityLanguage l;
-                            s.getLanguages().add(l = new ActivityLanguage());
-                            l.setId("es");
-                            l.setName("Español");
-                        }
-
-                        s.setPickups(new ArrayList<>());
-                        x.getPickupTimes().forEach(z -> {
-                            ActivityPickupPoint p;
-                            s.getPickups().add(p = new ActivityPickupPoint());
-                            p.setId("" + z.getId());
-                            if (z.getPoint() != null) p.setName("" + z.getPoint().getName() + " at " + z.getTime());
-                        });
-
-                        if (s.getPickups().size() == 0) {
-                            ActivityPickupPoint p;
-                            s.getPickups().add(p = new ActivityPickupPoint());
-                            p.setId("x");
-                            p.setName("Sin recogida");
-                        }
-
-                    }
-
-                });
-
-
 
             });
 
@@ -249,32 +183,33 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
     }
 
     @Override
-    public CheckActivityRS check(String token, String key, int date, String language, int adults, int children, String variant, String shift, String pickup, String activityLanguage) throws Throwable {
-        CheckActivityRS rs = new CheckActivityRS();
+    public CheckCircuitRS check(String token, String key, int date, String language, int adults, int children, String variant) throws Throwable {
+        CheckCircuitRS rs = new CheckCircuitRS();
+
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
         Helper.notransact(em -> {
 
-            Excursion e = em.find(Excursion.class, Long.parseLong(key.split("-")[1]));
+            Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
             rs.setAvailable(true);
-            rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant, shift, pickup, activityLanguage));
+            rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant));
             rs.setValue(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
 
 
         });
 
-
         return rs;
     }
 
-    public String getKey(String token, String key, int date, String language, int adults, int children, String variant, String shift, String pickup, String activityLanguage) throws IOException {
-        return Base64.getEncoder().encodeToString(buildKey(token, key, date, language, adults, children, variant, shift, pickup, activityLanguage).getBytes());
+
+    public String getKey(String token, String key, int date, String language, int adults, int children, String variant) throws IOException {
+        return Base64.getEncoder().encodeToString(buildKey(token, key, date, language, adults, children, variant).getBytes());
     }
 
-    private String buildKey(String token, String key, int date, String language, int adults, int children, String variant, String shift, String pickup, String activityLanguage) throws IOException {
+    private String buildKey(String token, String key, int date, String language, int adults, int children, String variant) throws IOException {
         String s = "";
 
         Map<String, Object> data = new HashMap<>();
@@ -286,9 +221,6 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         data.put("adults", adults);
         data.put("children", children);
         data.put("variant", variant);
-        data.put("shift", shift);
-        data.put("pickup", pickup);
-        data.put("activityLanguage", activityLanguage);
 
         s = Helper.toJson(data);
 
@@ -296,9 +228,10 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
     }
 
 
+
     @Override
-    public GetActivityPriceDetailsRS getActivityPriceDetails(String token, String key, String language, String supplements, String coupon) throws Throwable {
-        GetActivityPriceDetailsRS rs = new GetActivityPriceDetailsRS();
+    public GetCircuitPriceDetailsRS getCircuitPriceDetails(String token, String key, String language, String supplements, String coupon) throws Throwable {
+        GetCircuitPriceDetailsRS rs = new GetCircuitPriceDetailsRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
@@ -308,7 +241,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         try {
             Helper.notransact(em -> {
 
-                ExcursionBooking b = buildBookingFromKey(em, key);
+                CircuitBooking b = buildBookingFromKey(em, key);
 
                 // todo: meter todo esto en el priceFromServices de TransferBooking
 
@@ -408,7 +341,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         return rs;
     }
 
-    private ExcursionBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
+    private CircuitBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
         Map<String, Object> data = Helper.fromJson(new String((Base64.getDecoder().decode(key))));
 
         System.out.println(Helper.toJson(data));
@@ -439,20 +372,19 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         data.put("activityLanguage", activityLanguage);
          */
 
-        ExcursionBooking b = new ExcursionBooking();
+        CircuitBooking b = new CircuitBooking();
         User user = em.find(User.class, login);
         b.setAudit(new Audit(user));
         b.setAgency(em.find(Partner.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
 
-        b.setExcursion(em.find(Excursion.class, new Long(String.valueOf(data.get("activity")))));
+        b.setCircuit(em.find(Circuit.class, new Long(String.valueOf(data.get("activity")))));
         b.setAdults((Integer) data.get("adults"));
         b.setChildren((Integer) data.get("children"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
         if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(TourVariant.class, new Long(String.valueOf(data.get("variant")))));
-        if (data.get("shift") != null && !"x".equals(data.get("shift")) && !"null".equals(data.get("shift"))) b.setShift(em.find(TourShift.class, new Long(String.valueOf(data.get("shift")))));
         //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
         //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión
 
@@ -468,24 +400,23 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         return b;
     }
 
-    @Override
-    public BookActivityRS bookActivity(String token, BookActivityRQ rq) {
-        System.out.println("rq=" + rq);
 
-        BookActivityRS rs = new BookActivityRS();
+    @Override
+    public BookCircuitRS bookCircuit(String token, BookCircuitRQ rq) throws Throwable {
+        BookCircuitRS rs = new BookCircuitRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed ok");
 
-        ExcursionBooking[] bs = {null};
+        CircuitBooking[] bs = {null};
 
         try {
             Helper.transact(new JPATransaction() {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
-                    ExcursionBooking b = buildBookingFromKey(em, rq.getKey());
+                    CircuitBooking b = buildBookingFromKey(em, rq.getKey());
 
                     b.setConfirmed(true);
                     b.setAgencyReference(rq.getBookingReference());
@@ -515,23 +446,32 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         rs.setBookingId("" + bs[0].getId());
 
-
-
         return rs;
     }
 
     @Override
-    public GetAvailableActivitiesRS getFilteredActivities(String token, int start, String resourceId, String language, double minPrice, double maxPrice) throws Throwable {
-        GetAvailableActivitiesRS rs = getAvailableActivities(token, start, resourceId, language);
+    public GetAvailableCircuitsRS getFilteredCircuits(String token, String labels, String language, double minPrice, double maxPrice) throws Throwable {
+        GetAvailableCircuitsRS rs = getAvailableCircuits(token, language);
 
+        if (!Strings.isNullOrEmpty(labels)) {
+            List<String> catIds = Lists.newArrayList(labels.split(","));
+            rs.setAvailableCircuits(rs.getAvailableCircuits().stream().filter(h -> {
+                boolean ok = false;
+                for (Label l : h.getLabels()) {
+                    if (catIds.contains(l.getId())) {
+                        ok = true;
+                        break;
+                    }
+                }
+                return ok;
+            }).collect(Collectors.toList()));
+        }
         if (minPrice != 0) {
-            rs.setAvailableActivities(rs.getAvailableActivities().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() >= minPrice).collect(Collectors.toList()));
+            rs.setAvailableCircuits(rs.getAvailableCircuits().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() >= minPrice).collect(Collectors.toList()));
         }
         if (maxPrice != 0) {
-            rs.setAvailableActivities(rs.getAvailableActivities().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() <= maxPrice).collect(Collectors.toList()));
+            rs.setAvailableCircuits(rs.getAvailableCircuits().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() <= maxPrice).collect(Collectors.toList()));
         }
         return rs;
     }
-
-
 }

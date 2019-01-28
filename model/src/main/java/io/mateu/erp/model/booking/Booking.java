@@ -6,6 +6,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
@@ -1120,6 +1121,7 @@ public abstract class Booking {
     }
 
     public void createCharges(EntityManager em) throws Throwable {
+
     }
 
     public static GridDecorator getGridDecorator() {

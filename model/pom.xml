@@ -313,7 +313,7 @@
 
         <dependency>
             <groupId>io.mateu</groupId>
-            <artifactId>mdd-vaadin</artifactId>
+            <artifactId>mdd-core</artifactId>
             <version>0.0.6-SNAPSHOT</version>
         </dependency>
 

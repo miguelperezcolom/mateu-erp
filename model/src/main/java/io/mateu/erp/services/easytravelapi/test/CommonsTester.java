@@ -50,6 +50,13 @@ public class CommonsTester {
             rq.setLeadName("Mr test");
             rq.setPrivateComments("Test");
             rq.setKey(key);
+            rq.setIncomingFlightNumber("IB1234");
+            rq.setIncomingFlightOrigin("MAD");
+            rq.setIncomingFlightTime(1650);
+
+            rq.setOutgoingFlightNumber("AE4587");
+            rq.setOutgoingFlightDestination("CDG");
+            rq.setOutgoingFlightTime(2030);
 
             System.out.println(Helper.toJson(new TransferBookingServiceImpl().bookTransfer(token, rq)));
         } catch (Throwable throwable) {

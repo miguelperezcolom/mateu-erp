@@ -20,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter@Setter
 public class Pagina2 implements WizardPage {
@@ -49,7 +50,7 @@ public class Pagina2 implements WizardPage {
 
         List<Hotel> hoteles = new ArrayList<>();
         for (Zone c : pagina1.getState().getZones()) {
-            hoteles.addAll(c.getHotels());
+            c.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
         }
 
         Partner agencia = pagina1.getAgency();

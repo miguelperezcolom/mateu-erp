@@ -7,9 +7,11 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.DataSheetImage;
 import io.mateu.erp.model.product.FeatureValue;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -67,7 +69,8 @@ public class CommonsServiceImpl implements CommonsService {
                             l.setName(new MultilingualText("es", el.getName()));
                             l.setUrlFriendlyName(Helper.urlize(el.getName()));
 
-                            for (Hotel eh : el.getHotels()) {
+                            for (AbstractProduct p : el.getProducts()) if (p instanceof Hotel) {
+                                Hotel eh = (Hotel) p;
 
                                 Resource r;
                                 l.getResources().add(r = new Resource());
@@ -203,6 +206,83 @@ case: 'latitude': --> latitud
                             p.setValue(h.getDataSheet().getMainImage().toFileLocator().getUrl());
                         }
 
+                        for (DataSheetImage i : h.getDataSheet().getImages())
+                            if (i != null && i.getImage() != null) {
+                                rs.getValues().add(p = new Pair());
+                                p.setKey("images/image");
+                                p.setValue(i.getImage().toFileLocator().getUrl());
+                            }
+
+
+                        for (FeatureValue i : h.getDataSheet().getFeatures())
+                            if (i != null && i.getFeature() != null) {
+                                rs.getValues().add(p = new Pair());
+                                String k = "";
+                                if (i.getFeature() != null && i.getFeature().getGroup() != null)
+                                    k += "" + i.getFeature().getGroup().getName().get(language);
+                                if (i.getFeature() != null && i.getFeature().getGroup() != null) {
+                                    if (!"".equals(k)) k += "/";
+                                    k += "" + i.getFeature().getName().get(language);
+                                }
+                                p.setKey(k);
+                                p.setValue(i.getValue());
+                            }
+
+
+                    }
+
+                } else if (resourceId.startsWith("exc")) {
+                    Excursion h = em.find(Excursion.class, Long.parseLong(resourceId.substring("exc-".length())));
+
+                    /*
+                    case 'name' -->  nombre del hotel
+case 'images/image' --> Imagenes genericas del hotel
+case 'images/main' --> Imagen Principal del hotel
+case 'images/map' --> Imagen mapa localizacion de hotel (si no hay utiliza longitud y latitud)
+case 'description': --> descripcion del hotel
+case 'longitude': -->longitud
+case: 'latitude': --> latitud
+                     */
+
+                    Pair p;
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("id");
+                    p.setValue("" + h.getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("name");
+                    p.setValue(h.getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("city/id");
+                    p.setValue("" + h.getZone().getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("city/name");
+                    p.setValue(h.getZone().getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("state/id");
+                    p.setValue("" + h.getZone().getDestination().getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("state/name");
+                    p.setValue(h.getZone().getDestination().getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("country/code");
+                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("country/name");
+                    p.setValue(h.getZone().getDestination().getCountry().getName());
+
+                    if (h.getDataSheet() != null) {
+                        if (h.getDataSheet().getDescription() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("description");
+                            p.setValue(h.getDataSheet().getDescription().get(language));
+                        }
+
+                        if (h.getDataSheet().getMainImage() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("images/main");
+                            p.setValue(h.getDataSheet().getMainImage().toFileLocator().getUrl());
+                        }
+
                         for (DataSheetImage i : h.getDataSheet().getImages()) if (i != null && i.getImage() != null) {
                             rs.getValues().add(p = new Pair());
                             p.setKey("images/image");
@@ -224,7 +304,6 @@ case: 'latitude': --> latitud
 
 
                     }
-
 
                 } else if (resourceId.startsWith("tp")) {
                     TransferPoint h = em.find(TransferPoint.class, Long.parseLong(resourceId.substring("tp_".length())));
@@ -317,68 +396,80 @@ case: 'latitude': --> latitud
     }
 
     @Override
-    public GetBookingRS getBooking(String token, String email, String bookingId) throws Throwable {
+    public GetBookingRS getBooking(String token, String email, String bookingId) {
         final GetBookingRS rs = new GetBookingRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
 
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
+        try {
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
 
 
-                io.mateu.erp.model.booking.Booking bkg = em.find(io.mateu.erp.model.booking.Booking.class, Long.parseLong(bookingId));
+                    long id = 0;
 
-                if (bkg != null) {
+                    try {
+                        id = Long.parseLong(bookingId);
+                    } catch (Exception e) {
+                    }
 
-                    if (!email.equalsIgnoreCase(bkg.getEmail())) {
+                    io.mateu.erp.model.booking.Booking bkg = em.find(io.mateu.erp.model.booking.Booking.class, id);
 
-                        rs.setStatusCode(404);
-                        rs.setMsg("Email " + email + " not valid for booking " + bookingId + ".");
+                    if (bkg != null) {
+
+                        if (!email.equalsIgnoreCase(bkg.getEmail())) {
+
+                            rs.setStatusCode(404);
+                            rs.setMsg("Email " + email + " not valid for booking " + bookingId + ".");
+
+                        } else {
+                            Booking b;
+                            rs.setBooking(b = new Booking());
+
+                            b.setBookingId("" + bkg.getId());
+                            if (bkg.getAudit() != null) {
+                                b.setCreated(bkg.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
+                                b.setCreatedBy(bkg.getAudit().getCreatedBy().getLogin());
+                                b.setModified(bkg.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
+                            }
+                            b.setLeadName(bkg.getLeadName());
+                            b.setStart(bkg.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                            b.setEnd(bkg.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+                            Amount a;
+                            b.setNetValue(a = new Amount());
+                            a.setCurrencyIsoCode("EUR");
+                            //a.setValue(s.getTotalNetValue());
+                            String desc = "Service file";
+                            b.setServiceType("GENERIC");
+                            if (bkg instanceof HotelBooking) {
+                                desc = "Hotel service";
+                                b.setServiceType("HOTEL");
+                            } else if (bkg instanceof TransferBooking) {
+                                desc = "Transfer service";
+                                b.setServiceType("TRANSFER");
+                            }
+                            b.setServiceDescription(desc);
+                            b.setStatus((bkg.isActive()) ? "OK" : "CANCELLED");
+
+                            rs.setMsg("Booking found.");
+                        }
+
 
                     } else {
-                        Booking b;
-                        rs.setBooking(b = new Booking());
-
-                        b.setBookingId("" + bkg.getId());
-                        if (bkg.getAudit() != null) {
-                            b.setCreated(bkg.getAudit().getCreated().format(DateTimeFormatter.ISO_DATE_TIME));
-                            b.setCreatedBy(bkg.getAudit().getCreatedBy().getLogin());
-                            b.setModified(bkg.getAudit().getModified().format(DateTimeFormatter.ISO_DATE_TIME));
-                        }
-                        b.setLeadName(bkg.getLeadName());
-                        b.setStart(bkg.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                        b.setEnd(bkg.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-                        Amount a;
-                        b.setNetValue(a = new Amount());
-                        a.setCurrencyIsoCode("EUR");
-                        //a.setValue(s.getTotalNetValue());
-                        String desc = "Service file";
-                        b.setServiceType("GENERIC");
-                        if (bkg instanceof HotelBooking) {
-                            desc = "Hotel service";
-                            b.setServiceType("HOTEL");
-                        } else if (bkg instanceof TransferBooking) {
-                            desc = "Transfer service";
-                            b.setServiceType("TRANSFER");
-                        }
-                        b.setServiceDescription(desc);
-                        b.setStatus((bkg.isActive()) ? "OK" : "CANCELLED");
-
-                        rs.setMsg("Booking found.");
+                        rs.setStatusCode(404);
+                        rs.setMsg("Booking " + bookingId + " not found.");
                     }
 
 
-                } else {
-                    rs.setStatusCode(404);
-                    rs.setMsg("Booking " + bookingId + " not found.");
                 }
-
-
-            }
-        });
+            });
+        } catch (Throwable throwable) {
+            rs.setStatusCode(500);
+            rs.setMsg("" + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+        }
 
 
         return rs;

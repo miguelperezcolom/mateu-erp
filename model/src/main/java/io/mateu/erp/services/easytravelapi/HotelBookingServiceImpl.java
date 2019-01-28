@@ -152,15 +152,16 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                             .omitEmptyStrings()
                             .split(resorts)) {
                         if (s.startsWith("cou")) {
-                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> hoteles.addAll(z.getHotels())));
+                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p))));
                         } else if (s.startsWith("des")) {
-                            em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> hoteles.addAll(z.getHotels()));
+                            em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p)));
                         } else if (s.startsWith("zon")) {
-                            hoteles.addAll(em.find(Zone.class, Long.parseLong(s.substring(4))).getHotels());
+                            em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
                         } else if (s.startsWith("hot")) {
                             hoteles.add(em.find(Hotel.class, Long.parseLong(s.substring(4))));
                         }
                     };
+
 
 
 
@@ -756,6 +757,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 hb.setPrivateComments(rq.getPrivateComments());
                 hb.setPos(em.find(AuthToken.class, token).getPos());
 
+
                 hb.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
 
                 //todo: falta el cupon,
@@ -883,22 +885,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
     @Override
     public GetAvailableHotelsRS getFilteredHotels(String token, String language, String resorts, int checkIn, int checkOut, String occupancies, String categories, double minPrice, double maxPrice) throws Throwable {
         GetAvailableHotelsRS rs = getAvailableHotels(token, language, resorts, checkIn, checkOut, occupancies, true);
-        System.out.println("antes de filtro hoteles = " + rs.getHotels());
         if (!Strings.isNullOrEmpty(categories)) {
             List<String> catIds = Lists.newArrayList(categories.split(","));
             List<Integer> stars = new ArrayList<>();
             catIds.forEach(s -> stars.add(Integer.parseInt(s)));
             rs.setHotels(rs.getHotels().stream().filter(h -> stars.contains(h.getStars()) || stars.contains(h.getKeys())).collect(Collectors.toList()));
         }
-        System.out.println("después filtro categorías hoteles = " + rs.getHotels());
         if (minPrice != 0) {
             rs.setHotels(rs.getHotels().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() >= minPrice).collect(Collectors.toList()));
         }
-        System.out.println("después filtro precio mínimo hoteles = " + rs.getHotels());
         if (maxPrice != 0) {
             rs.setHotels(rs.getHotels().stream().filter(h -> h.getBestDeal() != null && h.getBestDeal().getRetailPrice() != null && h.getBestDeal().getRetailPrice().getValue() <= maxPrice).collect(Collectors.toList()));
         }
-        System.out.println("después filtro precio máximo hoteles = " + rs.getHotels());
         return rs;
     }
 

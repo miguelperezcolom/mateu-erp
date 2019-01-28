@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.UseChips;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +25,9 @@ public class Circuit extends Tour {
     @OneToMany(mappedBy = "circuit", cascade = CascadeType.ALL)
     private List<CircuitCalendar> schedule = new ArrayList<>();
 
-
+    @OneToMany
+    @UseChips
+    private List<ProductLabel> labels = new ArrayList<>();
 
     @Action(order = 4)
     public void generateEvents(EntityManager em) {

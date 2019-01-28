@@ -3,6 +3,10 @@ package io.mateu.erp.model.booking.parts;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.product.transfer.Contract;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.MDD;
@@ -13,6 +17,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -38,30 +43,33 @@ public class TransferBooking extends Booking {
     @Position(15)
     private int bikes;
 
+    @SameLine
+    @Position(16)
+    private int wheelChairs;
 
     @ManyToOne@NotNull
-    @Position(16)
+    @Position(17)
     private TransferPoint origin;
 
     @TextArea
-    @Position(17)
+    @Position(18)
     private String originAddress;
 
     @ManyToOne@NotNull
-    @Position(18)
+    @Position(19)
     private TransferPoint destination;
 
     @TextArea
-    @Position(19)
+    @Position(20)
     private String destinationAddress;
 
 
     @NotNull
-    @Position(20)
+    @Position(21)
     private TransferType transferType;
 
 
-    @Position(21)
+    @Position(22)
     private LocalDateTime arrivalFlightTime;
 
     public void setArrivalFlightTime(LocalDateTime arrivalFlightTime) {
@@ -72,16 +80,16 @@ public class TransferBooking extends Booking {
         }
     }
 
-    @Position(22)
+    @Position(23)
     private String arrivalFlightNumber;
 
 
-    @Position(23)
+    @Position(24)
     private String arrivalFlightOrigin;
 
 
 
-    @Position(24)
+    @Position(25)
     private LocalDateTime departureFlightTime;
 
     public void setDepartureFlightTime(LocalDateTime departureFlightTime) {
@@ -92,11 +100,15 @@ public class TransferBooking extends Booking {
         }
     }
 
-    @Position(25)
+    @Position(26)
     private String departureFlightNumber;
 
-    @Position(26)
+    @Position(27)
     private String departureFlightDestination;
+
+
+    @ManyToOne
+    private Contract contract;
 
 
     public TransferBooking() {
@@ -181,5 +193,27 @@ public class TransferBooking extends Booking {
     @Override
     public void priceServices() {
 
+    }
+
+    @Override
+    public void createCharges(EntityManager em) throws Throwable {
+        getServiceCharges().clear();
+        if (getContract() != null) {
+            BookingCharge c;
+            getServiceCharges().add(c = new BookingCharge());
+            c.setAudit(new Audit(MDD.getCurrentUser()));
+            c.setTotal(new Amount(FastMoney.of(getTotalValue(), "EUR")));
+
+            c.setText("Transfer");
+
+            c.setPartner(getAgency());
+
+            c.setType(ChargeType.SALE);
+            c.setBooking(this);
+
+            c.setInvoice(null);
+
+            c.setBillingConcept(getContract().getBillingConcept());
+        }
     }
 }

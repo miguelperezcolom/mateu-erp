@@ -1,5 +1,6 @@
 package io.mateu.erp.model.world;
 
+import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.Ignored;
@@ -46,7 +47,7 @@ public class Zone {
 
     @OneToMany(mappedBy = "zone")
     @Ignored
-    private List<Hotel> hotels = new ArrayList<>();
+    private List<AbstractProduct> products = new ArrayList<>();
 
     @Column(name = "_order")
     private int order;

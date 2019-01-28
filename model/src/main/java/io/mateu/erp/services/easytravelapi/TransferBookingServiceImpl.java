@@ -1,21 +1,22 @@
 package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.TransferBookingService;
-import org.easytravelapi.common.Amount;
-import org.easytravelapi.common.BestDeal;
-import org.easytravelapi.common.MultilingualText;
-import org.easytravelapi.common.Resource;
+import org.easytravelapi.common.*;
 import org.easytravelapi.transfer.*;
 
 import javax.persistence.EntityManager;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by miguel on 27/7/17.
@@ -213,6 +215,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                                     rs.setTotal(new BestDeal());
                                     rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
                                 }
+                                b.setContract(c);
 
                             }
 
@@ -222,7 +225,61 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 }
 
+                b.createCharges(em);
+                b.summarize(em);
 
+                if (b.getBikes() != 0) {
+                    Remark r;
+                    rs.getRemarks().add(r = new Remark());
+                    r.setType("INFO");
+                    r.setText("Bikes are on request and an extra charge will be added.");
+                }
+                if (b.getBigLuggages() != 0) {
+                    Remark r;
+                    rs.getRemarks().add(r = new Remark());
+                    r.setType("INFO");
+                    r.setText("Big luggages are on request and an extra charge will be added.");
+                }
+                if (b.getGolf() != 0) {
+                    Remark r;
+                    rs.getRemarks().add(r = new Remark());
+                    r.setType("INFO");
+                    r.setText("Golf baggages are on request and an extra charge will be added.");
+                }
+                if (b.getWheelChairs() != 0) {
+                    Remark r;
+                    rs.getRemarks().add(r = new Remark());
+                    r.setType("INFO");
+                    r.setText("Wheel chairs are on request and an extra charge will be added.");
+                }
+
+                int pos = 1;
+                for (Charge l : b.getCharges()) {
+                    PriceLine pl;
+                    rs.getPriceLines().add(pl = new PriceLine());
+                    pl.setId("" + pos++);
+                    pl.setType(l.getBillingConcept().getCode());
+                    pl.setDescription(l.getText());
+                    pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
+                }
+
+                for (BookingDueDate dd : b.getDueDates()) {
+                    if (!dd.isPaid()) {
+                        PaymentLine pl;
+                        rs.getPaymentLines().add(pl = new PaymentLine());
+                        pl.setDate(Integer.parseInt(dd.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"))));
+                        pl.setPaymentMethod("WEB");
+                        pl.setAmount(new Amount(dd.getCurrency().getIsoCode(), dd.getAmount()));
+                    }
+                }
+
+
+                for (CancellationTerm t : b.getCancellationTerms()) {
+                    CancellationCost cc;
+                    rs.getCancellationCosts().add(cc = new CancellationCost());
+                    cc.setRetail(new Amount(b.getAgency().getCurrency().getIsoCode(), t.getAmount()));
+                    cc.setGMTtime(t.getDate().toString());
+                }
 
             });
         } catch (Throwable throwable) {
@@ -230,48 +287,6 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             rs.setStatusCode(500);
             rs.setMsg(throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
         }
-
-        /*
-
-        {
-            CancellationCost c;
-            rs.getCancellationCosts().add(c = new CancellationCost());
-            c.setGMTtime(LocalDateTime.of(2018, 06, 05, 12, 00).format(DateTimeFormatter.ISO_DATE_TIME));
-            Amount a;
-            c.setNet(a = new Amount());
-            a.setCurrencyIsoCode("EUR");
-            a.setValue(250.32);
-        }
-
-        {
-            CancellationCost c;
-            rs.getCancellationCosts().add(c = new CancellationCost());
-            c.setGMTtime(LocalDateTime.of(2018, 07, 01, 12, 00).format(DateTimeFormatter.ISO_DATE_TIME));
-            Amount a;
-            c.setNet(a = new Amount());
-            a.setCurrencyIsoCode("EUR");
-            a.setValue(400);
-        }
-
-        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("IMPORTANT");
-            r.setText("This service must be paid in 24 hors. Otherwise it will be automatically cancelled.");
-        }
-        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("WARNING");
-            r.setText("You must present the voucher that you will receive by email, after payment.");
-        }        {
-            Remark r;
-            rs.getRemarks().add(r = new Remark());
-            r.setType("INFO");
-            r.setText("Have a nice day");
-        }
-        */
-
 
         return rs;
     }
@@ -336,6 +351,12 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             b.setDepartureFlightTime(salida.atTime(0, 0));
         }
 
+
+        if (data.containsKey("bikes")) b.setBikes((Integer) data.get("bikes"));
+        if (data.containsKey("golfBaggages")) b.setGolf((Integer) data.get("golfBaggages"));
+        if (data.containsKey("bigLuggages")) b.setBigLuggages((Integer) data.get("bigLuggages"));
+        if (data.containsKey("wheelChairs")) b.setWheelChairs((Integer) data.get("wheelChairs"));
+
         return b;
     }
 
@@ -367,8 +388,17 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                 b.setLeadName(rq.getLeadName());
                 b.setPrivateComments(rq.getPrivateComments());
                 b.setPos(em.find(AuthToken.class, token).getPos());
+                b.setTelephone(rq.getContactPhone());
 
                 b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
+
+
+                if (b.getArrivalFlightTime() != null) {
+                    b.setArrivalFlightTime(b.getArrivalFlightTime().toLocalDate().atTime((rq.getIncomingFlightTime() - rq.getIncomingFlightTime() % 100) / 100, rq.getIncomingFlightTime() % 100));
+                }
+                if (b.getDepartureFlightTime() != null) {
+                    b.setDepartureFlightTime(b.getDepartureFlightTime().toLocalDate().atTime((rq.getOutgoingFlightTime() - rq.getOutgoingFlightTime() % 100) / 100, rq.getOutgoingFlightTime() % 100));
+                }
 
 
                 em.persist(b);
@@ -440,9 +470,23 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
     @Override
     public GetAvailableTransfersRS getFilteredTransfers(String token, String fromTransferPointId, String toTransferPointId, int pax,
-            int bikes, int golfBaggages, int skis, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate, List<String> transfertype, String minPrice, String maxPrice
+            int bikes, int golfBaggages, int skis, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate, String transfertypes, double minPrice, double maxPrice
     ) throws Throwable {
-        return null;
+        GetAvailableTransfersRS rs = getAvailabeTransfers(token, fromTransferPointId, toTransferPointId, pax, bikes, golfBaggages, skis, bigLuggages, wheelChairs, incomingDate, outgoingDate);
+
+        if (!Strings.isNullOrEmpty(transfertypes)) {
+            List<String> types = Lists.newArrayList(transfertypes.split(","));
+            rs.setAvailableTransfers(rs.getAvailableTransfers().stream().filter(h -> types.contains(h.getType())).collect(Collectors.toList()));
+        }
+        if (minPrice != 0) {
+            rs.setAvailableTransfers(rs.getAvailableTransfers().stream().filter(h -> h.getTotal() != null && h.getTotal().getRetailPrice() != null && h.getTotal().getRetailPrice().getValue() >= minPrice).collect(Collectors.toList()));
+        }
+        if (maxPrice != 0) {
+            rs.setAvailableTransfers(rs.getAvailableTransfers().stream().filter(h -> h.getTotal() != null && h.getTotal().getRetailPrice() != null && h.getTotal().getRetailPrice().getValue() <= maxPrice).collect(Collectors.toList()));
+        }
+
+
+        return rs;
     }
 
 

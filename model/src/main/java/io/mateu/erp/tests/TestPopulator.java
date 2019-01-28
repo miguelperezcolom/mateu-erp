@@ -930,7 +930,7 @@ public class TestPopulator {
                     em.persist(h);
                     h.setName(hn);
                     h.setZone(s);
-                    s.getHotels().add(h);
+                    s.getProducts().add(h);
                     h.setOffice(o);
                     h.setActive(true);
 
