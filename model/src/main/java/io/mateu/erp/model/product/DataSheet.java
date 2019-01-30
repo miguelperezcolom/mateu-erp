@@ -4,6 +4,7 @@ import com.vaadin.ui.Component;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.NoChart;
 import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.mdd.core.annotations.UseChips;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
@@ -45,6 +46,11 @@ public class DataSheet {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataSheet", orphanRemoval = true)
     private List<FeatureValue> features = new ArrayList<>();
+
+    @OneToMany
+    @UseChips
+    private List<ProductLabel> labels = new ArrayList<>();
+
 
     @Override
     public String toString() {

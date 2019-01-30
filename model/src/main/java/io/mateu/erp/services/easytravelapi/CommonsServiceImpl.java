@@ -11,6 +11,7 @@ import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.DataSheetImage;
 import io.mateu.erp.model.product.FeatureValue;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.util.Helper;
@@ -233,6 +234,80 @@ case: 'latitude': --> latitud
 
                 } else if (resourceId.startsWith("exc")) {
                     Excursion h = em.find(Excursion.class, Long.parseLong(resourceId.substring("exc-".length())));
+
+                    /*
+                    case 'name' -->  nombre del hotel
+case 'images/image' --> Imagenes genericas del hotel
+case 'images/main' --> Imagen Principal del hotel
+case 'images/map' --> Imagen mapa localizacion de hotel (si no hay utiliza longitud y latitud)
+case 'description': --> descripcion del hotel
+case 'longitude': -->longitud
+case: 'latitude': --> latitud
+                     */
+
+                    Pair p;
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("id");
+                    p.setValue("" + h.getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("name");
+                    p.setValue(h.getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("city/id");
+                    p.setValue("" + h.getZone().getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("city/name");
+                    p.setValue(h.getZone().getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("state/id");
+                    p.setValue("" + h.getZone().getDestination().getId());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("state/name");
+                    p.setValue(h.getZone().getDestination().getName());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("country/code");
+                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    rs.getValues().add(p = new Pair());
+                    p.setKey("country/name");
+                    p.setValue(h.getZone().getDestination().getCountry().getName());
+
+                    if (h.getDataSheet() != null) {
+                        if (h.getDataSheet().getDescription() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("description");
+                            p.setValue(h.getDataSheet().getDescription().get(language));
+                        }
+
+                        if (h.getDataSheet().getMainImage() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("images/main");
+                            p.setValue(h.getDataSheet().getMainImage().toFileLocator().getUrl());
+                        }
+
+                        for (DataSheetImage i : h.getDataSheet().getImages()) if (i != null && i.getImage() != null) {
+                            rs.getValues().add(p = new Pair());
+                            p.setKey("images/image");
+                            p.setValue(i.getImage().toFileLocator().getUrl());
+                        }
+
+
+                        for (FeatureValue i : h.getDataSheet().getFeatures()) if (i != null && i.getFeature() != null) {
+                            rs.getValues().add(p = new Pair());
+                            String k = "";
+                            if (i.getFeature() != null && i.getFeature().getGroup() != null) k += "" + i.getFeature().getGroup().getName().get(language);
+                            if (i.getFeature() != null && i.getFeature().getGroup() != null)  {
+                                if (!"".equals(k)) k += "/";
+                                k += "" + i.getFeature().getName().get(language);
+                            }
+                            p.setKey(k);
+                            p.setValue(i.getValue());
+                        }
+
+
+                    }
+
+                } else if (resourceId.startsWith("cir")) {
+                    Circuit h = em.find(Circuit.class, Long.parseLong(resourceId.substring("cir-".length())));
 
                     /*
                     case 'name' -->  nombre del hotel

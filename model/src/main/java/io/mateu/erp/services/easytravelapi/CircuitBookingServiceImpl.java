@@ -96,18 +96,16 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                                     e1.printStackTrace();
                                 }
                             }
+                            e.getDataSheet().getLabels().forEach(x -> {
+                                Label l;
+                                a.getLabels().add(l = new Label());
+                                l.setId("" + x.getId());
+                                l.setName(x.getName());
+                            });
                         }
                         BestDeal bd;
                         a.setBestDeal(bd = new BestDeal());
                         bd.setRetailPrice(new Amount("EUR", 200.34));
-
-                        e.getLabels().forEach(x -> {
-                            Label l;
-                            a.getLabels().add(l = new Label());
-                            l.setId("" + x.getId());
-                            l.setName(x.getName());
-                        });
-
 
                     }
 
@@ -164,8 +162,8 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                     ActivityVariant av;
                     rs.getVariants().add(av = new ActivityVariant());
                     av.setKey("" + v.getId());
-                    if (av.getName() != null) av.setName(v.getName().get(language));
-                    if (av.getDescription() != null) av.setDescription(v.getDescription().get(language));
+                    if (v.getName() != null) av.setName(v.getName().get(language));
+                    if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
                     av.setBestDeal(new BestDeal());
                     av.getBestDeal().setRetailPrice(new Amount("EUR", 200.34));
                 });

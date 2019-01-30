@@ -126,6 +126,8 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
     @Override
     public GetActivityRatesRS getActivityRates(String token, String activityId, int date, String language) throws Throwable {
 
+        System.out.println("activity rates (" + activityId + ", " + date + ", " + language + ")");
+
         GetActivityRatesRS rs = new GetActivityRatesRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -162,19 +164,25 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                     ActivityVariant av;
                     rs.getVariants().add(av = new ActivityVariant());
                     av.setKey("" + v.getId());
-                    if (av.getName() != null) av.setName(v.getName().get(language));
-                    if (av.getDescription() != null) av.setDescription(v.getDescription().get(language));
+                    if (v.getName() != null) av.setName(v.getName().get(language));
+                    if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
                     av.setBestDeal(new BestDeal());
                     av.getBestDeal().setRetailPrice(new Amount("EUR", 200.34));
+
                 });
 
                 LocalDate d = LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
 
 
+                System.out.println("d = " + d);
+                System.out.println("turnos " + e.getName() + " = " + e.getShifts().size());
+
                 rs.setShifts(new ArrayList<>());
                 e.getShifts().forEach(x -> {
 
                     if ((x.getStart() == null || !x.getStart().isBefore(d)) && (x.getEnd() == null || !x.getEnd().isAfter(d)) && (x.getWeekdays() == null || x.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
+
+                        System.out.println("turno " + x.getId() + " es válido");
 
                         ActivityShift s;
                         rs.getShifts().add(s = new ActivityShift());
@@ -230,6 +238,8 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                             p.setName("Sin recogida");
                         }
 
+                    } else {
+                        System.out.println("turno " + x.getId() + " NO es válido");
                     }
 
                 });

@@ -25,10 +25,6 @@ public class Circuit extends Tour {
     @OneToMany(mappedBy = "circuit", cascade = CascadeType.ALL)
     private List<CircuitCalendar> schedule = new ArrayList<>();
 
-    @OneToMany
-    @UseChips
-    private List<ProductLabel> labels = new ArrayList<>();
-
     @Action(order = 4)
     public void generateEvents(EntityManager em) {
         Map<LocalDate, ManagedEvent> byDate = new HashMap<>();

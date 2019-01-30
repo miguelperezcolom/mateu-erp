@@ -8,6 +8,7 @@ import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
@@ -280,8 +281,8 @@ public class CMSServiceImpl implements CMSService {
                 while (!d.isAfter(fechaFinCalendario)) {
 
                     if (!d.isBefore(hoy)) {
-                        if ((s.getStart() == null || !s.getStart().isBefore(d))) {
-                            if ((s.getEnd() == null || !s.getEnd().isAfter(d))) {
+                        if ((s.getStart() == null || !s.getStart().isAfter(d))) {
+                            if ((s.getEnd() == null || !s.getEnd().isBefore(d))) {
                                 if ((s.getWeekdays() == null || s.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
                                     dispo.put(d, true);
                                 }
@@ -347,6 +348,119 @@ public class CMSServiceImpl implements CMSService {
 
         return rs;
     }
+
+    @Override
+    public GetActivityAvailabilityCalendarRS getCircuitAvailabilityCalendar(String token, String circuitId) throws Throwable {
+        GetActivityAvailabilityCalendarRS rs = new GetActivityAvailabilityCalendarRS();
+
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+
+        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
+
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long t0 = System.currentTimeMillis();
+
+        Map<LocalDate, Boolean> dispo = new HashMap<>();
+
+
+        Helper.notransact(em -> {
+
+            DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            LocalDate hoy = LocalDate.now();
+
+
+
+            LocalDate fechaInicioCalendario = LocalDate.of(hoy.getYear(), hoy.getMonthValue(), 1);
+            LocalDate fechaFinCalendario = fechaInicioCalendario.plusMonths(12);
+            Circuit e = em.find(Circuit.class, Long.parseLong(circuitId.split("-")[1]));
+
+            System.out.println("hay " + e.getSchedule().size() + " turnos para la excursión " + e.getName());
+            e.getSchedule().forEach(s -> {
+                LocalDate d = fechaInicioCalendario.plusDays(0);
+                while (!d.isAfter(fechaFinCalendario)) {
+
+                    if (!d.isBefore(hoy)) {
+                        if ((s.getStart() == null || !s.getStart().isAfter(d))) {
+                            if ((s.getEnd() == null || !s.getEnd().isBefore(d))) {
+                                if ((s.getWeekdays() == null || s.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
+                                    dispo.put(d, true);
+                                }
+                            }
+                        }
+                    }
+
+                    d = d.plusDays(1);
+                }
+            });
+
+            System.out.println("dispo.size() = " + dispo.size());
+
+            for (int posmes = 0; posmes < 20; posmes++) {
+                LocalDate d = fechaInicioCalendario.plusMonths(posmes);
+                int mesActual = d.getMonthValue();
+
+                ActivityAvailabilityCalendarMonth cm;
+                rs.getMonths().add(cm = new ActivityAvailabilityCalendarMonth(d.getMonth().toString() + " " + d.getYear(), d.getYear(), d.getMonthValue()));
+
+                ActivityAvailabilityCalendarWeek cw = null;
+
+                for (int i = 1; i < d.getDayOfWeek().getValue(); i++) { // 1 a 7
+                    if (cw == null || d.getDayOfWeek() == DayOfWeek.MONDAY) {
+                        cm.getWeeks().add(cw = new ActivityAvailabilityCalendarWeek());
+                    }
+                    ActivityAvailabilityCalendarDay cd;
+                    cw.getDays().add(cd = new ActivityAvailabilityCalendarDay());
+                    cd.setBlank(true);
+                }
+
+
+                while (d.getMonthValue() == mesActual) {
+
+                    if (cw == null || d.getDayOfWeek() == DayOfWeek.MONDAY) {
+                        cm.getWeeks().add(cw = new ActivityAvailabilityCalendarWeek());
+                    }
+
+                    int nd = io.mateu.erp.dispo.Helper.toInt(d);
+                    int ndx = io.mateu.erp.dispo.Helper.toInt(d.plusDays(1));
+
+                    ActivityAvailabilityCalendarDay cd;
+
+                    cw.getDays().add(cd = new ActivityAvailabilityCalendarDay(nd, d.getDayOfWeek().getValue(), d.getDayOfMonth(), d.format(df), "na"));
+
+
+                    if (dispo.getOrDefault(d, false)) cd.setStyleName("av");
+
+                    d = d.plusDays(1);
+                }
+            }
+        });
+
+        long t = System.currentTimeMillis();
+
+        String msg = "Calendar shows " + dispo.size() + " available days. It consumed " + (t - t0) + " ms in the server.";
+
+        System.out.println(msg);
+
+        rs.setMsg(msg);
+
+
+
+        return rs;    }
 
     private int[] getCupo(Hotel h, LocalDate start) throws Throwable {
 
