@@ -123,7 +123,34 @@ public class GenericBookingServiceImpl implements GenericBookingService {
     }
 
     @Override
-    public CheckGenericRS check(String token, String key, String language, int adults, int children, int units, int start, int end) throws Throwable {
+    public GetGenericRatesRS getGenericRates(String token, String productId, int adults, int children, int units, int start, int end, String language) throws Throwable {
+        GetGenericRatesRS rs = new GetGenericRatesRS();
+
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+        rs.setMsg("Done");
+
+        Helper.notransact(em -> {
+
+            GenericProduct e = em.find(GenericProduct.class, Long.parseLong(productId.split("-")[1]));
+
+            rs.setDateDependant(e.isDateDependant());
+            rs.setDatesRangeDependant(e.isDatesRangeDependant());
+            rs.setAdultsDependant(e.isAdultsDependant());
+            rs.setChildrenDependant(e.isChildrenDependant());
+            rs.setUnitsDependant(e.isUnitsDependant());
+            rs.setKey(getKey(token, "" + e.getId(), start, end, language, units, adults, children));
+            rs.setPrice(new BestDeal());
+            rs.getPrice().setRetailPrice(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
+
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public CheckGenericRS check(String token, String key, String language) throws Throwable {
         CheckGenericRS rs = new CheckGenericRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -132,11 +159,11 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         Helper.notransact(em -> {
 
-            Excursion e = em.find(Excursion.class, Long.parseLong(key.split("-")[1]));
+            GenericBooking b = buildBookingFromKey(em, key);
 
             rs.setAvailable(true);
-            rs.setKey(getKey(token, "" + e.getId(), start, end, language, units, adults, children));
-            rs.setValue(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
+            rs.setKey(key);
+            rs.setValue(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
 
 
         });
@@ -169,7 +196,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
 
     @Override
-    public GetGenericPriceDetailsRS getGenericPriceDetails(String token, String key, String language, int adults, int children, int units, int start, int end, String supplements, String coupon) throws Throwable {
+    public GetGenericPriceDetailsRS getGenericPriceDetails(String token, String key, String language, String supplements, String coupon) throws Throwable {
         GetGenericPriceDetailsRS rs = new GetGenericPriceDetailsRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));

@@ -21,4 +21,8 @@ public class ProductLabel {
 
     private Literal description;
 
+    @Override
+    public String toString() {
+        return name != null?name:"Product label " + id;
+    }
 }
