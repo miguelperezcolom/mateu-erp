@@ -41,19 +41,23 @@ public class TransferPoint {
     private long id;
     
     @NotNull
+    @ListColumn
     private TransferPointType type;
 
     @NotNull
     @ManyToOne
+    @ListColumn
     private Office office;
 
     @NotNull
     @SearchFilter
+    @ListColumn
     private String name;
 
     @ManyToOne
     @NotNull
     @SearchFilter
+    @ListColumn
     private Zone zone;
 
     @ManyToOne

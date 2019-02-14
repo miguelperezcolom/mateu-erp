@@ -356,11 +356,13 @@
 
 
         <!-- APM -->
+        <!--
         <dependency>
             <groupId>org.stagemonitor</groupId>
             <artifactId>stagemonitor-web-servlet</artifactId>
             <version>0.88.9</version>
         </dependency>
+        -->
 
     </dependencies>
 

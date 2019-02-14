@@ -4,19 +4,31 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
+import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.performance.Accessor;
+import io.mateu.erp.model.product.ContractType;
+import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
+import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Entity
 @Getter@Setter
@@ -40,6 +52,9 @@ public class GenericBooking extends Booking {
     @Position(16)
     private List<GenericBookingExtra> extras = new ArrayList<>();
 
+    @ManyToOne@Output
+    private Contract contract;
+
 
     public GenericBooking() {
         setIcons(FontAwesome.GIFT.getHtml());
@@ -60,7 +75,7 @@ public class GenericBooking extends Booking {
         if (s == null) {
             getServices().add(s = new GenericService());
             s.setBooking(this);
-            s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+            s.setAudit(new Audit(MDD.getCurrentUser()));
         }
         s.setOffice(office);
         s.setFinish(getEnd());
@@ -73,7 +88,47 @@ public class GenericBooking extends Booking {
     }
 
     @Override
-    public void priceServices() {
+    public void priceServices(EntityManager em) {
+        Map<Contract, Double> prices = new HashMap<>();
+        Accessor.get(em).getGenericContracts().stream().filter(c ->
+                ContractType.SALE.equals(c.getType())
+                    && c.isActive()
+                    && (c.getValidFrom() == null || getEnd() == null || !c.getValidFrom().isAfter(getEnd()))
+                    && (c.getValidTo() == null || getStart() == null || !c.getValidTo().isBefore(getStart()))
+        ).forEach(c -> {
+            final double[] v = {0};
+            int dias = 1;
+            if (getStart() != null && getEnd() != null) {
+                dias = (int) DAYS.between(getStart(), getEnd());
+            }
+            int finalDias = dias;
+            c.getPrices().stream().sorted((p0, p1) -> p0.getOrder() - p1.getOrder()).filter(p -> p.getProduct() == null || p.getProduct().equals(product)).forEach(p -> {
+                v[0] += getUnits() * p.getPricePerUnit();
+                v[0] += getAdults() * p.getPricePerAdult();
+                v[0] += getChildren() * p.getPricePerChild();
 
+                v[0] += finalDias * getUnits() * p.getPricePerUnitAndDay();
+                v[0] += finalDias * getAdults() * p.getPricePerAdultAndDay();
+                v[0] += finalDias * getChildren() * p.getPricePerChildAndDay();
+
+            });
+            prices. put(c, v[0]);
+        });
+
+        setTotalValue(0);
+        prices.keySet().stream().min((v0, v1) -> prices.get(v0).compareTo(prices.get(v1))).ifPresent(v -> {
+            setTotalValue(Helper.roundEuros(prices.get(v)));
+            setContract(v);
+        });
+    }
+
+    @Override
+    public void createCharges(EntityManager em) throws Throwable {
+        BookingCharge c;
+        getServiceCharges().add(c = new BookingCharge(this));
+        c.setTotal(new Amount(FastMoney.of(getTotalValue(), "EUR")));
+        c.setText("" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch");
+        c.setBillingConcept(getContract().getBillingConcept());
+        c.setPartner(getAgency());
     }
 }

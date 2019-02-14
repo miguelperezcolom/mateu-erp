@@ -52,7 +52,7 @@ public class ExcursionBooking extends TourBooking {
     }
 
     @Override
-    public void priceServices() {
+    public void priceServices(EntityManager em) {
 
     }
 }

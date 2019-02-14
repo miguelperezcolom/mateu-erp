@@ -66,6 +66,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         try {
 
+            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
                 List<GenericProduct> excursions = new ArrayList<>();
@@ -85,27 +86,46 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                     }
                 };
 
+                GenericBooking b = new GenericBooking();
+                b.setAgency(em.find(Partner.class, finalIdAgencia));
+
 
                 excursions.forEach(e -> {
                     {
-                        AvailableGeneric a;
-                        rs.getAvailableGenerics().add(a = new AvailableGeneric());
 
-                        a.setGenericId("gen-" + e.getId());
-                        a.setName(e.getName());
-                        if (e.getDataSheet() != null) {
-                            if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
-                            if (e.getDataSheet().getMainImage() != null) {
-                                try {
-                                    a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
+                        b.setProduct(e);
+                        b.setUnits(1);
+                        b.setAdults(1);
+                        try {
+                            b.priceServices(em);
+
+                            if (b.getTotalValue() != 0) {
+
+                                AvailableGeneric a;
+                                rs.getAvailableGenerics().add(a = new AvailableGeneric());
+
+                                a.setGenericId("gen-" + e.getId());
+                                a.setName(e.getName());
+                                if (e.getDataSheet() != null) {
+                                    if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
+                                    if (e.getDataSheet().getMainImage() != null) {
+                                        try {
+                                            a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
+                                        } catch (Exception e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
                                 }
+                                BestDeal bd;
+                                a.setBestDeal(bd = new BestDeal());
+                                bd.setRetailPrice(new Amount("EUR", b.getTotalValue()));
+
                             }
+
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
                         }
-                        BestDeal bd;
-                        a.setBestDeal(bd = new BestDeal());
-                        bd.setRetailPrice(new Amount("EUR", 200.34));
+
 
                     }
 
@@ -123,7 +143,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
     }
 
     @Override
-    public GetGenericRatesRS getGenericRates(String token, String productId, int adults, int children, int units, int start, int end, String language) throws Throwable {
+    public GetGenericRatesRS getGenericRates(String token, String productId, String language) throws Throwable {
         GetGenericRatesRS rs = new GetGenericRatesRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -139,9 +159,6 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             rs.setAdultsDependant(e.isAdultsDependant());
             rs.setChildrenDependant(e.isChildrenDependant());
             rs.setUnitsDependant(e.isUnitsDependant());
-            rs.setKey(getKey(token, "" + e.getId(), start, end, language, units, adults, children));
-            rs.setPrice(new BestDeal());
-            rs.getPrice().setRetailPrice(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
 
 
         });
@@ -150,7 +167,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
     }
 
     @Override
-    public CheckGenericRS check(String token, String key, String language) throws Throwable {
+    public CheckGenericRS check(String token, String productId, int adults, int children, int units, int start, int end, String language) throws Throwable {
         CheckGenericRS rs = new CheckGenericRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -159,7 +176,12 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         Helper.notransact(em -> {
 
+            GenericProduct e = em.find(GenericProduct.class, Long.parseLong(productId.split("-")[1]));
+            String key = getKey(token, "" + e.getId(), start, end, language, units, adults, children);
+
             GenericBooking b = buildBookingFromKey(em, key);
+
+            b.priceServices(em);
 
             rs.setAvailable(true);
             rs.setKey(key);
@@ -204,7 +226,6 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Price details");
 
-
         try {
             Helper.notransact(em -> {
 
@@ -212,54 +233,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
                 // todo: meter todo esto en el priceFromServices de TransferBooking
 
-                //b.price(em);
-
-                List<io.mateu.erp.model.product.generic.Contract> contratos = em.createQuery("select s from " + io.mateu.erp.model.product.generic.Contract.class.getName() + " s").getResultList();
-
-                int encontrados = 0;
-
-                for (io.mateu.erp.model.product.generic.Contract c : contratos) {
-
-                    boolean contratoOk = true;
-
-                    contratoOk = contratoOk && !c.getValidFrom().isAfter(b.getStart());
-                    contratoOk = contratoOk && !c.getValidTo().isBefore(b.getEnd());
-
-                    //todo: comprobar file window y demás condiciones
-
-                    if (contratoOk) {
-
-                        for (Price p : c.getPrices()) {
-
-                            boolean precioOk = true;
-
-                            //todo: aplicar políticas precios correctamente
-                            /*
-
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getCities().contains(b.getOrigin().getZone());
-
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getCities().contains(b.getDestination().getZone()));
-
-                            precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
-
-                            */
-
-                            if (precioOk) {
-
-                                double valor = Helper.roundEuros(p.getPricePerUnit() * b.getUnits() + p.getPricePerAdult() * b.getAdults() + p.getPricePerChild() * b.getChildren());
-                                if (valor != 0) {
-                                    rs.setTotal(new BestDeal());
-                                    rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
-                                }
-                                //todo: añadir contrato a la reserva
-                                //b.setContract(c);
-
-                            }
-                        }
-
-                    }
-
-                }
+                b.priceServices(em);
 
                 b.createCharges(em);
                 b.summarize(em);
@@ -297,6 +271,11 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                     cc.setRetail(new Amount(b.getAgency().getCurrency().getIsoCode(), t.getAmount()));
                     cc.setGMTtime(t.getDate().toString());
                 }
+
+
+                rs.setKey(key);
+                rs.setTotal(new BestDeal());
+                rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), b.getTotalValue()));
 
             });
         } catch (Throwable throwable) {
@@ -356,13 +335,14 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
 
         int date = (Integer) data.get("start");
-        LocalDate fecha = LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
+        LocalDate fecha = date == 0?LocalDate.now():LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
 
         b.setStart(fecha);
         date = (Integer) data.get("end");
-        fecha = LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
+        fecha = date == 0?LocalDate.now():LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
         b.setEnd(fecha);
 
+        b.setOffice(b.getProduct().getOffice());
 
 
         return b;

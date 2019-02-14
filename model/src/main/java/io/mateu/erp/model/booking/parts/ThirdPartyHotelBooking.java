@@ -104,7 +104,7 @@ public class ThirdPartyHotelBooking extends Booking {
     }
 
     @Override
-    public void priceServices() {
+    public void priceServices(EntityManager em) {
 
     }
 }

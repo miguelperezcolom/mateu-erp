@@ -64,24 +64,24 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
 
-            c.setXslfoForTransferContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_transfer.xsl"), Charsets.UTF_8));
-            c.setXslfoForHotelContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_hotel.xsl"), Charsets.UTF_8));
-            c.setXslfoForGenericContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_generico.xsl"), Charsets.UTF_8));
-            c.setXslfoForTourContract(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/contrato_tour.xsl"), Charsets.UTF_8));
-            c.setXslfoForWorld(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
-            c.setXslfoForList(Resources.toString(Resources.getResource("/xsl/listing.xsl"), Charsets.UTF_8));
-            c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
-            c.setXslfoForPurchaseOrder(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/please_book.xsl"), Charsets.UTF_8));
-            c.setXslfoForTransfersList(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/transfers_list.xsl"), Charsets.UTF_8));
-            c.setXslfoForVoucher(Resources.toString(Resources.getResource("/io/mateu/erp/xsl/voucher.xsl"), Charsets.UTF_8));
-            c.setXslfoForObject(Resources.toString(Resources.getResource("/xsl/object.xsl"), Charsets.UTF_8));
+            c.setXslfoForTransferContract(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/contrato_transfer.xsl"), Charsets.UTF_8));
+            c.setXslfoForHotelContract(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/contrato_hotel.xsl"), Charsets.UTF_8));
+            c.setXslfoForGenericContract(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/contrato_generico.xsl"), Charsets.UTF_8));
+            c.setXslfoForTourContract(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/contrato_tour.xsl"), Charsets.UTF_8));
+            c.setXslfoForWorld(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
+            c.setXslfoForList(Resources.toString(Resources.getResource(Populator.class, "/xsl/listing.xsl"), Charsets.UTF_8));
+            c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
+            c.setXslfoForPurchaseOrder(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/please_book.xsl"), Charsets.UTF_8));
+            c.setXslfoForTransfersList(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/transfers_list.xsl"), Charsets.UTF_8));
+            c.setXslfoForVoucher(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/voucher.xsl"), Charsets.UTF_8));
+            c.setXslfoForObject(Resources.toString(Resources.getResource(Populator.class, "/xsl/object.xsl"), Charsets.UTF_8));
 
-            c.setPickupEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupemail.ftl"), Charsets.UTF_8));
-            c.setPickupSmsTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsms.ftl"), Charsets.UTF_8));
-            c.setPickupSmsTemplateEs(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/pickupsmses.ftl"), Charsets.UTF_8));
-            c.setPurchaseOrderTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
-            c.setVouchersEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/voucheremail.ftl"), Charsets.UTF_8));
-            c.setPaymentEmailTemplate(Resources.toString(Resources.getResource("/io/mateu/erp/freemarker/paymentemail.ftl"), Charsets.UTF_8));
+            c.setPickupEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/pickupemail.ftl"), Charsets.UTF_8));
+            c.setPickupSmsTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/pickupsms.ftl"), Charsets.UTF_8));
+            c.setPickupSmsTemplateEs(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/pickupsmses.ftl"), Charsets.UTF_8));
+            c.setPurchaseOrderTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
+            c.setVouchersEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/voucheremail.ftl"), Charsets.UTF_8));
+            c.setPaymentEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/paymentemail.ftl"), Charsets.UTF_8));
 
 
             c.setAdminEmailSmtpHost((String) Helper.get(initialData, "smtp/host"));

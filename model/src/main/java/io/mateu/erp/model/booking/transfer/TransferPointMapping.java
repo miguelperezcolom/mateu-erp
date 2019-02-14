@@ -1,10 +1,8 @@
 package io.mateu.erp.model.booking.transfer;
 
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.SearchFilter;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.util.Helper;
@@ -36,48 +34,35 @@ public class TransferPointMapping {
     private long id;
 
     @NotNull
-    @SearchFilter
+    @MainSearchFilter
     private String text;
 
     @ManyToOne
+    @MainSearchFilter
     private TransferPoint point;
 
     @Output
-    private TransferService createdBy;
+    @ManyToOne
+    private TransferBookingRequest createdBy;
 
 
     public TransferPointMapping() {
 
     }
 
-    public TransferPointMapping(String text, TransferService transferService) {
+    public TransferPointMapping(String text, TransferBookingRequest transferService) {
         this.text = text;
         this.createdBy = transferService;
     }
 
 
-    @Action(callOnEnterKeyPressed = true, addAsButton = true)
-    public Data saveAndNext(UserData user, EntityManager em, Data _data) throws Throwable {
-        //todo: recuperar
-        /*
-        ERPServiceImpl s = new ERPServiceImpl();
-        s.set(user, TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), _data);
-
-        Data[] data = new Data[1];
-
-        List<TransferPointMapping> l = em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.point is null order by x.text").getResultList();
-        if (l.size() == 0) throw new Exception("No more pending mappings");
-        else {
-            TransferPointMapping m = l.get(0);
-            data[0] = s.get(user, TransferPointMapping.class.getName(), TransferPointMapping.class.getName(), m.getId());
-        }
-
-        return data[0];
-        */
-        return null;
+    @Action
+    public static MapUnmappedForm mapUnmapped() {
+        return new MapUnmappedForm();
     }
 
-    public static TransferPoint getTransferPoint(EntityManager em, String text, TransferService transferService) {
+
+    public static TransferPoint getTransferPoint(EntityManager em, String text, TransferBookingRequest transferService) {
         text = text.toLowerCase().trim().replaceAll("\\n", "_").replaceAll("\\r", "_");
         TransferPoint p = null;
         boolean found = false;

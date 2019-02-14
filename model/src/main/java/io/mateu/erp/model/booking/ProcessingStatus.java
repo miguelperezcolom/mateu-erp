@@ -6,8 +6,8 @@ package io.mateu.erp.model.booking;
 public enum ProcessingStatus {
     INITIAL
     , DATA_OK
-    , PURCHASEORDERS_READY
-    , PURCHASEORDERS_SENT
-    , PURCHASEORDERS_REJECTED
-    , PURCHASEORDERS_CONFIRMED
+    , READY
+    , SENT
+    , REJECTED
+    , CONFIRMED
 }

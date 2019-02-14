@@ -1,5 +1,6 @@
 package io.mateu.erp.model.importing;
 
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
@@ -60,6 +61,9 @@ public abstract class TransferImportTask {
     @ManyToOne
     private PointOfSale pointOfSale;
 
+    @ManyToOne
+    private BillingConcept billingConcept;
+
     @OneToMany(mappedBy = "task")
     @Ignored
     List<TransferBookingRequest> transferBookingRequests = new ArrayList<>();
@@ -88,8 +92,6 @@ public abstract class TransferImportTask {
     @ListColumn
     @Output
     private int total=0;
-
-
 
     public void increaseAdditions()
     {
@@ -136,6 +138,7 @@ public abstract class TransferImportTask {
         for (TransferImportTask t : _selection) {
             t.setStatus(STATUS.PENDING);
             t.getAudit().touch(em, _user.getLogin());
+            t.execute(em);
         }
     }
 

@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,6 +56,10 @@ public class Price {
     private double price;
 
     private double returnPrice;
+
+    @Ignored
+    private boolean deprecated;
+
 
     public Price clone(EntityManager em, User u) {
         Price p = new Price();

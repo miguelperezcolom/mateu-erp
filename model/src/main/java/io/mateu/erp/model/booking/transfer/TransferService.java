@@ -38,36 +38,38 @@ import java.util.stream.Collectors;
 @Indelible
 public class TransferService extends Service {
 
-    @Tab("Service")
     @NotNull
     @SearchFilter
     @ListColumn
     @ColumnWidth(150)
+    @KPI
     private TransferType transferType;
 
     @Sum
     @NotNull
     @ListColumn
+    @KPI
     private int pax;
 
-    @Output
+    @KPI
     @SearchFilter
     @ListColumn
     @ColumnWidth(150)
     private TransferDirection direction;
 
     @ManyToOne
+    @Position(8)
     private Vehicle preferredVehicle;
 
     @Section("Pickup")
+    @Output
     private String pickupText;
     @ManyToOne
-    @SameLine
+    @Output
     private TransferPoint pickup;
     @ManyToOne
     @Output
     @SearchFilter
-    @SameLine
     private TransferPoint effectivePickup;
 
     public void setEffectivePickup(TransferPoint p) {
@@ -76,14 +78,14 @@ public class TransferService extends Service {
 
 
     @Section("Dropoff")
+    @Output
     private String dropoffText;
     @ManyToOne
-    @SameLine
+    @Output
     private TransferPoint dropoff;
     @ManyToOne
     @Output
     @SearchFilter
-    @SameLine
     private TransferPoint effectiveDropoff;
 
     public void setEffectiveDropoff(TransferPoint effectiveDropoff) {
@@ -91,32 +93,30 @@ public class TransferService extends Service {
     }
 
     @Section("Flight")
+    @Output
     private String flightNumber;
     @NotNull
     @ListColumn
-    @SameLine
+    @Output
     private LocalDateTime flightTime;
-    @SameLine
+    @Output
     private String flightOriginOrDestination;
 
     @Section("Pickup info")
     @ListColumn
     private LocalDateTime pickupTime;
     @Output
-    @SameLine
     private LocalDateTime importedPickupTime;
 
 
     @Output
     private LocalDateTime pickupConfirmedByTelephone;
     @Output
-    @SameLine
     private LocalDateTime pickupConfirmedByWeb;
 
     @Output
     private LocalDateTime pickupConfirmedByEmailToHotel;
     @Output
-    @SameLine
     private LocalDateTime pickupConfirmedBySMS;
 
     @Ignored
@@ -133,11 +133,6 @@ public class TransferService extends Service {
     @ManyToMany
     @Ignored
     private List<AbstractTask> tasks = new ArrayList<>();
-
-    @ManyToOne
-    @Ignored
-    private TransferBookingRequest transferBookingRequest;
-
 
     /*
     private int bikes;
@@ -740,6 +735,8 @@ public class TransferService extends Service {
     }
 
     private void setAndMapTransferPoints(EntityManager em) {
+
+
         TransferPoint p = null;
         if (getPickup() != null) p = getPickup();
 
@@ -747,8 +744,13 @@ public class TransferService extends Service {
         if (getDropoff() != null) d = getDropoff();
 
 
+        /*
         if (getPickup() == null) p = TransferPointMapping.getTransferPoint(em, getPickupText(), this);
         if (getDropoff() == null) d = TransferPointMapping.getTransferPoint(em, getDropoffText(), this);
+        */
+
+        if (p != null && p.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || (TransferType.PRIVATE.equals(getTransferType()) && p.isAlternatePointForNonExecutive()))) p = p.getAlternatePointForShuttle();
+        if (d != null && d.getAlternatePointForShuttle() != null && (TransferType.SHUTTLE.equals(getTransferType()) || (TransferType.PRIVATE.equals(getTransferType()) && d.isAlternatePointForNonExecutive()))) d = d.getAlternatePointForShuttle();
 
         setEffectivePickup(p);
         setEffectiveDropoff(d);

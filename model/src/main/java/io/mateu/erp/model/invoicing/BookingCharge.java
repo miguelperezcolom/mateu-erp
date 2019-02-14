@@ -59,6 +59,11 @@ public class BookingCharge extends Charge {
         setType(ChargeType.SALE);
     }
 
+    public BookingCharge(@NotNull Booking booking) {
+        this();
+        this.booking = booking;
+    }
+
     @Override
     public void totalChanged() {
         if (booking != null) booking.setUpdatePending(true);

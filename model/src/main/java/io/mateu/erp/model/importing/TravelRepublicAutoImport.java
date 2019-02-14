@@ -3,10 +3,14 @@ package io.mateu.erp.model.importing;
 //import okhttp3.*;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.HttpEntity;
@@ -55,9 +59,23 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
 
 
     public static void main(String... args) {
-        new TravelRepublicAutoImport().getBookings(LocalDate.now(), 30);
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+
+        run();
+
+        WorkflowEngine.exit(0);
     }
 
+    public static void run() {
+        try {
+            TravelRepublicAutoImport i = new TravelRepublicAutoImport();
+            i.setCustomer((Partner) Helper.selectObjects("select x from " + Partner.class.getName() + " x where x.name = 'TRAVELREPUBLIC'").get(0));
+            i.setPointOfSale((PointOfSale) Helper.selectObjects("select x from " + PointOfSale.class.getName() + " x where x.name = 'Importación'").get(0));
+            i.getBookings(LocalDate.now(), 300);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
 
 
     @Override
@@ -87,7 +105,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
                     if (csv!=null && csv.length()>0)
                     {
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
-                        TravelRepublicImportTask t = new TravelRepublicImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),csv, getOffice(), getPointOfSale());
+                        TravelRepublicImportTask t = new TravelRepublicImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),csv, getOffice(), getPointOfSale(), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }

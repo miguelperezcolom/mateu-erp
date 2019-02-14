@@ -64,4 +64,9 @@ public abstract class AbstractProduct {
     public String toString() {
         return getName();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj instanceof AbstractProduct && id != 0 && id == ((AbstractProduct) obj).getId());
+    }
 }

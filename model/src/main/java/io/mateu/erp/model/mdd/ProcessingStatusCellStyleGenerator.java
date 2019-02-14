@@ -16,10 +16,10 @@ public class ProcessingStatusCellStyleGenerator implements ICellStyleGenerator {
             switch (v) {
                 case INITIAL:
                 case DATA_OK: s = "info"; break;
-                case PURCHASEORDERS_SENT:
-                case PURCHASEORDERS_READY: s = "warning"; break;
-                case PURCHASEORDERS_CONFIRMED: s = "success"; break;
-                case PURCHASEORDERS_REJECTED: s = "danger"; break;
+                case SENT:
+                case READY: s = "warning"; break;
+                case CONFIRMED: s = "success"; break;
+                case REJECTED: s = "danger"; break;
             }
         }
         return s;

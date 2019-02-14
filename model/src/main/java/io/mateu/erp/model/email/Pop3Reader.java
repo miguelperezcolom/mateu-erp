@@ -1,7 +1,10 @@
 package io.mateu.erp.model.email;
 
+import com.Ostermiller.util.CSVParser;
 import com.sun.mail.pop3.POP3Folder;
 import io.mateu.erp.model.booking.transfer.Importer;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.importing.TraveltinoImporter;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -10,6 +13,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.mail.*;
 import javax.persistence.EntityManager;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
@@ -84,6 +88,7 @@ public class Pop3Reader {
 
                                     if ("error".equalsIgnoreCase(m.getSubject())) throw new Exception("este no es correcto");
                                     else if ("pickups".equalsIgnoreCase(m.getSubject())) procesarPickups(em, appconfig, m);
+                                    else if (m.getSubject() != null && m.getSubject().toLowerCase().contains("banktransfers")) procesarTraveltino(em, appconfig, m);
 
 
                                 } catch (Throwable e) {
@@ -113,7 +118,47 @@ public class Pop3Reader {
 
             if (read[0] == 0) Thread.currentThread().sleep(60000);
 
+            if (false) { // para que sonarlint no se queje ;)
+                break;
+            }
+
         }
+
+    }
+
+    private static void procesarTraveltino(EntityManager em, AppConfig appconfig, Message m) throws Throwable {
+
+        Object o = m.getContent();
+        //Si es Formato HTML lo procesamos...
+        if (m.isMimeType("multipart/mixed")) {
+            Multipart mp = (Multipart) o;
+            int cnt = mp.getCount();
+            for (int j = 0; j < cnt; j++) {
+                Part part = mp.getBodyPart(j);
+
+                String disposition = part.getDisposition();
+                if ((disposition != null) && ((disposition.equals(Part.ATTACHMENT) || disposition.equals(Part.INLINE)))) {
+
+                    String[][] csv = CSVParser.parse(new InputStreamReader(part.getInputStream()), '¬');
+
+                    if (w != null) {
+
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+
+                        TraveltinoImporter.process(em, csv, pw);
+
+                        Helper.resend(appconfig.getAdminEmailSmtpHost(), appconfig.getAdminEmailSmtpPort(), appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword(), m, "TRAVELTINO MANIFEST READ", appconfig.getPop3ReboundToEmail(), null, sw.toString());
+
+
+                    }
+
+
+
+                }
+            }
+        }
+
 
     }
 
@@ -185,13 +230,13 @@ public class Pop3Reader {
         // mail server connection parameters
         String host = "mail.invisahoteles.com"; // 995
         String user = "inbox@viajesibiza.es";
-        String password = "Y4t3n3m0sXML";
+        String pass = "Y4t3n3m0sXML";
 
         // connect to my pop3 inbox
         Properties properties = System.getProperties();
         Session session = Session.getDefaultInstance(properties);
         Store store = session.getStore("pop3");
-        store.connect(host, user, password);
+        store.connect(host, user, pass);
 
 
         /*

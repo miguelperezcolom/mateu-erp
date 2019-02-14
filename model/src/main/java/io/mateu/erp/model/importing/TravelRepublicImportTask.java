@@ -2,6 +2,7 @@ package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
@@ -10,6 +11,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,10 +19,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 
 @Entity
@@ -30,7 +29,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public TravelRepublicImportTask() {}
 
-    public TravelRepublicImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos)
+    public TravelRepublicImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this.setCustomer(customer);
 
@@ -48,11 +47,13 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
         setPointOfSale(pos);
 
+        setBillingConcept(billingConcept);
+
     }
 
-    public TravelRepublicImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos)
+    public TravelRepublicImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
-        this("TravelRepublic", user, customer,xml, office, pos);//guardamos el xml en el campo del html
+        this("TravelRepublic", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }
 
 
@@ -92,7 +93,10 @@ public class TravelRepublicImportTask extends TransferImportTask {
                         aux = "\nRef. " + l[0] + ": ";
                         //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                         TransferBookingRequest rq = rellenarTransferBookingRequest(cabecera, l);
-                        res = rq.updateBooking(em);
+                        TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), getCustomer());
+                        if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                            em.persist(rq);
+                        }
                         //vamos guardando el resultado junto con la refAge para crear el informe final
                         if (res.length() > 0)//hay errores
                             result += aux + res;
@@ -249,25 +253,29 @@ public class TravelRepublicImportTask extends TransferImportTask {
     public static void main(String... args) throws Throwable {
 
         //System.setProperty("appconf", "/home/miguel/quonext/mateu.properties");
-        System.setProperty("appconf", "/Users/miguel/mateu.properties");
+        //System.setProperty("appconf", "/Users/miguel/mateu.properties");
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
 
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
+        run();
 
-                TravelRepublicImportTask t = new TravelRepublicImportTask();
-                em.persist(t);
-                t.setAudit(new Audit());
-                t.setCustomer(em.find(Partner.class, 47l));
-                t.setOffice(em.find(Office.class, 1l));
-                t.setPointOfSale(em.find(PointOfSale.class, 2l)); // importación
-                t.setHtml(Helper.leerFichero("/Users/miguel/Downloads/manifest.csv"));
-                t.execute(em);
+        WorkflowEngine.exit(0);
 
-            }
-        });
+    }
 
+    public static void run() {
+        try {
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
+
+                    ((List<TravelRepublicImportTask>)em.createQuery("select x from " + TravelRepublicImportTask.class.getName() + " x order by x.id desc").getResultList()).get(0).execute(em);
+
+                }
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
 }

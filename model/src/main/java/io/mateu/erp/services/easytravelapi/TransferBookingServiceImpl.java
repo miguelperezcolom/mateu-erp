@@ -43,74 +43,64 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
 
+        LocalDate formalizationDate = LocalDate.now();
+
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         long t0 = System.currentTimeMillis();
 
+
+        long finalIdAgencia = idAgencia;
         Helper.transact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                TransferPoint tp0 = em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length())));
-                TransferPoint tp1 = em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp-".length())));
+                TransferBooking b = new TransferBooking();
+                b.setAgency(em.find(Partner.class, finalIdAgencia));
+                b.setAdults(pax);
 
-                List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
+                b.setOrigin(em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length()))));
+                b.setDestination(em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp-".length()))));
 
-                LocalDate llegada = LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100);
-                LocalDate salida = LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100);
-
+                if (incomingDate > 0) b.setArrivalFlightTime(LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100).atTime(0, 0));
+                if (outgoingDate > 0) b.setDepartureFlightTime(LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100).atTime(0, 0));
 
                 int encontrados = 0;
 
-                for (Contract c : contratos) {
+                Lists.newArrayList(TransferType.SHUTTLE, TransferType.PRIVATE, TransferType.EXECUTIVE).forEach(tipo -> {
+                    b.setTransferType(tipo);
+                    b.priceServices(em);
+                    if (b.getTotalValue() > 0) {
+                        AvailableTransfer t = new AvailableTransfer();
+                        t.setType("" + b.getTransferType());
+                        t.setDescription(b.getPriceForVehicle().getName() + " " + b.getPriceForVehicle().getMinPax() + " - " + b.getPriceForVehicle().getMaxPax());
+                        t.setVehicle(b.getPriceForVehicle().getName());
+                        Amount a;
+                        t.setTotal(new BestDeal());
+                        t.getTotal().setRetailPrice(a = new Amount());
+                        a.setCurrencyIsoCode("EUR");
+                        a.setValue(b.getTotalValue());
 
-                    boolean contratoOk = true;
-
-                    contratoOk = contratoOk && !c.getValidFrom().isAfter(llegada);
-                    contratoOk = contratoOk && !c.getValidTo().isBefore(salida);
-
-                    //todo: comprobar file window y demás condiciones
-
-                    if (contratoOk) {
-
-                        for (Price p : c.getPrices()) {
-
-                            boolean precioOk = p.getOrigin().getPoints().contains(tp0) || p.getOrigin().getCities().contains(tp0.getZone());
-
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(tp1) || p.getDestination().getCities().contains(tp1.getZone()));
-
-                            precioOk = precioOk && p.getVehicle().getMinPax() <= pax && p.getVehicle().getMaxPax() >= pax;
-
-                            if (precioOk) {
-
-                                AvailableTransfer t = new AvailableTransfer();
-                                t.setType("" + p.getTransferType());
-                                t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
-                                t.setVehicle(p.getVehicle().getName());
-                                Amount a;
-                                t.setTotal(new BestDeal());
-                                t.getTotal().setRetailPrice(a = new Amount());
-                                a.setCurrencyIsoCode("EUR");
-                                double valor = p.getPrice();
-                                if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
-
-                                if (incomingDate != 0 && outgoingDate != 0) valor *= 2;
-                                else if (incomingDate == 0 && outgoingDate == 0) valor = 0;
-                                valor = Helper.roundEuros(valor);
-                                if (valor != 0) {
-                                    a.setValue(valor);
-                                    rs.getAvailableTransfers().add(t);
-
-                                    t.setKey(getKey(token, fromTransferPointId, toTransferPointId, pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, incomingDate, outgoingDate, p, valor));
-
-                                    encontrados++;
-                                }
-
-                            }
-
+                        try {
+                            t.setKey(getKey(token, fromTransferPointId, toTransferPointId, pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, incomingDate, outgoingDate, b.getPriceFromPriceLine(), b.getTotalValue()));
+                            rs.getAvailableTransfers().add(t);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-
                     }
-
-                }
+                });
 
                 rs.setMsg("" + encontrados + " transfers found. It consumed 24 ms in the server.");
 
@@ -168,62 +158,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 TransferBooking b = buildBookingFromKey(em, key);
 
-                // todo: meter todo esto en el priceFromServices de TransferBooking
-
-                //b.price(em);
-
-                List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
-
-                int encontrados = 0;
-
-                for (Contract c : contratos) {
-
-                    boolean contratoOk = true;
-
-                    contratoOk = contratoOk && !c.getValidFrom().isAfter(b.getStart());
-                    contratoOk = contratoOk && !c.getValidTo().isBefore(b.getEnd());
-
-                    //todo: comprobar file window y demás condiciones
-
-                    if (contratoOk) {
-
-                        for (Price p : c.getPrices()) {
-
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getCities().contains(b.getOrigin().getZone());
-
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getCities().contains(b.getDestination().getZone()));
-
-                            precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
-
-                            if (precioOk) {
-
-                                AvailableTransfer t = new AvailableTransfer();
-                                t.setType("" + p.getTransferType());
-                                t.setDescription(p.getVehicle().getName() + " " + p.getVehicle().getMaxPax() + " - " + p.getVehicle().getMaxPax());
-                                t.setVehicle(p.getVehicle().getName());
-                                Amount a;
-                                t.setTotal(new BestDeal());
-                                t.getTotal().setRetailPrice(a = new Amount());
-                                a.setCurrencyIsoCode("EUR");
-                                double valor = p.getPrice();
-                                if (PricePer.PAX.equals(p.getPricePer())) valor = valor * b.getAdults();
-
-                                if (b.getArrivalFlightTime() != null && b.getDepartureFlightTime() != null) valor *= 2;
-                                else if (b.getArrivalFlightTime() == null && b.getDepartureFlightTime() == null) valor = 0;
-                                valor = Helper.roundEuros(valor);
-                                if (valor != 0) {
-                                    rs.setTotal(new BestDeal());
-                                    rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
-                                }
-                                b.setContract(c);
-
-                            }
-
-                        }
-
-                    }
-
-                }
+                b.priceServices(em);
 
                 b.createCharges(em);
                 b.summarize(em);

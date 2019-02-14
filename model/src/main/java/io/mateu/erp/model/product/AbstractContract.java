@@ -8,6 +8,8 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.partners.PartnerGroup;
+import io.mateu.erp.model.performance.Accessor;
+import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.hotel.RatesType;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.revenue.ProductLine;
@@ -207,9 +209,13 @@ public abstract class AbstractContract {
     @KPI
     private int totalBookings;
 
+    @Ignored
+    private boolean deprecated;
 
 
-    @PrePersist@PreUpdate
+
+
+    @PreUpdate
     public void pre() throws Error {
         if (ContractType.PURCHASE.equals(getType()) && getSupplier() == null) throw new Error("Supplier is required for purchase contracts");
         clauses.sort((c1, c2) -> c1.getOrder() - c2.getOrder());
@@ -418,5 +424,21 @@ public abstract class AbstractContract {
         ok = ok && (companies.size() == 0 || companies.contains(agency.getCompany()));
         ok = ok && (!start.isBefore(validFrom) && !end.isAfter(validTo));
         return ok;
+    }
+
+
+    @PrePersist
+    public void prePersist() {
+        pre();
+        if (this instanceof Contract) Accessor.get(Helper.getEMFromThreadLocal()).getGenericContracts().add((Contract) this);
+        else if (this instanceof io.mateu.erp.model.product.transfer.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTransferContracts().add((io.mateu.erp.model.product.transfer.Contract) this);
+        else if (this instanceof io.mateu.erp.model.product.tour.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTourContracts().add((io.mateu.erp.model.product.tour.Contract) this);
+    }
+
+    @PreRemove
+    public void preRemove() {
+        if (this instanceof Contract) Accessor.get(Helper.getEMFromThreadLocal()).getGenericContracts().remove((Contract) this);
+        else if (this instanceof io.mateu.erp.model.product.transfer.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTransferContracts().remove((io.mateu.erp.model.product.transfer.Contract) this);
+        else if (this instanceof io.mateu.erp.model.product.tour.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTourContracts().remove((io.mateu.erp.model.product.tour.Contract) this);
     }
 }

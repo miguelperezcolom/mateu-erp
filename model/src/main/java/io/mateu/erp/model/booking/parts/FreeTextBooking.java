@@ -97,7 +97,7 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
-    public void priceServices() throws Throwable {
+    public void priceServices(EntityManager em) throws Throwable {
         throw new Exception("Free text needs price to be overrided");
     }
 }

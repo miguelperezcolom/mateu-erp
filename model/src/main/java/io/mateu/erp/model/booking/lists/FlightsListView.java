@@ -22,11 +22,6 @@ import java.util.Set;
 @Getter@Setter
 public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
-
-    private TransferPoint arrival;
-
-    private TransferPoint departure;
-
     private LocalDate checkInFrom = LocalDate.now();
 
     private LocalDate checkInTo;

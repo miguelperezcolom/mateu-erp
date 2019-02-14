@@ -1,10 +1,12 @@
 package io.mateu.erp.services.easytravelapi.test;
 
 import io.mateu.erp.services.easytravelapi.CommonsServiceImpl;
+import io.mateu.erp.services.easytravelapi.GenericBookingServiceImpl;
 import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl;
 import io.mateu.erp.services.easytravelapi.TransferBookingServiceImpl;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
+import org.easytravelapi.generic.BookGenericRQ;
 import org.easytravelapi.hotel.BookHotelRQ;
 import org.easytravelapi.hotel.BookingKey;
 import org.easytravelapi.hotel.GetHotelPriceDetailsRQ;
@@ -36,8 +38,70 @@ public class CommonsTester {
         //testTransferDetails(token);
 
         testTransferConfirm(token);
+        
+        //testGenericAvail(token);
+
+        //testGenericRates(token);
+
+        //testGenericCheck(token);
+
+        //testGenericPriceDetail(token);
+
+        //testGenericConfirm(token);
+
+        testTourAvail(token);
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testTourAvail(String token) {
+    }
+
+    private static void testGenericConfirm(String token) {
+        try {
+            BookGenericRQ rq = new BookGenericRQ();
+            rq.setKey("ewogICJwcm9kdWN0IiA6ICIyMiIsCiAgImNoaWxkcmVuIiA6IDAsCiAgImFkdWx0cyIgOiAwLAogICJzdGFydCIgOiAyMDE5MDYwMSwKICAiZW5kIiA6IDIwMTkwNjA3LAogICJsYW5ndWFnZSIgOiAiZXMiLAogICJ1bml0cyIgOiAxLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9Igp9");
+            rq.setBookingReference("Test " + LocalDateTime.now());
+            rq.setCommentsToProvider("Test");
+            rq.setEmail("miguelperezcolom@gmail.com");
+            rq.setLeadName("Mr test");
+
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().bookGeneric(token, rq)));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testGenericPriceDetail(String token) {
+        try {
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericPriceDetails(token, "ewogICJwcm9kdWN0IiA6ICIyMiIsCiAgImNoaWxkcmVuIiA6IDAsCiAgImFkdWx0cyIgOiAwLAogICJzdGFydCIgOiAyMDE5MDYwMSwKICAiZW5kIiA6IDIwMTkwNjA3LAogICJsYW5ndWFnZSIgOiAiZXMiLAogICJ1bml0cyIgOiAxLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9Igp9", "es", null, null)));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testGenericCheck(String token) {
+        try {
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().check(token, "gen-22", 0, 0, 1, 20190601, 20190607, "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testGenericRates(String token) {
+        try {
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericRates(token, "gen-22", "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testGenericAvail(String token) {
+        try {
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getAvailableGenerics(token, "des-1", "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     private static void testTransferConfirm(String token) {

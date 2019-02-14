@@ -108,10 +108,10 @@ public abstract class Service {
             if (getProcessingStatus() != null) switch (getProcessingStatus()) {
                 case INITIAL: setEffectiveProcessingStatus(100); break;
                 case DATA_OK: setEffectiveProcessingStatus(200); break;
-                case PURCHASEORDERS_READY: setEffectiveProcessingStatus(300); break;
-                case PURCHASEORDERS_SENT: setEffectiveProcessingStatus(400); break;
-                case PURCHASEORDERS_REJECTED: setEffectiveProcessingStatus(450); break;
-                case PURCHASEORDERS_CONFIRMED: setEffectiveProcessingStatus(500); break;
+                case READY: setEffectiveProcessingStatus(300); break;
+                case SENT: setEffectiveProcessingStatus(400); break;
+                case REJECTED: setEffectiveProcessingStatus(450); break;
+                case CONFIRMED: setEffectiveProcessingStatus(500); break;
                 default: setEffectiveProcessingStatus(0);
             }
             if (booking != null) booking.setUpdatePending(true);
@@ -147,7 +147,7 @@ public abstract class Service {
     private boolean held;
 
 
-    @TextArea
+    @Output
     private String specialRequests;
 
     @TextArea
@@ -257,6 +257,10 @@ public abstract class Service {
     @Ignored
     private boolean updatePending = true;
 
+    @Ignored
+    private boolean deprecated;
+
+
 
     public void updateProcessingStatus(EntityManager em) {
 
@@ -264,22 +268,22 @@ public abstract class Service {
 
         ProcessingStatus ps = getProcessingStatus();
         if (isAlreadyPurchased()) {
-            ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
+            ps = ProcessingStatus.CONFIRMED;
         } else if (getFinish() != null && !getFinish().isBefore(LocalDate.now())) {
             ps = ProcessingStatus.INITIAL;
-            if (!isActive() && getSentToProvider() == null) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
+            if (!isActive() && getSentToProvider() == null) ps = ProcessingStatus.CONFIRMED;
             else if (isAllMapped(em)) {
                 ps = ProcessingStatus.DATA_OK;
 
                 if (getPurchaseOrders().size() > 0) {
-                    ps = ProcessingStatus.PURCHASEORDERS_READY;
+                    ps = ProcessingStatus.READY;
 
                     boolean allSent = true;
 
                     for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) if (!po.isSent()) allSent = false;
 
                     if (allSent) {
-                        ps = ProcessingStatus.PURCHASEORDERS_SENT;
+                        ps = ProcessingStatus.SENT;
 
                         boolean allConfirmed = true;
                         boolean anyRejected = false;
@@ -289,8 +293,8 @@ public abstract class Service {
                             if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
                         }
 
-                        if (allConfirmed) ps = ProcessingStatus.PURCHASEORDERS_CONFIRMED;
-                        else if (anyRejected) ps = ProcessingStatus.PURCHASEORDERS_REJECTED;
+                        if (allConfirmed) ps = ProcessingStatus.CONFIRMED;
+                        else if (anyRejected) ps = ProcessingStatus.REJECTED;
 
                     }
 
@@ -707,7 +711,7 @@ public abstract class Service {
         if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
         if (!isActive() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
-        if (!ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())) {
+        if (!ProcessingStatus.CONFIRMED.equals(getProcessingStatus())) {
             PurchaseOrder po = null;
             if (getPurchaseOrders().size() > 0) {
                 po = getPurchaseOrders().get(getPurchaseOrders().size() - 1);
@@ -784,7 +788,7 @@ public abstract class Service {
         d.put("locator", this.getBooking().getId());
         d.put("leadname", this.getBooking().getLeadName());
         d.put("agency", this.getBooking().getAgency().getName());
-        d.put("market", this.getBooking().getAgency().getMarket().getName());
+        if (this.getBooking().getAgency().getMarket() != null) d.put("market", this.getBooking().getAgency().getMarket().getName());
         d.put("agencyReference", this.getBooking().getAgencyReference());
         d.put("status", (isActive())?"ACTIVE":"CANCELLED");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
@@ -966,7 +970,7 @@ public abstract class Service {
         updateProcessingStatus(em);
         validate(em);
 
-        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.PURCHASEORDERS_CONFIRMED.equals(getProcessingStatus())));
+        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.CONFIRMED.equals(getProcessingStatus())));
 
         booking.summarize(em);
 

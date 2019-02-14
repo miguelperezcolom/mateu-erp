@@ -1,19 +1,18 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.mdd.core.annotations.QLForCombo;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.UseLinkToListView;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,4 +52,6 @@ public class Contract extends AbstractContract {
     public String getXslfo(EntityManager em) {
         return AppConfig.get(em).getXslfoForGenericContract();
     }
+
+
 }

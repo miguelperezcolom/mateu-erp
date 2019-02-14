@@ -4,19 +4,22 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
-import io.mateu.erp.model.product.transfer.Contract;
-import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.product.transfer.TransferType;
+import io.mateu.erp.model.performance.Accessor;
+import io.mateu.erp.model.product.transfer.*;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
+import org.easytravelapi.common.BestDeal;
+import org.easytravelapi.transfer.AvailableTransfer;
 import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.Entity;
@@ -110,6 +113,14 @@ public class TransferBooking extends Booking {
     @ManyToOne
     private Contract contract;
 
+    @ManyToOne@Output
+    private Vehicle priceForVehicle;
+
+    @ManyToOne@Output
+    private Price priceFromPriceLine;
+
+    @ManyToOne
+    private TransferBookingRequest transferBookingRequest;
 
     public TransferBooking() {
         setIcons(FontAwesome.BUS.getHtml());
@@ -163,7 +174,7 @@ public class TransferBooking extends Booking {
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
-                s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+                s.setAudit(new Audit(MDD.getCurrentUser()));
             }
             s.setOffice(destination.getOffice());
             s.setFinish(getEnd());
@@ -191,20 +202,65 @@ public class TransferBooking extends Booking {
     }
 
     @Override
-    public void priceServices() {
+    public void priceServices(EntityManager em) {
+
+        setTotalValue(0);
+
+        for (Contract c : Accessor.get(em).getTransferContracts()) {
+
+            boolean contratoOk = true;
+
+            contratoOk = contratoOk && !c.getValidFrom().isAfter(getStart());
+            contratoOk = contratoOk && !c.getValidTo().isBefore(getEnd());
+
+            //todo: comprobar file window y demás condiciones
+
+            if (contratoOk) {
+
+                for (Price p : c.getPrices()) {
+
+                    boolean precioOk = p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getCities().contains(getOrigin().getZone());
+
+                    precioOk = precioOk && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getCities().contains(getDestination().getZone()));
+
+                    precioOk = precioOk && p.getTransferType().equals(getTransferType());
+
+                    precioOk = precioOk && p.getVehicle().getMinPax() <= getAdults() + getChildren() && p.getVehicle().getMaxPax() >= getAdults() + getChildren();
+
+                    if (precioOk) {
+
+                        setContract(c);
+                        setPriceForVehicle(p.getVehicle());
+                        setPriceFromPriceLine(p);
+
+                        double valor = p.getPrice();
+                        if (PricePer.PAX.equals(p.getPricePer())) valor = valor * (getAdults() + getChildren());
+
+                        if (getArrivalFlightTime() != null && getDepartureFlightTime() != null) valor *= 2;
+                        else if (getArrivalFlightTime() == null && getDepartureFlightTime() == null) valor = 0;
+
+                        setTotalValue(Helper.roundEuros(valor));
+                    }
+
+                }
+
+            }
+
+        }
 
     }
 
     @Override
     public void createCharges(EntityManager em) throws Throwable {
         getServiceCharges().clear();
+
         if (getContract() != null) {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
             c.setTotal(new Amount(FastMoney.of(getTotalValue(), "EUR")));
 
-            c.setText("Transfer");
+            c.setText(((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + " in " + getPriceForVehicle().getName() + " for " + (getAdults() + getChildren()) + " pax");
 
             c.setPartner(getAgency());
 
@@ -216,4 +272,77 @@ public class TransferBooking extends Booking {
             c.setBillingConcept(getContract().getBillingConcept());
         }
     }
+
+
+
+
+
+    public void setBigLuggages(int bigLuggages) {
+        if (this.bigLuggages != bigLuggages) setUpdatePending(true);
+        this.bigLuggages = bigLuggages;
+    }
+
+    public void setGolf(int golf) {
+        if (this.golf != golf) setUpdatePending(true);
+        this.golf = golf;
+    }
+
+    public void setBikes(int bikes) {
+        if (this.bikes != bikes) setUpdatePending(true);
+        this.bikes = bikes;
+    }
+
+    public void setWheelChairs(int wheelChairs) {
+        if (this.wheelChairs != wheelChairs) setUpdatePending(true);
+        this.wheelChairs = wheelChairs;
+    }
+
+    public void setOrigin(TransferPoint origin) {
+        if (!Helper.equals(this.origin, origin)) setUpdatePending(true);
+        this.origin = origin;
+    }
+
+    public void setOriginAddress(String originAddress) {
+        if (!Helper.equals(this.originAddress, originAddress)) setUpdatePending(true);
+        this.originAddress = originAddress;
+    }
+
+    public void setDestination(TransferPoint destination) {
+        if (!Helper.equals(this.destination, destination)) setUpdatePending(true);
+        this.destination = destination;
+    }
+
+    public void setDestinationAddress(String destinationAddress) {
+        if (!Helper.equals(this.destinationAddress, destinationAddress)) setUpdatePending(true);
+        this.destinationAddress = destinationAddress;
+    }
+
+    public void setTransferType(TransferType transferType) {
+        if (!Helper.equals(this.transferType, transferType)) setUpdatePending(true);
+        this.transferType = transferType;
+    }
+
+    public void setArrivalFlightNumber(String arrivalFlightNumber) {
+        if (!Helper.equals(this.arrivalFlightNumber, arrivalFlightNumber)) setUpdatePending(true);
+        this.arrivalFlightNumber = arrivalFlightNumber;
+    }
+
+    public void setArrivalFlightOrigin(String arrivalFlightOrigin) {
+        if (!Helper.equals(this.arrivalFlightOrigin, arrivalFlightOrigin)) setUpdatePending(true);
+        this.arrivalFlightOrigin = arrivalFlightOrigin;
+    }
+
+    public void setDepartureFlightNumber(String departureFlightNumber) {
+        if (!Helper.equals(this.departureFlightNumber, departureFlightNumber)) setUpdatePending(true);
+        this.departureFlightNumber = departureFlightNumber;
+    }
+
+    public void setDepartureFlightDestination(String departureFlightDestination) {
+        if (!Helper.equals(this.departureFlightDestination, departureFlightDestination)) setUpdatePending(true);
+        this.departureFlightDestination = departureFlightDestination;
+    }
+
+
+
+
 }

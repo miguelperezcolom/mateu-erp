@@ -1,12 +1,15 @@
 package io.mateu.erp.model.importing;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -29,7 +32,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos)
+    public ShuttleDirectImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -47,13 +50,13 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
        setPointOfSale(pos);
 
+       setBillingConcept(billingConcept);
     }
 
-    public ShuttleDirectImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos)
+    public ShuttleDirectImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
-        this("ShuttleDirect", user, customer,xml, office, pos);//guardamos el xml en el campo del html
+        this("ShuttleDirect", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }
-
 
     @Override
     public void execute(EntityManager em) {
@@ -81,8 +84,12 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                 try {
                     aux = "\nRef. " + tr.getChildText("barcode") + ": ";
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
-                    TransferBookingRequest rq = rellenarTransferBookingRequest(tr);
-                    res = rq.updateBooking(em);
+                    TransferBookingRequest rq = rellenarTransferBookingRequest(tr, em, getCustomer());
+                    TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), getCustomer());
+                    if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                        em.persist(rq);
+                    }
+                    //res = rq.updateBooking(em);
                     //vamos guardando el resultado junto con la refAge para crear el informe final
                     if (res.length() > 0)//hay errores
                         result += aux + res;
@@ -112,14 +119,14 @@ public class ShuttleDirectImportTask extends TransferImportTask {
       }
 
 
-    private TransferBookingRequest rellenarTransferBookingRequest(Element tr)
+    private TransferBookingRequest rellenarTransferBookingRequest(Element tr, EntityManager em, Partner agencia)
     {
         TransferBookingRequest rq = new TransferBookingRequest();
+        rq.setAgencyReference(tr.getChildText("barcode"));
+        rq.setCustomer(agencia);
         rq.setTask(this);
         rq.setSource(new XMLOutputter(Format.getCompactFormat()).outputString(tr));
-        rq.setCustomer(this.getCustomer());
 
-        rq.setAgencyReference(tr.getChildText("barcode"));
         rq.setCreated(tr.getAttributeValue("bookingdate"));
         rq.setModified(tr.getAttributeValue("datemodified"));
 
@@ -266,4 +273,28 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         return result[0];
     }
     */
+
+    public static void main(String[] args) {
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+
+        run();
+
+        WorkflowEngine.exit(0);
+
+    }
+
+    public static void run() {
+        try {
+            Helper.transact(em -> {
+
+                ((List<ShuttleDirectImportTask>)em.createQuery("select x from " + ShuttleDirectImportTask.class.getName() + " x").getResultList()).forEach(t -> {
+                    t.execute(em);
+                });
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
 }

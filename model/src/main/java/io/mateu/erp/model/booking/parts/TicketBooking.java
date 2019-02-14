@@ -91,7 +91,7 @@ public class TicketBooking extends Booking {
     }
 
     @Override
-    public void priceServices() {
+    public void priceServices(EntityManager em) {
 
     }
 

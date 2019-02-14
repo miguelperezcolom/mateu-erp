@@ -6,7 +6,6 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
-import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
@@ -36,7 +35,6 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.common.PaymentLine;
 import org.javamoney.moneta.FastMoney;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -133,6 +131,9 @@ public abstract class Booking {
     @ColumnWidth(60)
     private boolean available;
 
+    @Ignored
+    private boolean deprecated;
+
     @NotNull
     @ListColumn
     @ColumnWidth(132)
@@ -174,6 +175,8 @@ public abstract class Booking {
     private LocalDateTime formalizationDate;
 
     private LocalDateTime expiryDate;
+
+    private boolean locked;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking", orphanRemoval = true)
     @Output
@@ -261,6 +264,9 @@ public abstract class Booking {
     private boolean paid;
 
     private boolean alreadyInvoiced;
+
+    private boolean alreadyPurchased;
+
 
     @UseLinkToListView
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
@@ -513,7 +519,7 @@ public abstract class Booking {
     public static Booking getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
     {
         try {
-            String jpql = "select x from " + File.class.getName() + " x" +
+            String jpql = "select x from " + Booking.class.getName() + " x" +
                     " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + partner.getId();
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<Booking> l = q.getResultList();
@@ -969,7 +975,7 @@ public abstract class Booking {
     //@Action(order = 8, icon = VaadinIcons.SPLIT)
     @NotWhenCreating
     public void build(EntityManager em) {
-        if (confirmed) generateServices(em);
+        if (confirmed && !alreadyPurchased) generateServices(em);
     }
 
     public abstract void validate() throws Exception;
@@ -986,14 +992,12 @@ public abstract class Booking {
             setValue(new Amount(overridedValue));
             setValued(true);
         } else {
-            priceServices();
+            priceServices(em);
         }
 
         updateCharges(em);
 
         updateTotals(em);
-
-        em.merge(this);
     }
 
 
@@ -1084,14 +1088,10 @@ public abstract class Booking {
         }
     }
 
-    public abstract void priceServices() throws Throwable;
+    public abstract void priceServices(EntityManager em) throws Throwable;
 
 
     public void updateCharges(EntityManager em) throws Throwable {
-        for (BookingCharge c : new ArrayList<>(getServiceCharges())) {
-            c.getBooking().getServiceCharges().remove(c);
-            if (c.getId() != 0) em.remove(c);
-        }
         getServiceCharges().clear();
 
         if (isValueOverrided()) {
@@ -1113,7 +1113,6 @@ public abstract class Booking {
 
             c.setBillingConcept(getOverridedBillingConcept());
 
-            em.persist(c);
         } else {
             createCharges(em);
         }
@@ -1121,6 +1120,8 @@ public abstract class Booking {
     }
 
     public void createCharges(EntityManager em) throws Throwable {
+
+
 
     }
 
