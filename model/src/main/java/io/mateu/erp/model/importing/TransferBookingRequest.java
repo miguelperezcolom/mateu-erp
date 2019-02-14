@@ -999,4 +999,9 @@ public class TransferBookingRequest {
             throwable.printStackTrace();
         }
     }
+
+    @Override
+    public String toString() {
+        return "rq " + getId() + " " + getAgencyReference() + " " + (getTask() != null && getTask().getCustomer() != null?getTask().getCustomer().getName():"--");
+    }
 }
