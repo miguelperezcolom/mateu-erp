@@ -1,6 +1,7 @@
 package io.mateu.erp.model.workflow;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.importing.TransferImportQueue;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
@@ -20,7 +21,7 @@ public class TaskRunnerRunnable implements Runnable {
     public void run() {
 
         try {
-            pausaMs = Long.parseLong(System.getProperty("taskrunnerpausams", "100"));
+            pausaMs = Long.parseLong(System.getProperty("taskrunnerpausams", "10000"));
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
@@ -56,6 +57,12 @@ public class TaskRunnerRunnable implements Runnable {
 
         try {
             TransferImportQueue.run();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+        try {
+            TransferBookingRequest.run();
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }

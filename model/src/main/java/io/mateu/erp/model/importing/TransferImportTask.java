@@ -28,7 +28,8 @@ public abstract class TransferImportTask {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ListColumn
+    @ListColumn@MainSearchFilter
+    @Output
     private String name;
 
     @Embedded
@@ -38,17 +39,21 @@ public abstract class TransferImportTask {
     private Audit audit;
 
 
+    @Output
     private int priority;
 
     public enum STATUS {PENDING,CANCELLED,OK,ERROR};
     @SearchFilter
     @ListColumn
+    @Output
     private STATUS status;
 
+    @Output
     private String file;
 
-    @TextArea
+    @Output
     private String html;
+    @Output
     private byte[] email;
 
 
@@ -150,5 +155,15 @@ public abstract class TransferImportTask {
         }
     }
 
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof TransferImportTask && id == ((TransferImportTask) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return name != null?name:"" + getClass().getSimpleName() + " " + id;
+    }
 }
 

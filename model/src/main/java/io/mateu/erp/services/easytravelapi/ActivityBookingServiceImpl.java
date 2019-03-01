@@ -2,7 +2,6 @@ package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
@@ -10,10 +9,11 @@ import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -75,11 +75,11 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                         .omitEmptyStrings()
                         .split(resorts)) {
                     if (s.startsWith("cou")) {
-                        em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p))));
+                        em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p))));
                     } else if (s.startsWith("des")) {
-                        em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p)));
+                        em.find(Destination.class, Long.parseLong(s.substring(4))).getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p)));
                     } else if (s.startsWith("zon")) {
-                        em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p));
+                        em.find(Resort.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Excursion).forEach(p -> excursions.add((Excursion) p));
                     } else if (s.startsWith("exc")) {
                         excursions.add(em.find(Excursion.class, Long.parseLong(s.substring(4))));
                     }
@@ -346,9 +346,9 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                             //todo: aplicar políticas precios correctamente
                             /*
 
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getCities().contains(b.getOrigin().getZone());
+                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getResorts().contains(b.getOrigin().getResort());
 
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getCities().contains(b.getDestination().getZone()));
+                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getResorts().contains(b.getDestination().getResort()));
 
                             precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
 
@@ -443,7 +443,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         data.put("language", language);
         data.put("adults", adults);
         data.put("children", children);
-        data.put("variant", variant);
+        data.put("excursioVariant", excursioVariant);
         data.put("shift", shift);
         data.put("pickup", pickup);
         data.put("activityLanguage", activityLanguage);
@@ -461,7 +461,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
-        if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(TourVariant.class, new Long(String.valueOf(data.get("variant")))));
+        if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
         if (data.get("shift") != null && !"x".equals(data.get("shift")) && !"null".equals(data.get("shift"))) b.setShift(em.find(TourShift.class, new Long(String.valueOf(data.get("shift")))));
         //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
         //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión

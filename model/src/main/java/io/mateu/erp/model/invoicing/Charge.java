@@ -7,7 +7,6 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -108,5 +107,14 @@ public class Charge {
 
     public boolean isModifiable() {
         return invoice == null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Charge && id == ((Charge) obj).getId());
+    }
+
+    public String toChangeControlString() {
+        return "" + total + " " + billingConcept.getName() + ": " + text;
     }
 }

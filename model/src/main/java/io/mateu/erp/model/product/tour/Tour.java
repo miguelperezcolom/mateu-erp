@@ -21,11 +21,6 @@ import java.util.List;
 public class Tour extends AbstractProduct {
 
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
-    @Ignored
-    private List<TourVariant> variants = new ArrayList<>();
-
-
     @Section("Purchase")
     /**
      * no hay coste. Toda la venta es margen para nmosotros

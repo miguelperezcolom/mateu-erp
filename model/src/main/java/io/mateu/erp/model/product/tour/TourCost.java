@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.tour;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.ProductType;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Extra;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +25,7 @@ public class TourCost {
 
     @ManyToOne
     @NotNull
-    private TourVariant variant;
+    private Variant variant;
 
     @ManyToOne
     private Extra extra;
@@ -37,6 +38,10 @@ public class TourCost {
     private AbstractProduct product;
 
     @ManyToOne
+    @NotNull
+    private Variant productVariant;
+
+    @ManyToOne
     private Partner supplier;
 
     @Column(name = "_order")
@@ -45,5 +50,7 @@ public class TourCost {
     private int day;
 
     private int nights;
+
+    private int units;
 
 }

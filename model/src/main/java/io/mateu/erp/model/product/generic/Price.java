@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.product.tour.TourDuration;
 import io.mateu.erp.model.product.tour.TourPriceZone;
@@ -33,6 +34,9 @@ public class Price implements Comparable<Price> {
 
     @ManyToOne
     private GenericProduct product;
+
+    @ManyToOne
+    private Variant variant;
 
     @ManyToOne
     private Extra extra;

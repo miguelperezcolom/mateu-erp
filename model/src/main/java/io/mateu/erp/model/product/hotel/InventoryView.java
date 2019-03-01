@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Caption;
@@ -32,7 +33,7 @@ public class InventoryView implements RpcCrudView<InventoryView, InventoryMonth,
 
 
     @Override
-    public List<InventoryMonth> rpc(InventoryView filters, int offset, int limit) {
+    public List<InventoryMonth> rpc(InventoryView filters, List<QuerySortOrder> sortOrders, int offset, int limit) throws Throwable {
 
         LocalDate desde = LocalDate.now();
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);

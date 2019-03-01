@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
-import io.mateu.erp.model.product.AbstractOffer;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -68,7 +67,7 @@ public class HotelBookingLine {
     private transient int roomsBefore;
 
     private int rooms;
-    private int adultsPerRoon;
+    private int adultsPerRoom;
     private int childrenPerRoom;
     private int[] ages;
 
@@ -136,7 +135,7 @@ public class HotelBookingLine {
     private String appliedOffers;
 
     @Action(order = 1)
-    @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract, inventory")
+    @DependsOn("start, end, room, board, rooms, adultsPerRoom, childrenPerRoon, ages, active, contract, inventory")
     public void check() throws Throwable {
 
         if (active) {
@@ -154,7 +153,7 @@ public class HotelBookingLine {
 
                 if (room != null) {
 
-                    int pax = adultsPerRoon + childrenPerRoom;
+                    int pax = adultsPerRoom + childrenPerRoom;
                     int infants = 0;
                     if (ages != null) for (int i = 0; i < ages.length; i++) if (ages[i] < 2) infants++;
                     if (rooms > 0) infants = infants / rooms;
@@ -167,7 +166,7 @@ public class HotelBookingLine {
                         for (MaxCapacity c : room.getMaxCapacities().getCapacities()) {
                             int resChildren = effectiveChildren;
                             if (room.isInfantsInBed() && infants > c.getInfants()) resChildren += infants - c.getInfants();
-                            int resAdults = adultsPerRoon;
+                            int resAdults = adultsPerRoom;
                             if (resChildren > c.getChildren()) resAdults += resChildren - c.getChildren();
                             if (c.getAdults() < resAdults) {
                                 occupationOk = false;
@@ -350,7 +349,7 @@ public class HotelBookingLine {
     }
 
     @Action(order = 2)
-    @DependsOn("start, end, room, board, rooms, adultsPerRoon, childrenPerRoon, ages, active, contract")
+    @DependsOn("start, end, room, board, rooms, adultsPerRoom, childrenPerRoon, ages, active, contract")
     public void price() {
         offersValue = 0;
         appliedOffers = "";
@@ -363,7 +362,7 @@ public class HotelBookingLine {
             int noches = new Long(DAYS.between(start, end)).intValue();
 
             if (noches > 0) {
-                int paxPerRoom = adultsPerRoon + childrenPerRoom + 1;
+                int paxPerRoom = adultsPerRoom + childrenPerRoom + 1;
                 int totalPax = rooms * paxPerRoom;
                 double[][] valorEstancia = new double[noches][totalPax];
                 double[][] valorRegimen = new double[noches][totalPax];
@@ -390,17 +389,17 @@ public class HotelBookingLine {
                                             for (int hab = 0; hab < rooms; hab++) {
                                                 valorEstancia[noche][hab * paxPerRoom] += l.getLodgingPrice();
 
-                                                for (int adult = 0; adult < adultsPerRoon; adult++) {
+                                                for (int adult = 0; adult < adultsPerRoom; adult++) {
                                                     valorEstancia[noche][hab * paxPerRoom + 1 + adult] += l.getAdultPrice();
                                                     valorRegimen[noche][hab * paxPerRoom + 1 + adult] += l.getMealAdultPrice();
                                                 }
 
                                                 for (int child = 0; child < childrenPerRoom; child++) {
-                                                    if (l.getChildPrice() != null) valorEstancia[noche][hab * paxPerRoom + 1 + adultsPerRoon + child] += l.getChildPrice().applicarA(l.getAdultPrice());
-                                                    if (l.getMealChildPrice() != null) valorRegimen[noche][hab * paxPerRoom + 1 + adultsPerRoon + child] += l.getMealChildPrice().applicarA(l.getMealAdultPrice());
+                                                    if (l.getChildPrice() != null) valorEstancia[noche][hab * paxPerRoom + 1 + adultsPerRoom + child] += l.getChildPrice().applicarA(l.getAdultPrice());
+                                                    if (l.getMealChildPrice() != null) valorRegimen[noche][hab * paxPerRoom + 1 + adultsPerRoom + child] += l.getMealChildPrice().applicarA(l.getMealAdultPrice());
                                                 }
 
-                                                for (int pax = adultsPerRoon; pax > 2; pax--) {
+                                                for (int pax = adultsPerRoom; pax > 2; pax--) {
                                                     if (l.getExtraAdultPrice() != null) valorEstancia[noche][hab * paxPerRoom + 1 + pax] += l.getExtraAdultPrice().applicarA(l.getAdultPrice());
                                                 }
 
@@ -494,8 +493,8 @@ public class HotelBookingLine {
         if (booking != null) booking.updateData();
     }
 
-    public void setAdultsPerRoon(int adultsPerRoon) {
-        this.adultsPerRoon = adultsPerRoon;
+    public void setAdultsPerRoom(int adultsPerRoom) {
+        this.adultsPerRoom = adultsPerRoom;
         if (booking != null) booking.updateData();
     }
 
@@ -535,7 +534,7 @@ public class HotelBookingLine {
         h += "<tr><th>Nr of rooms:</th><td>" + rooms + "</td></tr>";
         h += "<tr><th>Room type:</th><td>" + room + "</td></tr>";
         h += "<tr><th>Board type:</th><td>" + board + "</td></tr>";
-        h += "<tr><th>Pax per room:</th><td>" + adultsPerRoon + " adults + " +  childrenPerRoom + " children</td></tr>";
+        h += "<tr><th>Pax per room:</th><td>" + adultsPerRoom + " adults + " +  childrenPerRoom + " children</td></tr>";
         h += "<tr><th>Children ages:</th><td>" + (ages != null?Arrays.toString(ages):"-") + "</td></tr>";
         h += "<tr><th>Contract:</th><td>" + (contract != null ? contract : "NO CONTRACT") + "</td></tr>";
         h += "<tr><th>Inventory:</th><td>" + (inventory != null ? inventory : "NO INVENTORY") + "</td></tr>";
@@ -550,7 +549,7 @@ public class HotelBookingLine {
     }
 
     public String toSimpleString() {
-        String s = "" + rooms + " x " + room.getName() + " each occupied by " + adultsPerRoon + " adults and " + childrenPerRoom + " children (" + (ages != null?Arrays.toString(ages):"") + ") from " + start + " to " + end + " (contract: " + contract + ", inventory: " + inventory + ")";
+        String s = "" + rooms + " x " + room.getName() + " each occupied by " + adultsPerRoom + " adults and " + childrenPerRoom + " children (" + (ages != null?Arrays.toString(ages):"") + ") from " + start + " to " + end + " (contract: " + contract + ", inventory: " + inventory + ")";
         return s;
     }
 

@@ -294,19 +294,19 @@
 
                         <!-- LEYENDA ZONAS -->
 
-                        <xsl:if test="zone">
+                        <xsl:if test="resort">
                             <fo:block>
                                 <fo:table>
                                     <fo:table-body font-size="7.7pt" font-family="Liberation Sans Narrow"
                                                    space-before="5mm">
-                                        <xsl:for-each select="zone">
+                                        <xsl:for-each select="resort">
                                             <fo:table-row>
                                                 <fo:table-cell padding-before="4mm">
                                                     <fo:block page-break-inside="avoid">
                                                         <fo:block font-weight="bold">
                                                             <xsl:value-of select="@name"/>
                                                         </fo:block>
-                                                        <xsl:for-each select="city">
+                                                        <xsl:for-each select="resort">
                                                             <fo:block>
                                                                 <xsl:value-of select="@name"/>
                                                             </fo:block>

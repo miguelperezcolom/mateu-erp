@@ -1,21 +1,17 @@
 package io.mateu.erp.services.easytravelapi;
 
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.CircuitBooking;
-import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
-import io.mateu.erp.model.world.Country;
-import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -67,15 +63,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
             Helper.notransact(em -> {
 
 
-                List<ProductLabel> labels = em.createQuery("select x from " + ProductLabel.class.getName() + " x order by x.name").getResultList();
-
-                labels.forEach(x -> {
-                    Label l;
-                    rs.getLabels().add(l = new Label());
-                    l.setId("" + x.getId());
-                    l.setName(x.getName());
-                });
-
+                Map<Long, ProductLabel> labels = new HashMap<>();
 
                 List<Circuit> excursions = em.createQuery("select x from " + Circuit.class.getName() + " x order by x.name").getResultList();
 
@@ -96,20 +84,31 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                                     e1.printStackTrace();
                                 }
                             }
+
                             e.getDataSheet().getLabels().forEach(x -> {
-                                Label l;
-                                a.getLabels().add(l = new Label());
-                                l.setId("" + x.getId());
-                                l.setName(x.getName());
+                                labels.putIfAbsent(x.getId(), x);
                             });
+
                         }
                         BestDeal bd;
                         a.setBestDeal(bd = new BestDeal());
-                        bd.setRetailPrice(new Amount("EUR", 200.34));
+                        double v = 200.34;
+                        bd.setRetailPrice(new Amount("EUR", v));
 
+                        if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                        if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
                     }
 
                 });
+
+
+                labels.values().forEach(pl -> {
+                    Label l;
+                    rs.getLabels().add(l = new Label());
+                    l.setId("" + pl.getId());
+                    l.setName(pl.getName());
+                });
+
 
             });
 
@@ -267,9 +266,9 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                             //todo: aplicar políticas precios correctamente
                             /*
 
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getCities().contains(b.getOrigin().getZone());
+                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getResorts().contains(b.getOrigin().getResort());
 
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getCities().contains(b.getDestination().getZone()));
+                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getResorts().contains(b.getDestination().getResort()));
 
                             precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
 
@@ -364,7 +363,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         data.put("language", language);
         data.put("adults", adults);
         data.put("children", children);
-        data.put("variant", variant);
+        data.put("excursioVariant", excursioVariant);
         data.put("shift", shift);
         data.put("pickup", pickup);
         data.put("activityLanguage", activityLanguage);
@@ -382,7 +381,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
-        if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(TourVariant.class, new Long(String.valueOf(data.get("variant")))));
+        if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
         //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
         //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión
 

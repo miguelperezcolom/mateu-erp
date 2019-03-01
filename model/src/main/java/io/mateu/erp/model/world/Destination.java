@@ -33,7 +33,7 @@ public class Destination {
 
     @OneToMany(mappedBy = "destination")
     @Ignored
-    private List<Zone> zones = new ArrayList<>();
+    private List<Resort> resorts = new ArrayList<>();
 
     @OneToMany(mappedBy = "gatewayOf")
     @Ignored

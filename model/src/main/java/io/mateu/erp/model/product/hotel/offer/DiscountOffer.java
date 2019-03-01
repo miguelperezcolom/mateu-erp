@@ -110,7 +110,7 @@ public class DiscountOffer extends AbstractHotelOffer {
                     importe = 0;
                 } else {
                     if (Per.PAX.equals(getPer())) {
-                        importe *= l.getRooms() * (l.getAdultsPerRoon() + l.getChildrenPerRoom());
+                        importe *= l.getRooms() * (l.getAdultsPerRoom() + l.getChildrenPerRoom());
                     } else if (Per.BOOKING.equals(getPer())) {
                         //todo: comprobar que no aplicamos la oferta más de una vez en toda la reserva (no con las otras líneas de reserva)
                     }

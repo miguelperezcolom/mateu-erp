@@ -2,6 +2,7 @@ package io.mateu.erp.model.product.tour;
 
 import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.mdd.core.annotations.DependsOn;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
@@ -32,7 +33,7 @@ public class TourPrice implements Comparable<TourPrice> {
 
     @ManyToOne
     @NotNull
-    private TourVariant variant;
+    private Variant variant;
 
     @DependsOn("tour")
     public DataProvider getVariantDataProvider() throws Throwable {
@@ -78,7 +79,7 @@ public class TourPrice implements Comparable<TourPrice> {
 
         if (tour != null) e.addContent(new Element("tour").setAttribute("id", "" + tour.getId()).setAttribute("name", tour.getName()));
         if (variant != null) e.addContent(new Element("variant").setAttribute("id", "" + variant.getId()).setAttribute("name", variant.getName().toString()));
-        if (zone != null) e.addContent(new Element("zone").setAttribute("id", "" + zone.getId()).setAttribute("name", zone.getName()));
+        if (zone != null) e.addContent(new Element("resort").setAttribute("id", "" + zone.getId()).setAttribute("name", zone.getName()));
         if (extra != null) e.addContent(new Element("extra").setAttribute("id", "" + extra.getId()).setAttribute("name", extra.getName().toString()));
 
         e.setAttribute("order", "" + order);

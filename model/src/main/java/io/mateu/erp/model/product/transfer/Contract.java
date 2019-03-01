@@ -3,7 +3,7 @@ package io.mateu.erp.model.product.transfer;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.AbstractContract;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -136,9 +136,9 @@ public class Contract extends AbstractContract {
         for (io.mateu.erp.model.product.transfer.Zone z : ds) if (!zs.contains(z)) zs.add(z);
         for (io.mateu.erp.model.product.transfer.Zone z : zs) {
             Element xz;
-            xml.addContent(xz = new Element("zone").setAttribute("name", z.getName()));
-            for (Zone c : z.getCities()) {
-                xz.addContent(new Element("city").setAttribute("name", c.getName()));
+            xml.addContent(xz = new Element("resort").setAttribute("name", z.getName()));
+            for (Resort c : z.getResorts()) {
+                xz.addContent(new Element("resort").setAttribute("name", c.getName()));
             }
             for (TransferPoint p : z.getPoints()) {
                 xz.addContent(new Element("point").setAttribute("name", p.getName()));

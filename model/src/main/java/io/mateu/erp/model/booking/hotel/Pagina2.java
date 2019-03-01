@@ -7,7 +7,7 @@ import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
@@ -20,7 +20,6 @@ import javax.persistence.EntityManager;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter@Setter
 public class Pagina2 implements WizardPage {
@@ -49,7 +48,7 @@ public class Pagina2 implements WizardPage {
         long t0 = System.currentTimeMillis();
 
         List<Hotel> hoteles = new ArrayList<>();
-        for (Zone c : pagina1.getState().getZones()) {
+        for (Resort c : pagina1.getState().getResorts()) {
             c.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
         }
 
@@ -99,7 +98,7 @@ public class Pagina2 implements WizardPage {
 
         for (HotelOption o : options) {
             Hotel h = em.find(Hotel.class, Long.parseLong(o.getId()));
-            o.setCity(h.getZone().getName());
+            o.setCity(h.getResort().getName());
         }
 
         long t1 = System.currentTimeMillis();

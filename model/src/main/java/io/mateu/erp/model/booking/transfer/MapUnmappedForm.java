@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.transfer;
 
 import com.vaadin.ui.Button;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
@@ -20,6 +21,9 @@ public class MapUnmappedForm {
     private int pending = 0;
 
     @Ignored
+    private int skips = 0;
+
+    @Ignored
     private TransferPointMapping m;
 
     @Output
@@ -35,7 +39,11 @@ public class MapUnmappedForm {
         return pending > 0;
     }
 
-    @Action(addAsButton = true)
+    @Output
+    private TransferBookingRequest rq;
+
+
+    @Action(addAsButton = true, order = 1, callOnEnterKeyPressed = true)
     public void saveAndNext() {
         if (m != null) {
             try {
@@ -50,6 +58,18 @@ public class MapUnmappedForm {
                 MDD.alert(throwable);
             }
         }
+        getNext();
+    }
+
+    @Action(addAsButton = true, order = 2)
+    public void jump() {
+        skips++;
+        getNext();
+    }
+
+    @Action(addAsButton = true, order = 3)
+    public void unjump() {
+        if (skips > 0) skips--;
         getNext();
     }
 
@@ -68,15 +88,17 @@ public class MapUnmappedForm {
 
                 List<TransferPointMapping> l = em.createQuery("select x from " + TransferPointMapping.class.getName() + " x where x.point is null order by x.text").getResultList();
                 pending = l.size();
-                if (l.size() == 0) {
+                if (pending <= skips) skips = pending;
+                if (pending <= skips) {
                     msg = "No more pending mappings";
                     m = null;
                 }
                 else {
                     msg = "" + l.size() + " pending mappings";
-                    m = l.get(0);
+                    m = l.get(skips);
                     setText(m.getText());
                     setPoint(null);
+                    setRq(m.getCreatedBy());
                 }
 
             });

@@ -252,39 +252,49 @@ public class File {
 
             AppConfig appconfig = AppConfig.get(em);
 
+            if (EmailHelper.isTesting()) {
 
-            // Create the email message
-            HtmlEmail email = new HtmlEmail();
-            //Email email = new HtmlEmail();
-            email.setHostName(appconfig.getAdminEmailSmtpHost());
-            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-            //email.setSSLOnConnect(true);
-            email.setFrom(appconfig.getAdminEmailFrom());
-            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
-
-            email.setSubject("File " + getId() + " vouchers");
+                System.out.println("************************************");
+                System.out.println("Mail not sent as we are TESTING");
+                System.out.println("************************************");
 
 
-            String msg = postscript;
+            } else {
 
-            String freemark = appconfig.getVouchersEmailTemplate();
+                // Create the email message
+                HtmlEmail email = new HtmlEmail();
+                //Email email = new HtmlEmail();
+                email.setHostName(appconfig.getAdminEmailSmtpHost());
+                email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
+                email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
+                //email.setSSLOnConnect(true);
+                email.setFrom(appconfig.getAdminEmailFrom());
+                if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
 
-            if (!Strings.isNullOrEmpty(freemark)) {
-                Map<String, Object> data = Helper.getGeneralData();
-                data.put("postscript", postscript);
-                data.put("leadname", getLeadName());
-                msg = Helper.freemark(freemark, data);
+                email.setSubject("File " + getId() + " vouchers");
+
+
+                String msg = postscript;
+
+                String freemark = appconfig.getVouchersEmailTemplate();
+
+                if (!Strings.isNullOrEmpty(freemark)) {
+                    Map<String, Object> data = Helper.getGeneralData();
+                    data.put("postscript", postscript);
+                    data.put("leadname", getLeadName());
+                    msg = Helper.freemark(freemark, data);
+                }
+
+                email.setMsg(msg);
+
+                email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
+
+                java.io.File attachment = temp;
+                if (attachment != null) email.attach(attachment);
+
+                email.send();
+
             }
-
-            email.setMsg(msg);
-
-            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
-
-            java.io.File attachment = temp;
-            if (attachment != null) email.attach(attachment);
-
-            email.send();
 
 
         });

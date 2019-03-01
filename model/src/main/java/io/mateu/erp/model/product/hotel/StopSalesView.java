@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.MDD;
@@ -76,7 +77,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
     }
 
     @Override
-    public List<StopSalesMonth> rpc(StopSalesView filters, int offset, int limit) {
+    public List<StopSalesMonth> rpc(StopSalesView filters, List<QuerySortOrder> sortOrders, int offset, int limit) throws Throwable {
         LocalDate desde = LocalDate.now();
         LocalDate hasta = LocalDate.of(desde.getYear(), desde.getMonthValue(), 1);
         hasta = LocalDate.of(hasta.getYear(), hasta.getMonth(), hasta.getDayOfMonth()).plusMonths(1).minusDays(1);

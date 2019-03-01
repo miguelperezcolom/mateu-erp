@@ -9,6 +9,7 @@ import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 import lombok.Getter;
@@ -118,40 +119,53 @@ public class BookingInvoiceForm {
 
 
         AppConfig appconfig = AppConfig.get(em);
-        
-        
+
+
+        if (EmailHelper.isTesting()) {
+
+            System.out.println("************************************");
+            System.out.println("Mail not sent as we are TESTING");
+            System.out.println("************************************");
+
+
+        } else {
+
 // Create the email message
-        HtmlEmail email = new HtmlEmail();
-        //Email email = new HtmlEmail();
-        email.setHostName(appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
+            HtmlEmail email = new HtmlEmail();
+            //Email email = new HtmlEmail();
+            email.setHostName(appconfig.getAdminEmailSmtpHost());
+            email.setSmtpPort(appconfig.getAdminEmailSmtpPort());
+            email.setAuthenticator(new DefaultAuthenticator(appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword()));
+            //email.setSSLOnConnect(true);
+            email.setFrom(appconfig.getAdminEmailFrom());
+            if (!Strings.isNullOrEmpty(appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(appconfig.getAdminEmailCC()));
 
-        email.setSubject("Booking " + booking.getId() + " proforma");
+            email.setSubject("Booking " + booking.getId() + " proforma");
 
 
-        String msg = postscript;
+            String msg = postscript;
 
-        String freemark = appconfig.getVouchersEmailTemplate();
+            String freemark = appconfig.getVouchersEmailTemplate();
 
-        if (!Strings.isNullOrEmpty(freemark)) {
-            Map<String, Object> data = Helper.getGeneralData();
-            data.put("postscript", postscript);
-            data.put("leadname", booking.getLeadName());
-            msg = Helper.freemark(freemark, data);
+            if (!Strings.isNullOrEmpty(freemark)) {
+                Map<String, Object> data = Helper.getGeneralData();
+                data.put("postscript", postscript);
+                data.put("leadname", booking.getLeadName());
+                msg = Helper.freemark(freemark, data);
+            }
+
+            email.setMsg(msg);
+
+            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
+
+            java.io.File attachment = temp;
+            if (attachment != null) email.attach(attachment);
+
+            email.send();
+
         }
 
-        email.setMsg(msg);
 
-        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):to);
-
-        java.io.File attachment = temp;
-        if (attachment != null) email.attach(attachment);
-
-        email.send();
     }
 
     @Action(icon = VaadinIcons.INVOICE, order = 2)

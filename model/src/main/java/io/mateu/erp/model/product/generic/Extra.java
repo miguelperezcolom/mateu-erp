@@ -33,4 +33,13 @@ public class Extra {
 
     private boolean internalUseOnly;
 
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || id != 0 && id == ((Extra)obj).getId();
+    }
+
+    @Override
+    public String toString() {
+        return "" + name;
+    }
 }

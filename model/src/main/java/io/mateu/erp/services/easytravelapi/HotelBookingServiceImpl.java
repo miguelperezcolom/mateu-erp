@@ -10,10 +10,6 @@ import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.Passenger;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.financials.PaymentReferenceDate;
-import io.mateu.erp.model.financials.PaymentTerms;
-import io.mateu.erp.model.financials.PaymentTermsLine;
-import io.mateu.erp.model.financials.RiskType;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
@@ -24,7 +20,7 @@ import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.erp.services.HotelAvailabilityStats;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -152,16 +148,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                             .omitEmptyStrings()
                             .split(resorts)) {
                         if (s.startsWith("cou")) {
-                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p))));
+                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p))));
                         } else if (s.startsWith("des")) {
-                            em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p)));
+                            em.find(Destination.class, Long.parseLong(s.substring(4))).getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p)));
                         } else if (s.startsWith("zon")) {
-                            em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
+                            em.find(Resort.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
                         } else if (s.startsWith("hot")) {
                             hoteles.add(em.find(Hotel.class, Long.parseLong(s.substring(4))));
                         }
                     };
 
+                    double min;
+                    double max;
 
 
 
@@ -206,7 +204,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                         ah.setHotelCategoryName(h.getCategoryName());
                         ah.setStars(h.getStars());
                         ah.setKeys(h.getKeys());
-                        ah.setAddress("" + h.getAddress() + ", " + h.getZone().getName() + ", " + h.getZone().getDestination().getName() + " - " + h.getZone().getDestination().getCountry().getName());
+                        ah.setAddress("" + h.getAddress() + ", " + h.getResort().getName() + ", " + h.getResort().getDestination().getName() + " - " + h.getResort().getDestination().getCountry().getName());
                         if (h.getDataSheet() != null && h.getDataSheet().getMainImage() != null) ah.setMainImage(h.getDataSheet().getMainImage().toFileLocator().getUrl());
                         rs.getHotels().add(ah);
 
@@ -257,7 +255,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                                         l.setRoom(r);
                                         l.setRooms(o.getNumberOfRooms());
-                                        l.setAdultsPerRoon(adultos);
+                                        l.setAdultsPerRoom(adultos);
                                         l.setChildrenPerRoom(ninos);
                                         l.setAges(o.getAges());
 
@@ -408,7 +406,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
 
                 l.setRooms(o.getNumberOfRooms());
-                l.setAdultsPerRoon(adults);
+                l.setAdultsPerRoom(adults);
                 l.setChildrenPerRoom(children);
                 l.setAges(o.getAges());
 
@@ -434,7 +432,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                         if (r.getPhoto() != null) op.setImage(r.getPhoto().toFileLocator().getUrl());
                         op.setRoomId(r.getCode());
                         op.setRoomName(r.getType().getName().get(rq.getLanguage()));
-                        op.setRoomDescription(r.getDescription().get(rq.getLanguage()));
+                        if (r.getDescription() != null) op.setRoomDescription(r.getDescription().get(rq.getLanguage()));
 
                         for (Board b : h.getBoards()) {
 
@@ -464,7 +462,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                         bp.setOnRequestText("");
                                         bp.setRateClass("");
                                         bp.setRetailPrice(new Amount(hb.getAgency().getCurrency().getIsoCode(), l.getValue()));
-                                        String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + hb.getStart().format(dfx) + "-" + hb.getEnd().format(dfx)+ "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoon() + "-" + l.getChildrenPerRoom() + "-";
+                                        String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + hb.getStart().format(dfx) + "-" + hb.getEnd().format(dfx)+ "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoom() + "-" + l.getChildrenPerRoom() + "-";
                                         if (l.getAges() != null) for (int pos = 0; pos < l.getAges().length; pos++) {
                                             if (pos > 0) k += ",";
                                             k += l.getAges()[pos];
@@ -564,7 +562,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     hb.getLines().add(l = new HotelBookingLine());
                     l.setBooking(hb);
 
-                    //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoon() + "-" + l.getChildrenPerRoom() + "-";
+                    //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoom() + "-" + l.getChildrenPerRoom() + "-";
 
                     int pos = 0;
                     hb.setAgency(em.find(Partner.class, Long.parseLong(tks[pos++])));
@@ -576,7 +574,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     l.setContract(em.find(HotelContract.class, Long.parseLong(tks[pos++])));
                     l.setInventory(em.find(Inventory.class, Long.parseLong(tks[pos++])));
                     l.setRooms(Integer.parseInt(tks[pos++]));
-                    l.setAdultsPerRoon(Integer.parseInt(tks[pos++]));
+                    l.setAdultsPerRoom(Integer.parseInt(tks[pos++]));
                     l.setChildrenPerRoom(Integer.parseInt(tks[pos++]));
                     if (tks.length > pos) {
                         String tkx = tks[pos++];
@@ -603,7 +601,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     RateKey rkx;
                     rs.getRateKeys().add(rkx = new RateKey());
                     rkx.setKey(rk);
-                    rkx.setPaxPerRoom(l.getAdultsPerRoon() + l.getChildrenPerRoom());
+                    rkx.setPaxPerRoom(l.getAdultsPerRoom() + l.getChildrenPerRoom());
                     rkx.setRoomName(l.getRoom().getType().getName().get(rq.getLanguage()));
                     rkx.setRequestPaymentData(false);
 
@@ -629,18 +627,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     rmk.setText("Esto es una reserva de prueba");
                 }
 
-                if (!Strings.isNullOrEmpty(hb.getHotel().getZone().getDestination().getPaymentRemarks())) {
+                if (!Strings.isNullOrEmpty(hb.getHotel().getResort().getDestination().getPaymentRemarks())) {
                     Remark rmk;
                     rs.getRemarks().add(rmk = new Remark());
                     rmk.setType("WARNING");
-                    rmk.setText(hb.getHotel().getZone().getDestination().getPaymentRemarks());
+                    rmk.setText(hb.getHotel().getResort().getDestination().getPaymentRemarks());
                 }
 
                 for (ZoneProductRemark r : (List<ZoneProductRemark>)Helper.selectObjects("select x from " + ZoneProductRemark.class.getName() + " x where x.active = true")) {
                     if ((r.isActive())
-                            && (r.getCountry() == null || r.getCountry().equals(hb.getHotel().getZone().getDestination().getCountry()))
-                            && (r.getDestination() == null || r.getDestination().equals(hb.getHotel().getZone().getDestination()))
-                            && (r.getZone() == null || r.getZone().equals(hb.getHotel().getZone()))
+                            && (r.getCountry() == null || r.getCountry().equals(hb.getHotel().getResort().getDestination().getCountry()))
+                            && (r.getDestination() == null || r.getDestination().equals(hb.getHotel().getResort().getDestination()))
+                            && (r.getResort() == null || r.getResort().equals(hb.getHotel().getResort()))
                             && (r.getProductType() == null || r.getProductType().equals(hb.getHotel().getType()))
                             && (r.getStart() == null || !r.getStart().isAfter(hb.getEnd()))
                             && (r.getEnd() == null || !r.getEnd().isBefore(hb.getStart()))
@@ -773,7 +771,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     hb.getLines().add(l = new HotelBookingLine());
                     l.setBooking(hb);
 
-                    //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoon() + "-" + l.getChildrenPerRoom() + "-";
+                    //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoom() + "-" + l.getChildrenPerRoom() + "-";
 
                     int pos = 0;
                     hb.setAgency(em.find(Partner.class, Long.parseLong(tks[pos++])));
@@ -785,7 +783,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     l.setContract(em.find(HotelContract.class, Long.parseLong(tks[pos++])));
                     l.setInventory(em.find(Inventory.class, Long.parseLong(tks[pos++])));
                     l.setRooms(Integer.parseInt(tks[pos++]));
-                    l.setAdultsPerRoon(Integer.parseInt(tks[pos++]));
+                    l.setAdultsPerRoom(Integer.parseInt(tks[pos++]));
                     l.setChildrenPerRoom(Integer.parseInt(tks[pos++]));
                     if (tks.length > pos) {
                         String tkx = tks[pos++];

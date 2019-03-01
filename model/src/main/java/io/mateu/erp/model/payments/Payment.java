@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,9 @@ public class Payment {
     @ManyToOne
     @NotNull
     private Currency currency;
+
+    @NotNull
+    private LocalDate date = LocalDate.now();
 
     /*
     positivo es a nuestro favor (cobro)

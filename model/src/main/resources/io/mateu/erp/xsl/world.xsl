@@ -56,9 +56,9 @@
                                                                 </fo:list-item-label>
                                                                 <fo:list-item-body start-indent="body-start()">
                                                                     <fo:block><xsl:value-of select="@name"></xsl:value-of></fo:block>
-                                                                    <xsl:if test="city">
+                                                                    <xsl:if test="resort">
                                                                         <fo:list-block>
-                                                                            <xsl:for-each select="city">
+                                                                            <xsl:for-each select="resort">
                                                                                 <fo:list-item>
                                                                                     <fo:list-item-label end-indent="label-end()">
                                                                                         <fo:block>

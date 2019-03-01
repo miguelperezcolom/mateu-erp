@@ -22,7 +22,7 @@ public class BookingInvoiceData {
 
     @Override
     public String toString() {
-        return getCompanyName();
+        return "" + getCompanyName() + " " + getVatId() + " " + getAddress() + " " + getCity() + " " + getState() + " " + getCountry() + " " + getPostalCode();
     }
 
     @Override

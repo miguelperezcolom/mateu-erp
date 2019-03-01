@@ -1,11 +1,13 @@
 package io.mateu.erp.model.product.generic;
 
 import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SameLine;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.util.ArrayList;

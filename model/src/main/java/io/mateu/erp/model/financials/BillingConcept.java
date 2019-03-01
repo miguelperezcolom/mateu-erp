@@ -27,6 +27,9 @@ public class BillingConcept {
     @NotNull
     private LocalizationRule localizationRule;
 
+    
+    private boolean specialRegime;
+
 
     private boolean hotel;
 

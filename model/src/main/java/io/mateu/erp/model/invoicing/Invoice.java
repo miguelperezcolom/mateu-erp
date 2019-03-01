@@ -233,7 +233,7 @@ public abstract class Invoice {
             if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
             if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
             if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
-            if (a.getCity() != null) d.setAttribute("city", a.getCity());
+            if (a.getCity() != null) d.setAttribute("resort", a.getCity());
             if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
             if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
             if (a.getFax() != null) d.setAttribute("fax", a.getFax());
@@ -254,7 +254,7 @@ public abstract class Invoice {
             if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
             if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
             if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
-            if (a.getCity() != null) d.setAttribute("city", a.getCity());
+            if (a.getCity() != null) d.setAttribute("resort", a.getCity());
             if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
             if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
             if (a.getFax() != null) d.setAttribute("fax", a.getFax());

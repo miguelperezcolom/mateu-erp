@@ -72,7 +72,7 @@ public class Company {
         if (getFinancialAgent() != null) {
             if (getFinancialAgent().getBusinessName() != null) xml.setAttribute("businessName", getFinancialAgent().getBusinessName());
             if (getFinancialAgent().getAddress() != null) xml.setAttribute("address", getFinancialAgent().getAddress());
-            if (getFinancialAgent().getCity() != null) xml.setAttribute("city", getFinancialAgent().getCity());
+            if (getFinancialAgent().getCity() != null) xml.setAttribute("resort", getFinancialAgent().getCity());
             if (getFinancialAgent().getPostalCode() != null) xml.setAttribute("postalCode", getFinancialAgent().getPostalCode());
             if (getFinancialAgent().getState() != null) xml.setAttribute("state", getFinancialAgent().getState());
             if (getFinancialAgent().getCountry() != null) xml.setAttribute("country", getFinancialAgent().getCountry());

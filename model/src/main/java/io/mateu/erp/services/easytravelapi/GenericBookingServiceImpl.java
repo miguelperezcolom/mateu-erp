@@ -6,23 +6,21 @@ import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
-import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.ProductLabel;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.erp.model.product.generic.Price;
-import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.GenericBookingService;
-import org.easytravelapi.activity.*;
 import org.easytravelapi.circuit.Label;
 import org.easytravelapi.common.*;
 import org.easytravelapi.generic.*;
@@ -69,6 +67,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
+                Map<Long, ProductLabel> labels = new HashMap<>();
                 List<GenericProduct> excursions = new ArrayList<>();
 
                 for (String s : Splitter.on(',')
@@ -76,11 +75,11 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                         .omitEmptyStrings()
                         .split(resorts)) {
                     if (s.startsWith("cou")) {
-                        em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p))));
+                        em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p))));
                     } else if (s.startsWith("des")) {
-                        em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p)));
+                        em.find(Destination.class, Long.parseLong(s.substring(4))).getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p)));
                     } else if (s.startsWith("zon")) {
-                        em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p));
+                        em.find(Resort.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof GenericProduct).forEach(p -> excursions.add((GenericProduct) p));
                     } else if (s.startsWith("gen")) {
                         excursions.add(em.find(GenericProduct.class, Long.parseLong(s.substring(4))));
                     }
@@ -97,9 +96,17 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                         b.setUnits(1);
                         b.setAdults(1);
                         try {
-                            b.priceServices(em);
+                            double min = 0;
 
-                            if (b.getTotalValue() != 0) {
+                            for (Variant v : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
+                                b.setVariant(v);
+                                b.priceServices(em);
+
+                                if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
+
+                            }
+
+                            if (min != 0) {
 
                                 AvailableGeneric a;
                                 rs.getAvailableGenerics().add(a = new AvailableGeneric());
@@ -118,8 +125,21 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                                 }
                                 BestDeal bd;
                                 a.setBestDeal(bd = new BestDeal());
-                                bd.setRetailPrice(new Amount("EUR", b.getTotalValue()));
+                                bd.setRetailPrice(new Amount("EUR", min));
 
+                                e.getDataSheet().getLabels().forEach(x -> {
+                                    labels.putIfAbsent(x.getId(), x);
+                                    Label l;
+                                    a.getLabels().add(l = new Label());
+                                    l.setId("" + x.getId());
+                                    l.setName(x.getName());
+                                });
+
+
+                                double v = min;
+
+                                if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                                if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
                             }
 
                         } catch (Throwable throwable) {
@@ -129,6 +149,13 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
                     }
 
+                });
+
+                labels.values().forEach(pl -> {
+                    Label l;
+                    rs.getLabels().add(l = new Label());
+                    l.setId("" + pl.getId());
+                    l.setName(pl.getName());
                 });
 
             });
@@ -150,6 +177,22 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
 
             GenericProduct e = em.find(GenericProduct.class, Long.parseLong(productId.split("-")[1]));
@@ -159,7 +202,39 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             rs.setAdultsDependant(e.isAdultsDependant());
             rs.setChildrenDependant(e.isChildrenDependant());
             rs.setUnitsDependant(e.isUnitsDependant());
+            rs.setVariantDependant(e.getVariants().size() > 0);
 
+
+
+
+            GenericBooking b = new GenericBooking();
+            b.setAgency(em.find(Partner.class, finalIdAgencia));
+            b.setProduct(e);
+            b.setUnits(1);
+            b.setAdults(1);
+
+            e.getVariants().forEach(v -> {
+
+                b.setVariant(v);
+                b.priceServices(em);
+
+                if (b.getTotalValue() != 0) {
+                    org.easytravelapi.generic.GenericVariant xv;
+                    rs.getVariants().add(xv = new org.easytravelapi.generic.GenericVariant());
+
+
+
+                    BestDeal bd;
+                    xv.setBestDeal(bd = new BestDeal());
+                    bd.setRetailPrice(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
+                    xv.setDescription(v.getDescription().get(language));
+                    xv.setKey("gen-" + e.getId() + "-" + v.getId());
+                    xv.setName(v.getName().get(language));
+                    xv.setPricePer("--");
+                }
+
+
+            });
 
         });
 
@@ -177,7 +252,11 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         Helper.notransact(em -> {
 
             GenericProduct e = em.find(GenericProduct.class, Long.parseLong(productId.split("-")[1]));
-            String key = getKey(token, "" + e.getId(), start, end, language, units, adults, children);
+            Variant v = null;
+            if (productId.split("-").length > 2) {
+                v = em.find(Variant.class, Long.parseLong(productId.split("-")[2]));
+            }
+            String key = getKey(token, "" + e.getId(), v != null?"" + v.getId():null, start, end, language, units, adults, children);
 
             GenericBooking b = buildBookingFromKey(em, key);
 
@@ -187,23 +266,27 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             rs.setKey(key);
             rs.setValue(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
 
-
+            if (b.getTotalValue() != 0) {
+                BestDeal bd;
+                rs.setValue(new Amount(b.getCurrency().getIsoCode(), b.getTotalValue()));
+            }
         });
 
         return rs;
     }
 
-    public String getKey(String token, String key, int start, int end, String language, int units, int adults, int children) throws IOException {
-        return Base64.getEncoder().encodeToString(buildKey(token, key, start, end, language, units, adults, children).getBytes());
+    public String getKey(String token, String productId, String variantId, int start, int end, String language, int units, int adults, int children) throws IOException {
+        return Base64.getEncoder().encodeToString(buildKey(token, productId, variantId, start, end, language, units, adults, children).getBytes());
     }
 
-    private String buildKey(String token, String key, int start, int end, String language, int units, int adults, int children) throws IOException {
+    private String buildKey(String token, String productId, String variantId, int start, int end, String language, int units, int adults, int children) throws IOException {
         String s = "";
 
         Map<String, Object> data = new HashMap<>();
 
         data.put("token", token);
-        data.put("product", key);
+        data.put("product", productId);
+        data.put("variant", variantId);
         data.put("start", start);
         data.put("end", end);
         data.put("language", language);
@@ -308,18 +391,6 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             e.printStackTrace();
         }
 
-        /*
-        data.put("token", token);
-        data.put("activity", key);
-        data.put("language", language);
-        data.put("adults", adults);
-        data.put("children", children);
-        data.put("variant", variant);
-        data.put("shift", shift);
-        data.put("pickup", pickup);
-        data.put("activityLanguage", activityLanguage);
-         */
-
         GenericBooking b = new GenericBooking();
         User user = em.find(User.class, login);
         b.setAudit(new Audit(user));
@@ -327,6 +398,9 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         b.setCurrency(b.getAgency().getCurrency());
 
         b.setProduct(em.find(GenericProduct.class, new Long(String.valueOf(data.get("product")))));
+        if (data.containsKey("variant") && !Strings.isNullOrEmpty((String) data.get("variant"))) {
+            b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
+        }
         b.setUnits((Integer) data.get("units"));
         b.setAdults((Integer) data.get("adults"));
         b.setChildren((Integer) data.get("children"));

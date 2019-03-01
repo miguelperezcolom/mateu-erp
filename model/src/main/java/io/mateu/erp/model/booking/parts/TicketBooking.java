@@ -4,9 +4,9 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.tickets.TicketStatus;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
-import io.mateu.erp.model.product.tour.TourVariant;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Entity
 @Getter@Setter
@@ -29,12 +30,15 @@ public class TicketBooking extends Booking {
     private Ticket ticket;
 
     @Position(14)
+    @ManyToOne@NotNull
     private Excursion excursion;
 
     @Position(15)
-    private TourVariant variant;
+    @ManyToOne@NotNull
+    private Variant variant;
 
     @Position(16)
+    @ManyToOne@NotNull
     private TourShift shift;
 
     @ManyToOne
@@ -74,6 +78,11 @@ public class TicketBooking extends Booking {
     }
 
 
+    @Override
+    protected void completeChangeSignatureData(Map<String, String> data) {
+
+    }
+
     @PrePersist
     public void pre() throws Error {
         if (!TicketStatus.LIVE.equals(ticket.getStatus())) throw new Error("Ticket must be live");
@@ -95,4 +104,8 @@ public class TicketBooking extends Booking {
 
     }
 
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
+
+    }
 }

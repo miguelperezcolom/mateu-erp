@@ -1,5 +1,6 @@
-package io.mateu.erp.model.product.tour;
+package io.mateu.erp.model.product;
 
+import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,10 +8,8 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@Entity
-@Getter
-@Setter
-public class TourVariant {
+@Entity@Getter@Setter
+public class Variant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,7 +17,7 @@ public class TourVariant {
 
     @ManyToOne
     @NotNull
-    private Tour tour;
+    private AbstractProduct product;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
@@ -30,5 +29,10 @@ public class TourVariant {
     @Override
     public String toString() {
         return (getName() != null)?getName().toString():"No name";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj instanceof Variant && id != 0 && id == ((Variant) obj).getId());
     }
 }

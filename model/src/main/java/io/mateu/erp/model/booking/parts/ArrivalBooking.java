@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter@Setter
@@ -50,6 +51,11 @@ public class ArrivalBooking extends Booking {
 
 
     @Override
+    protected void completeChangeSignatureData(Map<String, String> data) {
+
+    }
+
+    @Override
     public void validate() throws Exception {
 
     }
@@ -78,4 +84,8 @@ public class ArrivalBooking extends Booking {
 
     }
 
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
+
+    }
 }

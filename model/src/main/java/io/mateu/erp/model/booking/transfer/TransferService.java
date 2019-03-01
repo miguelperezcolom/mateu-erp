@@ -5,7 +5,6 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
@@ -67,6 +66,12 @@ public class TransferService extends Service {
     @ManyToOne
     @Output
     private TransferPoint pickup;
+
+    public void setPickup(TransferPoint pickup) {
+        this.pickup = pickup;
+        setEffectiveTransferPoints();
+    }
+
     @ManyToOne
     @Output
     @SearchFilter
@@ -83,6 +88,12 @@ public class TransferService extends Service {
     @ManyToOne
     @Output
     private TransferPoint dropoff;
+
+    public void setDropoff(TransferPoint dropoff) {
+        this.dropoff = dropoff;
+        setEffectiveTransferPoints();
+    }
+
     @ManyToOne
     @Output
     @SearchFilter
@@ -142,6 +153,7 @@ public class TransferService extends Service {
 
     public TransferService() {
         setServiceType(ServiceType.TRANSFER);
+        setDirection(TransferDirection.POINTTOPOINT);
         setIcons(FontAwesome.BUS.getHtml());
     }
 
@@ -161,312 +173,6 @@ public class TransferService extends Service {
     */
 
 
-    //todo: recuperar
-
-    /*
-    @Action
-    public static URL workList(UserData user, EntityManager em, Data parameters) throws Throwable {
-        AbstractListView lv = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(user, em, TransferService.class, null));
-
-        return listToPdf(parameters, lv);
-    }
-
-    public static URL listToPdf(Data parameters, AbstractListView view)throws Throwable {
-
-
-        Document xml = new Document();
-        Element arrel = new Element("root");
-        xml.addContent(arrel);
-
-        arrel.setAttribute("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-
-
-        Element params;
-        arrel.addContent(params = new Element("params"));
-        for (String k : parameters.getPropertyNames()) if (!"_data".equals(k)) {
-            if (parameters.get(k) != null) params.addContent(new Element(k).setText("" + parameters.get(k)));
-        }
-
-
-        String[] xslfo = {""};
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
-
-                AppConfig appconfig = AppConfig.get(em);
-
-                xslfo[0] = appconfig.getXslfoForTransfersList();
-
-                arrel.setAttribute("businessName", appconfig.getBusinessName());
-
-
-                Data[] r = new Data[1];
-
-                view.getForm().setData(parameters);
-
-                view.rpc(parameters, new AsyncCallback<Data>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        caught.printStackTrace();
-                    }
-
-                    @Override
-                    public void onSuccess(Data result) {
-                        r[0] = result;
-                    }
-                });
-
-
-                LinkedHashMap<LocalDate, LinkedHashMap<TransferDirection, LinkedHashMap<TransferType, List<TransferService>>>> ss = new LinkedHashMap<>();
-
-                List<Data> data = r[0].getList("_data");
-                for (Data d : data) {
-
-                    TransferService s = em.find(TransferService.class, d.get("_id"));
-
-                    if (!s.isCancelled() && !s.isHeld()) {
-
-                        LinkedHashMap<TransferDirection, LinkedHashMap<TransferType, List<TransferService>>> sf = ss.get(s.getStart());
-                        if (sf == null) ss.put(s.getStart(), sf = new LinkedHashMap<>());
-
-                        LinkedHashMap<TransferType, List<TransferService>> sd = sf.get(s.getDirection());
-                        if (sd == null) sf.put(s.getDirection(), sd = new LinkedHashMap<>());
-
-                        List<TransferService> st = sd.get(s.getTransferType());
-                        if (st == null) sd.put(s.getTransferType(), st = new ArrayList<TransferService>());
-
-                        st.add(s);
-
-                    }
-                }
-
-                for (LocalDate f : ss.keySet()) for (TransferDirection d: ss.get(f).keySet()) for (TransferType t : ss.get(f).get(d).keySet()) {
-
-                    Element eg;
-                    arrel.addContent(eg = new Element("group"));
-                    eg.setAttribute("date", "" + f);
-                    eg.setAttribute("direction", "" + d);
-                    eg.setAttribute("type", "" + t);
-
-
-                    List<TransferService> ls = ss.get(f).get(d).get(t);
-
-                    Collections.sort(ls, new Comparator<TransferService>() {
-                        @Override
-                        public int compare(TransferService o1, TransferService o2) {
-                            if (TransferDirection.OUTBOUND.equals(d)) {
-                                if (o1.getPickupTime() != null && o2.getPickupTime() != null) return o1.getPickupTime().compareTo(o2.getPickupTime());
-                                if (o1.getPickupTime() != null && o2.getPickupTime() == null) return -1;
-                                if (o1.getPickupTime() == null && o2.getPickupTime() != null) return 1;
-                                if (o1.getFlightTime() != null && o2.getFlightTime() != null) return o1.getFlightTime().compareTo(o2.getFlightTime());
-                            } else {
-                                if (o1.getFlightTime() != null && o2.getFlightTime() != null) return o1.getFlightTime().compareTo(o2.getFlightTime());
-                            }
-                            return 0;
-                        }
-                    });
-
-
-                    int totalPax = 0;
-                    for (TransferService s : ls) {
-
-                        if (!s.isCancelled() && !s.isHeld()) {
-
-                            totalPax += s.getPax();
-
-                            Element es;
-                            eg.addContent(es = new Element("service"));
-
-                            es.setAttribute("id", "" + s.getId());
-                            es.setAttribute("agency", "" + s.getFile().getAgency().getName());
-                            if (s.getFile().getAgencyReference() != null) es.setAttribute("agencyReference", s.getFile().getAgencyReference());
-                            es.setAttribute("leadName", "" + s.getFile().getLeadName());
-                            String comments = "";
-                            if (s.getFile().getComments() != null) comments += s.getFile().getComments();
-                            if (s.getComment() != null) comments += s.getComment();
-                            if (!Strings.isNullOrEmpty(s.getOperationsComment())) {
-                                if (!"".equals(comments)) comments += " / ";
-                                comments += s.getOperationsComment();
-                            }
-
-                            es.setAttribute("comments", comments);
-                            es.setAttribute("direction", "" + s.getDirection());
-                            es.setAttribute("pax", "" + s.getPax());
-                            es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getZone().getName());
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(s.getTransferType()) && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForNonExecutive())) {
-                                es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
-                            }
-                            es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
-                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getZone().getName());
-                            if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
-                            if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                            es.setAttribute("transferType", "" + s.getTransferType());
-                            if (s.getReturnTransfer() != null) {
-                                if (s.getReturnTransfer().isNoShow()) es.setAttribute("wasNoShow", "");
-                                if (TransferDirection.OUTBOUND.equals(s.getReturnTransfer().getDirection())) es.setAttribute("returns", s.getReturnTransfer().getFlightTime().format(DateTimeFormatter.BASIC_ISO_DATE));
-                            }
-                            if (s.getFlightNumber() != null) es.setAttribute("flight", s.getFlightNumber());
-                            es.setAttribute("flightTime", s.getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                            if (s.getFlightOriginOrDestination() != null) es.setAttribute("flightOriginOrDestination", s.getFlightOriginOrDestination());
-
-                            if (s.getPreferredVehicle() != null)  es.setAttribute("preferredVehicle", s.getPreferredVehicle().getName());
-                        }
-
-                    }
-                    eg.setAttribute("totalPax", "" + totalPax);
-                }
-
-            }
-        });
-
-
-        String archivo = UUID.randomUUID().toString();
-
-        File temp = (System.getProperty("tmpdir") == null)?File.createTempFile(archivo, ".pdf"):new File(new File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-        System.out.println("Temp file : " + temp.getAbsolutePath());
-
-        FileOutputStream fileOut = new FileOutputStream(temp);
-        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-        System.out.println("xslfo=" + xslfo[0]);
-        System.out.println("xml=" + sxml);
-        fileOut.write(fop(new StreamSource(new StringReader(xslfo[0])), new StreamSource(new StringReader(sxml))));
-        fileOut.close();
-
-        String baseUrl = System.getProperty("tmpurl");
-        if (baseUrl == null) {
-            return temp.toURI().toURL();
-        }
-        return new URL(baseUrl + "/" + temp.getName());
-    }
-
-    @Action
-    public static void sendPickupTimes(EntityManager em, Data parameters, @NotNull String toEmail, String msg) throws Throwable {
-        AbstractListView view = (AbstractListView) Class.forName("io.mateu.ui.mdd.client.MDDJPACRUDView").getDeclaredConstructor(Data.class).newInstance((Data) new ERPServiceImpl().getMetadaData(null, em, TransferService.class, null));
-
-        Office office = null;
-        
-        Data[] r = new Data[1];
-
-        view.getForm().setData(parameters);
-
-        view.rpc(parameters, new AsyncCallback<Data>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                caught.printStackTrace();
-            }
-
-            @Override
-            public void onSuccess(Data result) {
-                r[0] = result;
-            }
-        });
-
-
-        LinkedHashMap<LocalDate, LinkedHashMap<TransferDirection, LinkedHashMap<TransferType, List<TransferService>>>> ss = new LinkedHashMap<>();
-
-        List<Object[]> hoja = new ArrayList<>();
-        hoja.add(new Object[] {
-                "po"
-                , "ref"
-                , "lead name"
-                , "pax"
-                , "pickup"
-                , "pickup resort"
-                , "dropoff"
-                , "dropoff resort"
-                , "transfer type"
-                , "vehicle"
-                , "flight number"
-                , "flight date"
-                , "flight time"
-                , "flight origin/destination"
-                , "pickup date"
-                , "pickup time"
-                , "comments"
-                , "comments"
-                , "agency"
-                , "agency ref"
-        });
-
-        List<Data> data = r[0].getList("_data");
-        for (Data d : data) {
-
-            TransferService s = em.find(TransferService.class, d.get("_id"));
-
-            if (!s.isCancelled() && !s.isHeld() && TransferDirection.OUTBOUND.equals(s.getDirection())) {
-                
-                if (office == null) office = s.getOffice();
-
-                Long poId = null;
-                if (s.getPurchaseOrders().size() > 0) poId = s.getPurchaseOrders().get(0).getId();
-
-                hoja.add(new Object[] {
-                        poId
-                        , s.getId()
-                        , s.getFile().getLeadName()
-                        , s.getPax()
-                        , (s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()
-                        , (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null)?s.getEffectivePickup().getZone().getName():""
-                        , (s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()
-                        , (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null)?s.getEffectiveDropoff().getZone().getName():""
-                        , "" + s.getTransferType()
-                        , (s.getPreferredVehicle() != null)?s.getPreferredVehicle().getName():""
-                        , s.getFlightNumber()
-                        , s.getFlightTime().toLocalDate()
-                        , s.getFlightTime().toLocalTime()
-                        , s.getFlightOriginOrDestination()
-                        , (s.getPickupTime() != null)?s.getPickupTime().toLocalDate():null
-                        , (s.getPickupTime() != null)?s.getPickupTime().toLocalTime():null
-                        , s.getFile().getComments()
-                        , s.getComment()
-                        , s.getFile().getAgency().getName()
-                        , s.getFile().getAgencyReference()
-                });
-
-            }
-        }
-
-        File excel = Helper.writeExcel(new Object[][][] {
-                hoja.toArray(new Object[0][0])
-        });
-
-
-        AppConfig appconfig = AppConfig.get(em);
-
-        // Create the attachment
-//                EmailAttachment attachment = new EmailAttachment();
-//                attachment.setPath("mypictures/john.jpg");
-//                attachment.setDisposition(EmailAttachment.ATTACHMENT);
-//                attachment.setDescription("Picture of John");
-//                attachment.setName("John");
-
-        // Create the email message
-        HtmlEmail email = new HtmlEmail();
-        //Email email = new HtmlEmail();
-        email.setHostName((office != null)?office.getEmailHost():appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort((office != null)?office.getEmailPort():appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator((office != null)?office.getEmailUsuario():appconfig.getAdminEmailUser(), (office != null)?office.getEmailPassword():appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom((office != null)?office.getEmailFrom():appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty((office != null)?office.getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress((office != null)?office.getEmailCC():appconfig.getAdminEmailCC()));
-
-        email.setSubject("PICKUP TIMES");
-        if (msg != null) email.setMsg(msg);
-        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):toEmail);
-
-        if (excel != null) email.attach(excel);
-
-
-        email.send();
-
-    }
-    */
-
     @PrePersist@PreUpdate
     public void preSet() throws Error {
         if ((getPickupText() == null || "".equals(getPickupText().trim())) && getPickup() == null) throw new Error("Pickup is required");
@@ -476,6 +182,8 @@ public class TransferService extends Service {
         if (getFlightTime().getHour() < 6) s = s.minusDays(1);
         setStart(s);
         setFinish(s);
+        setAvailable(true);
+        super.pre();
     }
 
     @Override
@@ -488,8 +196,9 @@ public class TransferService extends Service {
 
         System.out.println("transferservice " + getId() + ".complete");
 
-        setAndMapTransferPoints(em);
+    }
 
+    public void updateDirection() {
         TransferDirection d = TransferDirection.POINTTOPOINT;
         if (getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(getEffectivePickup().getType()) || TransferPointType.PORT.equals(getEffectivePickup().getType()))) {
             d = TransferDirection.INBOUND;
@@ -501,7 +210,6 @@ public class TransferService extends Service {
         }
 
         setDirection(d);
-
     }
 
     @Override
@@ -573,8 +281,6 @@ public class TransferService extends Service {
         if (!isActive()) return 0;
 
         // verificamos que tenemos lo que necesitamos para valorar
-        setAndMapTransferPoints(em);
-
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
         if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
 
@@ -602,11 +308,11 @@ public class TransferService extends Service {
         for (Contract c : contracts) for (Price p : c.getPrices()) {
             boolean ok = true;
             ok &= getTransferType().equals(p.getTransferType());
-            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getZone()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
-                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getZone()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+            ok &= ((p.getOrigin().getResorts().contains(getEffectivePickup().getResort()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
+                    && (p.getDestination().getResorts().contains(getEffectiveDropoff().getResort()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
                     ||
-                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getZone()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
-                            && (p.getDestination().getCities().contains(getEffectivePickup().getZone()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+                    ((p.getOrigin().getResorts().contains(getEffectiveDropoff().getResort()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
+                            && (p.getDestination().getResorts().contains(getEffectivePickup().getResort()) || p.getDestination().getPoints().contains(getEffectivePickup())));
             ok &= p.getVehicle().getMinPax() <= getPax();
             ok &= p.getVehicle().getMaxPax() >= getPax();
             if (ok) prices.add(p);
@@ -639,9 +345,6 @@ public class TransferService extends Service {
     @Override
     public Partner findBestProvider(EntityManager em) throws Throwable {
         // verificamos que tenemos lo que necesitamos para valorar
-
-        setAndMapTransferPoints(em);
-
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
         if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
 
@@ -664,11 +367,11 @@ public class TransferService extends Service {
         for (Contract c : contracts) for (Price p : c.getPrices()) {
             boolean ok = true;
             ok &= getTransferType().equals(p.getTransferType());
-            ok &= ((p.getOrigin().getCities().contains(getEffectivePickup().getZone()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
-                    && (p.getDestination().getCities().contains(getEffectiveDropoff().getZone()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+            ok &= ((p.getOrigin().getResorts().contains(getEffectivePickup().getResort()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
+                    && (p.getDestination().getResorts().contains(getEffectiveDropoff().getResort()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
                     ||
-                    ((p.getOrigin().getCities().contains(getEffectiveDropoff().getZone()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
-                            && (p.getDestination().getCities().contains(getEffectivePickup().getZone()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+                    ((p.getOrigin().getResorts().contains(getEffectiveDropoff().getResort()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
+                            && (p.getDestination().getResorts().contains(getEffectivePickup().getResort()) || p.getDestination().getPoints().contains(getEffectivePickup())));
             ok &= p.getVehicle().getMinPax() <= getPax();
             ok &= p.getVehicle().getMaxPax() >= getPax();
             if (ok) prices.add(p);
@@ -716,9 +419,9 @@ public class TransferService extends Service {
         }
 
         d.put("pickup", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
-        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getZone().getName():""));
+        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getResort().getName():""));
         d.put("dropoff", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getName():getDropoffText()));
-        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getZone().getName():""));
+        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getResort().getName():""));
         d.put("providers", getProviders());
         d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
         d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
@@ -734,7 +437,7 @@ public class TransferService extends Service {
         return d;
     }
 
-    private void setAndMapTransferPoints(EntityManager em) {
+    private void setEffectiveTransferPoints() {
 
 
         TransferPoint p = null;
@@ -754,6 +457,8 @@ public class TransferService extends Service {
 
         setEffectivePickup(p);
         setEffectiveDropoff(d);
+
+        updateDirection();
 
     }
 

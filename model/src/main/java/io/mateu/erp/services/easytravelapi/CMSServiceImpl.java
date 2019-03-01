@@ -13,7 +13,7 @@ import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CMSService;
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -77,11 +76,11 @@ public class CMSServiceImpl implements CMSService {
                             .omitEmptyStrings()
                             .split(resorts)) {
                         if (s.startsWith("cou")) {
-                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p))));
+                            em.find(Country.class, s.substring(4)).getDestinations().forEach(d -> d.getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p))));
                         } else if (s.startsWith("des")) {
-                            em.find(Destination.class, Long.parseLong(s.substring(4))).getZones().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p)));
+                            em.find(Destination.class, Long.parseLong(s.substring(4))).getResorts().forEach(z -> z.getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p)));
                         } else if (s.startsWith("zon")) {
-                            em.find(Zone.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
+                            em.find(Resort.class, Long.parseLong(s.substring(4))).getProducts().stream().filter(p -> p instanceof Hotel).forEach(p -> hoteles.add((Hotel) p));
                         } else if (s.startsWith("hot")) {
                             hoteles.add(em.find(Hotel.class, Long.parseLong(s.substring(4))));
                         }

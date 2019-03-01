@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
 import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.Passenger;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
 @Entity(name = "TransferContractPrice")
 @Getter
 @Setter
+@Table(indexes = { @Index(name = "i_transferprice_deprecated", columnList = "deprecated") })
 public class Price {
 
     @Id
@@ -60,6 +62,16 @@ public class Price {
     @Ignored
     private boolean deprecated;
 
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Price && id == ((Price) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "From " + origin.getName() + " to " + destination.getName() + " in " + vehicle.getName() + " (" + fromPax + "-" + toPax + ") " + pricePer.name() + " = " + price + "/" + returnPrice;
+    }
 
     public Price clone(EntityManager em, User u) {
         Price p = new Price();

@@ -42,9 +42,8 @@ import java.util.UUID;
 /**
  * Created by miguel on 1/10/16.
  */
-//@Entity
-//@Table(name = "contract")
-@MappedSuperclass
+@Entity
+@Table(name = "contract", indexes = { @Index(name = "i_contract_deprecated", columnList = "deprecated") })
 @Getter
 @Setter
 public abstract class AbstractContract {

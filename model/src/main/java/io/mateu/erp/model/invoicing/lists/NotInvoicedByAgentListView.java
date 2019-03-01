@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing.lists;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.Invoice;
@@ -52,8 +53,7 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
     }
 
     @Override
-    public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
-
+    public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
         ql += " select l.partner.id, l.partner.name, sum(l.total.value) as total " +

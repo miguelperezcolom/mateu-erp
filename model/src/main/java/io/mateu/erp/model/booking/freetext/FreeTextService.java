@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.freetext;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
@@ -51,6 +52,8 @@ public class FreeTextService extends Service {
     public void pre(){
         setStart(getDeliveryDate());
         setFinish(getReturnDate());
+        setAvailable(true);
+        super.pre();
     }
 
 
@@ -59,7 +62,8 @@ public class FreeTextService extends Service {
         String s = "error when serializing";
         try {
             Map<String, Object> m = toMap();
-            m.put("description", getText());
+            m.put("leadName", getBooking().getLeadName());
+            m.put("text", getText());
             m.put("start", getStart());
             m.put("finish", getFinish());
 
@@ -73,12 +77,12 @@ public class FreeTextService extends Service {
 
     @Override
     public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-        return 0;
+        return getBooking() instanceof FreeTextBooking && ((FreeTextBooking)getBooking()).getOverridedCost() != null?((FreeTextBooking)getBooking()).getOverridedCost().getNumber().doubleValue():0;
     }
 
     @Override
     public Partner findBestProvider(EntityManager em) throws Throwable {
-        return null;
+        return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getProvider():null;
     }
 
     @Override

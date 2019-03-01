@@ -126,6 +126,8 @@ public class PurchaseOrder {
     @CellStyleGenerator(PurchaseOrderStatusCellStyleGenerator.class)
     @ColumnWidth(150)
     private PurchaseOrderStatus status;
+
+
     @ListColumn
     private String providerComment;
 
@@ -190,6 +192,9 @@ public class PurchaseOrder {
     @Ignored
     private boolean updatePending = true;
 
+    @Ignored
+    private transient String servicesUpdateSignature;
+
 
 
     @Action("Send")
@@ -216,6 +221,8 @@ public class PurchaseOrder {
 
 
 
+
+
     public String createSignature() {
         String s = "error when serializing";
         try {
@@ -235,8 +242,6 @@ public class PurchaseOrder {
 
     public void send(EntityManager em, User u) throws Throwable {
 
-        setSignature(createSignature());
-
         if (isActive() || getSendingTasks().size() > 0) {
 
             SendPurchaseOrdersTask t = null;
@@ -254,6 +259,9 @@ public class PurchaseOrder {
             t.getPurchaseOrders().add(this);
             getSendingTasks().add(t);
 
+            setStatus(PurchaseOrderStatus.PENDING);
+            setSent(true);
+            setSentTime(LocalDateTime.now());
         }
 
     }
@@ -300,11 +308,10 @@ public class PurchaseOrder {
 
     public void cancel(EntityManager em) {
         if (isActive()) {
+            setActive(false);
             if (!isSent()) {
-                setActive(false);
                 setStatus(PurchaseOrderStatus.CONFIRMED);
             } else {
-                setActive(false);
                 setStatus(PurchaseOrderStatus.PENDING);
             }
         }
@@ -370,6 +377,24 @@ public class PurchaseOrder {
         LocalDate d = null;
         for (Service s : services) if (d == null || d.isAfter(s.getStart())) d = s.getStart();
         start = d;
+
+        if (getSignature() == null || !getSignature().equals(createSignature()) || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
+            setUpdatePending(true);
+        }
+
+    }
+
+    @PostLoad
+    public void postLoad() {
+        setServicesUpdateSignature(createServicesUpdateSignature());
+    }
+
+    private String createServicesUpdateSignature() {
+        return "" + isActive() + "-" + isSent() + "-" + status;
+    }
+
+    public void markServicesForUpdate() {
+        getServices().forEach(s -> s.setUpdatePending(true));
     }
 
     @PostPersist@PostUpdate
@@ -391,9 +416,12 @@ public class PurchaseOrder {
                             }
                             po.summarize(em);
 
+                            po.markServicesForUpdate();
 
+                            po.setSignature(po.createSignature());
 
                             po.setUpdatePending(false);
+
                         }
                     });
                 } catch (Throwable throwable) {
@@ -410,38 +438,17 @@ public class PurchaseOrder {
 
         updateStatusFromTasks(em);
 
-        try {
-            summarizeServices(em);
-        } catch (Throwable throwable) {
-            throwable.printStackTrace();
-        }
     }
 
     private void updateStatusFromTasks(EntityManager em) {
         if (sendingTasks.size() > 0) {
             SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
             if (TaskStatus.FINISHED.equals(t.getStatus())) {
-                setSent(true);
-                if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
-                setSentTime(t.getFinished());
-            } else {
-                setSent(false);
                 if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
                 setSentTime(t.getFinished());
             }
         }
     }
-
-    public void summarizeServices(EntityManager em) throws Exception, Throwable {
-
-        System.out.println("po " + getId() + ".summarizeServices");
-
-        for (Service s : getServices()) {
-            s.summarize(em);
-        }
-
-    }
-
 
 
     public static GridDecorator getGridDecorator() {

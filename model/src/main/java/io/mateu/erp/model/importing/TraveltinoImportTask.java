@@ -1,19 +1,112 @@
 package io.mateu.erp.model.importing;
 
+import com.Ostermiller.util.CSVParser;
 import com.google.common.base.Strings;
+import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.transfer.TransferType;
+import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.util.Constants;
+import io.mateu.mdd.core.model.util.EmailHelper;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
+import lombok.Getter;
+import lombok.Setter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class TraveltinoImporter {
+/**
+ * Created by Antonia on 26/03/2017.
+ */
+@Entity
+@Getter@Setter
+public class TraveltinoImportTask extends TransferImportTask {
 
-    public static void process(EntityManager em, String[][] csv, PrintWriter pw) {
+    public TraveltinoImportTask() {}
+
+    public TraveltinoImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    {
+       this.setCustomer(customer);
+
+       this.setName(name);
+
+       this.setAudit(new Audit(user));
+
+       this.setPriority(0);
+
+       this.setStatus(STATUS.PENDING);
+
+       this.setHtml(html);
+
+       setOffice(office);
+
+       setPointOfSale(pos);
+
+       setBillingConcept(billingConcept);
+    }
+
+    @Override
+    public void execute(EntityManager em) {
+
+        System.out.println("Running TraveltinoImporTask");
+        System.out.println("**********************");
+        System.out.println(getHtml());
+        System.out.println("**********************");
+
+        String result = "";
+        this.setAdditions(0);
+        this.setCancellations(0);
+        this.setModifications(0);
+        this.setUnmodified(0);
+        this.setErrors(0);
+        this.setTotal(0);
+
+        try {
+
+
+            String[][] csv = CSVParser.parse(getHtml());
+
+
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            process(em, csv, pw);
+            result += sw.toString();
+
+            this.setStatus(STATUS.OK);//fichero procesado
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            System.out.println("html=" + getHtml());
+
+            result += "General exception: " + ex.getClass() + " - " + ex.getMessage();
+            this.setStatus(STATUS.ERROR);//fichero no procesado
+        }
+
+        this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+        this.setReport(result.replaceFirst("\n",""));
+
+      }
+
+
+    public void process(EntityManager em, String[][] csv, PrintWriter pw) {
 
         Partner traveltino = (Partner) em.createQuery("select x from " + Partner.class.getName() + " x where upper(x.name) = 'TRAVELTINO'").getResultList().get(0);
 
@@ -21,12 +114,18 @@ public class TraveltinoImporter {
         boolean cabeceraEncontrada = false;
         for (String[] l : csv) {
 
+            System.out.println("procesando " + Arrays.toString(l));
+
             if (!cabeceraEncontrada) {
                 if (l.length > 0) {
-                    for (int i = 0; i < l.length; i++) if (!Strings.isNullOrEmpty(l[i])) cabecera.put(l[i].trim(), i);
+                    for (int i = 0; i < l.length; i++) if (!Strings.isNullOrEmpty(l[i]) && !cabecera.containsKey(l[i].trim())) cabecera.put(l[i].trim(), i);
                     cabeceraEncontrada = cabecera.size() > 0;
                 }
+                System.out.println("cabecera encontrada = " + cabeceraEncontrada);
+                System.out.println("cabeceras = " + cabecera.size());
             } else {
+
+                System.out.println("l.length = " + l.length);
 
                 if (l.length > 0) {
                     int celdasConContenido = 0;
@@ -36,11 +135,16 @@ public class TraveltinoImporter {
 
                         try {
 
+                            System.out.println("rellenando rq");
+
                             TransferBookingRequest rq = rellenarRq(em, l, cabecera, traveltino);
 
                             TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), traveltino);
                             if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                                System.out.println("grabando rq");
                                 em.persist(rq);
+                            } else {
+                                System.out.println("rq no grabada. Ya existe y la firma no ha cambiado");
                             }
 
                         } catch (Throwable t) {
@@ -59,9 +163,10 @@ public class TraveltinoImporter {
 
     }
 
-    private static TransferBookingRequest rellenarRq(EntityManager em, String[] l, Map<String, Integer> cabecera, Partner agencia) {
+    private TransferBookingRequest rellenarRq(EntityManager em, String[] l, Map<String, Integer> cabecera, Partner agencia) {
         TransferBookingRequest rq = new TransferBookingRequest();
 
+        rq.setTask(this);
         rq.setCustomer(agencia);
         rq.setAgencyReference(get(l, cabecera, "locatorProvider"));
         rq.setAdults(getInt(l, cabecera, "Adults"));
@@ -107,6 +212,7 @@ public class TraveltinoImporter {
         rq.setValue(getDouble(l, cabecera, "Total Rate", 0));
         rq.setVehicle("");
         rq.setWhen(LocalDateTime.now());
+        rq.setVehicle("-");
 
         return rq;
     }
@@ -162,5 +268,38 @@ public class TraveltinoImporter {
 
         if (v == null) return "";
         return v;
+    }
+
+
+
+
+
+
+
+    public static void main(String[] args) {
+
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+
+        EmailHelper.setTesting(true);
+
+        run();
+
+        WorkflowEngine.exit(0);
+
+    }
+
+    public static void run() {
+        try {
+            Helper.transact(em -> {
+
+                ((List<TraveltinoImportTask>)em.createQuery("select x from " + TraveltinoImportTask.class.getName() + " x").getResultList()).forEach(t -> {
+                    t.execute(em);
+                });
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
     }
 }

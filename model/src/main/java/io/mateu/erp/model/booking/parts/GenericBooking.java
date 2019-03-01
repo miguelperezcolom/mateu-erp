@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.financials.Amount;
@@ -9,13 +10,13 @@ import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,10 +47,13 @@ public class GenericBooking extends Booking {
     @Position(15)
     private GenericProduct product;
 
+    @ManyToOne
+    @Position(16)
+    private Variant variant;
 
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    @Position(16)
+    @Position(17)
     private List<GenericBookingExtra> extras = new ArrayList<>();
 
     @ManyToOne@Output
@@ -62,8 +66,19 @@ public class GenericBooking extends Booking {
 
 
     @Override
-    public void validate() throws Exception {
+    protected void completeChangeSignatureData(Map<String, String> data) {
+        data.put("Units", "" + units);
+        if (office != null) data.put("Office", office.getName());
+        if (product != null) data.put("Product", product.getName());
+        if (variant != null) data.put("Variant", variant.getName().toString());
+        extras.forEach(p -> data.put("Extra " + extras.indexOf(p), p.toString()));
+        if (contract != null) data.put("Contract", contract.getTitle());
+    }
 
+    @Override
+    public void validate() throws Exception {
+        setValidationStatus(ValidationStatus.VALID);
+        setAvailable(true);
     }
 
     @Override
@@ -81,10 +96,14 @@ public class GenericBooking extends Booking {
         s.setFinish(getEnd());
         s.setStart(getStart());
         s.setProduct(getProduct());
+        s.setVariant(getVariant());
         for (GenericBookingExtra e : getExtras()) s.getExtras().add(new GenericServiceExtra(s, e));
         s.setDeliveryDate(getStart());
         s.setReturnDate(getEnd());
-        em.merge(s);
+        s.setUnits(getUnits());
+        s.setAdults(getAdults());
+        s.setChildren(getChildren());
+        s.setActive(isActive());
     }
 
     @Override
@@ -102,7 +121,11 @@ public class GenericBooking extends Booking {
                 dias = (int) DAYS.between(getStart(), getEnd());
             }
             int finalDias = dias;
-            c.getPrices().stream().sorted((p0, p1) -> p0.getOrder() - p1.getOrder()).filter(p -> p.getProduct() == null || p.getProduct().equals(product)).forEach(p -> {
+            c.getPrices().stream()
+                    .sorted((p0, p1) -> p0.getOrder() - p1.getOrder())
+                    .filter(p -> p.getProduct() == null || p.getProduct().equals(product))
+                    .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
+                    .forEach(p -> {
                 v[0] += getUnits() * p.getPricePerUnit();
                 v[0] += getAdults() * p.getPricePerAdult();
                 v[0] += getChildren() * p.getPricePerChild();
@@ -130,5 +153,10 @@ public class GenericBooking extends Booking {
         c.setText("" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch");
         c.setBillingConcept(getContract().getBillingConcept());
         c.setPartner(getAgency());
+    }
+
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
+
     }
 }

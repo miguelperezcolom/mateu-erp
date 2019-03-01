@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * holder for zones. A zone is used to group several cities under the same name (e.g. Calas de Mallorca)
+ * holder for resorts. A resort is used to group several resorts under the same name (e.g. Calas de Mallorca)
  *
  * Created by miguel on 13/9/16.
  */
@@ -26,7 +26,7 @@ public class Area {
 
 
     @OneToMany
-     private List<Zone> cities = new ArrayList<>();
+     private List<Resort> cities = new ArrayList<>();
 
 
     @Override

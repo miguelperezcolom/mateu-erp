@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.invoicing.Charge;
@@ -330,9 +329,13 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 if (b.getArrivalFlightTime() != null) {
                     b.setArrivalFlightTime(b.getArrivalFlightTime().toLocalDate().atTime((rq.getIncomingFlightTime() - rq.getIncomingFlightTime() % 100) / 100, rq.getIncomingFlightTime() % 100));
+                    b.setArrivalFlightNumber(rq.getIncomingFlightNumber());
+                    b.setArrivalFlightOrigin(rq.getIncomingFlightOrigin());
                 }
                 if (b.getDepartureFlightTime() != null) {
                     b.setDepartureFlightTime(b.getDepartureFlightTime().toLocalDate().atTime((rq.getOutgoingFlightTime() - rq.getOutgoingFlightTime() % 100) / 100, rq.getOutgoingFlightTime() % 100));
+                    b.setDepartureFlightNumber(rq.getOutgoingFlightNumber());
+                    b.setDepartureFlightDestination(rq.getOutgoingFlightDestination());
                 }
 
 
@@ -386,7 +389,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         Helper.notransact(em -> {
             TransferPoint origin = em.find(TransferPoint.class, Long.parseLong(originId.split("-")[1]));
 
-            origin.getZone().getDestination().getZones().forEach(z -> z.getTransferPoints().forEach(p -> {
+            /*
+            origin.getResort().getDestination().getResorts().forEach(z -> z.getTransferPoints().forEach(p -> {
                 if (!p.equals(origin)) {
                     Resource r;
                     rs.getDestination().add(r = new Resource());
@@ -396,6 +400,19 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
                 }
             }));
+            */
+
+            origin.getResort().getDestination().getCountry().getDestinations().forEach(d -> d.getResorts().forEach(z -> z.getTransferPoints().forEach(p -> {
+                if (!p.equals(origin)) {
+                    Resource r;
+                    rs.getDestination().add(r = new Resource());
+                    r.setResourceId("tp-" + p.getId());
+                    r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
+                    r.setType("transferpoint");
+                    r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+                }
+            })));
+
 
         });
 

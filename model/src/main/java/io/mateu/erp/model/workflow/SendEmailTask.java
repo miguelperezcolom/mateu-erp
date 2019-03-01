@@ -6,6 +6,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.common.Resource;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -52,53 +53,65 @@ public class SendEmailTask extends AbstractTask {
 
         AppConfig appconfig = AppConfig.get(em);
 
-        HtmlEmail email = new HtmlEmail();
+        if (EmailHelper.isTesting()) {
 
-        boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
+            System.out.println("************************************");
+            System.out.println("Mail not sent as we are TESTING");
+            System.out.println("************************************");
 
-        email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
 
-        email.setSubject(getSubject());
-
-        String msg = getMessage();
-
-        if (msg.contains("mylogosrc") && appconfig.getLogo() != null) {
-            URL url = new URL(appconfig.getLogo().toFileLocator().getUrl());
-            String cid = email.embed(url, "" + appconfig.getBusinessName() + " logo");
-            msg = msg.replaceAll("mylogosrc", "cid:" + cid);
-        }
-
-        email.setHtmlMsg(msg);
-
-        if (!Strings.isNullOrEmpty(System.getProperty("allemailsto"))) {
-            email.addTo(System.getProperty("allemailsto"));
         } else {
 
-            if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
-                for (String s : (utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
-                    if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
+            HtmlEmail email = new HtmlEmail();
+
+            boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
+
+            email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
+            email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
+            email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
+            //email.setSSLOnConnect(true);
+            email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
+
+            email.setSubject(getSubject());
+
+            String msg = getMessage();
+
+            if (msg.contains("mylogosrc") && appconfig.getLogo() != null) {
+                URL url = new URL(appconfig.getLogo().toFileLocator().getUrl());
+                String cid = email.embed(url, "" + appconfig.getBusinessName() + " logo");
+                msg = msg.replaceAll("mylogosrc", "cid:" + cid);
+            }
+
+            email.setHtmlMsg(msg);
+
+            if (!Strings.isNullOrEmpty(System.getProperty("allemailsto"))) {
+                email.addTo(System.getProperty("allemailsto"));
+            } else {
+
+                if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) {
+                    for (String s : (utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()).split("[;, ]")) {
+                        if (!Strings.isNullOrEmpty(s)) email.getCcAddresses().add(new InternetAddress(s));
+                    }
+                }
+
+                for (String s : getTo().split("[;, ]")) {
+                    if (!Strings.isNullOrEmpty(s)) email.addTo(s);
                 }
             }
 
-            for (String s : getTo().split("[;, ]")) {
-                if (!Strings.isNullOrEmpty(s)) email.addTo(s);
-            }
+            attachments.forEach(r -> {
+                try {
+                    email.attach(new URL(r.toFileLocator().getUrl()), r.getName(), "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+
+            email.send();
+
         }
 
-        attachments.forEach(r -> {
-            try {
-                email.attach(new URL(r.toFileLocator().getUrl()), r.getName(), "");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-
-
-        email.send();
 
     }
 

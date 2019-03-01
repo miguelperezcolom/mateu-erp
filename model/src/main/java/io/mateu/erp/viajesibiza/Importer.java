@@ -2,7 +2,6 @@ package io.mateu.erp.viajesibiza;
 
 import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
@@ -21,14 +20,14 @@ import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.USER_STATUS;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
 import javax.persistence.EntityManager;
@@ -36,6 +35,7 @@ import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class Importer {
     private static Office oficina;
     private static Company cia;
     private static Currency eur;
-    private static Map<String, Zone> ciudades = new HashMap<>();
+    private static Map<String, Resort> ciudades = new HashMap<>();
     private static Map<String, TransferPoint> puntos = new HashMap<>();
     private static Map<String, User> usuarios = new HashMap<>();
     private static Map<String, Partner> partners = new HashMap<>();
@@ -58,8 +58,24 @@ public class Importer {
 
     public static void main(String[] args) {
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
-        importar("/home/miguel/work/viajesibiza/todo.xml");
 
+        EmailHelper.setTesting(true);
+
+        if (true) importar("/home/miguel/work/viajesibiza/todo.xml");
+
+
+        if (true) {
+            ShuttleDirectAutoImport.run();
+
+            ShuttleDirectImportTask.run();
+
+            TravelRepublicAutoImport.run();
+
+            TravelRepublicImportTask.run();
+        }
+
+
+        /*
         ShuttleDirectAutoImport.run();
 
         ShuttleDirectImportTask.run();
@@ -69,6 +85,7 @@ public class Importer {
         TravelRepublicImportTask.run();
 
         TransferBookingRequest.run();
+        */
 
         WorkflowEngine.exit(0);
     }
@@ -94,13 +111,26 @@ public class Importer {
         try {
             Helper.transact(em -> {
 
+                AppConfig c = AppConfig.get(em);
+                c.setBusinessName("Viajes Ibiza");
+                c.setAdminEmailSmtpHost("mail.invisahoteles.com");
+                c.setAdminEmailSmtpPort(25);
+                c.setAdminEmailUser("reservas@viajesibiza.es");
+                c.setAdminEmailCC("miguelperezcolom@gmail.com");
+                c.setAdminEmailPassword("vibzrs39");
+                c.setAdminEmailFrom("reservas@viajesibiza.es");
+                c.setPop3Host("mail.invisahoteles.com");
+                c.setPop3User("inbox@viajesibiza.es");
+                c.setPop3ReboundToEmail("miguelperezcolom@gmail.com");
+                c.setPop3Password("Y4t3n3m0sXML");
+
                 SAXBuilder b = new SAXBuilder();
                 b.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
                 Document xml = b.build(path);
 
                 crearEstructura(em, xml);
 
-                //crearReservas(em, xml);
+                crearReservas(em, xml);
 
             });
         } catch (Throwable throwable) {
@@ -214,8 +244,8 @@ public class Importer {
 
                 es.getChildren().forEach(el -> {
 
-                    Zone z;
-                    d.getZones().add(z = new Zone());
+                    Resort z;
+                    d.getResorts().add(z = new Resort());
                     z.setDestination(d);
                     z.setName(el.getAttributeValue("name"));
                     ciudades.put(el.getAttributeValue("id"), z);
@@ -225,7 +255,7 @@ public class Importer {
 
                         TransferPoint tp;
                         z.getTransferPoints().add(tp = new TransferPoint());
-                        tp.setZone(z);
+                        tp.setResort(z);
                         tp.setId(Long.parseLong(ep.getAttributeValue("id")));
                         tp.setName(ep.getAttributeValue("name"));
 
@@ -237,7 +267,7 @@ public class Importer {
                         if (ep.getAttribute("telephone") != null) tp.setTelephone(ep.getAttributeValue("telephone"));
                         if (ep.getAttribute("instructions") != null) tp.setInstructions(ep.getAttributeValue("instructions"));
                         puntos.put(ep.getAttributeValue("id"), tp);
-                        //if (ep.getAttribute("shuttleAlternatePoint") != null) tp.setAlternatePointForShuttle();
+                        if (ep.getAttribute("nonExecutiveAlternatePoint") != null) tp.setAlternatePointForNonExecutive(true);
 
                         em.persist(tp);
 
@@ -263,18 +293,22 @@ public class Importer {
         });
 
 
+        List<String> vistos = new ArrayList<>();
         xml.getRootElement().getChild("users").getChildren().forEach(eu -> {
-            User u = em.find(User.class, eu.getAttributeValue("login"));
-            if (u == null) {
-                u = new User();
-                u.setLogin(eu.getAttributeValue("login"));
-                u.setName(eu.getAttributeValue("name"));
-                u.setEmail(eu.getAttributeValue("email"));
+            if (!vistos.contains(eu.getAttributeValue("login").trim().toLowerCase())) {
+                User u = em.find(User.class, eu.getAttributeValue("login"));
+                if (u == null) {
+                    u = new User();
+                    u.setLogin(eu.getAttributeValue("login"));
+                    u.setName(eu.getAttributeValue("name"));
+                    u.setEmail(eu.getAttributeValue("email"));
+                    u.setStatus(USER_STATUS.ACTIVE);
+                    em.persist(u);
+                    vistos.add(u.getLogin());
+                }
                 u.setPassword(eu.getAttributeValue("password"));
-                u.setStatus(USER_STATUS.ACTIVE);
-                em.persist(u);
+                usuarios.put(eu.getAttributeValue("login"), u);
             }
-            usuarios.put(eu.getAttributeValue("login"), u);
         });
 
         xml.getRootElement().getChild("poses").getChildren().forEach(e -> {
@@ -322,7 +356,7 @@ public class Importer {
             z.setName(e.getAttributeValue("name"));
             z.setGroup(e.getAttributeValue("group"));
             for (String i : e.getAttributeValue("cities").split(",")) {
-                if (ciudades.get(i) != null) z.getCities().add(ciudades.get(i));
+                if (ciudades.get(i) != null) z.getResorts().add(ciudades.get(i));
                 else System.out.println("No existe la ciudad con id = " + i);
             }
             for (String i : e.getAttributeValue("points").split(",")) {
@@ -411,7 +445,7 @@ public class Importer {
             oficina.setCompany(cia);
             oficina.setName("Ibiza");
             oficina.setCurrency(eur);
-            oficina.setCity(ciudades.values().iterator().next());
+            oficina.setResort(ciudades.values().iterator().next());
             em.persist(oficina);
 
             lineaProducto = new ProductLine();

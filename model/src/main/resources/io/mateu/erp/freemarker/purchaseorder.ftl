@@ -111,7 +111,11 @@
     <thead style="background-color: lightsteelblue;">
     <th>Ref.</th>
     <th>Status</th>
+    <th>Product</th>
+    <th>Variant</th>
     <th>Units</th>
+    <th>Adults</th>
+    <th>Children</th>
     <th>Start</th>
     <th>Finish</th>
     <th>Description</th>
@@ -119,19 +123,21 @@
     <th>Comments</th>
     </thead>
 <#list generics as s>
-    <#list s.lines as l>
   <tr>
       <td>${s.po!}</td>
       <td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
-      <td>${l.units!}</td>
-      <td>${l.start!}</td>
-      <td>${l.finish!}</td>
-      <td>${l.description!}</td>
+      <td>${s.product!}</td>
+      <td>${s.variant!}</td>
+      <td>${s.units!}</td>
+      <td>${s.adults!}</td>
+      <td>${s.children!}</td>
+      <td>${s.start!}</td>
+      <td>${s.finish!}</td>
+      <td>${s.description!}</td>
       <td>${s.leadName!} / ${s.agencyReference!}</td>
       <td>${s.comments!}</td>
   </tr>
     </#list>
-</#list>
 </table>
 
 </#if>

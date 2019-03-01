@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing.lists;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
@@ -55,7 +56,7 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
     }
 
     @Override
-    public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
+    public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
 
         String ql = "";
 

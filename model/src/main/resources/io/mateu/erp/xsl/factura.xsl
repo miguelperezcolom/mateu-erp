@@ -33,7 +33,7 @@
                                 <fo:table-cell text-align="left"  font-size="8pt">
                                     <fo:block><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
                                     <fo:block><xsl:value-of select="issuer/@businessName"/> - NIF: <xsl:value-of select="issuer/@vatid"/></fo:block>
-                                    <fo:block><xsl:value-of select="issuer/@address"/> - <xsl:value-of select="issuer/@zip"/> <xsl:value-of select="issuer/@city"/></fo:block>
+                                    <fo:block><xsl:value-of select="issuer/@address"/> - <xsl:value-of select="issuer/@zip"/> <xsl:value-of select="issuer/@resort"/></fo:block>
                                     <fo:block><xsl:value-of select="issuer/@email"/> - t. <xsl:value-of select="issuer/@telephone"/> - f. <xsl:value-of select="issuer/@fax"/></fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell text-align="right" font-weight="bold" padding="1mm">
@@ -49,7 +49,7 @@
                                     <fo:block><xsl:value-of select="recipient/@businessName"/></fo:block>
                                     <fo:block>NIF: <xsl:value-of select="recipient/@vatid"/></fo:block>
                                     <fo:block><xsl:value-of select="recipient/@address"/></fo:block>
-                                    <fo:block><xsl:value-of select="recipient/@zip"/> <xsl:value-of select="recipient/@city"/></fo:block>
+                                    <fo:block><xsl:value-of select="recipient/@zip"/> <xsl:value-of select="recipient/@resort"/></fo:block>
                                 </fo:table-cell>
                             </fo:table-row>
                         </fo:table-body>

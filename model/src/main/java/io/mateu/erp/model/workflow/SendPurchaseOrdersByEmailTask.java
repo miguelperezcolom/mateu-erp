@@ -8,6 +8,7 @@ import io.mateu.erp.model.booking.transfer.IslandbusHelper;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -49,44 +51,66 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
     public void runParticular(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable {
         AppConfig appconfig = AppConfig.get(em);
 
-        // Create the attachment
+        if (EmailHelper.isTesting()) {
+
+            System.out.println("************************************");
+            System.out.println("SendPurchaseOrdersByEmailTask(" + getId() + ") Mail not sent as we are TESTING");
+            System.out.println("************************************");
+
+
+        } else {
+
+            // Create the attachment
 //                EmailAttachment attachment = new EmailAttachment();
 //                attachment.setPath("mypictures/john.jpg");
 //                attachment.setDisposition(EmailAttachment.ATTACHMENT);
 //                attachment.setDescription("Picture of John");
 //                attachment.setName("John");
 
-        // Create the email message
-        HtmlEmail email = new HtmlEmail();
-        //Email email = new HtmlEmail();
+            // Create the email message
+            HtmlEmail email = new HtmlEmail();
+            //Email email = new HtmlEmail();
 
-        boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
+            boolean utilizarSmtpOficina = getOffice() != null && !Strings.isNullOrEmpty(getOffice().getEmailHost());
 
-        email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
-        email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
-        email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
-        //email.setSSLOnConnect(true);
-        email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
-        if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
+            email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
+            email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
+            email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
+            //email.setSSLOnConnect(true);
+            email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
+            if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
 
-        email.setSubject("Purchase Orders");
-        setHtml(getMessage(appconfig));
-        email.setHtmlMsg(getHtml());
+            email.setSubject("Purchase Orders");
+            setHtml(getMessage(appconfig));
 
-        email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
+            String msg = getHtml();
 
-        boolean incluyeTraslados = false;
-        for (PurchaseOrder po : getPurchaseOrders()) for (Service s : po.getServices()) if (s instanceof TransferService) incluyeTraslados = true;
+            if (msg.contains("mylogosrc") && appconfig.getLogo() != null) {
+                URL url = new URL(appconfig.getLogo().toFileLocator().getUrl());
+                String cid = email.embed(url, "" + appconfig.getBusinessName() + " logo");
+                msg = msg.replaceAll("mylogosrc", "cid:" + cid);
+            }
 
-        if (incluyeTraslados) {
-            File attachment = createExcel();
-            if (attachment != null) email.attach(attachment);
+            email.setHtmlMsg(msg);
 
-            email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toPrivateXml(getPurchaseOrders())).getBytes(), "text/xml"), "private.xml", "xml for privates");
-            email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
+            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
+
+            boolean incluyeTraslados = false;
+            for (PurchaseOrder po : getPurchaseOrders()) for (Service s : po.getServices()) if (s instanceof TransferService) incluyeTraslados = true;
+
+            if (incluyeTraslados) {
+                File attachment = createExcel();
+                if (attachment != null) email.attach(attachment);
+
+                email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toPrivateXml(getPurchaseOrders())).getBytes(), "text/xml"), "private.xml", "xml for privates");
+                email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
+            }
+
+            email.send();
+
         }
 
-        email.send();
+
 
     }
 

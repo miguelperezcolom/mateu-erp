@@ -6,6 +6,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.parts.SupplierDataProvider;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
@@ -20,6 +21,7 @@ import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.payments.DueDateType;
+import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.workflow.AbstractTask;
@@ -46,6 +48,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -58,6 +61,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Entity
 @Getter@Setter
 @UseIdToSelect
+@Table(indexes = { @Index(name = "i_booking_deprecated", columnList = "deprecated") })
 public abstract class Booking {
 
     @Id
@@ -73,9 +77,8 @@ public abstract class Booking {
 
     @ListColumn
     @ManyToOne
-    @QLFilter("x.agency = true")
     @ColumnWidth(100)
-    @NoChart
+    @NoChart@SearchFilter
     private File file;
 
     @ManyToOne
@@ -238,11 +241,27 @@ public abstract class Booking {
     }
 
     @ManyToOne
+    @DataProvider(dataProvider = SupplierDataProvider.class)
+    private Partner provider;
+
+    private boolean costOverrided;
+    @SameLine
+    private FastMoney overridedCost;
+
+    public boolean isOverridedCostVisible() {
+        return costOverrided;
+    }
+
+
+    @ManyToOne
     private BillingConcept overridedBillingConcept;
 
     public boolean isOverridedBillingConceptVisible() {
-        return valueOverrided;
+        return valueOverrided || costOverrided;
     }
+
+    @ManyToOne
+    private AbstractContract contract;
 
     @Output
     private String priceReport;
@@ -320,8 +339,18 @@ public abstract class Booking {
     private List<AbstractTask> tasks = new ArrayList<>();
 
 
+    @UseLinkToListView
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @NotWhenCreating
+    private List<BookingChange> changes = new ArrayList<>();
 
 
+
+    @Ignored
+    private String signature;
+
+    @Ignored
+    private String changesControlSignature;
 
     @Ignored
     private boolean updatePending = true;
@@ -329,6 +358,72 @@ public abstract class Booking {
     public void setUpdatePending(boolean updatePending) {
         this.updatePending = updatePending;
     }
+
+    public String createChangeControlSignature() {
+        try {
+            return Helper.toJson(getChangeControlData());
+        } catch (Exception e) {
+            return "" + e.getClass().getSimpleName() + ": " + e.getMessage();
+        }
+    }
+
+    public Map<String,String> getChangeControlData() {
+        Map<String,String> data = new HashMap<>();
+
+        if (getFile() != null) data.put("File", "" + getFile().getId());
+        if (getAgency() != null) data.put("Agency", "" + getAgency().getName());
+        if (getAgencyReference() != null) data.put("Agency ref.", getAgencyReference());
+        if (getLeadName() != null) data.put("Lead name", getLeadName());
+        passengers.forEach(p -> data.put("Passenger " + passengers.indexOf(p), p.toString()));
+        if (getEmail() != null) data.put("Email", getEmail());
+        if (getTelephone() != null) data.put("Tel.", getTelephone());
+        data.put("Confirmed", isConfirmed()?"Yes":"No");
+        data.put("Active", isActive()?"Yes":"No (Cancelled)");
+        if (getStart() != null) data.put("Start", "" + getStart());
+        if (getEnd() != null) data.put("End", "" + getEnd());
+        data.put("Adults", "" + getAdults());
+        data.put("Children", "" + getChildren());
+        if (getAges() != null) data.put("Ages", "" + Arrays.toString(getAges()));
+        if (getSpecialRequests() != null) data.put("Special reqs.", getSpecialRequests());
+        if (getPrivateComments() != null) data.put("Private comms.", getPrivateComments());
+        if (getPos() != null) data.put("POS", getPos().getName());
+        if (getFormalizationDate() != null) data.put("Formalization date", "" + getFormalizationDate());
+        if (getExpiryDate() != null) data.put("Expiry date", "" + getExpiryDate());
+        data.put("Locked", isLocked()?"Yes":"No");
+        dueDates.forEach(p -> data.put("Due date " + dueDates.indexOf(p), p.toString()));
+        if (getValue() != null) data.put("Value", getValue().toString());
+        data.put("Total value", "" + totalValue);
+        data.put("Total net", "" + totalNetValue);
+        data.put("Total cost", "" + totalCost);
+        data.put("Total paid", "" + totalPaid);
+        data.put("Balance", "" + balance);
+        if (getCurrency() != null) data.put("Currency", getCurrency().getIsoCode());
+        data.put("Value overrided", isValueOverrided()?"Yes":"No");
+        if (isValueOverrided()) data.put("Overrided value", "" + getOverridedValue());
+        if (getProvider() != null) data.put("Provider", getProvider().getName());
+        data.put("Cost overrided", isCostOverrided()?"Yes":"No");
+        if (isCostOverrided()) data.put("Overrided cost", "" + getOverridedCost());
+        if (isCostOverrided() || isValueOverrided()) data.put("Overrided billing concept", getOverridedBillingConcept() != null?getOverridedBillingConcept().getName():"None");
+        if (getContract() != null) data.put("Contract", getContract().getTitle());
+        data.put("Valued", isValued()?"Yes":"No");
+        data.put("Paid", isPaid()?"Yes":"No");
+        data.put("Already invoiced", isAlreadyInvoiced()?"Yes":"No");
+        data.put("Already purchased", isAlreadyPurchased()?"Yes":"No");
+        data.put("Validation", getValidationStatus().name());
+        extraCharges.forEach(p -> data.put("Extra charge " + extraCharges.indexOf(p), p.toChangeControlString()));
+        payments.forEach(p -> data.put("Payment " + payments.indexOf(p), p.toString()));
+        cancellationTerms.forEach(p -> data.put("Cancellation term " + cancellationTerms.indexOf(p), p.toString()));
+        if (getCommissionAgent() != null) data.put("Commission agent", getCommissionAgent().getName());
+        if (getInvoiceData() != null) data.put("Invoice date", getInvoiceData().toString());
+        if (getAgentName() != null) data.put("Agent name", getAgentName());
+        data.put("Non commissionable", isNonCommissionable()?"Yes":"No");
+
+        completeChangeSignatureData(data);
+
+        return data;
+    }
+
+    protected abstract void completeChangeSignatureData(Map<String,String> data);
 
 
     @Override
@@ -898,15 +993,57 @@ public abstract class Booking {
     @PrePersist@PreUpdate
     public void pre() throws Error {
         try {
-            if (isValueOverrided()) {
+
+            if (isValueOverrided() || isValueOverrided()) {
+                if (isValueOverrided() && overridedValue == null) throw new Exception("Overrided value is required. Please fill");
+                if (isCostOverrided() && overridedCost == null) throw new Exception("Overrided cost is required. Please fill");
                 if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             }
             validate();
 
             setDescription(getParticularDescription());
 
+
+            if (changesControlSignature != null && !changesControlSignature.equals(createChangeControlSignature())) {
+                setUpdatePending(true);
+            }
+
+            if (getSignature() == null || !getSignature().equals(createSignature())) {
+                setSignature(createSignature());
+                setUpdatePending(true);
+            }
+
         } catch (Throwable e) {
             throw new Error(e);
+        }
+    }
+
+    private void recordChanges() {
+        try {
+            Map<String, Object> old = Helper.fromJson(changesControlSignature);
+            Map<String, String> current = getChangeControlData();
+
+            List<String> keys = new ArrayList<>(old.keySet());
+            current.keySet().forEach(k -> {
+                if (!keys.contains(k)) keys.add(k);
+            });
+
+            Collections.sort(keys);
+
+            for (String k : keys) {
+                if (!old.getOrDefault(k, "Not present").equals(current.getOrDefault(k, "Not present"))) {
+                    BookingChange c;
+                    getChanges().add(c = new BookingChange());
+                    c.setBooking(this);
+                    c.setKey(k);
+                    c.setOldValue("" + old.getOrDefault(k, "Not present"));
+                    c.setNewValue(current.getOrDefault(k, "Not present"));
+                }
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -929,6 +1066,11 @@ public abstract class Booking {
 
                             b.getAgency().setUpdatePending(true);
 
+                            if (b.getChangesControlSignature() != null && !b.getChangesControlSignature().equals(b.createChangeControlSignature())) {
+                                b.recordChanges();
+                            }
+                            b.setChangesControlSignature(createChangeControlSignature());
+
                             b.setUpdatePending(false);
                         }
                     });
@@ -946,6 +1088,7 @@ public abstract class Booking {
         //todo: actualizar estado, balances, etc
 
         if (true) {
+            boolean allAvailable = true;
             for (Service x : services) {
                 if (x.getStart() != null) {
                     if (start == null || start.isAfter(x.getStart())) start = x.getStart();
@@ -959,8 +1102,9 @@ public abstract class Booking {
 
                 if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
                 else x.setServiceDateForInvoicing(x.getStart());
+                if (!x.isAvailable()) allAvailable = false;
             }
-
+            setAvailable(allAvailable);
             updateTotals(em);
         }
 
@@ -975,7 +1119,12 @@ public abstract class Booking {
     //@Action(order = 8, icon = VaadinIcons.SPLIT)
     @NotWhenCreating
     public void build(EntityManager em) {
-        if (confirmed && !alreadyPurchased) generateServices(em);
+        if (confirmed && !alreadyPurchased) {
+            generateServices(em);
+            services.forEach(s -> {
+                if (!s.isUpdatePending() && (s.getSignature() == null || !s.getSignature().equals(s.createSignature()))) s.setUpdatePending(true);
+            });
+        }
     }
 
     public abstract void validate() throws Exception;
@@ -993,6 +1142,7 @@ public abstract class Booking {
             setValued(true);
         } else {
             priceServices(em);
+            if (getTotalValue() != 0) setValued(true);
         }
 
         updateCharges(em);
@@ -1025,8 +1175,12 @@ public abstract class Booking {
                 total += c.getTotal().getValue();
                 totalNeto += c.getTotal().getValue();
             } else {
-                totalCoste += c.getTotal().getValue();
+                //totalCoste += c.getTotal().getValue();
             }
+        }
+
+        for (Service s : getServices()) {
+            totalCoste += s.getTotal();
         }
 
         setTotalValue(Helper.roundEuros(total));
@@ -1106,7 +1260,6 @@ public abstract class Booking {
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);
-            getServiceCharges().add(c);
 
             c.setInvoice(null);
 
@@ -1177,7 +1330,7 @@ public abstract class Booking {
 
     @PostLoad
     public void postload() {
-
+        setChangesControlSignature(createChangeControlSignature());
     }
 
     public void createDueDates(EntityManager em) {
@@ -1210,4 +1363,27 @@ public abstract class Booking {
 
 
     }
+
+
+    public String createSignature() {
+        String s = "error when serializing";
+        try {
+            Map<String, Object> m = new LinkedHashMap<>();
+            if (getLeadName() != null) m.put("leadName", getLeadName());
+            if (getStart() != null) m.put("start", getStart().toString());
+            if (getEnd() != null) m.put("end", getEnd().toString());
+            if (getSpecialRequests() != null) m.put("specialRequests", getSpecialRequests());
+            m.put("active", isActive());
+            m.put("confirmed", isConfirmed());
+            
+            completeSignature(m);
+            
+            s = Helper.toJson(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+    protected abstract void completeSignature(Map<String,Object> m);
 }

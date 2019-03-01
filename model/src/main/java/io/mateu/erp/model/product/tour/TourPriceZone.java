@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.product.transfer.TransferPoint;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +20,7 @@ public class TourPriceZone {
     private String name;
 
     @OneToMany
-    private List<Zone> zones = new ArrayList<>();
+    private List<Resort> zones = new ArrayList<>();
 
     @ManyToOne
     private TransferPoint meetingPoint;

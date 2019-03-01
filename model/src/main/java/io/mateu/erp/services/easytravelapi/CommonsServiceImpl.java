@@ -64,7 +64,7 @@ public class CommonsServiceImpl implements CommonsService {
                         s.setName(new MultilingualText("es", es.getName(), "en", es.getName(), "it", es.getName()));
                         s.setUrlFriendlyName(Helper.urlize(es.getName()));
 
-                        es.getZones().stream().sorted((z1, z2) -> z1.getOrder() - z2.getOrder()).forEach(el -> {
+                        es.getResorts().stream().sorted((z1, z2) -> z1.getOrder() - z2.getOrder()).forEach(el -> {
                             City l;
                             s.getCities().add(l = new City());
                             l.setResourceId("zon-" + el.getId());
@@ -168,23 +168,23 @@ case: 'latitude': --> latitud
                         p.setValue(h.getLat());
                     }
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/id");
-                    p.setValue("" + h.getZone().getId());
+                    p.setKey("resort/id");
+                    p.setValue("" + h.getResort().getId());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/name");
-                    p.setValue(h.getZone().getName());
+                    p.setKey("resort/name");
+                    p.setValue(h.getResort().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getZone().getDestination().getId());
+                    p.setValue("" + h.getResort().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getZone().getDestination().getName());
+                    p.setValue(h.getResort().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    p.setValue(h.getResort().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getZone().getDestination().getCountry().getName());
+                    p.setValue(h.getResort().getDestination().getCountry().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("category/code");
                     p.setValue(h.getCategory().getCode());
@@ -254,23 +254,23 @@ case: 'latitude': --> latitud
                     p.setKey("name");
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/id");
-                    p.setValue("" + h.getZone().getId());
+                    p.setKey("resort/id");
+                    p.setValue("" + h.getResort().getId());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/name");
-                    p.setValue(h.getZone().getName());
+                    p.setKey("resort/name");
+                    p.setValue(h.getResort().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getZone().getDestination().getId());
+                    p.setValue("" + h.getResort().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getZone().getDestination().getName());
+                    p.setValue(h.getResort().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    p.setValue(h.getResort().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getZone().getDestination().getCountry().getName());
+                    p.setValue(h.getResort().getDestination().getCountry().getName());
 
                     if (h.getDataSheet() != null) {
                         if (h.getDataSheet().getDescription() != null) {
@@ -328,23 +328,23 @@ case: 'latitude': --> latitud
                     p.setKey("name");
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/id");
-                    p.setValue("" + h.getZone().getId());
+                    p.setKey("resort/id");
+                    p.setValue("" + h.getResort().getId());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/name");
-                    p.setValue(h.getZone().getName());
+                    p.setKey("resort/name");
+                    p.setValue(h.getResort().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getZone().getDestination().getId());
+                    p.setValue("" + h.getResort().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getZone().getDestination().getName());
+                    p.setValue(h.getResort().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    p.setValue(h.getResort().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getZone().getDestination().getCountry().getName());
+                    p.setValue(h.getResort().getDestination().getCountry().getName());
 
                     if (h.getDataSheet() != null) {
                         if (h.getDataSheet().getDescription() != null) {
@@ -402,23 +402,23 @@ case: 'latitude': --> latitud
                     p.setKey("name");
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/id");
-                    p.setValue("" + h.getZone().getId());
+                    p.setKey("resort/id");
+                    p.setValue("" + h.getResort().getId());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/name");
-                    p.setValue(h.getZone().getName());
+                    p.setKey("resort/name");
+                    p.setValue(h.getResort().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getZone().getDestination().getId());
+                    p.setValue("" + h.getResort().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getZone().getDestination().getName());
+                    p.setValue(h.getResort().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    p.setValue(h.getResort().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getZone().getDestination().getCountry().getName());
+                    p.setValue(h.getResort().getDestination().getCountry().getName());
 
                     if (h.getDataSheet() != null) {
                         if (h.getDataSheet().getDescription() != null) {
@@ -466,23 +466,23 @@ case: 'latitude': --> latitud
                     p.setKey("name");
                     p.setValue(h.getName());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/id");
-                    p.setValue("" + h.getZone().getId());
+                    p.setKey("resort/id");
+                    p.setValue("" + h.getResort().getId());
                     rs.getValues().add(p = new Pair());
-                    p.setKey("city/name");
-                    p.setValue(h.getZone().getName());
+                    p.setKey("resort/name");
+                    p.setValue(h.getResort().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/id");
-                    p.setValue("" + h.getZone().getDestination().getId());
+                    p.setValue("" + h.getResort().getDestination().getId());
                     rs.getValues().add(p = new Pair());
                     p.setKey("state/name");
-                    p.setValue(h.getZone().getDestination().getName());
+                    p.setValue(h.getResort().getDestination().getName());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/code");
-                    p.setValue(h.getZone().getDestination().getCountry().getIsoCode());
+                    p.setValue(h.getResort().getDestination().getCountry().getIsoCode());
                     rs.getValues().add(p = new Pair());
                     p.setKey("country/name");
-                    p.setValue(h.getZone().getDestination().getCountry().getName());
+                    p.setValue(h.getResort().getDestination().getCountry().getName());
 
 
                 } else throw new Exception("Unknown resource"); // todo: devolver un 404

@@ -191,104 +191,12 @@ public class TPVTransaction {
     public static void main(String[] args) throws Throwable {
         System.out.println("-->" + new DecimalFormat("####.00").format(0.1).replaceAll(",", "").replaceAll("\\.", ""));
 
-        /*
-
-        reservas@viajesibiza.es
-inbox@viajesibiza.es
-inboxtest@viajesibiza.es
-
-Y4t3n3m0sXML
-
-        Servidor POP3    mail.invisahoteles.com  puerto 995 con SSL | dejando copia en el servidor
-Servidor SMTP    mail.invisahoteles.com  puerto  25 con TSL o automático
-Para ambos protocolos:
-·         Usuario:  <el propio email>
-·         Clave:    <se enviará en otro email>
-         */
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager entityManager) throws Exception {
-
-                Email email = new HtmlEmail();
-                //email.setHostName("mail.invisahoteles.com");
-                email.setHostName("mateu");
-                email.setSmtpPort(25);
-                //email.setAuthentication("inboxtest@viajesibiza.es", "Y4t3n3m0sXML");
-                //email.setSSLOnConnect(true);
-                email.setFrom("miguel@mateu.io");
-                //email.setFrom("inboxtest@viajesibiza.es");
-                email.setSubject("TestMail");
-                email.setMsg("This is a test mail ... :-)");
-                email.addTo("miguelperezcolom@gmail.com");
-                email.send();
-
-                /*
-                TPVTransaction t = new TPVTransaction();
-                pm.makePersistent(t);
-                t.setTpv(Helper.getById(pm, TPV.class, "227901"));
-                t.setAmount(new Amount(Currency.getByCode(pm, "CZK"), 123.45));
-                t.setLanguage("es");
-                t.setSubject("TEST PAYMENT");
-                Helper.escribirFichero("/Users/miguel/Documents/webpay.html", "<html><body>" + t.getForm() + "</body></html>");
-                */
-
-            }
-        });
     }
 
 
     private String getMerchantAmount(double amount) {
         return new DecimalFormat("####.00").format(amount).replaceAll(",", "").replaceAll("\\.", "");
     }
-
-    public void sendEmail() throws Throwable {
-
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Exception {
-
-                Email email = new HtmlEmail();
-                email.setHostName("smtp.googlemail.com");
-                email.setSmtpPort(465);
-                email.setAuthenticator(new DefaultAuthenticator("username", "password"));
-                email.setSSLOnConnect(true);
-                email.setFrom("user@gmail.com");
-                email.setSubject("TestMail");
-                email.setMsg("This is a test mail ... :-)");
-                email.addTo("foo@bar.com");
-                email.send();
-
-            }
-        });
-
-        /*
-        PersistenceManager pm = Helper.getPM(this);
-
-        SendEmailTask t = new SendEmailTask();
-        t.setOwner(getUser());
-        t.setHost(AppConfig.get(pm).getEmailHost());
-        t.setUser(AppConfig.get(pm).getEmailUsuario());
-        t.setPassword(AppConfig.get(pm).getEmailPassword());
-        t.setDescription("CREDIT CARD PAYMENT (" + getTpv().getType() + ") SENT TO " + getEmailTo());
-        t.setCreated(new Date());
-        t.setFrom(getUser().getEmail());
-        t.setTo(getEmailTo());
-        t.setSubject("PAGO TPV");
-        //vu.urlcontent=http://testadmin.busso.io/vuweb/content/
-        //t.setHtml(getEmailHtml().replaceAll("--paymentlink--", (System.getProperty("vu.urlcontent", "http://testadmin.busso.io/vuweb/content/").replaceAll("/vuweb/content/", "")) + "/siar/tpvlanzadera.jsp?idtransaccion=" + Helper.getID(this)));
-        t.setHtml(getEmailHtml().replaceAll("--paymentlink--", getBoton()));
-        t.setEmbedImages(true);
-
-        if (getBasket() != null) {
-            getBasket().getTasks().add(t);
-            getBasket().getTaskList().add(t);
-        }
-
-        pm.makePersistent(t);
-        */
-    }
-
 
     public String getBoton(EntityManager em) throws Exception {
         return getBoton(em, this.getBooking().getId(), getValue(), "" + getCurrency().getIsoNumericCode(), "" + getCurrency().getIsoCode());

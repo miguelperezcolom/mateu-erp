@@ -16,8 +16,18 @@ public class CancellationTerm {
     @ManyToOne@NotNull
     private Booking booking;
 
+    @NotNull
     private LocalDate date;
 
     private double amount;
 
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof CancellationTerm && id == ((CancellationTerm) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "" + date + " " + amount;
+    }
 }

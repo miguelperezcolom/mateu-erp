@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking.lists;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -50,7 +51,7 @@ public class ExpiringBookingsListView extends AbstractJPQLListView<ExpiringBooki
     }
 
     @Override
-    public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
+    public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
         ql += " select b.id, b.leadName, b.agency.name, b.expiryDate, b.start, b.totalPaid, b.balance ";

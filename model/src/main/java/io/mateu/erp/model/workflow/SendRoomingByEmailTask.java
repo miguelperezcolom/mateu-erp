@@ -4,14 +4,12 @@ import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
-import java.io.IOException;
 import java.util.*;
 
 @Entity@Getter@Setter
@@ -65,7 +63,7 @@ public class SendRoomingByEmailTask extends SendEmailTask {
                 dl.put("rooms", l.getRooms());
                 dl.put("room", l.getRoom().getName());
                 dl.put("board", l.getBoard().getName());
-                dl.put("adults", l.getAdultsPerRoon());
+                dl.put("adults", l.getAdultsPerRoom());
                 dl.put("children", l.getChildrenPerRoom());
                 dl.put("ages", l.getAges() != null?Arrays.toString(l.getAges()):"");
                 dl.put("available", l.isAvailable());

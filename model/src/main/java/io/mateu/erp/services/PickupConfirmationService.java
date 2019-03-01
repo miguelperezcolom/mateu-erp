@@ -45,7 +45,7 @@ public class PickupConfirmationService {
                             if (t.getPickupTime() != null) {
                                 found = true;
                                 d.put("result", "ok");
-                                d.put("message", "Found file with reference " + p + "");
+                                d.put("message", "Found booking with reference " + p + "");
                                 d.put("service", t.getData());
                                 t.setPickupConfirmedByWeb(LocalDateTime.now());
                             }
@@ -53,11 +53,11 @@ public class PickupConfirmationService {
                     }
                     if (!found) {
                         d.put("result", "error");
-                        d.put("message", "No pickup info for file with reference " + p + ". Please check again within 24 hours before departure.");
+                        d.put("message", "No pickup info for booking with reference " + p + ". Please check again within 24 hours before departure.");
                     }
                 } else {
                     d.put("result", "error");
-                    d.put("message", "No file with reference " + p);
+                    d.put("message", "No booking with reference " + p);
                 }
             }
         });

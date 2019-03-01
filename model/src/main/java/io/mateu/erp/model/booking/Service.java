@@ -32,10 +32,7 @@ import org.jdom2.output.XMLOutputter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -52,6 +49,7 @@ import java.util.stream.Collectors;
 @Setter
 @NewNotAllowed
 @Indelible
+@Table(indexes = { @Index(name = "i_service_deprecated", columnList = "deprecated") })
 public abstract class Service {
 
     @Id
@@ -79,7 +77,6 @@ public abstract class Service {
     private Booking booking;
 
     public void setBooking(Booking booking) {
-        if (!Helper.equals(this.booking, booking)) updatePending = true;
         this.booking = booking;
     }
 
@@ -123,11 +120,6 @@ public abstract class Service {
     @ColumnWidth(106)
     @KPI
     private boolean active = true;
-
-    public void setActive(boolean active) {
-        if (this.active != active) updatePending = true;
-        this.active = active;
-    }
 
     @ListColumn
     @CellStyleGenerator(NoShowCellStyleGenerator.class)
@@ -245,6 +237,9 @@ public abstract class Service {
     @KPI
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
     private boolean valued;
+
+    @KPI
+    private double total;
 
     @KPI
     private boolean available;
@@ -465,6 +460,15 @@ public abstract class Service {
     public void checkPurchase(EntityManager em, User u) throws Throwable {
         if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setSignature(createSignature());
+            setProcessingStatus(ProcessingStatus.INITIAL);
+
+            try {
+                setTotal(rate(em, false));
+                setValued(true);
+            } catch (Throwable e) {
+                setTotal(0);
+                setValued(false);
+            }
 
             refreshPurchaseOrders(em, u);
 
@@ -641,12 +645,12 @@ public abstract class Service {
                             es.setAttribute("direction", "" + s.getDirection());
                             es.setAttribute("pax", "" + s.getPax());
                             es.setAttribute("pickup", "" + ((s.getEffectivePickup() != null)?s.getEffectivePickup().getName():s.getPickupText()));
-                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getZone().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getZone().getName());
+                            if (s.getEffectivePickup() != null && s.getEffectivePickup().getResort().getName() != null) es.setAttribute("pickupResort", s.getEffectivePickup().getResort().getName());
                             if (s.getEffectivePickup() != null && s.getEffectivePickup().getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(s.getTransferType()) && (TransferType.SHUTTLE.equals(s.getTransferType()) || s.getEffectivePickup().isAlternatePointForNonExecutive())) {
                                 es.setAttribute("alternatePickup", "" + s.getEffectivePickup().getAlternatePointForShuttle().getName());
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
-                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getZone().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getZone().getName());
+                            if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getResort().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getResort().getName());
                             if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
                             if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                             es.setAttribute("transferType", "" + s.getTransferType());
@@ -698,9 +702,20 @@ public abstract class Service {
     }
 
 
+    public double rate(EntityManager em, boolean sale) throws Throwable {
+        StringWriter sw = new StringWriter();
+        PrintWriter report = new PrintWriter(sw);
 
-    public double rate(EntityManager em, boolean sale, PrintWriter report) throws Throwable {
-        return rate(em, sale, null, report);
+        double v = 0;
+        if (!sale && isCostOverrided()) {
+            v = getOverridedCostValue();
+            report.print("Cost overrided for " + v);
+        } else {
+            v = rate(em, sale, null, report);
+        }
+
+        System.out.println(sw.toString());
+        return v;
     }
 
     public abstract double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable;
@@ -861,6 +876,14 @@ public abstract class Service {
         // todo: esto lo hemos llevado a la reserva
         setValidationStatus(ValidationStatus.VALID);
         setValidationMessage("");
+    }
+
+
+    @PrePersist@PreUpdate
+    public void pre() {
+        if (getSignature() == null || !getSignature().equals(createSignature())) {
+            setUpdatePending(true);
+        }
     }
 
     @PostPersist@PostUpdate

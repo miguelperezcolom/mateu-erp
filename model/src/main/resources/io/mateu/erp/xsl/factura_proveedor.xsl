@@ -39,7 +39,7 @@
                                                     </fo:block>
                                                     <fo:block font-size="12pt"><xsl:value-of select="provider/name"/></fo:block>
                                                     <fo:block font-size="12pt"><xsl:value-of select="provider/address"/></fo:block>
-                                                    <fo:block font-size="12pt"><xsl:value-of select="provider/zip"/> <xsl:value-of select="provider/city"/></fo:block>
+                                                    <fo:block font-size="12pt"><xsl:value-of select="provider/zip"/> <xsl:value-of select="provider/resort"/></fo:block>
                                                 </fo:table-cell>
                                                 <fo:table-cell padding="1mm">
                                                     <fo:block text-align="right">
@@ -198,7 +198,7 @@
                                                     <fo:block><xsl:value-of select="client/name"/></fo:block>
                                                     <fo:block>CIF: <xsl:value-of select="client/cif"/></fo:block>
                                                     <fo:block><xsl:value-of select="client/address"/></fo:block>
-                                                    <fo:block><xsl:value-of select="client/zip"/> <xsl:value-of select="client/city"/></fo:block>
+                                                    <fo:block><xsl:value-of select="client/zip"/> <xsl:value-of select="client/resort"/></fo:block>
                                                 </fo:table-cell>
                                             </fo:table-row>
                                         </fo:table-body>

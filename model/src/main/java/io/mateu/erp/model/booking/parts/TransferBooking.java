@@ -2,12 +2,15 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.performance.Accessor;
+import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
@@ -18,15 +21,19 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.easytravelapi.common.BestDeal;
-import org.easytravelapi.transfer.AvailableTransfer;
 import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter@Setter
@@ -110,8 +117,6 @@ public class TransferBooking extends Booking {
     private String departureFlightDestination;
 
 
-    @ManyToOne
-    private Contract contract;
 
     @ManyToOne@Output
     private Vehicle priceForVehicle;
@@ -120,12 +125,37 @@ public class TransferBooking extends Booking {
     private Price priceFromPriceLine;
 
     @ManyToOne
+    @Output
     private TransferBookingRequest transferBookingRequest;
 
     public TransferBooking() {
         setIcons(FontAwesome.BUS.getHtml());
     }
 
+
+    @Override
+    protected void completeChangeSignatureData(Map<String, String> data) {
+
+        data.put("Big luggages", "" + bigLuggages);
+        data.put("Golfs", "" + golf);
+        data.put("Bikes", "" + bikes);
+        data.put("Wheel chairs", "" + wheelChairs);
+        if (origin != null) data.put("Origin", origin.getName());
+        if (originAddress != null) data.put("Origin address", originAddress);
+        if (destination != null) data.put("Destination", destination.getName());
+        if (destinationAddress != null) data.put("Destination address", destinationAddress);
+        if (transferType != null) data.put("Transfer type", transferType.name());
+
+        if (arrivalFlightTime != null) data.put("Arrival flight time", "" + arrivalFlightTime);
+        if (arrivalFlightNumber != null) data.put("Arrival flight number", arrivalFlightNumber);
+        if (arrivalFlightOrigin != null) data.put("Arrival flight origin", arrivalFlightOrigin);
+
+
+        if (departureFlightTime != null) data.put("Departure flight time", "" + departureFlightTime);
+        if (departureFlightNumber != null) data.put("Departure flight number", departureFlightNumber);
+        if (departureFlightDestination != null) data.put("Departure flight destination", departureFlightDestination);
+
+    }
 
     @Override
     public void validate() throws Exception {
@@ -137,8 +167,13 @@ public class TransferBooking extends Booking {
         //el primer servicio siempre
         if (arrivalFlightTime != null) {
             TransferService s = null;
-            if (getServices().size() > 0) {
-                s = (TransferService) getServices().get(0);
+            for (Service x : getServices()) {
+                if (x instanceof TransferService) {
+                    TransferService tx = (TransferService) x;
+                    if (TransferDirection.INBOUND.equals(tx.getDirection()) || TransferDirection.POINTTOPOINT.equals(tx.getDirection())) {
+                        s = tx;
+                    }
+                }
             }
             if (s == null) {
                 getServices().add(s = new TransferService());
@@ -161,15 +196,19 @@ public class TransferBooking extends Booking {
             s.setFlightOriginOrDestination(arrivalFlightOrigin);
             s.setFlightTime(arrivalFlightTime);
 
-
-            em.merge(s);
+            s.setActive(isActive());
         }
 
         // el segundo servicio quizás
         if (departureFlightTime != null) {
             TransferService s = null;
-            if (getServices().size() > 0) {
-                s = (TransferService) getServices().get(0);
+            for (Service x : getServices()) {
+                if (x instanceof TransferService) {
+                    TransferService tx = (TransferService) x;
+                    if (TransferDirection.OUTBOUND.equals(tx.getDirection())) {
+                        s = tx;
+                    }
+                }
             }
             if (s == null) {
                 getServices().add(s = new TransferService());
@@ -192,8 +231,7 @@ public class TransferBooking extends Booking {
             s.setFlightOriginOrDestination(departureFlightDestination);
             s.setFlightTime(departureFlightTime);
 
-
-            em.merge(s);
+            s.setActive(isActive());
         } else {
             if (getServices().size() > 1) {
                 getServices().get(1).cancel(em, getAudit().getModifiedBy());
@@ -206,7 +244,28 @@ public class TransferBooking extends Booking {
 
         setTotalValue(0);
 
+        boolean sale = true;
+
+        // seleccionamos los contratos válidos
+        List<Contract> contracts = new ArrayList<>();
         for (Contract c : Accessor.get(em).getTransferContracts()) {
+            boolean ok = true;
+            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getAgency());
+            ok &= getProvider() == null || getProvider().equals(c.getSupplier());
+            ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
+            ok &= c.getValidTo().isAfter(getEnd()) || c.getValidTo().equals(getEnd());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
+        }
+
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+
+        if (propietaryContracts.size() > 0) contracts = propietaryContracts;
+
+        for (Contract c : contracts) {
 
             boolean contratoOk = true;
 
@@ -219,9 +278,9 @@ public class TransferBooking extends Booking {
 
                 for (Price p : c.getPrices()) {
 
-                    boolean precioOk = p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getCities().contains(getOrigin().getZone());
+                    boolean precioOk = p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getResorts().contains(getOrigin().getResort());
 
-                    precioOk = precioOk && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getCities().contains(getDestination().getZone()));
+                    precioOk = precioOk && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getResorts().contains(getDestination().getResort()));
 
                     precioOk = precioOk && p.getTransferType().equals(getTransferType());
 
@@ -343,6 +402,8 @@ public class TransferBooking extends Booking {
     }
 
 
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
 
-
+    }
 }

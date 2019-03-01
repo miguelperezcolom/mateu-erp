@@ -8,7 +8,10 @@ import io.mateu.erp.model.booking.hotel.HotelServiceLine;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
+import io.mateu.erp.model.product.hotel.Inventory;
+import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -23,7 +26,10 @@ import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -106,6 +112,128 @@ public class HotelBooking extends Booking {
 
     @Override
     public void priceServices(EntityManager em) {
+        setTotalValue(0);
+
+        boolean sale = true;
+
+        // seleccionamos los contratos válidos
+        List<HotelContract> contracts = new ArrayList<>();
+        for (HotelContract c : getHotel().getContracts()) {
+            boolean ok = true;
+            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
+            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getAgency());
+            ok &= getProvider() == null || getProvider().equals(c.getSupplier());
+            ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
+            ok &= c.getValidTo().isAfter(getEnd()) || c.getValidTo().equals(getEnd());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
+        }
+
+        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+
+        if (propietaryContracts.size() > 0) contracts = propietaryContracts;
+
+        for (HotelBookingLine o : getLines()) {
+
+            int infants = 0;
+            int children = 0;
+            int juniors = 0;
+            int adults = 0;
+            if (o.getAges() != null) for (int i = 0; i < o.getAges().length; i++) {
+                if (o.getAges()[i] < getHotel().getChildStartAge()) infants++;
+                else if (o.getAges()[i] < getHotel().getJuniorStartAge()) children++;
+                else if (o.getAges()[i] < getHotel().getAdultStartAge()) {
+                    if (getHotel().getJuniorStartAge() > 0) juniors++;
+                    else children++;
+                }
+            }
+            infants = infants / o.getRooms();
+            children = children / o.getRooms();
+            juniors = juniors / o.getRooms(); // todo: repartir mejor (ir distribuyendo los bebes, niños, juniors)
+
+            adults = (o.getAdultsPerRoom() + o.getChildrenPerRoom()) - juniors - children - infants;
+
+
+            List<HotelContract> contratosValidos = new ArrayList<>();
+            for (HotelContract c : getHotel().getContracts()) {
+                if (c.isValidForSale(getAgency(), o.getStart(), o.getEnd())) {
+                    contratosValidos.add(c);
+                }
+            }
+
+
+            if (contratosValidos.size() > 0) {
+                if (o.getRoom().fits(adults + juniors, children, infants)) {
+
+                    if (o.getContract() != null) {
+                        try {
+                            o.check();
+                            if (o.isAvailable()) {
+
+                                o.price();
+
+                            }
+                        } catch (Throwable throwable) {
+                            //throwable.printStackTrace();
+                        }
+                    } else {
+
+                        Map<HotelContract, Double> valoraciones = new HashMap<>();
+
+                        Inventory oldInventory = o.getInventory();
+
+
+                        for (HotelContract c : contratosValidos) {
+
+                            o.setContract(c);
+                            o.setInventory(c.getInventory());
+
+                            try {
+                                o.check();
+                                if (o.isAvailable()) {
+
+                                    o.price();
+
+                                    if (o.isValued()) {
+
+                                        valoraciones.put(c, o.getValue());
+                                    }
+
+                                }
+                            } catch (Throwable throwable) {
+                                //throwable.printStackTrace();
+                            }
+                        }
+
+                        HotelContract bestContract = null;
+                        double min = 0;
+                        for (HotelContract c : valoraciones.keySet()) {
+                                if (valoraciones.get(c) > 0 && (min == 0 || min > valoraciones.get(c))) {
+                                    bestContract = c;
+                                    min = valoraciones.get(c);
+                                }
+                            }
+
+                        if (min > 0) {
+                            o.setContract(bestContract);
+                            o.setInventory(bestContract.getInventory());
+                            o.setValued(true);
+                            o.setValue(min);
+                        } else {
+                            o.setContract(null);
+                            o.setInventory(oldInventory);
+                            o.setValued(false);
+                            o.setValue(0);
+                        }
+
+                    }
+
+                }
+            }
+
+        }
 
     }
 
@@ -231,7 +359,7 @@ public class HotelBooking extends Booking {
                     "                            <tr><td>Llegada:</td><td>" + l.getStart() + "</td></tr>\n" +
                     "                            <tr><td>Salida:</td><td>" + l.getEnd() + "</td></tr>\n" +
                     "                            <tr><td>Noches:</td><td>" + DAYS.between(l.getStart(), l.getEnd().minusDays(1)) + "</td></tr>\n" +
-                    "                            <tr><td>Adultos/hab.:</td><td>" + l.getAdultsPerRoon() + "</td></tr>\n" +
+                    "                            <tr><td>Adultos/hab.:</td><td>" + l.getAdultsPerRoom() + "</td></tr>\n" +
                     "                            <tr><td>Niños/hab.</td><td>" + l.getChildrenPerRoom() + "</td></tr>\n" +
 //                    "                            <tr><td>Oferta:</td><td>EB 15%</td></tr>\n" +
                     "                        </table>\n" +
@@ -253,7 +381,7 @@ public class HotelBooking extends Booking {
                 "\n" +
                 "                <table width='100%'>\n" +
                 "                    <tr><td width='33%'>Nombre del hotel</td><td>" + hotel.getName() + "</td></tr>\n" +
-                "                    <tr><td>Dirección</td><td>" + hotel.getAddress() + " " + hotel.getZone() + " " + hotel.getZone().getDestination() + " " + hotel.getZip() + "</td></tr>\n" +
+                "                    <tr><td>Dirección</td><td>" + hotel.getAddress() + " " + hotel.getResort() + " " + hotel.getResort().getDestination() + " " + hotel.getZip() + "</td></tr>\n" +
                 "                    <tr><td>Teléfono</td><td>" + hotel.getTelephone() + "</td></tr>\n" +
                 "                    <tr><td>E-mail</td><td>" + hotel.getEmail() + "</td></tr>\n" +
                 "                    <tr><td>Localización GPS</td><td>" + hotel.getLat() + ", " + hotel.getLon() + "</td></tr>\n" +
@@ -265,11 +393,22 @@ public class HotelBooking extends Booking {
     }
 
     @Override
+    protected void completeChangeSignatureData(Map<String, String> data) {
+        data.put("Hotel", getHotel().getName());
+        lines.forEach(p -> data.put("Hotel line " + lines.indexOf(p), p.toSimpleString()));
+    }
+
+    @Override
     public String getPaymentRemarksHtml() {
         String h = "";
 
-        h += hotel.getZone().getDestination().getPaymentRemarks();
+        h += hotel.getResort().getDestination().getPaymentRemarks();
 
         return h;
+    }
+
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
+
     }
 }

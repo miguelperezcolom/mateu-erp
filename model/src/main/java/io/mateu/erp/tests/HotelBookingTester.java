@@ -71,7 +71,7 @@ public class HotelBookingTester {
             l.setRooms(1);
             l.setStart(LocalDate.of(2019, 6, 1));
             l.setEnd(LocalDate.of(2019, 6, 5));
-            l.setAdultsPerRoon(2);
+            l.setAdultsPerRoom(2);
             l.setChildrenPerRoom(0);
             l.setAges(null);
             l.setContract(b.getHotel().getContracts().stream().filter(c -> ContractType.SALE.equals(c.getType())).findFirst().get());

@@ -223,8 +223,8 @@ public class Vertice extends AbstractVerticle {
                 rs.getValues().add(new Pair("/country/name", d.getCountryName()));
                 rs.getValues().add(new Pair("/state/id", d.getStateId()));
                 rs.getValues().add(new Pair("/state/name", d.getStateName()));
-                rs.getValues().add(new Pair("/city/id", d.getCityId()));
-                rs.getValues().add(new Pair("/city/name", d.getCityName()));
+                rs.getValues().add(new Pair("/resort/id", d.getCityId()));
+                rs.getValues().add(new Pair("/resort/name", d.getCityName()));
                 int pos = 0;
                 for (String s : d.getOtherImagesUrls()) {
                     rs.getValues().add(new Pair("/images/" + pos++, s));

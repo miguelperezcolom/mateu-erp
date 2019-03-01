@@ -16,6 +16,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter@Setter
@@ -68,6 +69,11 @@ public class ThirdPartyHotelBooking extends Booking {
 
 
     @Override
+    protected void completeChangeSignatureData(Map<String, String> data) {
+
+    }
+
+    @Override
     public void validate() throws Exception {
 
     }
@@ -105,6 +111,11 @@ public class ThirdPartyHotelBooking extends Booking {
 
     @Override
     public void priceServices(EntityManager em) {
+
+    }
+
+    @Override
+    protected void completeSignature(Map<String, Object> m) {
 
     }
 }

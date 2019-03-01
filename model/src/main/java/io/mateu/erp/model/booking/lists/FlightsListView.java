@@ -1,8 +1,10 @@
 package io.mateu.erp.model.booking.lists;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.parts.TransferBooking;
-import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.booking.transfer.TransferDirection;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
 import io.mateu.mdd.core.util.Helper;
@@ -35,38 +37,40 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
         private long bookings;
 
         private long pax;
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj || (obj != null && obj instanceof Row && getSignature().equals(((Row)obj).getSignature()));
+        }
+
+        public String getSignature() {
+            return "" + flightNumber + "-" + flightTime;
+        }
     }
 
     @Override
-    public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
+    public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
-        ql += " select b.arrivalflightnumber as fn, to_char(b.arrivalflighttime, 'yyyy-MM-dd HH:mi') as ft, count(*), sum(b.adults + b.children) ";
+        ql += " select b.flightNumber as fn, to_char(b.flightTime, 'yyyy-MM-dd HH24:mi') as ft, count(*), sum(b.pax) ";
 
-        ql+= " from booking b ";
+        ql+= " from service b ";
 
         Map<String, Object> params = new HashMap<>();
         String w = "";
 
-        w += " b.dtype = 'TransferBooking' and b.active = true ";
+        w += " b.dtype = 'TransferService' and b.active = true ";
 
         if (checkInFrom != null) {
             if (!"".equals(w)) w += " and ";
-            w += " b.start >= ?s";
-            params.put("s", checkInFrom);
+            w += " b.flightTime >= ?s";
+            params.put("s", checkInFrom.atStartOfDay());
         }
         if (checkInTo != null) {
             if (!"".equals(w)) w += " and ";
-            w += " b.end <= ?t";
-            params.put("t", checkInTo);
+            w += " b.flightTime < ?t";
+            params.put("t", checkInTo.plusDays(1).atStartOfDay());
         }
-        /*
-        if (hotel != null) {
-            if (!"".equals(w)) w += " and ";
-            w += " x.hotel.id <= :h";
-            params.put("h", hotel.getId());
-        }
-        */
 
         if (!"".equals(w)) ql += " where " + w + " ";
 
@@ -87,12 +91,12 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
 
     @Action
-    public static void changeFlightInfo(String flightNumber, LocalDateTime flightTime, Set<Row> selection) throws Throwable {
+    public static void changeFlightInfo(String flightNumber, Integer flightTime, Set<Row> selection) throws Throwable {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Row r : selection) {
             Helper.transact(em -> {
 
-                String s = "select x from " + TransferBooking.class.getName() + " x ";
+                String s = "select x from " + TransferService.class.getName() + " x ";
 
                 Map<String, Object> params = new HashMap<>();
 
@@ -100,14 +104,15 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
                 if (r.getFlightNumber() != null) {
                     if (!"".equals(w)) w += " and ";
-                    w += " x.arrivalFlightNumber = :fn";
+                    w += " x.flightNumber = :fn";
                     params.put("fn", r.getFlightNumber());
                 }
 
                 if (r.getFlightTime() != null) {
                     if (!"".equals(w)) w += " and ";
-                    w += " x.arrivalFlightTime = :ft";
-                    params.put("ft", LocalDateTime.parse(r.getFlightTime(), dtf));
+                    w += " x.flightTime >= :ft0 and x.flightTime < :ft1 ";
+                    params.put("ft0", LocalDateTime.parse(r.getFlightTime(), dtf));
+                    params.put("ft1", LocalDateTime.parse(r.getFlightTime(), dtf).plusMinutes(1));
                 }
 
                 if (!"".equals(w)) s += " where " + w + " ";
@@ -116,11 +121,19 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
                 Query q = em.createQuery(s);
                 params.keySet().forEach(k -> q.setParameter(k, params.get(k)));
-                List<TransferBooking> bookings = q.getResultList();
+                List<TransferService> bookings = q.getResultList();
 
-                for (TransferBooking b : bookings) {
-                    if (!Strings.isNullOrEmpty(flightNumber)) b.setArrivalFlightNumber(flightNumber);
-                    if (flightTime != null) b.setArrivalFlightTime(flightTime);
+                for (TransferService b : bookings) {
+                    if (!Strings.isNullOrEmpty(flightNumber)) {
+                        if (TransferDirection.OUTBOUND.equals(b.getDirection())) ((TransferBooking)b.getBooking()).setDepartureFlightNumber(flightNumber);
+                        else ((TransferBooking)b.getBooking()).setArrivalFlightNumber(flightNumber);
+                    }
+                    if (flightTime != null) {
+                        LocalDateTime d = TransferDirection.OUTBOUND.equals(b.getDirection())?((TransferBooking) b.getBooking()).getDepartureFlightTime():((TransferBooking) b.getBooking()).getArrivalFlightTime();
+                        d = LocalDateTime.of(d.getYear(), d.getMonthValue(), d.getDayOfMonth(), ((flightTime - flightTime % 100) / 100), flightTime % 100);
+                        if (TransferDirection.OUTBOUND.equals(b.getDirection())) ((TransferBooking)b.getBooking()).setDepartureFlightTime(d);
+                        else ((TransferBooking)b.getBooking()).setArrivalFlightTime(d);
+                    }
                 }
 
             });

@@ -25,4 +25,14 @@ public class GenericBookingExtra {
     private Extra extra;
 
     private int units;
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || id != 0 && id == ((GenericBookingExtra)obj).getId();
+    }
+
+    @Override
+    public String toString() {
+        return "" + units + " x " + extra;
+    }
 }

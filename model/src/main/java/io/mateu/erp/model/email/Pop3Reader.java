@@ -1,21 +1,33 @@
 package io.mateu.erp.model.email;
 
 import com.Ostermiller.util.CSVParser;
+import com.Ostermiller.util.CSVPrinter;
+import com.google.common.base.Charsets;
 import com.sun.mail.pop3.POP3Folder;
+import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.importing.TraveltinoImporter;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.importing.TransferBookingRequest;
+import io.mateu.erp.model.importing.TraveltinoImportTask;
+import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.mdd.core.model.util.Constants;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.mail.*;
 import javax.persistence.EntityManager;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -27,16 +39,78 @@ import static org.apache.fop.fonts.type1.AdobeStandardEncoding.w;
  */
 public class Pop3Reader {
 
+    private static boolean testing;
+
+
     public static void main(String... args) throws Throwable {
+
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+
+        EmailHelper.setTesting(true);
+
+
+        testTraveltino();
+
+        /*
+        testing = true;
 
         //test();
 
         read();
+        */
+
+        WorkflowEngine.exit(0);
     }
+
+    private static void testTraveltino() throws IOException {
+
+        System.out.println("test traveltino on /home/miguel/work/viajesibiza");
+
+        Files.list(Paths.get("/home/miguel/work/viajesibiza")).filter(p -> p.getFileName().toString().startsWith("traveltino_")).sorted().forEach(p -> {
+
+            System.out.println(p.getFileName());
+
+
+            if (true) {
+                try {
+                    String[][] csv = CSVParser.parse(new FileReader(p.toFile()), '¬');
+
+                    if (csv != null) {
+
+                        StringWriter sw = new StringWriter();
+                        new CSVPrinter(sw, 'x', '"','¬').println(csv);
+
+                        try {
+                            Helper.transact(em -> {
+                                User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                                TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Partner) Helper.selectObjects("select x from Partner x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                                em.persist(t);
+
+                            });
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
+                        }
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+        });
+
+        //TransferBookingRequest.run();
+    }
+
 
     public static void read() throws InterruptedException {
 
-        while (true) {
+        boolean dentro = true;
+
+        while (dentro) {
 
             int[] read = {0};
 
@@ -68,14 +142,18 @@ public class Pop3Reader {
                             // get the list of inbox messages
                             Message[] messages = inbox.getMessages();
 
+
+
+
                             if (messages.length == 0) System.out.println("" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ": No messages found.");
+                            else System.out.println("" + messages.length + " messages read from pop3");
 
                             for (int i = 0; i < messages.length; i++) {
                                 if (i > 10) break;
 
                                 Message m = messages[i];
 
-                                m.setFlag(Flags.Flag.DELETED, true);
+                                if (!testing) m.setFlag(Flags.Flag.DELETED, true);
 
                                 try {
 
@@ -107,7 +185,7 @@ public class Pop3Reader {
 
 
 
-                        inbox.close(true);
+                        inbox.close(!testing);
                         store.close();
 
                     }
@@ -116,12 +194,9 @@ public class Pop3Reader {
                 throwable.printStackTrace();
             }
 
-            if (read[0] == 0) Thread.currentThread().sleep(60000);
+            if (!testing && read[0] == 0) Thread.currentThread().sleep(60000);
 
-            if (false) { // para que sonarlint no se queje ;)
-                break;
-            }
-
+            dentro = !testing;
         }
 
     }
@@ -139,26 +214,29 @@ public class Pop3Reader {
                 String disposition = part.getDisposition();
                 if ((disposition != null) && ((disposition.equals(Part.ATTACHMENT) || disposition.equals(Part.INLINE)))) {
 
-                    String[][] csv = CSVParser.parse(new InputStreamReader(part.getInputStream()), '¬');
+                    String[][] csv = CSVParser.parse(new InputStreamReader(part.getInputStream(), Charsets.UTF_8), '¬');
 
-                    if (w != null) {
+                    if (csv != null) {
+
+                        if (testing) {
+                            new CSVPrinter(new FileWriter("/home/miguel/work/viajesibiza/traveltino_" + System.currentTimeMillis() + ".csv")).println(csv);
+                        }
+
 
                         StringWriter sw = new StringWriter();
-                        PrintWriter pw = new PrintWriter(sw);
+                        new CSVPrinter(sw).println(csv);
 
-                        TraveltinoImporter.process(em, csv, pw);
-
-                        Helper.resend(appconfig.getAdminEmailSmtpHost(), appconfig.getAdminEmailSmtpPort(), appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword(), m, "TRAVELTINO MANIFEST READ", appconfig.getPop3ReboundToEmail(), null, sw.toString());
-
+                        User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                        TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Partner) Helper.selectObjects("select x from Partner x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                        em.persist(t);
 
                     }
-
-
 
                 }
             }
         }
 
+        Helper.resend(appconfig.getAdminEmailSmtpHost(), appconfig.getAdminEmailSmtpPort(), appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword(), m, "TRAVELTINO MANIFEST READ", appconfig.getPop3ReboundToEmail(), null);
 
     }
 

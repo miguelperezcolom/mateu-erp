@@ -79,7 +79,7 @@ public class Excursion extends Tour {
             }
         });
 
-        byDateDeprecated.values().stream().forEach(byShitf -> byShitf.values().stream().filter(e -> e.getBookings().size() == 0 && e.getServices().size() == 0).forEach(e -> em.remove(e)));
+        byDateDeprecated.values().stream().forEach(byShift -> byShift.values().stream().filter(e -> e.getBookings().size() == 0 && e.getServices().size() == 0).forEach(e -> em.remove(e)));
     }
 
     private void fill(Map<LocalDate,Map<TourShift,ManagedEvent>> byDate) {

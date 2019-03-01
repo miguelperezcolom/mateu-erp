@@ -3,7 +3,7 @@ package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ public class ZoneProductRemark {
     private Destination destination;
 
     @ManyToOne
-    private Zone zone;
+    private Resort resort;
 
     @ManyToOne
     private Literal text;

@@ -19,9 +19,9 @@ public class CommonsTester {
 
 
     public static void main(String[] args) {
-        System.setProperty("appconf", "/home/miguel/work/demo.properties");
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
 
-        String token = "eyAiY3JlYXRlZCI6ICJUaHUgRGVjIDI3IDE1OjE5OjQ0IENFVCAyMDE4IiwgInVzZXJJZCI6ICJ3ZWJ4IiwgInBhcnRuZXJJZCI6ICI0In0=";
+        String token = "eyAiY3JlYXRlZCI6ICJXZWQgRmViIDIwIDE2OjI3OjE1IENFVCAyMDE5IiwgInVzZXJJZCI6ICJ3ZWIiLCAicGFydG5lcklkIjogIjEifQ==";
 
         //testPortfolio(token);
 
@@ -35,9 +35,11 @@ public class CommonsTester {
 
         //testAvailTransfers(token);
 
+        //testAvailTransfers(token);
+
         //testTransferDetails(token);
 
-        testTransferConfirm(token);
+        //testTransferConfirm(token);
         
         //testGenericAvail(token);
 
@@ -47,9 +49,9 @@ public class CommonsTester {
 
         //testGenericPriceDetail(token);
 
-        //testGenericConfirm(token);
+        testGenericConfirm(token);
 
-        testTourAvail(token);
+        //testTourAvail(token);
 
         WorkflowEngine.exit(0);
     }
@@ -60,7 +62,7 @@ public class CommonsTester {
     private static void testGenericConfirm(String token) {
         try {
             BookGenericRQ rq = new BookGenericRQ();
-            rq.setKey("ewogICJwcm9kdWN0IiA6ICIyMiIsCiAgImNoaWxkcmVuIiA6IDAsCiAgImFkdWx0cyIgOiAwLAogICJzdGFydCIgOiAyMDE5MDYwMSwKICAiZW5kIiA6IDIwMTkwNjA3LAogICJsYW5ndWFnZSIgOiAiZXMiLAogICJ1bml0cyIgOiAxLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9Igp9");
+            rq.setKey("ewogICJwcm9kdWN0IiA6ICIxIiwKICAiY2hpbGRyZW4iIDogMCwKICAiYWR1bHRzIiA6IDAsCiAgInZhcmlhbnQiIDogbnVsbCwKICAic3RhcnQiIDogMjAxOTA2MDEsCiAgImVuZCIgOiAyMDE5MDYwNywKICAibGFuZ3VhZ2UiIDogImVzIiwKICAidW5pdHMiIDogMSwKICAidG9rZW4iIDogImV5QWlZM0psWVhSbFpDSTZJQ0pYWldRZ1JtVmlJREl3SURFMk9qSTNPakUxSUVORlZDQXlNREU1SWl3Z0luVnpaWEpKWkNJNklDSjNaV0lpTENBaWNHRnlkRzVsY2tsa0lqb2dJakVpZlE9PSIKfQ==");
             rq.setBookingReference("Test " + LocalDateTime.now());
             rq.setCommentsToProvider("Test");
             rq.setEmail("miguelperezcolom@gmail.com");
@@ -74,7 +76,7 @@ public class CommonsTester {
 
     private static void testGenericPriceDetail(String token) {
         try {
-            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericPriceDetails(token, "ewogICJwcm9kdWN0IiA6ICIyMiIsCiAgImNoaWxkcmVuIiA6IDAsCiAgImFkdWx0cyIgOiAwLAogICJzdGFydCIgOiAyMDE5MDYwMSwKICAiZW5kIiA6IDIwMTkwNjA3LAogICJsYW5ndWFnZSIgOiAiZXMiLAogICJ1bml0cyIgOiAxLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9Igp9", "es", null, null)));
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericPriceDetails(token, "ewogICJwcm9kdWN0IiA6ICIzIiwKICAiY2hpbGRyZW4iIDogMCwKICAiYWR1bHRzIiA6IDAsCiAgInZhcmlhbnQiIDogIjIiLAogICJzdGFydCIgOiAyMDE5MDYwMSwKICAiZW5kIiA6IDIwMTkwNjA3LAogICJsYW5ndWFnZSIgOiAiZXMiLAogICJ1bml0cyIgOiAxLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSk5iMjRnUm1WaUlERTRJREUxT2pJd09qUXhJRU5GVkNBeU1ERTVJaXdnSW5WelpYSkpaQ0k2SUNKaFpHMXBiaUlzSUNKd1lYSjBibVZ5U1dRaU9pQWlNeUo5Igp9", "es", null, null)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -82,7 +84,7 @@ public class CommonsTester {
 
     private static void testGenericCheck(String token) {
         try {
-            System.out.println(Helper.toJson(new GenericBookingServiceImpl().check(token, "gen-22", 0, 0, 1, 20190601, 20190607, "es")));
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().check(token, "gen-1", 0, 0, 1, 20190601, 20190607, "es")));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -90,7 +92,7 @@ public class CommonsTester {
 
     private static void testGenericRates(String token) {
         try {
-            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericRates(token, "gen-22", "es")));
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getGenericRates(token, "gen-3", "es")));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -98,7 +100,7 @@ public class CommonsTester {
 
     private static void testGenericAvail(String token) {
         try {
-            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getAvailableGenerics(token, "des-1", "es")));
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().getAvailableGenerics(token, "cou-ES", "es")));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -140,7 +142,7 @@ public class CommonsTester {
 
     private static void testAvailTransfers(String token) {
         try {
-            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-1", "tp-2", 2, 0, 0, 0, 0, 0, 20190501, 20190513)));
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-779", "tp-781", 1, 0, 0, 0, 0, 0, 20190501, 20190513)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -188,7 +190,7 @@ public class CommonsTester {
             GetHotelRatesRQ rq = new GetHotelRatesRQ();
             rq.setCheckin(20190601);
             rq.setCheckout(20190608);
-            rq.setHotelId("hot-10");
+            rq.setHotelId("hot-6");
             rq.setLanguage("es");
             rq.setOccupancies("1x2");
             System.out.println(Helper.toJson(new HotelBookingServiceImpl().getRates(token, rq)));

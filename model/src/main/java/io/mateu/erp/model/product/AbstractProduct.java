@@ -2,13 +2,16 @@ package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "Product")
 @Getter@Setter
@@ -45,7 +48,8 @@ public abstract class AbstractProduct {
     @ManyToOne
     @ListColumn
     @SearchFilter
-    private Office partnerByDefault;
+    @QLFilter("x.provider = true")
+    private Partner providedBy;
 
 
 
@@ -54,7 +58,13 @@ public abstract class AbstractProduct {
     @ListColumn
     @SearchFilter
     @NoChart
-    private Zone zone;
+    private Resort resort;
+
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "product")
+    @Ignored
+    private List<Variant> variants = new ArrayList<>();
+
 
 
     @ManyToOne(cascade = CascadeType.ALL)

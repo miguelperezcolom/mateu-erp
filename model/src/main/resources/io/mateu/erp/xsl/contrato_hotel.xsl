@@ -178,7 +178,7 @@
                                         , <xsl:value-of select="office/company/@vatIdentificationNumber"/>
                                         , <xsl:value-of select="office/company/@address"/>
                                             , <xsl:value-of select="office/company/@postalCode"/>
-                                            , <xsl:value-of select="office/company/@city"/>
+                                            , <xsl:value-of select="office/company/@resort"/>
                                             , <xsl:value-of select="office/company/@state"/>
                                             , <xsl:value-of select="office/company/@country"/>
                                             -- (THE CUSTOMER) and <fo:inline font-weight="700"><xsl:value-of select="partner/@name"/></fo:inline>
@@ -187,7 +187,7 @@
                                         , <xsl:value-of select="partner/@vatIdentificationNumber"/>
                                         , <xsl:value-of select="partner/@address"/>
                                             , <xsl:value-of select="partner/@postalCode"/>
-                                            , <xsl:value-of select="partner/@city"/>
+                                            , <xsl:value-of select="partner/@resort"/>
                                             , <xsl:value-of select="partner/@state"/>
                                             , <xsl:value-of select="partner/@country"/>
                                             , <xsl:value-of select="partner/@email"/>

@@ -68,4 +68,5 @@ public class BookingCharge extends Charge {
     public void totalChanged() {
         if (booking != null) booking.setUpdatePending(true);
     }
+
 }

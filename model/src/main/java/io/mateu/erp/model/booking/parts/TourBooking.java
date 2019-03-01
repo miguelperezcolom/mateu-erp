@@ -28,4 +28,7 @@ public abstract class TourBooking extends Booking {
     @Position(13)
     private List<TourBookingExtra> extras = new ArrayList<>();
 
+
+
+
 }

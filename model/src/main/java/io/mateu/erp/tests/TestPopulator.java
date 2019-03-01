@@ -22,7 +22,7 @@ import io.mateu.erp.model.product.hotel.offer.Scope;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.data.FareValue;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.multilanguage.Literal;
@@ -189,11 +189,11 @@ public class TestPopulator {
                     for (Destination s : cx.getDestinations()) {
 
                         List<io.mateu.erp.model.product.transfer.Zone> zonas = new ArrayList<>();
-                        for (Zone l : s.getZones()) {
+                        for (Resort l : s.getResorts()) {
                             io.mateu.erp.model.product.transfer.Zone z = new io.mateu.erp.model.product.transfer.Zone();
                             em.persist(z);
                             z.setName(l.getName());
-                            z.getCities().add(l);
+                            z.getResorts().add(l);
                             zonas.add(z);
                         }
 
@@ -276,11 +276,11 @@ public class TestPopulator {
 
                         em.flush();
 
-                        for (Map<String, Object> dl : (List<Map<String, Object>>) ds.get("cities")) {
+                        for (Map<String, Object> dl : (List<Map<String, Object>>) ds.get("resorts")) {
 
-                            Zone l = new Zone();
+                            Resort l = new Resort();
                             l.setName((String) dl.get("name"));
-                            s.getZones().add(l);
+                            s.getResorts().add(l);
                             l.setDestination(s);
                             em.persist(l);
 
@@ -293,7 +293,7 @@ public class TestPopulator {
                                 p.setInstructions("---");
                                 p.setType(TransferPointType.valueOf((String) dtp.get("type")));
                                 l.getTransferPoints().add(p);
-                                p.setZone(l);
+                                p.setResort(l);
                                 em.persist(p);
 
                                 em.flush();
@@ -881,7 +881,7 @@ public class TestPopulator {
             public void run(EntityManager em) throws Throwable {
 
 
-                Zone s = em.find(Zone.class, 1l);
+                Resort s = em.find(Resort.class, 1l);
                 Office o = em.find(Office.class, 1l);
 
 
@@ -929,7 +929,7 @@ public class TestPopulator {
                     Hotel h = (Hotel) hotelClass.newInstance();
                     em.persist(h);
                     h.setName(hn);
-                    h.setZone(s);
+                    h.setResort(s);
                     s.getProducts().add(h);
                     h.setOffice(o);
                     h.setActive(true);

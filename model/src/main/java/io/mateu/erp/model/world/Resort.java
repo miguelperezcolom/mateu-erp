@@ -1,7 +1,6 @@
 package io.mateu.erp.model.world;
 
 import io.mateu.erp.model.product.AbstractProduct;
-import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SearchFilter;
@@ -14,13 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * holder for cities
+ * holder for resorts
  *
  * Created by miguel on 13/9/16.
  */
 @Entity
 @Getter@Setter
-public class Zone {
+public class Resort {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,15 +36,15 @@ public class Zone {
 
     @ElementCollection
     /**
-     * sometimes the same city is known under different names, aka aliases (e.g. Palma de Mallorca is also known as Cuitat)
+     * sometimes the same resort is known under different names, aka aliases (e.g. Palma de Mallorca is also known as Cuitat)
      */
     private List<String> aliases = new ArrayList<>();
 
-    @OneToMany(mappedBy = "zone")
+    @OneToMany(mappedBy = "resort")
     @Ignored
     private List<TransferPoint> transferPoints = new ArrayList<>();
 
-    @OneToMany(mappedBy = "zone")
+    @OneToMany(mappedBy = "resort")
     @Ignored
     private List<AbstractProduct> products = new ArrayList<>();
 
@@ -56,5 +55,10 @@ public class Zone {
     @Override
     public String toString() {
         return getName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Resort && id == ((Resort) obj).getId());
     }
 }

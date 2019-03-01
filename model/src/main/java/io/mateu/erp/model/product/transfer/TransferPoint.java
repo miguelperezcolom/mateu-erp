@@ -5,7 +5,7 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
-import io.mateu.erp.model.world.Zone;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -58,7 +58,7 @@ public class TransferPoint {
     @NotNull
     @SearchFilter
     @ListColumn
-    private Zone zone;
+    private Resort resort;
 
     @ManyToOne
     @NotInList
@@ -185,9 +185,9 @@ public class TransferPoint {
                     for (Destination s : cou.getDestinations()) {
                         Element es;
                         ecou.addContent(es = new Element("state").setAttribute("name", s.getName()));
-                        for (Zone c : s.getZones()) {
+                        for (Resort c : s.getResorts()) {
                             Element ec;
-                            es.addContent(ec = new Element("city").setAttribute("name", c.getName()));
+                            es.addContent(ec = new Element("resort").setAttribute("name", c.getName()));
                             for (TransferPoint p : c.getTransferPoints()) {
                                 Element ep;
                                 ec.addContent(ep = new Element("transferpoint").setAttribute("type", "" + p.getType()).setAttribute("name", p.getName()));
@@ -202,6 +202,12 @@ public class TransferPoint {
         });
 
         return new Document(xml);
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof TransferPoint && id == ((TransferPoint) obj).getId());
     }
 
     public static void main(String[] args) throws Throwable {

@@ -38,4 +38,13 @@ public class DueDate {
 
     private boolean paid;
 
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof DueDate && id == ((DueDate) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "" + type.name() + " " + date + " " + currency.getIsoCode() + " " + amount + " " + (paid?"Paid":"Pending");
+    }
 }

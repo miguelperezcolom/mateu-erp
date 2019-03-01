@@ -4,10 +4,7 @@ import io.mateu.erp.model.product.generic.Contract;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,12 +29,15 @@ public class Accessor {
 
 
     @OneToMany
+    @JoinTable(name = "accessor_genericcontract")
     private List<Contract> genericContracts = new ArrayList<>();
 
     @OneToMany
+    @JoinTable(name = "accessor_transfercontract")
     private List<io.mateu.erp.model.product.transfer.Contract> transferContracts = new ArrayList<>();
 
     @OneToMany
+    @JoinTable(name = "accessor_tourcontract")
     private List<io.mateu.erp.model.product.tour.Contract> tourContracts = new ArrayList<>();
 ;
 

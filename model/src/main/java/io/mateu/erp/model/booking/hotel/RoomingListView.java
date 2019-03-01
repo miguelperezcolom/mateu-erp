@@ -1,5 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
+import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.workflow.SendRoomingByEmailTask;
@@ -44,7 +45,7 @@ public class RoomingListView extends AbstractJPQLListView<RoomingListView.Row> {
     }
 
     @Override
-    public Query buildQuery(EntityManager em, boolean forCount) throws Throwable {
+    public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
         ql += " select h.id, h.name, count(*) ";

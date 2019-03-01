@@ -28,4 +28,14 @@ public class Passenger {
     @TextArea
     private String comments;
 
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Passenger && id == ((Passenger) obj).getId());
+    }
+
+    @Override
+    public String toString() {
+        return "" + firstName + " " + surname + ", age:" + age + (birthDate != null?", birth: " + birthDate.toString():"") + (comments != null?", comm.: " + comments:"");
+    }
 }
