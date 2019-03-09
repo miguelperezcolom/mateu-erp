@@ -4,7 +4,9 @@ import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
+import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.dispo.Helper;
+import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.partners.Partner;
@@ -54,10 +56,10 @@ public class QuotationRequest {
     @ListColumn
     private Partner partner;
 
-    @ListColumn
+    @ListColumn@KPI
     private boolean active = true;
 
-    @ListColumn@SameLine
+    @ListColumn@KPI
     private boolean confirmed;
 
     @ListColumn
@@ -71,9 +73,29 @@ public class QuotationRequest {
     @ListColumn
     private double total;
 
+    @KPI
+    @ListColumn
+    private double totalCost;
+
+    @KPI
+    @ListColumn
+    private double totalMarkup;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
     private List<QuotationRequestLine> lines = new ArrayList<>();
+
+    public String getLinesHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestLine l : lines) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
 
 
     @Section("Operation")
@@ -119,12 +141,33 @@ public class QuotationRequest {
 
     public void updateTotal() {
         double t = 0;
-        for (QuotationRequestLine line : lines) {
+        double c = 0;
+        for (QuotationRequestLine line : lines) if (line.isActive()) {
             t += line.getTotal();
+            c += line.getTotalCost();
         }
         setTotal(Helper.roundEuros(t));
+        setTotalCost(Helper.roundEuros(c));
+        setTotalMarkup(Helper.roundEuros(t - c));
     }
 
+    @Action(saveAfter = true, order = 1, confirmationMessage = "Are you sure you want to cancel this quotation?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    public void cancel() {
+        setActive(false);
+    }
+
+    public boolean isCancelVisible() {
+        return isActive() && !isConfirmed();
+    }
+
+    @Action(saveAfter = true, order = 2, confirmationMessage = "Are you sure you want to confirm this quotation?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    public void confirm() {
+        setConfirmed(true);
+    }
+
+    public boolean isConfirmVisible() {
+        return isActive() && !isConfirmed();
+    }
 
     @Override
     public boolean equals(Object obj) {

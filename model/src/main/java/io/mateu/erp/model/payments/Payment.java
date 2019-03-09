@@ -1,7 +1,9 @@
 package io.mateu.erp.model.payments;
 
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.KPI;
 import io.mateu.mdd.core.util.Helper;
@@ -53,13 +55,16 @@ public class Payment {
      */
     private double value;
 
+    private double valueInNucs;
+
     public void setValue(double value) {
         this.value = value;
         updateBalance();
     }
 
-    @ManyToOne
-    private Payment cost;
+    private double transactionCost;
+
+    private double currencyExchangeCost;
 
     @KPI
     private double balance;
@@ -115,5 +120,11 @@ public class Payment {
         });
     }
 
+
+
+    @Action(icon = VaadinIcons.ENVELOPE)
+    public void sendPaymentLetter() {
+        //todo: pendiente
+    }
 
 }

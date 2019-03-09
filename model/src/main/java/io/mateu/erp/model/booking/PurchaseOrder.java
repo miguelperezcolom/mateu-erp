@@ -446,6 +446,7 @@ public class PurchaseOrder {
             if (TaskStatus.FINISHED.equals(t.getStatus())) {
                 if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
                 setSentTime(t.getFinished());
+                setSent(true);
             }
         }
     }

@@ -1,9 +1,9 @@
 package io.mateu.erp.model.booking;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.partners.Partner;
 import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +11,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 @Entity@Getter@Setter
 public class QuotationRequestLine {
@@ -22,6 +23,7 @@ public class QuotationRequestLine {
     @ManyToOne@NotNull
     private QuotationRequest rq;
 
+    private boolean active = true;
 
     @TextArea
     private String text;
@@ -39,8 +41,13 @@ public class QuotationRequestLine {
     @ManyToOne
     private Partner provider;
 
+    private double cost;
+
     @Ignored
     private double total;
+
+    @Ignored
+    private double totalCost;
 
 
     public void setUnits(double units) {
@@ -53,8 +60,14 @@ public class QuotationRequestLine {
         updateTotal();
     }
 
+    public void setCost(double cost) {
+        this.cost = cost;
+        updateTotal();
+    }
+
     private void updateTotal() {
         setTotal(Helper.roundEuros(units * price));
+        setTotalCost(Helper.roundEuros(units * cost));
     }
 
     public void setTotal(double total) {
@@ -62,5 +75,34 @@ public class QuotationRequestLine {
         if (rq != null) {
             rq.updateTotal();
         }
+    }
+
+    public void setTotalCost(double totalCost) {
+        this.totalCost = totalCost;
+        if (rq != null) {
+            rq.updateTotal();
+        }
+    }
+
+
+    @Override
+    public String toString() {
+        String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
+        h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
+        h += "<tr><th>Nr of units:</th><td>" + units + "</td></tr>";
+        h += "<tr><th>Text:</th><td>" + text + "</td></tr>";
+        h += "<tr><th>Price:</th><td>" + price + "</td></tr>";
+        h += "<tr><th>Provider:</th><td>" + (provider != null?provider.getName():"---") + "</td></tr>";
+        h += "<tr><th>Cost:</th><td>" + cost + "</td></tr>";
+        h += "<tr><th>Total sale:</th><td>" + total + "</td></tr>";
+        h += "<tr><th>Total cost:</th><td>" + Helper.roundEuros(units * cost) + "</td></tr>";
+        h += "<tr><th>Total balance:</th><td>" + Helper.roundEuros(units * (price - cost)) + "</td></tr>";
+        h += "</table>";
+        return h;
+    }
+
+    public String toSimpleString() {
+        String s = text;
+        return s;
     }
 }

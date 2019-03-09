@@ -70,6 +70,8 @@ public class ExcursionService extends Service {
             m.put("adults", getAdults());
             m.put("children", getChildren());
             m.put("cancelled", "" + !isActive());
+            m.put("opsComment", "" + getOperationsComment());
+            m.put("comment", "" + getBooking().getSpecialRequests());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();

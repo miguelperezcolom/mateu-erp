@@ -8,6 +8,7 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
+import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATSettlement;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
@@ -125,6 +126,14 @@ public abstract class Invoice {
 
     @Output
     private double retainedTotal;
+
+    @ManyToOne
+    private VAT vat;
+
+    private boolean specialRegime;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
+    private List<VATLine> VATLines = new ArrayList<>();
 
 
     @ManyToOne
@@ -306,6 +315,20 @@ public abstract class Invoice {
 
             xml.setAttribute("paid", nf.format(0));
             xml.setAttribute("pending", nf.format(getTotal().getValue()));
+
+        }
+
+        xml.addContent(els = new Element("vats"));
+        for (VATLine l : VATLines) {
+            Element el;
+            els.addContent(el = new Element("vat"));
+
+            if (l.isSpecialRegime()) el.setAttribute("specialRegime", "");
+            if (l.isExempt()) el.setAttribute("exempt", "");
+            el.setAttribute("percent", pf.format(l.getPercent()));
+            el.setAttribute("base", nf.format(l.getBase()));
+            el.setAttribute("vat", nf.format(l.getVat()));
+            el.setAttribute("total", nf.format(l.getTotal()));
 
         }
 

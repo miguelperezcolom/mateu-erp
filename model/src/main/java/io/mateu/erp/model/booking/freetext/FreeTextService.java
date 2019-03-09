@@ -66,8 +66,9 @@ public class FreeTextService extends Service {
             m.put("text", getText());
             m.put("start", getStart());
             m.put("finish", getFinish());
-
             m.put("cancelled", "" + !isActive());
+            m.put("opsComment", "" + getOperationsComment());
+            m.put("comment", "" + getBooking().getSpecialRequests());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();

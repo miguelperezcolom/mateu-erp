@@ -394,7 +394,7 @@ public abstract class Service {
 //        }
     }
 
-    @Action
+    @Action(saveBefore = true)
     public void sendToProvider(EntityManager em, UserData user, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) throws Throwable {
         
         setAlreadyPurchased(false);
@@ -504,7 +504,7 @@ public abstract class Service {
     }
 
 
-    @Action("Purchase")
+    @Action(value = "Purchase", saveBefore = true)
     public void checkPurchase(EntityManager em, UserData user) throws Throwable {
         checkPurchase(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
@@ -582,7 +582,7 @@ public abstract class Service {
     }
     */
 
-    @Action("Print POs")
+    @Action(value = "Print POs", saveBefore = true)
     public URL printOrders(EntityManager em) throws Throwable {
 
         Document xml = new Document();

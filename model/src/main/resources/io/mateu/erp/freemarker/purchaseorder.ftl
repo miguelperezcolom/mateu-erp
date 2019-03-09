@@ -67,9 +67,13 @@
             </tr><tr>
                 <th>Pickup</th><td>${s.pickup!} / ${s.pickupResort!}</td>
             </tr><tr>
+                <th>Effective pickup</th><td>${s.effectivePickup!} / ${s.effectivePickupResort!}</td>
+            </tr><tr>
                 <th>Pickup time</th><td>${s.pickupTime!}</td>
             </tr><tr>
                 <th>Dropoff</th><td>${s.dropoff!} / ${s.dropoffResort!}</td>
+            </tr><tr>
+                <th>Effective dropoff</th><td>${s.effectiveDropoff!} / ${s.effectiveDropoffResort!}</td>
             </tr></table>
 
         </td>
@@ -86,6 +90,8 @@
                 <th>Origin/destination</th><td>${s.flightOriginOrDestination!}</td>
             </tr><tr>
                 <th>Pax</th><td>${s.pax!}</td>
+            </tr><tr>
+                <th>Agency</th><td>${s.agency!}</td>
             </tr><tr>
                 <th>Lead name</th><td>${s.leadName!} / ${s.agencyReference!}</td>
             </tr><tr>

@@ -8,6 +8,7 @@ import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.SupplierDataProvider;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.commissions.CommissionSettlement;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
@@ -321,6 +322,9 @@ public abstract class Booking {
     private Partner commissionAgent;
 
     private boolean nonCommissionable;
+
+    @ManyToOne@Output
+    private CommissionSettlement commissionSettlement;
 
     @Embedded
     private BookingInvoiceData invoiceData;

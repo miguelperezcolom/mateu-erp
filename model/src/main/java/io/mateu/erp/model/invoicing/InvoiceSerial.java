@@ -22,7 +22,7 @@ public class InvoiceSerial {
 
     private int nextNumber;
 
-    public String getInvoiceNumber() {
+    public String createInvoiceNumber() {
         int n = nextNumber++;
         return "" + (prefix != null?prefix:"") + "" + n;
     }

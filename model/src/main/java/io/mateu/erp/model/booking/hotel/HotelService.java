@@ -101,6 +101,8 @@ public class HotelService extends Service {
             for (int i = 0; i < ls.size(); i++) m.put("line_" + i, ls.get(i));
 
             m.put("cancelled", "" + !isActive());
+            m.put("opsComment", "" + getOperationsComment());
+            m.put("comment", "" + getBooking().getSpecialRequests());
             s = Helper.toJson(m);
         } catch (Exception e) {
             e.printStackTrace();

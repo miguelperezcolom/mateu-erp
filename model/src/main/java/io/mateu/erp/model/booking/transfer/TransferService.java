@@ -265,6 +265,7 @@ public class TransferService extends Service {
             m.put("transferType", getTransferType());
             m.put("preferredVehicle", "" + getPreferredVehicle());
             //m.put("pickupTime", getPickupTime());
+            m.put("opsComment", "" + getOperationsComment());
             m.put("comment", "" + getBooking().getSpecialRequests());
             //m.put("held", "" + isHeld());
             m.put("cancelled", "" + !isActive());
@@ -408,20 +409,18 @@ public class TransferService extends Service {
         d.put("direction", "" + getDirection());
         d.put("pax", getPax());
 
-        TransferPoint p = getEffectivePickup();
-        if (p != null && p.getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(getTransferType()) && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForNonExecutive())) {
-            p = p.getAlternatePointForShuttle();
-            d.put("alternatePickup", "" + p.getName());
-
-            d.put("pickupPointInfo", "" + p.getName());
-        } else {
-            d.put("pickupPointInfo", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
+        d.put("pickup", "" + getPickup().getName());
+        d.put("pickupResort", "" + getPickup().getResort().getName());
+        if (getEffectivePickup() != null && !getEffectivePickup().equals(getPickup())) {
+            d.put("effectivePickup", "" + getEffectivePickup().getName());
+            d.put("effectivePickupResort", "" + getEffectivePickup().getResort().getName());
         }
-
-        d.put("pickup", "" + ((p != null)?getEffectivePickup().getName():getPickupText()));
-        d.put("pickupResort", "" + ((getEffectivePickup() != null)?getEffectivePickup().getResort().getName():""));
-        d.put("dropoff", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getName():getDropoffText()));
-        d.put("dropoffResort", "" + ((getEffectiveDropoff() != null)?getEffectiveDropoff().getResort().getName():""));
+        d.put("dropoff", "" + getDropoff().getName());
+        d.put("dropoffResort", "" + getDropoff().getResort().getName());
+        if (getEffectiveDropoff() != null && !getEffectiveDropoff().equals(getDropoff())) {
+            d.put("effectiveDropoff", "" + getEffectiveDropoff().getName());
+            d.put("effectiveDropoffResort", "" + getEffectiveDropoff().getResort().getName());
+        }
         d.put("providers", getProviders());
         d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
         d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
@@ -543,7 +542,7 @@ public class TransferService extends Service {
         }
     }
 
-    @Action("Send email to hotel")
+    @Action(value = "Send email to hotel", saveBefore = true)
     public void sendEmailToHotel(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
 
@@ -568,7 +567,7 @@ public class TransferService extends Service {
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
-    @Action("Send SMS")
+    @Action(value = "Send SMS", saveBefore = true)
     public void sendSMS(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
             long tel = 0;
