@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
@@ -60,13 +61,12 @@ public class BookingInvoiceForm {
 
         Document xml = new Document(new Element("invoices"));
 
-        List<Charge> charges = new ArrayList<>();
+        List<BookingCharge> charges = new ArrayList<>();
         charges.addAll(booking.getCharges());
 
 
         Helper.notransact(em -> {
-            User u = em.find(User.class, MDD.getUserData().getLogin());
-            xml.getRootElement().addContent(new IssuedInvoice(u, charges, true, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null).toXml(em));
+            xml.getRootElement().addContent(new IssuedInvoice(MDD.getCurrentUser(), charges, true, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null).toXml(em));
         });
 
         System.out.println(Helper.toString(xml.getRootElement()));
@@ -91,8 +91,7 @@ public class BookingInvoiceForm {
         String baseUrl = System.getProperty("tmpurl");
         if (baseUrl == null) {
             proforma = temp.toURI().toURL();
-        }
-        proforma = new URL(baseUrl + "/" + temp.getName());
+        } else proforma = new URL(baseUrl + "/" + temp.getName());
 
     }
 
@@ -178,17 +177,17 @@ public class BookingInvoiceForm {
 
         Helper.transact(em -> {
 
-            List<Charge> charges = new ArrayList<>();
+            List<BookingCharge> charges = new ArrayList<>();
             charges.addAll(booking.getCharges());
 
-            Invoice i = new IssuedInvoice(em.find(User.class, MDD.getUserData().getLogin()), charges, false, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null);
+            Invoice i = new IssuedInvoice(MDD.getCurrentUser(), charges, false, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null);
             em.persist(i);
 
             charges.forEach(c -> em.merge(c));
 
         });
 
-        MDDUI.get().getNavegador().goBack();
+        if (MDDUI.get() != null) MDDUI.get().getNavegador().goBack();
     }
 
 }

@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.offer.DatesRangeListConverter;
 import io.mateu.mdd.core.annotations.ListColumn;
 import io.mateu.mdd.core.annotations.SearchFilter;
@@ -61,7 +61,7 @@ public class AbstractOffer {
     @SearchFilter
     @OneToMany
     @UseChips
-    private List<Partner> targets = new ArrayList<>();
+    private List<Agency> targets = new ArrayList<>();
 
     @SearchFilter
     @ManyToMany

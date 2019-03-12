@@ -49,6 +49,7 @@ public class HotelBookingTest {
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
             b.setPos(Populator.pos);
+            b.setCurrency(Populator.agencia.getCurrency());
 
             b.setStart(LocalDate.of(2019, 10, 1));
             b.setEnd(LocalDate.of(2019, 10, 6));
@@ -78,7 +79,7 @@ public class HotelBookingTest {
             assertEquals(1, xb.getServiceCharges().size());
 
             // la línea de cargo debe ser por el total
-            assertEquals(305, xb.getServiceCharges().get(0).getTotal().getValue(), 0);
+            assertEquals(305, xb.getServiceCharges().get(0).getTotal(), 0);
 
             // el total debe estar ok
             assertEquals(305, xb.getTotalValue(), 0);
@@ -106,11 +107,11 @@ public class HotelBookingTest {
             assertEquals(1, xb.getServices().size());
 
             // el coste total debe estar ok
-            assertEquals(201, xb.getServices().get(0).getTotal(), 0);
+            assertEquals(305, xb.getServices().get(0).getTotalSale(), 0);
 
 
             // el coste total debe estar ok
-            assertEquals(201, xb.getTotalCost(), 0);
+            assertEquals(305, xb.getTotalCost(), 0);
 
             // debemos haber creado la PO
             assertEquals(xb.getServices().get(0).getPurchaseOrders().size(), 1);

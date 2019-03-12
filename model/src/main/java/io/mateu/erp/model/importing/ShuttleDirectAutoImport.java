@@ -3,7 +3,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -31,7 +31,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
     {
     }
 
-    public ShuttleDirectAutoImport(String url, String login, String pwd, Partner cus, String idtransportista) {
+    public ShuttleDirectAutoImport(String url, String login, String pwd, Agency cus, String idtransportista) {
         this.setLogin(login);
         this.setPassword(pwd);
         this.setUrl(url);
@@ -125,7 +125,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
             String pass = "f8qu34w8f8aq";
             String idTrans = "476";
 
-            ShuttleDirectAutoImport auto = new ShuttleDirectAutoImport(url,login,pass, (Partner) Helper.selectObjects("select x from " + Partner.class.getName() + " x where x.name = 'Shuttle Direct'").get(0),idTrans);
+            ShuttleDirectAutoImport auto = new ShuttleDirectAutoImport(url,login,pass, (Agency) Helper.selectObjects("select x from " + Agency.class.getName() + " x where x.name = 'Shuttle Direct'").get(0),idTrans);
             auto.setPointOfSale((PointOfSale) Helper.selectObjects("select x from " + PointOfSale.class.getName() + " x where x.name = 'Importación'").get(0));
             String s = auto.recuperarXml("01/01/2019", "01/12/2019");
             auto.getBookings(LocalDate.now(), 300);

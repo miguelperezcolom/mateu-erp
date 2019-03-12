@@ -186,10 +186,11 @@ public class ExcursionBooking extends TourBooking {
     public void createCharges(EntityManager em) throws Throwable {
         BookingCharge c;
         getServiceCharges().add(c = new BookingCharge(this));
-        c.setTotal(new Amount(FastMoney.of(getTotalValue(), "EUR")));
+        c.setTotal(getTotalValue());
+        c.setCurrency(getCurrency());
         c.setText("" + excursion.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getAdults() + " ad/" + getChildren() + "ch");
         c.setBillingConcept(getContract().getBillingConcept());
-        c.setPartner(getAgency());
+        c.setAgency(getAgency());
     }
 
     @Override

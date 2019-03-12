@@ -8,11 +8,10 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.importing.TraveltinoImportTask;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -25,7 +24,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javax.mail.*;
 import javax.persistence.EntityManager;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -83,7 +81,7 @@ public class Pop3Reader {
                         try {
                             Helper.transact(em -> {
                                 User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
-                                TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Partner) Helper.selectObjects("select x from Partner x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                                TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                                 em.persist(t);
 
                             });
@@ -227,7 +225,7 @@ public class Pop3Reader {
                         new CSVPrinter(sw).println(csv);
 
                         User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
-                        TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Partner) Helper.selectObjects("select x from Partner x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                        TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
 
                     }

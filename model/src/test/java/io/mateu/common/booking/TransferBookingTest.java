@@ -51,6 +51,7 @@ public class TransferBookingTest {
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
             b.setPos(Populator.pos);
+            b.setCurrency(Populator.agencia.getCurrency());
 
             b.setTransferType(TransferType.PRIVATE);
             b.setOrigin(Populator.apt);
@@ -82,7 +83,7 @@ public class TransferBookingTest {
             assertEquals(1, xb.getServiceCharges().size());
 
             // la línea de cargo debe ser por el total
-            assertEquals(120.8, xb.getServiceCharges().get(0).getTotal().getValue(), 0);
+            assertEquals(120.8, xb.getServiceCharges().get(0).getTotal(), 0);
 
             // el total debe estar ok
             assertEquals(120.8, xb.getTotalValue(), 0);
@@ -110,7 +111,7 @@ public class TransferBookingTest {
             assertEquals(2, xb.getServices().size());
 
             // el coste del servicio debe estar ok
-            assertEquals(20.5, xb.getServices().get(0).getTotal(), 0);
+            assertEquals(60.4, xb.getServices().get(0).getTotalSale(), 0);
 
 
             // el coste total debe estar ok

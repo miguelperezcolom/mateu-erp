@@ -6,7 +6,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
@@ -15,16 +15,10 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,7 +35,7 @@ public class TraveltinoImportTask extends TransferImportTask {
 
     public TraveltinoImportTask() {}
 
-    public TraveltinoImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TraveltinoImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -108,7 +102,7 @@ public class TraveltinoImportTask extends TransferImportTask {
 
     public void process(EntityManager em, String[][] csv, PrintWriter pw) {
 
-        Partner traveltino = (Partner) em.createQuery("select x from " + Partner.class.getName() + " x where upper(x.name) = 'TRAVELTINO'").getResultList().get(0);
+        Agency traveltino = (Agency) em.createQuery("select x from " + Agency.class.getName() + " x where upper(x.name) = 'TRAVELTINO'").getResultList().get(0);
 
         Map<String, Integer> cabecera = new HashMap<>();
         boolean cabeceraEncontrada = false;
@@ -163,7 +157,7 @@ public class TraveltinoImportTask extends TransferImportTask {
 
     }
 
-    private TransferBookingRequest rellenarRq(EntityManager em, String[] l, Map<String, Integer> cabecera, Partner agencia) {
+    private TransferBookingRequest rellenarRq(EntityManager em, String[] l, Map<String, Integer> cabecera, Agency agencia) {
         TransferBookingRequest rq = new TransferBookingRequest();
 
         rq.setTask(this);

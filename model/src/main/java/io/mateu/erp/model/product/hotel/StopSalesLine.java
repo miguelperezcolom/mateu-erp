@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
@@ -43,7 +43,7 @@ public class StopSalesLine implements IStopSaleLine {
 
     @SearchFilter
     @OneToMany
-    private List<Partner> actors = new ArrayList<>();
+    private List<Agency> agencies = new ArrayList<>();
 
     @SearchFilter
     @OneToMany
@@ -56,8 +56,8 @@ public class StopSalesLine implements IStopSaleLine {
     }
 
     @Override
-    public List<Long> getActorIds() {
-        return getActors().stream().map((a) -> a.getId()).collect(Collectors.toList());
+    public List<Long> getAgencyIds() {
+        return getAgencies().stream().map((a) -> a.getId()).collect(Collectors.toList());
     }
 
     @Override

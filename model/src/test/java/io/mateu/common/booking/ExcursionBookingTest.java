@@ -49,6 +49,7 @@ public class ExcursionBookingTest {
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
             b.setPos(Populator.pos);
+            b.setCurrency(Populator.agencia.getCurrency());
 
             b.setStart(LocalDate.of(2019, 10, 1));
             b.setEnd(LocalDate.of(2019, 10, 6));
@@ -73,7 +74,7 @@ public class ExcursionBookingTest {
             assertEquals(1, xb.getServiceCharges().size());
 
             // la línea de cargo debe ser por el total
-            assertEquals(150.6, xb.getServiceCharges().get(0).getTotal().getValue(), 0);
+            assertEquals(150.6, xb.getServiceCharges().get(0).getTotal(), 0);
 
             // el total debe estar ok
             assertEquals(150.6, xb.getTotalValue(), 0);

@@ -1,7 +1,7 @@
 package io.mateu.erp.model.authentication;
 
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Caption;
@@ -38,18 +38,18 @@ public class AuthToken {
     private PointOfSale pos;
 
     @ManyToOne
-    private Partner partner;
+    private Agency agency;
 
     @ManyToOne
     private Hotel hotel;
 
     public String createId(User u) {
-        Partner a = null;
+        Agency a = null;
         for (Permission p : u.getPermissions()) {
-            //todo: relacinar con la agencia
+            //todo: relacionar con la agencia
         }
         //todo: utilizar jwt.io para encriptar
-        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getPartner() != null)?", \"partnerId\": \"" + getPartner().getId() + "\"":"") + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId() + "\"":"") + "}").getBytes());
+        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getAgency() != null)?", \"agencyId\": \"" + getAgency().getId() + "\"":"") + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId() + "\"":"") + "}").getBytes());
     }
 
     public AuthToken renew(EntityManager em) {
@@ -58,7 +58,7 @@ public class AuthToken {
         t.setActive(true);
         t.setUser(getUser());
         t.setPos(getPos());
-        t.setPartner(getPartner());
+        t.setAgency(getAgency());
         t.setHotel(getHotel());
         em.persist(t);
 
@@ -69,9 +69,9 @@ public class AuthToken {
 
 
     @Action
-    public static void createToken(EntityManager em, @NotNull User user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @NotNull @Caption("Partner") Partner p, @Caption("Hotel") Hotel h) throws IOException {
+    public static void createToken(EntityManager em, @NotNull User user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @NotNull @Caption("Agency") Agency p, @Caption("Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
-        t.setPartner(p);
+        t.setAgency(p);
         t.setPos(pos);
         t.setHotel(h);
         t.setUser(user);

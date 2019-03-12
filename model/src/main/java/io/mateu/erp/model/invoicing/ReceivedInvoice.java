@@ -28,7 +28,8 @@ public class ReceivedInvoice extends Invoice {
     }
 
     public ReceivedInvoice(User u, Collection<PurchaseCharge> charges, FinancialAgent issuer, FinancialAgent recipient, String invoiceNumber) throws Throwable {
-        super(u, charges, false, issuer, recipient, invoiceNumber);
+        //todo: rellenar factura
+        //super(u, charges, false, issuer, recipient, invoiceNumber);
     }
 
     @Override

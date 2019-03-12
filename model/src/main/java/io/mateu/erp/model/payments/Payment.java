@@ -71,7 +71,13 @@ public class Payment {
 
     public void updateBalance() {
         double consumed = 0;
-        for (AbstractPaymentAllocation a : breakdown) consumed += a.getValue();
+        for (AbstractPaymentAllocation a : breakdown) {
+            if (a instanceof BookingPaymentAllocation && ((BookingPaymentAllocation) a).getInvoice() != null) {
+                // se ha movido a una factura
+            } else {
+                consumed += a.getValue();
+            }
+        }
         setBalance(Helper.roundEuros(value - consumed));
     }
 

@@ -57,7 +57,7 @@ public class CurrencyExchange implements Serializable {
 
         Helper.transact(em -> {
             for (Element e : xml.getRootElement().getChild("Cube", defaultNS).getChild("Cube", defaultNS).getChildren("Cube", defaultNS)) {
-                System.out.println("" + e.getAttributeValue("currency") + "->" + e.getAttributeValue("rate"));
+                System.out.println("" + e.getAttributeValue("currency") + "->" + e.getAttributeValue("rateCost"));
 
                 // 4 dígitos
 
@@ -79,7 +79,7 @@ public class CurrencyExchange implements Serializable {
                         em.persist(ex);
                     }
                     ex.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
-                    ex.setRate(Double.parseDouble(e.getAttributeValue("rate")));
+                    ex.setRate(Double.parseDouble(e.getAttributeValue("rateCost")));
 
                     l = em.createQuery("select x from " + CurrencyExchange.class.getName() + " x where x.from = :f and x.to = :t").setParameter("f", to).setParameter("t", eur).getResultList();
 
@@ -93,7 +93,7 @@ public class CurrencyExchange implements Serializable {
                         ex.setTo(eur);
                         em.persist(ex);
                     }
-                    ex.setRate(Math.round(10000d / Double.parseDouble(e.getAttributeValue("rate"))) / 10000d);
+                    ex.setRate(Math.round(10000d / Double.parseDouble(e.getAttributeValue("rateCost"))) / 10000d);
 
                 }
 

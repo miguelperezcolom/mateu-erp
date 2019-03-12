@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
@@ -56,7 +57,7 @@ public class FileInvoiceForm {
 
         Document xml = new Document(new Element("invoices"));
 
-        List<Charge> charges = new ArrayList<>();
+        List<BookingCharge> charges = new ArrayList<>();
         for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
 
         Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
@@ -164,7 +165,7 @@ public class FileInvoiceForm {
 
         Helper.transact(em -> {
 
-            List<Charge> charges = new ArrayList<>();
+            List<BookingCharge> charges = new ArrayList<>();
             for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
 
             Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;

@@ -3,7 +3,8 @@ package io.mateu.erp.dispo;
 import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.partners.PartnerStatus;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.AgencyStatus;
 import org.easytravelapi.common.Amount;
 import org.easytravelapi.common.BestDeal;
 import org.easytravelapi.common.CancellationCost;
@@ -18,11 +19,11 @@ import java.util.*;
 
 public class HotelAvailabilityRunner {
 
-    public AvailableHotel check(IPartner agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
+    public AvailableHotel check(Agency agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq) {
         return check(agency, hotel, idAgencia, idPos, modelo, rq, false, LocalDate.now());
     }
 
-    public AvailableHotel check(IPartner agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq, boolean ignoreMINLOS, LocalDate formalizationDate) {
+    public AvailableHotel check(Agency agency, IHotel hotel, long idAgencia, long idPos, ModeloDispo modelo, DispoRQ rq, boolean ignoreMINLOS, LocalDate formalizationDate) {
 
         if (DispoLogger.isTraceEnabled()) DispoLogger.trace("check(" + agency.getName() + "," + hotel.getName() + "," + rq.toString() + "," + ignoreMINLOS + "," + formalizationDate + ")");
 
@@ -35,7 +36,7 @@ public class HotelAvailabilityRunner {
         Amount bestDeal = null;
 
 
-        if (PartnerStatus.ACTIVE.equals(agency.getStatus()) && hotel.isActive()) {
+        if (AgencyStatus.ACTIVE.equals(agency.getStatus()) && hotel.isActive()) {
 
             // comprobar paros de ventas
 

@@ -4,7 +4,7 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -77,12 +77,17 @@ public class FreeTextService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-        return getBooking() instanceof FreeTextBooking && ((FreeTextBooking)getBooking()).getOverridedCost() != null?((FreeTextBooking)getBooking()).getOverridedCost().getNumber().doubleValue():0;
+    public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
+        return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedValue():0;
     }
 
     @Override
-    public Partner findBestProvider(EntityManager em) throws Throwable {
+    public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
+        return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedCost():0;
+    }
+
+    @Override
+    public Provider findBestProvider(EntityManager em) throws Throwable {
         return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getProvider():null;
     }
 

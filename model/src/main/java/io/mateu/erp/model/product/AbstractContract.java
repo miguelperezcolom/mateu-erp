@@ -5,9 +5,10 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.AgencyGroup;
 import io.mateu.erp.model.partners.Market;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.partners.PartnerGroup;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.hotel.RatesType;
@@ -119,7 +120,7 @@ public abstract class AbstractContract {
     @SearchFilter
     @ListColumn
     @NoChart
-    private Partner supplier;
+    private Provider supplier;
 
     public boolean isSupplierVisible() {
         return ContractType.PURCHASE.equals(getType());
@@ -135,21 +136,21 @@ public abstract class AbstractContract {
 
     @OneToMany
     @UseChips
-    private List<PartnerGroup> partnerGroups = new ArrayList<>();
+    private List<AgencyGroup> agencyGroups = new ArrayList<>();
 
     @OneToMany
-    @JoinTable(name = "hotelcontract_bannedpartnergroup")
+    @JoinTable(name = "contract_bannedagencygroup")
     @UseChips
-    private List<PartnerGroup> bannedPartnerGroups = new ArrayList<>();
+    private List<AgencyGroup> bannedAgencyGroups = new ArrayList<>();
 
     @OneToMany
     @UseChips
-    private List<Partner> partners = new ArrayList<>();
+    private List<Agency> agencies = new ArrayList<>();
 
     @OneToMany
-    @JoinTable(name = "hotelcontract_bannedpartner")
+    @JoinTable(name = "contract_bannedagency")
     @UseChips
-    private List<Partner> bannedPartners = new ArrayList<>();
+    private List<Agency> bannedAgencies = new ArrayList<>();
 
     @OneToMany
     @UseChips
@@ -157,7 +158,7 @@ public abstract class AbstractContract {
 
 
     @OneToMany
-    @JoinTable(name = "hotelcontract_bannedmarket")
+    @JoinTable(name = "contract_bannedmarket")
     @UseChips
     private List<Market> bannedMarkets = new ArrayList<>();
 
@@ -270,7 +271,7 @@ public abstract class AbstractContract {
         }
 
         if (ContractType.SALE.equals(getType())) {
-            if (getPartners().size() > 0) xml.addContent(getPartners().get(0).toXml().setName("partner"));
+            if (getAgencies().size() > 0) xml.addContent(getAgencies().get(0).toXml().setName("partner"));
         } else {
             if (getSupplier() != null) xml.addContent(getSupplier().toXml().setName("partner"));
         }
@@ -284,19 +285,19 @@ public abstract class AbstractContract {
 
         Element ts;
         xml.addContent(ts = new Element("targets"));
-        for (PartnerGroup t : getPartnerGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
-        for (Partner t : getPartners()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (AgencyGroup t : getAgencyGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Agency t : getAgencies()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
         for (Market t : getMarkets()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
         for (Company t : getCompanies()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
 
         xml.addContent(ts = new Element("bannedTargets"));
-        for (PartnerGroup t : getBannedPartnerGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
-        for (Partner t : getBannedPartners()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (AgencyGroup t : getBannedAgencyGroups()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
+        for (Agency t : getBannedAgencies()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
         for (Market t : getBannedMarkets()) ts.addContent(new Element("target").setAttribute("name", t.getName()));
 
         if (ContractType.SALE.equals(getType())) {
-            if (getPartners().size() > 0) {
-                Partner a = getPartners().get(0);
+            if (getAgencies().size() > 0) {
+                Agency a = getAgencies().get(0);
                 if (a.getName() != null) xml.addContent(new Element("contractor").setAttribute("name", a.getName()).setAttribute("bussinessName", (a.getFinancialAgent() != null && a.getFinancialAgent().getBusinessName() != null)?a.getFinancialAgent().getBusinessName():""));
             }
             if (getOffice() != null && getOffice().getName() != null && c.getBusinessName() != null) xml.addContent(new Element("hired").setAttribute("name", getOffice().getName()).setAttribute("bussinessName", c.getBusinessName()));
@@ -411,13 +412,13 @@ public abstract class AbstractContract {
     }
 
 
-    public boolean isValidForSale(Partner agency, LocalDate start, LocalDate end) {
+    public boolean isValidForSale(Agency agency, LocalDate start, LocalDate end) {
         boolean ok = isActive();
         ok = ok && (ContractType.SALE.equals(type) || (agency.getMarkup() != null && agency.getMarkup().getLine(productLine) != null));
-        ok = ok && (partners.size() == 0 || partners.contains(agency));
-        ok = ok && (bannedPartners.size() == 0 || !bannedPartners.contains(agency));
-        ok = ok && (partnerGroups.size() == 0 || partnerGroups.contains(agency.getGroup()));
-        ok = ok && (bannedPartnerGroups.size() == 0 || !bannedPartnerGroups.contains(agency.getGroup()));
+        ok = ok && (agencies.size() == 0 || agencies.contains(agency));
+        ok = ok && (bannedAgencies.size() == 0 || !bannedAgencies.contains(agency));
+        ok = ok && (agencyGroups.size() == 0 || agencyGroups.contains(agency.getGroup()));
+        ok = ok && (bannedAgencyGroups.size() == 0 || !bannedAgencyGroups.contains(agency.getGroup()));
         ok = ok && (markets.size() == 0 || markets.contains(agency.getMarket()));
         ok = ok && (bannedMarkets.size() == 0 || !bannedMarkets.contains(agency.getMarket()));
         ok = ok && (companies.size() == 0 || companies.contains(agency.getCompany()));

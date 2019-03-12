@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.WeekDays;
@@ -46,7 +46,7 @@ public class TourShift {
 
 
     @ManyToOne
-    private Partner agency;
+    private Agency agency;
 
 
     private int maxPax;

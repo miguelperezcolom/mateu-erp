@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.User;
@@ -64,7 +64,7 @@ public class StopSalesOperation {
 
     @SearchFilter
     @OneToMany
-    private List<Partner> agencies = new ArrayList<>();
+    private List<Agency> agencies = new ArrayList<>();
 
     @SearchFilter
     @OneToMany
@@ -96,7 +96,7 @@ public class StopSalesOperation {
             if (!"".equals(aux)) aux += ", ";
             aux += r.getCode();
         }
-        for (Partner r : agencies) {
+        for (Agency r : agencies) {
             if (!"".equals(aux)) aux += ", ";
             aux += r;
         }

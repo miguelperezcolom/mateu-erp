@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.hotel;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +24,7 @@ public class StopSalesCube {
     private LocalDate inicio = null;
     private LocalDate fin = null;
     private List<RoomType> rooms = new ArrayList<>();
-    private List<Partner> actors = new ArrayList<>();
+    private List<Agency> actors = new ArrayList<>();
     int maxdias = 0;
 
     public StopSalesCube(StopSales stopSales) throws Throwable {
@@ -71,8 +71,8 @@ public class StopSalesCube {
                     }
                 }
 
-                List<Partner> acts = (o.getAgencies().size() > 0)?o.getAgencies():actors;
-                for (Partner a : acts) {
+                List<Agency> acts = (o.getAgencies().size() > 0)?o.getAgencies():actors;
+                for (Agency a : acts) {
                     int posact = actors.indexOf(a);
                     switch (o.getAction()) {
                         case OPEN:
@@ -100,11 +100,11 @@ public class StopSalesCube {
             if (inicio == null || inicio.isAfter(o.getStart())) inicio = (o.getStart().isAfter(ayer))?o.getStart():ayer;
             if (fin == null || fin.isBefore(o.getEnd())) fin = o.getEnd();
             for (RoomType r : o.getRooms()) if (!rooms.contains(r)) rooms.add(r);
-            for (Partner r : o.getAgencies()) if (!actors.contains(r)) actors.add(r);
+            for (Agency r : o.getAgencies()) if (!actors.contains(r)) actors.add(r);
         }
 
         if (rooms.size() == 0) rooms.add(new RoomType()); // dummy room
-        if (actors.size() == 0) actors.add(new Partner()); // dummy actor
+        if (actors.size() == 0) actors.add(new Agency()); // dummy actor
 
         if (inicio != null && fin != null) maxdias = (int) ChronoUnit.DAYS.between(inicio, fin);
 
@@ -154,8 +154,8 @@ public class StopSalesCube {
             l.setStopSales(getStopSales());
             for (int posact = 0; posact < rooms.size(); posact++) if (StopSalesCubeValue.CLOSED.equals(cubo[desdefecha][posact])) l.getRooms().add(rooms.get(posact));
             if (l.getRooms().size() == rooms.size()) l.getRooms().clear();
-            for (int posact = 0; posact < actors.size(); posact++) if (StopSalesCubeValue.CLOSED.equals(cubo[desdefecha][rooms.size() + posact])) l.getActors().add(actors.get(posact));
-            if (l.getActors().size() == actors.size()) l.getActors().clear();
+            for (int posact = 0; posact < actors.size(); posact++) if (StopSalesCubeValue.CLOSED.equals(cubo[desdefecha][rooms.size() + posact])) l.getAgencies().add(actors.get(posact));
+            if (l.getAgencies().size() == actors.size()) l.getAgencies().clear();
         }
     }
 }

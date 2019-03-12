@@ -1,9 +1,8 @@
 package io.mateu.erp.model.invoicing.lists;
 
 import com.vaadin.data.provider.QuerySortOrder;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.invoicing.*;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
@@ -11,14 +10,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
 import javax.persistence.Query;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter@Setter
-public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoicedByAgentListView.Row> {
+public class NotInvoicedByAgencyListView extends AbstractJPQLListView<NotInvoicedByAgencyListView.Row> {
 
     @MainSearchFilter
     private LocalDate from;
@@ -27,14 +26,16 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
     private LocalDate to;
 
     @MainSearchFilter
-    private Partner partner;
+    private Agency agency;
 
     @Getter@Setter
     public class Row {
         @Ignored
-        private long agentId;
+        private long agencyId;
 
-        private String agentName;
+        private String agencyName;
+
+        private String financialAgent;
 
         private double total;
 
@@ -58,8 +59,8 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
     public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
-        ql += " select l.partner.id, l.partner.name, sum(l.total.value) as total " +
-                " from " + Charge.class.getName() + " l ";
+        ql += " select l.agency.id, l.agency.name, a.name, sum(l.total) as total " +
+                " from " + BookingCharge.class.getName() + " l left join l.agency.financialAgent a";
 
         Map<String, Object> params = new HashMap<>();
         String w = complete(params);
@@ -68,7 +69,7 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
         if (!"".equals(w)) ql += " where " + w + " ";
 
 
-        ql += " group by l.partner.id, l.partner.name ";
+        ql += " group by l.agency.id, l.agency.name, a.name ";
         ql += " order by total ";
 
 
@@ -85,7 +86,7 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
     private String complete(Map<String,Object> params) {
         String w = "";
 
-        w += " l.type = " + ChargeType.class.getName() + "." + ChargeType.SALE + " and l.invoice = null ";
+        w += " l.invoice = null ";
 
         if (from != null) {
             if (!"".equals(w)) w += " and ";
@@ -98,10 +99,10 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
             params.put("t", from);
         }
 
-        if (partner != null) {
+        if (agency != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.partner.id = :h";
-            params.put("h", partner.getId());
+            w += " l.agency.id = :h";
+            params.put("h", agency.getId());
         }
 
         return w;
@@ -109,20 +110,20 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
 
 
     @Action
-    public InvoiceResult invoice(EntityManager em, Set<Row> selection) throws Throwable {
+    public InvoiceResult proform(EntityManager em, Set<Row> selection) throws Throwable {
 
-        InvoiceResult result = new NotInvoicedByAgentListView().new InvoiceResult();
-        List<Charge> charges = new ArrayList<>();
+        InvoiceResult result = new InvoiceResult();
+        List<BookingCharge> charges = new ArrayList<>();
 
-        String ql = "select l from " + Charge.class.getName() + " l ";
+        String ql = "select l from " + BookingCharge.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();
         String w = complete(params);
 
         if (selection.size() > 0) {
             if (!"".equals(w)) w += " and ";
-            w += " l.partner in :ps ";
-            params.put("ps", selection.stream().map(r -> em.find(Partner.class, r.getAgentId())).collect(Collectors.toList()));
+            w += " l.agency in :ps ";
+            params.put("ps", selection.stream().map(r -> em.find(Agency.class, r.getAgencyId())).collect(Collectors.toList()));
         }
 
         if (!"".equals(w)) ql += " where " + w + " ";
@@ -132,23 +133,15 @@ public class NotInvoicedByAgentListView extends AbstractJPQLListView<NotInvoiced
 
         charges.addAll(q.getResultList());
 
-        List<IssuedInvoice> invoices = Invoicer.invoice(em, MDD.getCurrentUser(), charges);
+        List<IssuedInvoice> invoices = Invoicer.proform(em, MDD.getCurrentUser(), charges);
 
         result.setInvoices(invoices);
-        result.setMsg("" + invoices.size() + " invoices created.");
+        result.setMsg("" + invoices.size() + " proformas created.");
+
+        URL pdf = Invoice.createPdf(invoices);
+
+        result.setPdf(pdf);
+
         return result;
-    }
-
-    @Getter@Setter
-    public class InvoiceResult {
-        @Output
-        private String msg;
-        @Ignored
-        private List<IssuedInvoice> invoices = new ArrayList<>();
-
-        @Action
-        public void send(String to, @TextArea String postscript) {
-            MDD.alert("Invoices sent");
-        }
     }
 }

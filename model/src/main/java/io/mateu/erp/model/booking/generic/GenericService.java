@@ -4,7 +4,7 @@ import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
@@ -111,8 +111,14 @@ public class GenericService extends Service {
         }
         return s;
     }
+
     @Override
-    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
+    public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
+        return 0;
+    }
+
+    @Override
+    public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
 
         Map<Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getGenericContracts().stream().filter(c ->
@@ -153,13 +159,13 @@ public class GenericService extends Service {
     }
 
     @Override
-    public Partner findBestProvider(EntityManager em) throws Throwable {
+    public Provider findBestProvider(EntityManager em) throws Throwable {
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : Accessor.get(em).getGenericContracts()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(this.getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -180,7 +186,7 @@ public class GenericService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Partner provider = null;
+        Provider provider = null;
         long noches = DAYS.between(getStart(), getFinish());
         for (Price p : prices) {
             double v = 0;

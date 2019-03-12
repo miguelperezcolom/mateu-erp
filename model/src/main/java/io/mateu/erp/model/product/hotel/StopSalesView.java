@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.QuerySortOrder;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
@@ -35,7 +35,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
 
     private RoomType room;
 
-    private Partner actor;
+    private Agency actor;
 
     private HotelContract contract;
 
@@ -46,7 +46,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
                     @NotNull LocalDate start,
                     @NotNull LocalDate end,
                     @Tab("Rooms") List<RoomType> rooms,
-                    @Tab("Actors") List<Partner> agencies) throws Throwable {
+                    @Tab("Actors") List<Agency> agencies) throws Throwable {
 
         StopSalesOperation o = new StopSalesOperation();
         o.setStopSales(getHotel().getStopSales());
@@ -90,7 +90,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
                 boolean incluir = true;
 
                 if (getRoom() != null && l.getRooms().size() > 0 && !l.getRooms().contains(getRoom())) incluir = false;
-                if (getActor() != null && l.getActors().size() > 0 && !l.getActors().contains(getActor())) incluir = false;
+                if (getActor() != null && l.getAgencies().size() > 0 && !l.getAgencies().contains(getActor())) incluir = false;
                 if (getContract() != null && l.getContracts().size() > 0 && !l.getContracts().contains(getContract())) incluir = false;
 
                 if (incluir) m.put(d, l);

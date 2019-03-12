@@ -251,7 +251,7 @@ public class TransferBooking extends Booking {
         for (Contract c : Accessor.get(em).getTransferContracts()) {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getAgency());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(getAgency());
             ok &= getProvider() == null || getProvider().equals(c.getSupplier());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getEnd()) || c.getValidTo().equals(getEnd());
@@ -261,7 +261,7 @@ public class TransferBooking extends Booking {
             if (ok) contracts.add(c);
         }
 
-        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
@@ -317,11 +317,12 @@ public class TransferBooking extends Booking {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
-            c.setTotal(new Amount(FastMoney.of(getTotalValue(), "EUR")));
+            c.setTotal(getTotalValue());
+            c.setCurrency(getCurrency());
 
             c.setText(((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + " in " + getPriceForVehicle().getName() + " for " + (getAdults() + getChildren()) + " pax");
 
-            c.setPartner(getAgency());
+            c.setAgency(getAgency());
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);

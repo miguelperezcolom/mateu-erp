@@ -9,10 +9,10 @@ import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.HotelBooking;
-import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Board;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -111,16 +111,15 @@ public class HotelService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-
+    public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
 
         // seleccionamos los contratos válidos
         List<HotelContract> contracts = new ArrayList<>();
         for (HotelContract c : getHotel().getContracts()) {
             boolean ok = true;
-            ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getBooking().getAgency());
+            ok &= ContractType.SALE.equals(c.getType());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(getBooking().getAgency());
             ok &= getPreferredProvider() == null || getPreferredProvider().equals(c.getSupplier());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
@@ -130,7 +129,138 @@ public class HotelService extends Service {
             if (ok) contracts.add(c);
         }
 
-        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
+
+        if (propietaryContracts.size() > 0) contracts = propietaryContracts;
+
+        for (HotelServiceLine o : getLines()) {
+
+            int infants = 0;
+            int children = 0;
+            int juniors = 0;
+            int adults = 0;
+            if (o.getAges() != null) for (int i = 0; i < o.getAges().length; i++) {
+                if (o.getAges()[i] < getHotel().getChildStartAge()) infants++;
+                else if (o.getAges()[i] < getHotel().getJuniorStartAge()) children++;
+                else if (o.getAges()[i] < getHotel().getAdultStartAge()) {
+                    if (getHotel().getJuniorStartAge() > 0) juniors++;
+                    else children++;
+                }
+            }
+            infants = infants / o.getNumberOfRooms();
+            children = children / o.getNumberOfRooms();
+            juniors = juniors / o.getNumberOfRooms(); // todo: repartir mejor (ir distribuyendo los bebes, niños, juniors)
+
+            adults = (o.getAdultsPerRoom() + o.getChildrenPerRoom()) - juniors - children - infants;
+
+
+            List<HotelContract> contratosValidos = new ArrayList<>(contracts);
+
+            if (contratosValidos.size() > 0) {
+                if (o.getRoom().fits(adults + juniors, children, infants)) {
+
+                    if (o.getContract() != null) {
+                        try {
+                            o.check();
+                            if (o.isAvailable()) {
+
+                                o.price();
+
+                            }
+                        } catch (Throwable throwable) {
+                            //throwable.printStackTrace();
+                        }
+                    } else {
+
+                        Map<HotelContract, Double> valoraciones = new HashMap<>();
+
+                        Inventory oldInventory = o.getInventory();
+
+
+                        for (HotelContract c : contratosValidos) {
+
+                            o.setContract(c);
+                            o.setInventory(c.getInventory());
+
+                            try {
+                                o.check();
+                                if (o.isAvailable()) {
+
+                                    o.price();
+
+                                    if (o.isValued()) {
+
+                                        valoraciones.put(c, o.getValue());
+                                    }
+
+                                }
+                            } catch (Throwable throwable) {
+                                //throwable.printStackTrace();
+                            }
+                        }
+
+                        HotelContract bestContract = null;
+                        double min = 0;
+                        for (HotelContract c : valoraciones.keySet()) {
+                            if (valoraciones.get(c) > 0 && (min == 0 || min > valoraciones.get(c))) {
+                                bestContract = c;
+                                min = valoraciones.get(c);
+                            }
+                        }
+
+                        if (min > 0) {
+                            o.setContract(bestContract);
+                            o.setInventory(bestContract.getInventory());
+                            o.setValued(true);
+                            o.setValue(min);
+                        } else {
+                            o.setContract(null);
+                            o.setInventory(oldInventory);
+                            o.setValued(false);
+                            o.setValue(0);
+                        }
+
+                    }
+
+                }
+            }
+
+        }
+
+        boolean allValued = true;
+        boolean allAvailable = true;
+
+        for (HotelServiceLine l : getLines()) {
+            allValued = allValued && l.isValued();
+            allAvailable = allAvailable && l.isAvailable();
+            total += l.getValue();
+        }
+
+        setAvailable(allAvailable);
+        return allValued?Helper.roundEuros(total):0;
+    }
+
+    @Override
+    public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
+
+        double total = 0;
+
+        // seleccionamos los contratos válidos
+        List<HotelContract> contracts = new ArrayList<>();
+        for (HotelContract c : getHotel().getContracts()) {
+            boolean ok = true;
+            ok &= ContractType.PURCHASE.equals(c.getType());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(getBooking().getAgency());
+            ok &= getPreferredProvider() == null || getPreferredProvider().equals(c.getSupplier());
+            ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
+            ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
+        }
+
+        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
@@ -316,7 +446,7 @@ public class HotelService extends Service {
 
             io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
 
-            Partner agencia = em.find(Partner.class, k.getAgencyId());
+            Agency agencia = em.find(Agency.class, k.getAgencyId());
             Hotel hotel = em.find(Hotel.class, k.getHotelId());
             Office oficina = hotel.getOffice();
             PointOfSale pos = em.find(PointOfSale.class, k.getPointOfSaleId());
@@ -375,10 +505,10 @@ public class HotelService extends Service {
 
 
     @Override
-    public Partner findBestProvider(EntityManager em) throws Throwable {
+    public Provider findBestProvider(EntityManager em) throws Throwable {
         {
 
-            Partner p = null;
+            Provider p = null;
             for (HotelContract c : hotel.getContracts()) {
                 if (ContractType.PURCHASE.equals(c.getType())) {
                     p = c.getSupplier();

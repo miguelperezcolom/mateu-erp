@@ -2,7 +2,7 @@ package io.mateu.erp.model.invoicing;
 
 
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.IFrame;
 import io.mateu.mdd.core.annotations.Ignored;
@@ -42,7 +42,7 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
         Helper.notransact(em -> {
 
-            Map<Partner, List<Charge>> chargesByPartner = split(em, issueInvoicesParametersPage.getPending());
+            Map<Agency, List<BookingCharge>> chargesByPartner = split(em, issueInvoicesParametersPage.getPending());
 
 
             Document xml = new Document(new Element("invoices"));
@@ -110,7 +110,7 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
         Helper.transact(em -> {
 
-            Map<Partner, List<Charge>> chargesByPartner = split(em, issueInvoicesParametersPage.getPending());
+            Map<Agency, List<BookingCharge>> chargesByPartner = split(em, issueInvoicesParametersPage.getPending());
 
             chargesByPartner.keySet().forEach(p -> {
 
@@ -140,14 +140,14 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
     }
 
-    private Map<Partner,List<Charge>> split(EntityManager em, Set<IssueInvoicesItem> pending) {
-        Map<Partner, List<Charge>> chargesByPartner = new HashMap<>();
+    private Map<Agency,List<BookingCharge>> split(EntityManager em, Set<IssueInvoicesItem> pending) {
+        Map<Agency, List<BookingCharge>> chargesByPartner = new HashMap<>();
 
-        Set<Partner> partners = issueInvoicesParametersPage.getPending().stream().map(i -> i.getPartner()).collect(Collectors.toSet());
+        Set<Agency> partners = issueInvoicesParametersPage.getPending().stream().map(i -> i.getAgency()).collect(Collectors.toSet());
 
-        for (BookingCharge c : (List<BookingCharge>) em.createQuery("select x from " + BookingCharge.class.getName() + " x where x.invoice = null and x.partner in :ps").setParameter("ps", partners).getResultList()) {
-            Partner p = c.getBooking().getAgency();
-            List<Charge> charges = chargesByPartner.get(p);
+        for (BookingCharge c : (List<BookingCharge>) em.createQuery("select x from " + BookingCharge.class.getName() + " x where x.invoice = null and x.agency in :ps").setParameter("ps", partners).getResultList()) {
+            Agency p = c.getBooking().getAgency();
+            List<BookingCharge> charges = chargesByPartner.get(p);
             if (charges == null) {
                 chargesByPartner.put(p, charges = new ArrayList<>());
             }

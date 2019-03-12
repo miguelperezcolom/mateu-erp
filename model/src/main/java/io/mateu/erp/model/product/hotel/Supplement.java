@@ -1,11 +1,9 @@
 package io.mateu.erp.model.product.hotel;
 
-import com.google.common.base.Strings;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.product.generic.Extra;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.ColumnWidth;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.ListColumn;
@@ -14,7 +12,6 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.XMLSerializable;
 import org.jdom2.Element;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -86,7 +83,7 @@ public class Supplement implements XMLSerializable {
     @ListColumn
     private double value;
 
-    @ValueClass(Partner.class)
+    @ValueClass(Provider.class)
     private long providerId;
 
     @ValueClass(BillingConcept.class)

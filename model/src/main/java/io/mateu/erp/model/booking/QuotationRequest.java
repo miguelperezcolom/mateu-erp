@@ -9,7 +9,7 @@ import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.mdd.core.MDD;
@@ -48,13 +48,11 @@ public class QuotationRequest {
     @ManyToOne
     private File file;
 
-    @NotNull@Output
-    private QuotationRequestDirection direction = QuotationRequestDirection.INGOING;
 
     @NotNull
     @ManyToOne
     @ListColumn
-    private Partner partner;
+    private Agency agency;
 
     @ListColumn@KPI
     private boolean active = true;
@@ -234,9 +232,9 @@ public class QuotationRequest {
                 to = getEmail();
             }
             if (Strings.isNullOrEmpty(to)) {
-                to = getPartner().getEmail();
+                to = getAgency().getEmail();
             }
-            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getPartner().getName() + " and fill the email field.");
+            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
 
             SendEmailTask t;

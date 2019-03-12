@@ -4,7 +4,7 @@ import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.annotations.Output;
@@ -53,7 +53,7 @@ public class Pagina2b implements WizardPage {
 
         long t0 = System.currentTimeMillis();
 
-        Partner agencia = pagina2.getPagina1().getAgency();
+        Agency agencia = pagina2.getPagina1().getAgency();
 
         //System.out.println("" + hoteles.size() + " hoteles encontrados");
 

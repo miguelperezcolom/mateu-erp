@@ -2,7 +2,6 @@ package io.mateu.erp.model.payments;
 
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.partners.Partner;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,9 +18,6 @@ public class DueDate {
 
     @ManyToOne
     private FinancialAgent agent;
-
-    @ManyToOne
-    private Partner partner;
 
     @NotNull
     private DueDateType type;

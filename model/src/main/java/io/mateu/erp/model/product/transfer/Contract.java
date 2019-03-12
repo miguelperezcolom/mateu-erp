@@ -56,7 +56,7 @@ public class Contract extends AbstractContract {
         c.setBookingWindowTo(getBookingWindowTo());
         c.setSpecialTerms(getSpecialTerms());
         c.setSupplier(getSupplier());
-        c.getPartners().addAll(getPartners());
+        c.getAgencies().addAll(getAgencies());
         c.setTitle("COPY OF " + getTitle());
         c.setType(getType());
         c.setValidFrom(getValidFrom());

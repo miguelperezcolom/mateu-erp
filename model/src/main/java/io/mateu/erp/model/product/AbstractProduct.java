@@ -2,7 +2,7 @@ package io.mateu.erp.model.product;
 
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
@@ -48,8 +48,7 @@ public abstract class AbstractProduct {
     @ManyToOne
     @ListColumn
     @SearchFilter
-    @QLFilter("x.provider = true")
-    private Partner providedBy;
+    private Provider providedBy;
 
 
 

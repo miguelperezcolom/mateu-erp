@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.tour;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.ProductType;
 import io.mateu.erp.model.product.Variant;
@@ -42,7 +42,7 @@ public class TourCost {
     private Variant productVariant;
 
     @ManyToOne
-    private Partner supplier;
+    private Provider provider;
 
     @Column(name = "_order")
     private int order;

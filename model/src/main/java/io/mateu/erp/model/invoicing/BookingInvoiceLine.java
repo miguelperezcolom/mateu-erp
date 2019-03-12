@@ -29,7 +29,7 @@ public class BookingInvoiceLine extends AbstractInvoiceLine {
 
         booking = c.getBooking();
 
-        setPrice(c.getTotal().getValue());
+        setPrice(c.getTotal());
         setQuantity(1);
         setTotal(getPrice());
         setSubject(c.getText());

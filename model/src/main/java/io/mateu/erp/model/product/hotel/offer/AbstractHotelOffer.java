@@ -9,7 +9,7 @@ import io.mateu.erp.dispo.interfaces.product.IBoard;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
 import io.mateu.erp.dispo.interfaces.product.IRoom;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.DatesRanges;
 import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
@@ -95,7 +95,7 @@ public class AbstractHotelOffer implements IHotelOffer {
     @SearchFilter
     @OneToMany
     @UseChips
-    private Set<Partner> targets = new HashSet<>();
+    private Set<Agency> targets = new HashSet<>();
 
 
     @SearchFilter

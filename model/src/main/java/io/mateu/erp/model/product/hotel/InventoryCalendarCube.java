@@ -1,7 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -26,7 +26,7 @@ public class InventoryCalendarCube {
     private LocalDate fin = null;
     private List<RoomType> rooms = new ArrayList<>();
     int maxdias = 0;
-    private List<Partner> agencias = new ArrayList<>();
+    private List<Agency> agencias = new ArrayList<>();
 
     public InventoryCalendarCube(Inventory inventory) throws Throwable {
 
@@ -83,7 +83,7 @@ public class InventoryCalendarCube {
         apply(o, desviado, null, null);
     }
 
-    private void apply(InventoryOperation o, Partner agencia) {
+    private void apply(InventoryOperation o, Agency agencia) {
         apply(o, false, agencia, null);
     }
 
@@ -91,7 +91,7 @@ public class InventoryCalendarCube {
         apply(o, false, null, c);
     }
 
-    private void apply(InventoryOperation o, boolean desviado, Partner agencia, HotelContract c) {
+    private void apply(InventoryOperation o, boolean desviado, Agency agencia, HotelContract c) {
 
         if (o.getEnd().isAfter(ayer) && o.getRoom() != null) {
 

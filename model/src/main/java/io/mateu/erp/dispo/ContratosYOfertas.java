@@ -4,6 +4,7 @@ import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
 import io.mateu.erp.dispo.interfaces.product.IHotelOffer;
+import io.mateu.erp.model.partners.Agency;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,12 +19,12 @@ public class ContratosYOfertas {
 
     private List<IHotelOffer> ofertas = new ArrayList<>();
 
-    public ContratosYOfertas(IPartner agency, IHotel hotel, LocalDate entrada, LocalDate salida, int release, int noches, List<LineaReserva> ocupaciones, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones, LocalDate formalizationDate) {
+    public ContratosYOfertas(Agency agency, IHotel hotel, LocalDate entrada, LocalDate salida, int release, int noches, List<LineaReserva> ocupaciones, ParosVentas paros, Cupo cupo, CombinacionesHabitaciones combinacionesHabitaciones, LocalDate formalizationDate) {
 
         for (IHotelContract c : hotel.getContracts()) {
             if (Helper.cabe(c.getValidFrom(), c.getValidTo(), entrada, salida)) {
 
-                if (c.getPartners().size() == 0 || c.getPartners().contains(agency)) {
+                if (c.getAgencies().size() == 0 || c.getAgencies().contains(agency)) {
 
                     for (CombinacionHabitaciones ch : combinacionesHabitaciones.getCombinaciones()) {
 

@@ -5,7 +5,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
@@ -69,7 +69,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
     public static void run() {
         try {
             TravelRepublicAutoImport i = new TravelRepublicAutoImport();
-            i.setCustomer((Partner) Helper.selectObjects("select x from " + Partner.class.getName() + " x where x.name = 'TRAVELREPUBLIC'").get(0));
+            i.setCustomer((Agency) Helper.selectObjects("select x from " + Agency.class.getName() + " x where x.name = 'TRAVELREPUBLIC'").get(0));
             i.setPointOfSale((PointOfSale) Helper.selectObjects("select x from " + PointOfSale.class.getName() + " x where x.name = 'Importación'").get(0));
             i.getBookings(LocalDate.now(), 300);
         } catch (Throwable throwable) {

@@ -3,11 +3,10 @@ package io.mateu.erp.model.importing;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.annotations.*;
@@ -17,7 +16,6 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.ConstraintViolation;
@@ -25,7 +23,6 @@ import javax.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -56,7 +53,7 @@ public class TransferBookingRequest {
     @Output
     @ManyToOne
     @ListColumn
-    private Partner customer;
+    private Agency customer;
 
     @SearchFilter
     @Output
@@ -560,7 +557,8 @@ public class TransferBookingRequest {
                     }
 
                     if (getValue() != 0 && (lastRequest == null || getValue() != lastRequest.getValue())) {
-                        b.setOverridedValue(FastMoney.of(Helper.roundEuros(effectiveValue), "EUR"));
+                        b.setOverridedValue(Helper.roundEuros(effectiveValue));
+                        b.setCurrency(b.getAgency().getCurrency());
                         b.setOverridedBillingConcept(task.getBillingConcept());
                         b.setValueOverrided(true);
                         effectiveValue = 0;
@@ -758,11 +756,11 @@ public class TransferBookingRequest {
     }
 
 
-    public static TransferBookingRequest getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
+    public static TransferBookingRequest getByAgencyRef(EntityManager em, String agencyRef, Agency agency)
     {
         try {
             String jpql = "select x from " + TransferBookingRequest.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + partner.getId() + " order by x.when desc";
+                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + agency.getId() + " order by x.when desc";
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<TransferBookingRequest> l = q.getResultList();
             TransferBookingRequest b = (l.size() > 0)?l.get(0):null;

@@ -7,7 +7,7 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -67,7 +67,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             public void run(EntityManager em) throws Throwable {
 
                 TransferBooking b = new TransferBooking();
-                b.setAgency(em.find(Partner.class, finalIdAgencia));
+                b.setAgency(em.find(Agency.class, finalIdAgencia));
                 b.setAdults(pax);
 
                 b.setOrigin(em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length()))));
@@ -194,7 +194,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     pl.setId("" + pos++);
                     pl.setType(l.getBillingConcept().getCode());
                     pl.setDescription(l.getText());
-                    pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
+                    pl.setRetailPrice(new Amount(l.getCurrency().getIsoCode(), l.getTotal()));
                 }
 
                 for (BookingDueDate dd : b.getDueDates()) {
@@ -264,7 +264,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         TransferBooking b = new TransferBooking();
         User user = em.find(User.class, login);
         b.setAudit(new Audit(user));
-        b.setAgency(em.find(Partner.class, idAgencia));
+        b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
 
         b.setOrigin(em.find(TransferPoint.class, new Long(String.valueOf(data.get("fromTransferPointId")).split("-")[1])));

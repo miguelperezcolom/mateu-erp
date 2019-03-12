@@ -1,10 +1,12 @@
 package io.mateu.erp.model.invoicing.lists;
 
 import com.vaadin.data.provider.QuerySortOrder;
-import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.invoicing.*;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.invoicing.Invoice;
+import io.mateu.erp.model.invoicing.PurchaseCharge;
+import io.mateu.erp.model.invoicing.PurchaseOrderInvoiceLine;
+import io.mateu.erp.model.invoicing.ReceivedInvoice;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
@@ -29,7 +31,7 @@ public class NotReceivedByBookingListView extends AbstractJPQLListView<NotReceiv
     private LocalDate to;
 
     @MainSearchFilter
-    private Partner partner;
+    private Provider provider;
 
     @Getter@Setter
     public class Row {
@@ -62,7 +64,7 @@ public class NotReceivedByBookingListView extends AbstractJPQLListView<NotReceiv
 
         String ql = "";
 
-        ql += " select l.purchaseOrder.id, l.purchaseOrder.audit.created, l.serviceDate, sum(l.total.value) as total " +
+        ql += " select l.purchaseOrder.id, l.purchaseOrder.audit.created, l.serviceDate, sum(l.total) as total " +
                 " from " + PurchaseCharge.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();
@@ -98,10 +100,10 @@ public class NotReceivedByBookingListView extends AbstractJPQLListView<NotReceiv
             params.put("t", from);
         }
 
-        if (partner != null) {
+        if (provider != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.partner.id = :h";
-            params.put("h", partner.getId());
+            w += " l.provider.id = :h";
+            params.put("h", provider.getId());
         }
 
         return w;

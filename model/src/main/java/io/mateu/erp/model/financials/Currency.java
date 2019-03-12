@@ -35,6 +35,8 @@ public class Currency {
     @Ignored
     private List<CurrencyExchange> exchanges = new ArrayList<>();
 
+    private double exchangeRateToNucs;
+
     @Override
     public String toString() {
         return getName();

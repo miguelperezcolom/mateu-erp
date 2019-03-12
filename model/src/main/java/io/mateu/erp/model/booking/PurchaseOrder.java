@@ -4,14 +4,16 @@ import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
+import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.PurchaseCharge;
 import io.mateu.erp.model.mdd.CancelledCellStyleGenerator;
 import io.mateu.erp.model.mdd.PurchaseOrderStatusCellStyleGenerator;
 import io.mateu.erp.model.mdd.SentCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
@@ -80,10 +82,9 @@ public class PurchaseOrder {
     @NotNull
     @ListColumn
     @SearchFilter
-    @QLFilter("x.provider = true")
     @ColumnWidth(172)
     @NoChart
-    private Partner provider;
+    private Provider provider;
 
     @ListColumn
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
@@ -153,39 +154,31 @@ public class PurchaseOrder {
     @SameLine
     private double overridedValue;
 
+
+    @ManyToOne
+    private BillingConcept overridedBillingConcept;
+
+
     @Ignored
     private String overridedValueCalculator;
-
 
 
 
     @KPI
     private boolean valued;
 
-
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name="value", column=@Column(name="value_value"))
-            , @AttributeOverride(name="date", column=@Column(name="value_date"))
-            , @AttributeOverride(name="officeChangeRate", column=@Column(name="value_offchangerate"))
-            , @AttributeOverride(name="officeValue", column=@Column(name="value_offvalue"))
-            , @AttributeOverride(name="nucChangeRate", column=@Column(name="value_nuchangerate"))
-            , @AttributeOverride(name="nucValue", column=@Column(name="value_nucvalue"))
-    })
-    @AssociationOverrides({
-            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "value_currency"))
-    })
     @KPI
-    @NotWhenCreating
-    @ListColumn
-    private Amount value;
+    private double total;
+
+    @NotNull@KPI@ManyToOne
+    private Currency currency;
 
 
     @Output
     private String priceReport;
 
 
-    @OneToMany(mappedBy = "purchaseOrder")
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL)
     @UseLinkToListView
     private List<PurchaseCharge> charges = new ArrayList<>();
 
@@ -278,7 +271,8 @@ public class PurchaseOrder {
         d.put("sent", isSent());
         d.put("sentTime", getSentTime());
         d.put("valued", isValued());
-        d.put("total", getValue());
+        d.put("total", getTotal());
+        d.put("currency", getCurrency().getIsoCode());
 
         List<Map<String, Object>> ls = new ArrayList<>();
 
@@ -340,15 +334,51 @@ public class PurchaseOrder {
             }
         }
         setValued(v);
-        getValue().setValue(t);
-        getValue().setCurrency(getProvider().getCurrency());
+        setTotal(t);
+        setCurrency(getProvider().getCurrency());
+
+
+        updateCharges(em);
     }
+
+    private void updateCharges(EntityManager em) {
+        getCharges().clear();
+
+        if (isValueOverrided()) {
+            PurchaseCharge c;
+            getCharges().add(c = new PurchaseCharge());
+            c.setAudit(new Audit(getAudit().getModifiedBy()));
+
+            c.setTotal(getOverridedValue());
+            c.setCurrency(getCurrency());
+
+            c.setText("PO " + getId());
+
+            c.setProvider(getProvider());
+
+            c.setType(ChargeType.PURCHASE);
+            c.setPurchaseOrder(this);
+
+            c.setInvoice(null);
+
+
+            c.setBillingConcept(getOverridedBillingConcept());
+
+        } else {
+            createCharges(em);
+        }
+    }
+
+    public void createCharges(EntityManager em) {
+
+    }
+
 
     private double rate(EntityManager em, PrintWriter report) throws Throwable {
         double total = 0;
         if (isActive()) for (Service s : getServices()) if (s.isActive()) {
             double serviceCost = s.getOverridedCostValue();
-            if (!s.isCostOverrided()) serviceCost = s.rate(em, false, getProvider(), report);
+            if (!s.isCostOverrided()) serviceCost = s.rateCost(em, getProvider(), report);
             total += serviceCost;
         }
         return Helper.roundEuros(total);
@@ -414,6 +444,7 @@ public class PurchaseOrder {
                             } catch (Throwable e) {
                                 e.printStackTrace();
                             }
+
                             po.summarize(em);
 
                             po.markServicesForUpdate();

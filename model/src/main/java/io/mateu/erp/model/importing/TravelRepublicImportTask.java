@@ -5,7 +5,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
@@ -29,7 +29,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public TravelRepublicImportTask() {}
 
-    public TravelRepublicImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TravelRepublicImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this.setCustomer(customer);
 
@@ -51,7 +51,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     }
 
-    public TravelRepublicImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TravelRepublicImportTask(User user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this("TravelRepublic", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }

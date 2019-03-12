@@ -9,12 +9,14 @@ import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.EntityManager;
+import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,7 +35,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
     @ManyToOne
     @Output
-    private Partner provider;
+    private Provider provider;
 
     @Output
     private PurchaseOrderSendingMethod method;

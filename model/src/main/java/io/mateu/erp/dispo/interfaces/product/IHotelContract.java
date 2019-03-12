@@ -2,6 +2,7 @@ package io.mateu.erp.dispo.interfaces.product;
 
 import io.mateu.erp.dispo.interfaces.common.IPartner;
 import io.mateu.erp.model.financials.CancellationRules;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.HotelContractPhoto;
 
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ public interface IHotelContract {
     public CancellationRules getCancellationRules();
 
 
-    public List<? extends IPartner> getPartners();
+    public List<? extends Agency> getAgencies();
 
     long getId();
 }

@@ -2,12 +2,11 @@ package io.mateu.erp.model.commissions;
 
 import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.ChargeType;
-import io.mateu.erp.model.invoicing.Invoice;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.mdd.core.MDD;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.MainSearchFilter;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
 import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
@@ -16,7 +15,10 @@ import lombok.Setter;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Getter@Setter
 public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledByAgentListView.Row> {
@@ -28,7 +30,7 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
     private LocalDate to;
 
     @MainSearchFilter
-    private Partner commissionAgent;
+    private CommissionAgent commissionAgent;
 
     @Getter@Setter
     public class Row {

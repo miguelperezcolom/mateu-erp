@@ -1,8 +1,8 @@
 package io.mateu.erp.consolidador;
 
 import io.mateu.erp.model.authentication.AuthToken;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.partners.PartnerStatus;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.AgencyStatus;
 import org.easytravelapi.hotel.GetAvailableHotelsRS;
 
 public class Logica {
@@ -25,11 +25,11 @@ public class Logica {
 
             // tenemos agencia
 
-            Partner actor = token.getPartner();
+            Agency actor = token.getAgency();
 
             if (actor == null) throw new Throwable("No actor for token " + rq.getToken() + "");
 
-            if (!PartnerStatus.ACTIVE.equals(actor.getStatus())) throw new Throwable("Actor " + actor.getId() + " - " + actor.getName() + " is not active");
+            if (!AgencyStatus.ACTIVE.equals(actor.getStatus())) throw new Throwable("Actor " + actor.getId() + " - " + actor.getName() + " is not active");
 
             // recorremos el mapa para obtener la lista de recursos (hoteles)
 

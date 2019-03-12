@@ -8,7 +8,7 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
@@ -86,7 +86,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                 };
 
                 GenericBooking b = new GenericBooking();
-                b.setAgency(em.find(Partner.class, finalIdAgencia));
+                b.setAgency(em.find(Agency.class, finalIdAgencia));
 
 
                 excursions.forEach(e -> {
@@ -208,7 +208,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
 
             GenericBooking b = new GenericBooking();
-            b.setAgency(em.find(Partner.class, finalIdAgencia));
+            b.setAgency(em.find(Agency.class, finalIdAgencia));
             b.setProduct(e);
             b.setUnits(1);
             b.setAdults(1);
@@ -335,7 +335,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                     pl.setId("" + pos++);
                     pl.setType(l.getBillingConcept().getCode());
                     pl.setDescription(l.getText());
-                    pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
+                    pl.setRetailPrice(new Amount(l.getCurrency().getIsoCode(), l.getTotal()));
                 }
 
                 for (BookingDueDate dd : b.getDueDates()) {
@@ -394,7 +394,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         GenericBooking b = new GenericBooking();
         User user = em.find(User.class, login);
         b.setAudit(new Audit(user));
-        b.setAgency(em.find(Partner.class, idAgencia));
+        b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
 
         b.setProduct(em.find(GenericProduct.class, new Long(String.valueOf(data.get("product")))));

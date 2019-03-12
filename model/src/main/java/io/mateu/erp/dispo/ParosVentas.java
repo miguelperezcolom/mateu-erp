@@ -29,10 +29,10 @@ public class ParosVentas {
 
                 for (int noche = rango.getDesde(); noche < rango.getHasta(); noche++) {
                     ParoDia p = getDias().get(noche);
-                    p.setAllClosed(l.getActorIds().size() == 0 && l.getRoomIds().size() == 0);
+                    p.setAllClosed(l.getAgencyIds().size() == 0 && l.getRoomIds().size() == 0);
                     if (!p.isAllClosed()) {
                         p.getRoomsClosed().addAll(l.getRoomIds());
-                        p.getClientsClosed().addAll(l.getActorIds());
+                        p.getClientsClosed().addAll(l.getAgencyIds());
                     }
                 }
 

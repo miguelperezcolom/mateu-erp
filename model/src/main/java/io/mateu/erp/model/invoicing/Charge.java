@@ -1,11 +1,11 @@
 package io.mateu.erp.model.invoicing;
 
-import io.mateu.erp.model.financials.Amount;
-import io.mateu.erp.model.financials.AmountChangeListener;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,13 +20,6 @@ import java.time.LocalDate;
 @Setter
 public class Charge {
 
-    @KPI
-    private transient Amount value;
-
-    public Amount getValue() {
-        return total;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -39,9 +32,6 @@ public class Charge {
     @Output
     private ChargeType type;
 
-    @ManyToOne
-    @NotNull
-    private Partner partner;
 
 
     @ManyToOne
@@ -57,41 +47,28 @@ public class Charge {
     private String text;
 
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name="value", column=@Column(name="total_value"))
-            , @AttributeOverride(name="date", column=@Column(name="total_date"))
-            , @AttributeOverride(name="officeChangeRate", column=@Column(name="total_offchangerate"))
-            , @AttributeOverride(name="officeValue", column=@Column(name="total_offvalue"))
-            , @AttributeOverride(name="nucChangeRate", column=@Column(name="total_nuchangerate"))
-            , @AttributeOverride(name="nucValue", column=@Column(name="total_nucvalue"))
-    })
-    @AssociationOverrides({
-            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "total_currency"))
-    })
-    private Amount total;
+    private double total;
 
-    public void setTotal(Amount total) {
+    @ManyToOne@NotNull
+    private Currency currency;
+
+    @KPI
+    private double currencyExchange;
+
+    @KPI
+    private double valueInNucs;
+
+
+    public void setTotal(double total) {
         this.total = total;
-        if (total != null) total.getListeners().add(new AmountChangeListener() {
-            @Override
-            public void changed() {
-                Charge.this.totalChanged();
-            }
-        });
+        totalChanged();
     }
 
     public void totalChanged() {
     }
 
 
-    @Caption("Total")
-    @NotInEditor
-    private transient double nucs;
-
-    public double getNucs() {
-        return total.getNucValue();
-    }
+    private double nucs;
 
     @ManyToOne
     @Output
@@ -101,7 +78,7 @@ public class Charge {
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("##,###,###,###,###.00");
-        return "<div style='text-align:right;width:100px;display:inline-block;margin-right:10px;'>" + ((total != null)?df.format(total.getValue()):"0.0") + "</div><div style='display: inline-block;'>" + ((text != null)?text:"---") + "</div>";
+        return "<div style='text-align:right;width:100px;display:inline-block;margin-right:10px;'>" + df.format(total) + "</div><div style='display: inline-block;'>" + ((text != null)?text:"---") + "</div>";
     }
 
 

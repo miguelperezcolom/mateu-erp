@@ -1,13 +1,17 @@
 package io.mateu.erp.model.invoicing;
 
+import com.google.common.collect.Lists;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
+import io.mateu.erp.model.payments.BookingPaymentAllocation;
+import io.mateu.erp.model.payments.InvoicePaymentAllocation;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATSettlement;
 import io.mateu.mdd.core.MDD;
@@ -94,23 +98,19 @@ public abstract class Invoice {
     private List<AbstractInvoiceLine> lines = new ArrayList<>();
 
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name="value", column=@Column(name="total_value"))
-            , @AttributeOverride(name="date", column=@Column(name="total_date"))
-            , @AttributeOverride(name="officeChangeRate", column=@Column(name="total_offchangerate"))
-            , @AttributeOverride(name="officeValue", column=@Column(name="total_offvalue"))
-            , @AttributeOverride(name="nucChangeRate", column=@Column(name="total_nuchangerate"))
-            , @AttributeOverride(name="nucValue", column=@Column(name="total_nucvalue"))
-    })
-    @AssociationOverrides({
-            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "total_currency"))
-    })
     @KPI
     @NotWhenCreating
     @NotNull
     @ListColumn
-    private Amount total;
+    private double total;
+
+
+    @KPI
+    @NotWhenCreating
+    @NotNull
+    @ListColumn
+    @ManyToOne
+    private Currency currency;
 
     @KPI
     @ListColumn
@@ -120,6 +120,8 @@ public abstract class Invoice {
     @ListColumn
     private boolean paid;
 
+    @KPI
+    private double balance;
 
     @Output
     private double retainedPercent;
@@ -128,11 +130,14 @@ public abstract class Invoice {
     private double retainedTotal;
 
     @ManyToOne
+    @Output
     private VAT vat;
 
+    @Output
     private boolean specialRegime;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
+    @Output
     private List<VATLine> VATLines = new ArrayList<>();
 
 
@@ -144,12 +149,18 @@ public abstract class Invoice {
     @Output
     private VATSettlement vatSettlement;
 
+    @OneToMany(mappedBy = "invoice")
+    @OrderColumn(name = "id")
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    private List<InvoicePaymentAllocation> payments = new ArrayList<>();
+
+
 
     public Invoice() {
 
     }
 
-    public Invoice(User u, Collection<? extends Charge> charges, boolean proforma, FinancialAgent issuer, FinancialAgent recipient, String invoiceNumber) throws Throwable {
+    public Invoice(User u, Collection<? extends BookingCharge> charges, boolean proforma, FinancialAgent issuer, FinancialAgent recipient, String invoiceNumber) throws Throwable {
 
         if (charges == null || charges.size() == 0) throw new Exception("Can not create invoices from an empty list of charges");
 
@@ -162,7 +173,7 @@ public abstract class Invoice {
 
         double total = 0;
 
-        for (Charge c : charges) {
+        for (BookingCharge c : charges) {
 
             if (inicializar) {
 
@@ -170,22 +181,25 @@ public abstract class Invoice {
 
                 setAudit(new Audit(u));
 
-                setTotal(new Amount(FastMoney.of(0, c.getTotal().getCurrency().getIsoCode())));
+                setTotal(0);
+                setCurrency(c.getCurrency());
 
                 setIssueDate(LocalDate.now());
+                setDueDate(LocalDate.now());
 
 
                 if (this instanceof IssuedInvoice) {
-                    if (c.getPartner().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the agency " + c.getPartner().getName());
-                    if (c.getPartner().getCompany() == null) throw new Exception("If you want to create proformas or invoices you must set the company for the agency " + c.getPartner().getName());
-                    if (c.getPartner().getCompany().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the company " + c.getPartner().getCompany().getName());
+                    if (c.getAgency().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the agency " + c.getAgency().getName());
+                    if (c.getAgency().getCompany() == null) throw new Exception("If you want to create proformas or invoices you must set the company for the agency " + c.getAgency().getName());
+                    if (c.getAgency().getCompany().getFinancialAgent() == null) throw new Exception("If you want to create proformas or invoices you must set the financial agent for the company " + c.getAgency().getCompany().getName());
 
-                    setRecipient((ChargeType.SALE.equals(c.getType()))?c.getPartner().getFinancialAgent():c.getPartner().getCompany().getFinancialAgent());
-                    setIssuer((ChargeType.PURCHASE.equals(c.getType()))?c.getPartner().getFinancialAgent():c.getPartner().getCompany().getFinancialAgent());
+                    setRecipient(c.getAgency().getFinancialAgent());
+                    setIssuer(c.getAgency().getCompany().getFinancialAgent());
 
                     if (!proforma) {
                         if (InvoiceType.ISSUED.equals(type)) {
-                            ((IssuedInvoice)this).setSerial(c.getPartner().getCompany().getBillingSerial());
+                            ((IssuedInvoice)this).setSerial(c.getAgency().getCompany().getBillingSerial());
+                            if (((IssuedInvoice)this).getSerial() == null) throw new Exception("Missing invoice serial. Please set at company " + c.getAgency().getCompany().getName());
                             setNumber(((IssuedInvoice)this).getSerial().getPrefix() + "" + ((IssuedInvoice)this).getSerial().getNextNumber());
                         } else {
                             setNumber("PROFORMA");
@@ -201,19 +215,19 @@ public abstract class Invoice {
             }
 
 
-            if (c instanceof BookingCharge) getLines().add(new BookingInvoiceLine(this, (BookingCharge) c));
-            else if (c instanceof PurchaseCharge) getLines().add(new PurchaseOrderInvoiceLine(this, (PurchaseCharge) c));
+            getLines().add(new BookingInvoiceLine(this, (BookingCharge) c));
             if (!proforma) {
                 c.setInvoice(this);
             }
 
-            total += c.getTotal().getValue();
+            total += c.getTotal();
         }
 
 
-        setTotal(new Amount(FastMoney.of(total, getTotal().getCurrency().getIsoCode())));
+        setTotal(total);
 
         setRetainedPercent(0);
+
     }
 
 
@@ -314,7 +328,7 @@ public abstract class Invoice {
             }
 
             xml.setAttribute("paid", nf.format(0));
-            xml.setAttribute("pending", nf.format(getTotal().getValue()));
+            xml.setAttribute("pending", nf.format(getTotal()));
 
         }
 
@@ -339,9 +353,14 @@ public abstract class Invoice {
     }
 
 
-    @PrePersist
-    public void prePersist() {
-        if (number == null) number = UUID.randomUUID().toString();
+    @PrePersist@PreUpdate
+    public void pre() {
+        double t = 0;
+        for (InvoicePaymentAllocation payment : payments) {
+            t += payment.getValue();
+        }
+        setBalance(Helper.roundEuros(total - t));
+        setPaid(getBalance() <= 0);
     }
 
 
@@ -356,8 +375,11 @@ public abstract class Invoice {
 
     @Action(order = 2, icon = VaadinIcons.FILE)
     public URL pdf() throws Throwable {
-        URL[] url = new URL[1];
+        return createPdf(Lists.newArrayList(this));
+    }
 
+    public static URL createPdf(List<? extends Invoice> invoices) throws Throwable {
+        URL[] url = new URL[1];
 
         Helper.transact(new JPATransaction() {
             @Override
@@ -367,7 +389,10 @@ public abstract class Invoice {
 
                 try {
 
-                    Element xml = toXml(em);
+                    Element xml = new Element("invoices");
+                    for (Invoice i : invoices) {
+                        xml.addContent(i.toXml(em));
+                    }
 
                     try {
                         String archivo = UUID.randomUUID().toString();
@@ -381,7 +406,7 @@ public abstract class Invoice {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        fileOut.write(Helper.fop(new StreamSource(new StringReader(getXslfo(em))), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(new StringReader(invoices.get(0).getXslfo(em))), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");
@@ -402,9 +427,7 @@ public abstract class Invoice {
             }
         });
 
-
         return url[0];
     }
-
 
 }

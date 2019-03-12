@@ -3,7 +3,7 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 
@@ -16,35 +16,41 @@ import java.util.Map;
 
 public class Invoicer {
 
-    public static List<IssuedInvoice> proform(EntityManager em, User user, List<Charge> charges) throws Throwable {
+    public static List<IssuedInvoice> proform(EntityManager em, User user, List<BookingCharge> charges) throws Throwable {
         return invoice(em, user, charges, true);
     }
 
-    public static List<IssuedInvoice> invoice(EntityManager em, User user, List<Charge> charges) throws Throwable {
+    public static List<IssuedInvoice> invoice(EntityManager em, User user, List<BookingCharge> charges) throws Throwable {
         return invoice(em, user, charges, false);
     }
 
 
-    private static List<IssuedInvoice> invoice(EntityManager em, User user, List<Charge> charges, boolean proforma) throws Throwable {
+    private static List<IssuedInvoice> invoice(EntityManager em, User user, List<BookingCharge> charges, boolean proforma) throws Throwable {
 
         // agrupar por clientes
 
-        Map<Partner, List<Charge>> bookingsByPartner = new HashMap<>();
-        charges.stream().filter(c -> c.getInvoice() != null).forEach(c -> {
-            List<Charge> l = bookingsByPartner.get(c.getPartner());
+        Map<Agency, List<BookingCharge>> bookingsByPartner = new HashMap<>();
+        charges.stream().filter(c -> c.getInvoice() == null).forEach(c -> {
+            List<BookingCharge> l = bookingsByPartner.get(c.getAgency());
             if (l == null) {
-                bookingsByPartner.put(c.getPartner(), l = new ArrayList<>());
+                bookingsByPartner.put(c.getAgency(), l = new ArrayList<>());
             }
             l.add(c);
         });
 
+        // comprobamos que todos tienen datos de facturación
+
+        for (Agency agency : bookingsByPartner.keySet()) {
+            if (agency.getFinancialAgent() == null) throw new Exception("Missing financial agent for " + agency.getName());
+        }
+
 
         // para cada cliente, agrupar según criterio
 
-        Map<Partner, List<List<Charge>>> chargesByPartner = new HashMap<>();
+        Map<Agency, List<List<BookingCharge>>> chargesByPartner = new HashMap<>();
         bookingsByPartner.keySet().forEach(p -> {
 
-            Map<String, List<Charge>> chargesByKey = new HashMap<>();
+            Map<String, List<BookingCharge>> chargesByKey = new HashMap<>();
 
 
             bookingsByPartner.get(p).forEach(c -> {
@@ -68,7 +74,7 @@ public class Invoicer {
                         break;
                 }
 
-                List<Charge> currentCharges = chargesByKey.get(k);
+                List<BookingCharge> currentCharges = chargesByKey.get(k);
                 if (currentCharges == null) {
                     chargesByKey.put(k, currentCharges = new ArrayList<>());
                 }
@@ -77,12 +83,14 @@ public class Invoicer {
             });
 
 
+            chargesByPartner.put(p, new ArrayList<>(chargesByKey.values()));
+
         });
 
 
         // para cada cliente, separar por régimen
 
-        Map<Partner, List<List<Charge>>> chargesByPartnerAndRegime = chargesByPartner;
+        Map<Agency, List<List<BookingCharge>>> chargesByPartnerAndRegime = chargesByPartner;
 
         //todo: separar por régimen
 
@@ -110,15 +118,18 @@ public class Invoicer {
                 i.setAudit(new Audit(user));
                 i.setIssueDate(LocalDate.now());
                 i.setNumber(proforma?"PROFORMA":p.getCompany().getBillingSerial().createInvoiceNumber());
+                if (!proforma) i.setSerial(p.getCompany().getBillingSerial());
                 if (a.getCustomerPaymentTerms() != null) {
                     LocalDate dd = null;
 
                     i.setDueDate(dd);
                 }
+                i.setAgency(p);
                 i.setRecipient(a);
                 i.setIssuer(p.getCompany().getFinancialAgent());
                 i.setRetainedPercent(0);
                 i.setTaxDate(i.getIssueDate());
+                i.setDueDate(i.getIssueDate());
                 i.setType(InvoiceType.ISSUED);
                 i.setValid(true);
 
@@ -140,7 +151,8 @@ public class Invoicer {
                 vl.setExempt(true);
 
                 try {
-                    i.setTotal(new Amount(em, t, a.getCurrency()));
+                    i.setTotal(t);
+                    i.setCurrency(p.getCurrency());
 
                     invoices.add(i);
 

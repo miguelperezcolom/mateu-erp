@@ -7,7 +7,7 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
@@ -388,7 +388,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                     pl.setId("" + pos++);
                     pl.setType(l.getBillingConcept().getCode());
                     pl.setDescription(l.getText());
-                    pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
+                    pl.setRetailPrice(new Amount(l.getCurrency().getIsoCode(), l.getTotal()));
                 }
 
                 for (BookingDueDate dd : b.getDueDates()) {
@@ -452,7 +452,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         ExcursionBooking b = new ExcursionBooking();
         User user = em.find(User.class, login);
         b.setAudit(new Audit(user));
-        b.setAgency(em.find(Partner.class, idAgencia));
+        b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
 
         b.setExcursion(em.find(Excursion.class, new Long(String.valueOf(data.get("activity")))));

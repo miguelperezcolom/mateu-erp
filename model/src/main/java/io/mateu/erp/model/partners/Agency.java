@@ -1,18 +1,11 @@
 package io.mateu.erp.model.partners;
 
-import com.google.common.base.Strings;
-import io.mateu.erp.dispo.interfaces.common.IPartner;
-import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.revenue.HandlingFee;
 import io.mateu.erp.model.revenue.Markup;
-import io.mateu.erp.model.thirdParties.Integration;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,18 +13,9 @@ import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * holder for customers (e.g. a touroperator, a travel agency, ...)
- *
- * Created by miguel on 13/9/16.
- */
-@Entity
-@Getter
-@Setter
-public class Partner implements IPartner {
+@Entity@Getter@Setter
+public class Agency {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,39 +29,13 @@ public class Partner implements IPartner {
     @NotNull
     @ListColumn
     @ColumnWidth(100)
-    private PartnerStatus status;
-
-    @ListColumn
-    @ColumnWidth(100)
-    @NoChart
-    private boolean agency;
-
-    @SameLine
-    @ListColumn
-    @ColumnWidth(100)
-    @NoChart
-    private boolean provider;
-
-    @SameLine
-    @ListColumn
-    @ColumnWidth(100)
-    @NoChart
-    private boolean hotelChain;
-
-    @SameLine
-    @ListColumn
-    @ColumnWidth(100)
-    @NoChart
-    private boolean commissionAgent;
+    private AgencyStatus status;
 
     @ManyToOne
     @ListColumn
     @ColumnWidth(150)
     @NoChart
-    private PartnerGroup group;
-
-    @ManyToOne
-    private Partner headQuater;
+    private AgencyGroup group;
 
     @ManyToOne
     private Market market;
@@ -92,7 +50,7 @@ public class Partner implements IPartner {
     @ManyToOne
     private FinancialAgent financialAgent;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private Company company;
 
 
@@ -103,6 +61,31 @@ public class Partner implements IPartner {
     private String email;
 
     private String comments;
+
+
+
+
+    // estos valores se actualizan cada 5 o 10 minutos....
+
+    @ListColumn
+    @KPI
+    private double bookings;
+
+    @ListColumn
+    @KPI
+    private double invoiced;
+
+    @ListColumn
+    @KPI
+    private double balance;
+
+    // ... hasta aquí
+
+    @Ignored
+    private boolean updatePending;
+
+
+
 
     @Section("Product filters")
     private boolean onRequestAllowed;
@@ -121,11 +104,6 @@ public class Partner implements IPartner {
     @ManyToOne
     private CancellationRules cancellationRules;
 
-    @Section("As supplier")
-    private String payableByInVoucher;
-
-    private double extraMarkupPercent;
-
 
     @Section("Invoicing")
     private boolean exportableToinvoicingApp;
@@ -134,34 +112,6 @@ public class Partner implements IPartner {
     private boolean oneLinePerBooking;
 
 
-    @Section("Orders sending")
-    private PurchaseOrderSendingMethod ordersSendingMethod;
-    private String sendOrdersTo;
-
-    private boolean automaticOrderSending;
-    private boolean automaticOrderConfirmation;
-
-
-    @Section("Integrations")
-    @ManyToMany
-    private List<Integration> integrations = new ArrayList<>();
-
-
-
-    @ListColumn
-    @KPI
-    private double bookings;
-
-    @ListColumn
-    @KPI
-    private double invoiced;
-
-    @ListColumn
-    @KPI
-    private double balance;
-
-    @Ignored
-    private boolean updatePending;
 
 
     @Override
@@ -197,16 +147,5 @@ public class Partner implements IPartner {
         return xml;
     }
 
-    public SendPurchaseOrdersTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
-        return createTask(em, getSendOrdersTo(), purchaseOrder.getOffice().getEmailCC());
-    }
 
-    public SendPurchaseOrdersByEmailTask createTask(EntityManager em, String toEmail, String cc) throws Throwable {
-        if (Strings.isNullOrEmpty(toEmail)) throw new Exception("Email address is missing");
-        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
-        t.setTo(toEmail);
-        t.setCc(cc);
-        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        return t;
-    }
 }

@@ -5,7 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -116,7 +116,7 @@ public class CMSServiceImpl implements CMSService {
 
                 Hotel h = hoteles.get(0);
 
-                Partner a = em.find(Partner.class, finalIdAgencia);
+                Agency a = em.find(Agency.class, finalIdAgencia);
 
                 System.out.println("checkIn=" + checkIn);
                 System.out.println("checkOut=" + checkOut);
@@ -573,6 +573,7 @@ public class CMSServiceImpl implements CMSService {
 
 
         return rs;        }
+
 
     private int[] getCupo(Hotel h, LocalDate start) throws Throwable {
 

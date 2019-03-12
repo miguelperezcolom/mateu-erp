@@ -11,9 +11,7 @@ import io.mateu.erp.model.importing.*;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Market;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.partners.PartnerStatus;
+import io.mateu.erp.model.partners.*;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
@@ -48,7 +46,8 @@ public class Importer {
     private static Map<String, Resort> ciudades = new HashMap<>();
     private static Map<String, TransferPoint> puntos = new HashMap<>();
     private static Map<String, User> usuarios = new HashMap<>();
-    private static Map<String, Partner> partners = new HashMap<>();
+    private static Map<String, Agency> agencies = new HashMap<>();
+    private static Map<String, Provider> providers = new HashMap<>();
     private static Map<String, io.mateu.erp.model.product.transfer.Zone> zonas = new HashMap<>();
     private static Map<String, Vehicle> vehiculos = new HashMap<>();
     private static Map<String, PointOfSale> poses = new HashMap<>();
@@ -159,7 +158,7 @@ public class Importer {
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setLeadName(eb.getAttributeValue("leadName"));
                 b.setAgencyReference(eb.getAttributeValue("ref"));
-                b.setAgency(partners.get(eb.getAttributeValue("agency")));
+                b.setAgency(agencies.get(eb.getAttributeValue("agency")));
                 b.setEmail(eb.getAttributeValue("email"));
                 b.setTelephone(eb.getAttributeValue("telephone"));
                 if (eb.getAttribute("confirmed") != null) b.setConfirmed(true);
@@ -326,21 +325,34 @@ public class Importer {
         });
 
         xml.getRootElement().getChild("actors").getChildren().forEach(ea -> {
-            Partner p = new Partner();
-            p.setName(ea.getAttributeValue("name"));
-            p.setEmail(ea.getAttributeValue("email"));
-            p.setCurrency(eur);
-            p.setStatus(ea.getAttribute("active") != null?PartnerStatus.ACTIVE:PartnerStatus.INACTIVE);
-            p.setOneLinePerBooking(ea.getAttribute("oneLinePerBooking") != null);
-            if (ea.getAttribute("ordersSendingMethod") != null) p.setOrdersSendingMethod(PurchaseOrderSendingMethod.valueOf(ea.getAttributeValue("ordersSendingMethod")));
-            p.setSendOrdersTo(ea.getAttributeValue("sendOrdersTo"));
-            if (ea.getAttribute("autoOrderConfirm") != null) p.setAutomaticOrderSending(true);
-            p.setFullAddress(ea.getAttributeValue("address"));
-            p.setAgency(ea.getAttribute("agency") != null);
-            p.setProvider(ea.getAttribute("provider") != null);
-            if (ea.getAttribute("market") != null) p.setMarket(mercados.get(ea.getAttributeValue("market")));
-            em.persist(p);
-            partners.put(ea.getAttributeValue("id"), p);
+            if (ea.getAttribute("agency") != null) {
+                Agency p = new Agency();
+                p.setName(ea.getAttributeValue("name"));
+                p.setEmail(ea.getAttributeValue("email"));
+                p.setCurrency(eur);
+                p.setStatus(ea.getAttribute("active") != null?AgencyStatus.ACTIVE:AgencyStatus.INACTIVE);
+                p.setOneLinePerBooking(ea.getAttribute("oneLinePerBooking") != null);
+                p.setFullAddress(ea.getAttributeValue("address"));
+                if (ea.getAttribute("market") != null) p.setMarket(mercados.get(ea.getAttributeValue("market")));
+                em.persist(p);
+                agencies.put(ea.getAttributeValue("id"), p);
+            }
+        });
+
+        xml.getRootElement().getChild("actors").getChildren().forEach(ea -> {
+            if (ea.getAttribute("provider") != null) {
+                Provider p = new Provider();
+                p.setName(ea.getAttributeValue("name"));
+                p.setEmail(ea.getAttributeValue("email"));
+                p.setCurrency(eur);
+                p.setStatus(ea.getAttribute("active") != null?ProviderStatus.ACTIVE:ProviderStatus.INACTIVE);
+                if (ea.getAttribute("ordersSendingMethod") != null) p.setOrdersSendingMethod(PurchaseOrderSendingMethod.valueOf(ea.getAttributeValue("ordersSendingMethod")));
+                p.setSendOrdersTo(ea.getAttributeValue("sendOrdersTo"));
+                if (ea.getAttribute("autoOrderConfirm") != null) p.setAutomaticOrderSending(true);
+                p.setFullAddress(ea.getAttributeValue("address"));
+                em.persist(p);
+                providers.put(ea.getAttributeValue("id"), p);
+            }
         });
 
         xml.getRootElement().getChild("mappings").getChildren().forEach(e -> {
@@ -383,14 +395,14 @@ public class Importer {
             c.setProductLine(lineaProducto);
             c.setBillingConcept(concepto);
             c.setTitle(e.getAttributeValue("title"));
-            if (e.getAttribute("supplier") != null) c.setSupplier(partners.get(e.getAttributeValue("supplier")));
+            if (e.getAttribute("supplier") != null) c.setSupplier(providers.get(e.getAttributeValue("supplier")));
             c.setType(ContractType.valueOf(e.getAttributeValue("type")));
             c.setValidFrom(LocalDate.parse(e.getAttributeValue("validFrom")));
             c.setValidTo(LocalDate.parse(e.getAttributeValue("validTo")));
             c.setMinPaxPerBooking(Integer.parseInt(e.getAttributeValue("minPaxPerBooking")));
             if (e.getAttribute("vatincluded") != null) c.setVATIncluded(true);
             for (String i : e.getAttributeValue("targets").split(",")) {
-                if (partners.get(i) != null) c.getPartners().add(partners.get(i));
+                if (agencies.get(i) != null) c.getAgencies().add(agencies.get(i));
                 else System.out.println("No existe el partner con id = " + i);
             }
 
@@ -416,7 +428,7 @@ public class Importer {
         {
             ShuttleDirectAutoImport i = new ShuttleDirectAutoImport();
             i.setIdTransportista("476");
-            i.setCustomer(partners.values().stream().filter(p -> "shuttle direct".equalsIgnoreCase(p.getName())).findFirst().get());
+            i.setCustomer(agencies.values().stream().filter(p -> "shuttle direct".equalsIgnoreCase(p.getName())).findFirst().get());
             i.setLogin("VIB");
             i.setName("Shuttle Direct");
             i.setOffice(oficina);
@@ -428,7 +440,7 @@ public class Importer {
 
         {
             TravelRepublicAutoImport i = new TravelRepublicAutoImport();
-            i.setCustomer(partners.values().stream().filter(p -> "travelrepublic".equalsIgnoreCase(p.getName())).findFirst().get());
+            i.setCustomer(agencies.values().stream().filter(p -> "travelrepublic".equalsIgnoreCase(p.getName())).findFirst().get());
             i.setLogin("xxxx");
             i.setName("Travelrepublic");
             i.setOffice(oficina);

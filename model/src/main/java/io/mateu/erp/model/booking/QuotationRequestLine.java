@@ -1,8 +1,7 @@
 package io.mateu.erp.model.booking;
 
-import com.google.common.base.Strings;
 import io.mateu.erp.dispo.Helper;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.TextArea;
 import lombok.Getter;
@@ -11,7 +10,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Arrays;
 
 @Entity@Getter@Setter
 public class QuotationRequestLine {
@@ -39,7 +37,7 @@ public class QuotationRequestLine {
     private double price;
 
     @ManyToOne
-    private Partner provider;
+    private Provider provider;
 
     private double cost;
 

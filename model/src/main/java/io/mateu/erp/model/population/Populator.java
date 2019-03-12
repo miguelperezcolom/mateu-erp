@@ -6,11 +6,15 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.financials.*;
+import io.mateu.erp.model.invoicing.InvoiceSerial;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
-import io.mateu.erp.model.partners.PartnerStatus;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.AgencyStatus;
+import io.mateu.erp.model.partners.Provider;
+import io.mateu.erp.model.partners.ProviderStatus;
+import io.mateu.erp.model.payments.Account;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.ProductType;
 import io.mateu.erp.model.product.Variant;
@@ -50,8 +54,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
     public static final String USER_ADMIN = "admin";
 
-    public static Partner agencia;
-    public static Partner proveedor;
+    public static Agency agencia;
+    public static Provider proveedor;
     public static PointOfSale pos;
     public static Office office;
     public static ProductLine prodLine;
@@ -62,6 +66,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
     public static TransferPoint hotelEnAlcudia;
     public static Hotel hotel;
     public static Excursion excursion;
+    public static Account banco;
 
     public static void main(String... args) throws Throwable {
 
@@ -808,6 +813,11 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
                 Currency eur = em.find(Currency.class, "EUR");
 
+                banco = new Account();
+                banco.setCurrency(eur);
+                banco.setName("Banco Santander 65465465465464");
+                em.persist(banco);
+
                 pos = new PointOfSale();
                 pos.setName("Point of sale");
                 em.persist(pos);
@@ -871,11 +881,26 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 a.setCurrency(eur);
                 em.persist(a);
 
+                InvoiceSerial serieFacturas = new InvoiceSerial();
+                serieFacturas.setName("Facturas emitidas");
+                serieFacturas.setNextNumber(1);
+                serieFacturas.setPrefix("FACTEST-");
+                em.persist(serieFacturas);
+
+
+                InvoiceSerial serieAbonos = new InvoiceSerial();
+                serieAbonos.setName("Abonos emitidos");
+                serieAbonos.setNextNumber(1);
+                serieAbonos.setPrefix("ABOCTEST-");
+                em.persist(serieAbonos);
+
 
                 Company cia = new Company();
                 cia.setName("We");
                 cia.setFinancialAgent(a);
                 cia.setAccountingPlan(plan);
+                cia.setBillingSerial(serieFacturas);
+                cia.setSelfBillingSerial(serieAbonos);
                 em.persist(cia);
 
 
@@ -927,11 +952,10 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 em.persist(apt);
 
 
-                Partner partner = agencia = new Partner();
-                partner.setCurrency(eur);
-                partner.setStatus(PartnerStatus.ACTIVE);
-                partner.setAgency(true);
-                partner.setEmail("miguelperezcolom@gmail.com");
+                agencia = new Agency();
+                agencia.setCurrency(eur);
+                agencia.setStatus(AgencyStatus.ACTIVE);
+                agencia.setEmail("miguelperezcolom@gmail.com");
 
 
                 a = new FinancialAgent();
@@ -943,19 +967,18 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 a.setCurrency(eur);
                 em.persist(a);
 
-                partner.setFinancialAgent(a);
-                partner.setCompany(cia);
-                partner.setName("Muchoviaje");
-                em.persist(partner);
+                agencia.setFinancialAgent(a);
+                agencia.setCompany(cia);
+                agencia.setName("Muchoviaje");
+                em.persist(agencia);
 
                 em.flush();
 
 
-                partner = proveedor = new Partner();
-                partner.setCurrency(eur);
-                partner.setStatus(PartnerStatus.ACTIVE);
-                partner.setProvider(true);
-                partner.setEmail("miguelperezcolom@gmail.com");
+                proveedor = new Provider();
+                proveedor.setCurrency(eur);
+                proveedor.setStatus(ProviderStatus.ACTIVE);
+                proveedor.setEmail("miguelperezcolom@gmail.com");
 
 
                 a = new FinancialAgent();
@@ -967,15 +990,14 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 a.setCurrency(eur);
                 em.persist(a);
 
-                partner.setFinancialAgent(a);
-                partner.setCompany(cia);
-                partner.setName("Transunion");
+                proveedor.setFinancialAgent(a);
+                proveedor.setName("Transunion");
 
-                partner.setAutomaticOrderSending(true);
-                partner.setAutomaticOrderConfirmation(true);
-                partner.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
-                partner.setSendOrdersTo("miguelperezcolom@gmail.com");
-                em.persist(partner);
+                proveedor.setAutomaticOrderSending(true);
+                proveedor.setAutomaticOrderConfirmation(true);
+                proveedor.setOrdersSendingMethod(PurchaseOrderSendingMethod.EMAIL);
+                proveedor.setSendOrdersTo("miguelperezcolom@gmail.com");
+                em.persist(proveedor);
 
                 em.flush();
 

@@ -4,6 +4,7 @@ import io.mateu.erp.dispo.Condiciones;
 import io.mateu.erp.dispo.LineaReserva;
 import io.mateu.erp.dispo.ValoracionLineaReserva;
 import io.mateu.erp.dispo.interfaces.common.IPartner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.DatesRanges;
 
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ public interface IHotelOffer {
 
     public LocalDate getLastCheckout();
 
-    public Set<? extends IPartner> getTargets();
+    public Set<? extends Agency> getTargets();
 
     public int getApplicationMinimumNights();
 

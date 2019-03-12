@@ -53,7 +53,7 @@ public class StopSales {
         for (StopSalesLine l : getLines()) if (!l.getEnd().isBefore(desde)) {
             for (LocalDate d = l.getStart(); !d.isAfter(l.getEnd()); d = d.plusDays(1)) if (!d.isBefore(desde)) {
                 DayClosingStatus s = DayClosingStatus.CLOSED;
-                if (l.getRooms().size() > 0 || l.getActors().size() > 0) s = DayClosingStatus.PARTIAL;
+                if (l.getRooms().size() > 0 || l.getAgencies().size() > 0) s = DayClosingStatus.PARTIAL;
                 m.put(d, s);
                 if (d.isAfter(hasta)) hasta = d;
             }

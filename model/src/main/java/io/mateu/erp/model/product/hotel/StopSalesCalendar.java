@@ -5,7 +5,7 @@ import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.CSS;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
@@ -25,7 +25,7 @@ public class StopSalesCalendar extends VerticalLayout {
     private final DateField al;
     private final Panel panelScrollable;
     private final VerticalLayout contenidoPanel;
-    private ComboBox<Partner> comboAgencia;
+    private ComboBox<Agency> comboAgencia;
     private final ComboBox<BoardType> comboRegimen;
     private final ComboBox<RoomType> comboHabitacion;
     private final ComboBox<String> modo;
@@ -58,7 +58,7 @@ public class StopSalesCalendar extends VerticalLayout {
         }
 
         try {
-            hl.addComponent(comboAgencia = new ComboBox<Partner>("Agency", Helper.selectObjects("select x from " + Partner.class.getName() + " x where x.agency = true order by x.name")));
+            hl.addComponent(comboAgencia = new ComboBox<Agency>("Agency", Helper.selectObjects("select x from " + Agency.class.getName() + " x order by x.name")));
             comboAgencia.setWidth("400px");
         } catch (Throwable throwable) {
             MDD.alert(throwable);
@@ -315,7 +315,7 @@ public class StopSalesCalendar extends VerticalLayout {
         return mes;
     }
 
-    public static Map<LocalDate,Boolean>[] construirCubo(List<StopSalesOperation> ops, LocalDate desde, LocalDate hasta, RoomType room, BoardType board, Partner agency) {
+    public static Map<LocalDate,Boolean>[] construirCubo(List<StopSalesOperation> ops, LocalDate desde, LocalDate hasta, RoomType room, BoardType board, Agency agency) {
         Map<LocalDate,Boolean> m = new HashMap<>();
         Map<LocalDate,Boolean> p = new HashMap<>();
 
@@ -450,7 +450,7 @@ public class StopSalesCalendar extends VerticalLayout {
         return vl;
     }
 
-    public void verDetalle(List<StopSalesOperation> ops, LocalDate f, RoomType room, BoardType board, Partner agency) throws Throwable {
+    public void verDetalle(List<StopSalesOperation> ops, LocalDate f, RoomType room, BoardType board, Agency agency) throws Throwable {
 
         listaDetalle.removeAllComponents();
 

@@ -2,7 +2,7 @@ package io.mateu.erp.model.booking.excursion;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
@@ -80,7 +80,41 @@ public class ExcursionService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
+    public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
+        Map<io.mateu.erp.model.product.tour.Contract, Double> prices = new HashMap<>();
+        Accessor.get(em).getTourContracts().stream().filter(c ->
+                ContractType.SALE.equals(c.getType())
+                        && c.isActive()
+                        && (c.getValidFrom() == null || getFinish() == null || !c.getValidFrom().isAfter(getFinish()))
+                        && (c.getValidTo() == null || getStart() == null || !c.getValidTo().isBefore(getStart()))
+        ).forEach(c -> {
+            final double[] v = {0};
+            int dias = 1;
+            if (getStart() != null && getFinish() != null) {
+                dias = (int) DAYS.between(getStart(), getFinish());
+            }
+            int finalDias = dias;
+            c.getPrices().stream()
+                    .sorted((p0, p1) -> p0.getOrder() - p1.getOrder())
+                    .filter(p -> p.getTour() == null || p.getTour().equals(excursion))
+                    .filter(p -> p.getVariant() == null || p.getVariant().equals(getVariant()))
+                    .forEach(p -> {
+                        v[0] += getAdults() * p.getPricePerAdult();
+                        v[0] += getChildren() * p.getPricePerChild();
+                    });
+            prices. put(c, v[0]);
+        });
+
+        AtomicReference<Double> min = new AtomicReference<>((double) 0);
+        prices.keySet().stream().min((v0, v1) -> prices.get(v0).compareTo(prices.get(v1))).ifPresent(v -> {
+            min.set(Helper.roundEuros(prices.get(v)));
+        });
+
+        return min.get();
+    }
+
+    @Override
+    public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
         Map<io.mateu.erp.model.product.tour.Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getTourContracts().stream().filter(c ->
                 ContractType.PURCHASE.equals(c.getType())
@@ -115,13 +149,13 @@ public class ExcursionService extends Service {
     }
 
     @Override
-    public Partner findBestProvider(EntityManager em) throws Throwable {
+    public Provider findBestProvider(EntityManager em) throws Throwable {
         // seleccionamos los contratos válidos
         List<io.mateu.erp.model.product.tour.Contract> contracts = new ArrayList<>();
         for (io.mateu.erp.model.product.tour.Contract c : Accessor.get(em).getTourContracts()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(this.getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -142,7 +176,7 @@ public class ExcursionService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Partner provider = null;
+        Provider provider = null;
         long noches = DAYS.between(getStart(), getFinish());
         for (TourPrice p : prices) {
             double v = 0;

@@ -11,7 +11,7 @@ import io.mateu.erp.model.booking.Passenger;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.ZoneProductRemark;
@@ -177,7 +177,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     List<? extends Occupancy> ocups = getOccupancies(occupancies);
 
 
-                    Partner a = em.find(Partner.class, finalIdAgencia);
+                    Agency a = em.find(Agency.class, finalIdAgencia);
 
                     HotelBooking hb = new HotelBooking();
                     hb.setAgency(a);
@@ -310,8 +310,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 private int getPeso(HotelContract c) {
                     int peso = 0;
                     if (ContractType.SALE.equals(c.getType())) peso += 10000;
-                    if (c.getPartners().size() > 0) peso += 1000;
-                    if (c.getPartnerGroups().size() > 0) peso += 500;
+                    if (c.getAgencies().size() > 0) peso += 1000;
+                    if (c.getAgencyGroups().size() > 0) peso += 500;
                     if (c.getMarkets().size() > 0) peso += 100;
                     return peso;
                 }
@@ -371,7 +371,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
 
             HotelBooking hb = new HotelBooking();
-            hb.setAgency(em.find(Partner.class, finalIdAgencia));
+            hb.setAgency(em.find(Agency.class, finalIdAgencia));
             hb.setHotel(h);
 
             HotelBookingLine l;
@@ -540,7 +540,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
 
                 HotelBooking hb = new HotelBooking();
-                hb.setAgency(em.find(Partner.class, finalIdAgencia));
+                hb.setAgency(em.find(Agency.class, finalIdAgencia));
 
                 DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -565,7 +565,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoom() + "-" + l.getChildrenPerRoom() + "-";
 
                     int pos = 0;
-                    hb.setAgency(em.find(Partner.class, Long.parseLong(tks[pos++])));
+                    hb.setAgency(em.find(Agency.class, Long.parseLong(tks[pos++])));
                     hb.setHotel(em.find(Hotel.class, Long.parseLong(tks[pos++])));
                     l.setStart(LocalDate.parse(tks[pos++], dfx));
                     l.setEnd(LocalDate.parse(tks[pos++], dfx));
@@ -657,7 +657,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     pl.setId("" + pos++);
                     pl.setType(l.getBillingConcept().getCode());
                     pl.setDescription(l.getText());
-                    pl.setRetailPrice(new Amount(l.getTotal().getCurrency().getIsoCode(), l.getTotal().getValue()));
+                    pl.setRetailPrice(new Amount(l.getCurrency().getIsoCode(), l.getTotal()));
                 }
 
                 for (BookingDueDate dd : hb.getDueDates()) {
@@ -745,7 +745,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 hb.setAudit(new Audit(user));
                 hb.setConfirmed(true);
-                hb.setAgency(em.find(Partner.class, finalIdAgencia));
+                hb.setAgency(em.find(Agency.class, finalIdAgencia));
                 hb.setCurrency(hb.getAgency().getCurrency());
                 hb.setAgencyReference(rq.getBookingReference());
                 if (hb.getAgencyReference() == null) hb.setAgencyReference("");
@@ -774,7 +774,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     //String k = "" + hb.getAgency().getId() + "-" + hb.getHotel().getId() + "-" + l.getRoom().getId() + "-" + l.getBoard().getId() + "-" + l.getContract().getId() + "-" + l.getInventory().getId() + "-" + l.getRooms() + "-" + l.getAdultsPerRoom() + "-" + l.getChildrenPerRoom() + "-";
 
                     int pos = 0;
-                    hb.setAgency(em.find(Partner.class, Long.parseLong(tks[pos++])));
+                    hb.setAgency(em.find(Agency.class, Long.parseLong(tks[pos++])));
                     hb.setHotel(em.find(Hotel.class, Long.parseLong(tks[pos++])));
                     l.setStart(LocalDate.parse(tks[pos++], dfx));
                     l.setEnd(LocalDate.parse(tks[pos++], dfx));

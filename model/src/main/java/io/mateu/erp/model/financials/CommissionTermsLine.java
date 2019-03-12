@@ -1,6 +1,6 @@
 package io.mateu.erp.model.financials;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.revenue.ProductLine;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +23,7 @@ public class CommissionTermsLine {
     private CommissionTerms terms;
 
     @ManyToOne
-    private Partner agent;
+    private CommissionAgent agent;
 
     @ManyToOne
     private ProductLine productLine;

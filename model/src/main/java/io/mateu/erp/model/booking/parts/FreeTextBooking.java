@@ -4,25 +4,19 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
-import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.revenue.ProductLine;
-import io.mateu.mdd.core.annotations.DataProvider;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Entity
@@ -85,8 +79,8 @@ public class FreeTextBooking extends Booking {
         s.setDeliveryDate(getStart());
         s.setReturnDate(getEnd());
         s.setPreferredProvider(getProvider());
-        s.setOverridedCostValue(getOverridedCost().getNumber().doubleValue());
-        s.setTotal(s.getOverridedCostValue());
+        s.setOverridedCostValue(getOverridedCost());
+        s.setTotalCost(s.getOverridedCostValue());
         s.setCostOverrided(true);
         s.setActive(isActive());
     }
@@ -100,6 +94,6 @@ public class FreeTextBooking extends Booking {
     protected void completeSignature(Map<String, Object> m) {
         if (getServiceDescription() != null) m.put("serviceDescription", getServiceDescription());
         if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
-        if (getOverridedCost() != null) m.put("serviceCost", "" + getOverridedCost());
+        m.put("serviceCost", "" + getOverridedCost());
     }
 }

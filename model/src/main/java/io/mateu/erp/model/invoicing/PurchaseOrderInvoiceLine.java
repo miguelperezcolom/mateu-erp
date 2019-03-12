@@ -29,7 +29,7 @@ public class PurchaseOrderInvoiceLine extends AbstractInvoiceLine {
 
         purchaseOrder = c.getPurchaseOrder();
 
-        setPrice(c.getTotal().getValue());
+        setPrice(c.getTotal());
         setQuantity(1);
         setTotal(getPrice());
         setSubject(c.getText());

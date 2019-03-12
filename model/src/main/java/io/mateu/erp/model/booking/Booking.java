@@ -6,7 +6,6 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
-import io.mateu.erp.model.booking.parts.SupplierDataProvider;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.commissions.CommissionSettlement;
 import io.mateu.erp.model.config.AppConfig;
@@ -18,7 +17,9 @@ import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.ExtraBookingCharge;
 import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.CommissionAgent;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.payments.DueDateType;
@@ -88,8 +89,7 @@ public abstract class Booking {
     @ColumnWidth(200)
     @NoChart
     @MainSearchFilter
-    @DataProvider(dataProvider =  AgencyDataProvider.class)
-    private Partner agency;
+    private Agency agency;
 
     @NotNull
     @MainSearchFilter
@@ -188,21 +188,6 @@ public abstract class Booking {
 
 
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name="value", column=@Column(name="value_value"))
-            , @AttributeOverride(name="date", column=@Column(name="value_date"))
-            , @AttributeOverride(name="officeChangeRate", column=@Column(name="value_offchangerate"))
-            , @AttributeOverride(name="officeValue", column=@Column(name="value_offvalue"))
-            , @AttributeOverride(name="nucChangeRate", column=@Column(name="value_nuchangerate"))
-            , @AttributeOverride(name="nucValue", column=@Column(name="value_nucvalue"))
-    })
-    @AssociationOverrides({
-            @AssociationOverride(name="currency", joinColumns = @JoinColumn(name = "value_currency"))
-    })
-    @NotInEditor
-    private Amount value;
-
     @KPI
     @ListColumn
     @Sum
@@ -221,6 +206,11 @@ public abstract class Booking {
     @KPI
     @SameLine
     @Sum
+    private double totalMarkup;
+
+    @KPI
+    @SameLine
+    @Sum
     private double totalPaid;
 
     @KPI
@@ -229,25 +219,34 @@ public abstract class Booking {
     private double balance;
 
     @KPI
-    @ManyToOne
+    @ManyToOne@NotNull
     private Currency currency;
+
+    @KPI
+    private double currencyExchange;
+
+    @KPI
+    private double valueInNucs;
+
+    @KPI
+    private double costInNucs;
+
 
 
     private boolean valueOverrided;
     @SameLine
-    private FastMoney overridedValue;
+    private double overridedValue;
 
     public boolean isOverridedValueVisible() {
         return valueOverrided;
     }
 
     @ManyToOne
-    @DataProvider(dataProvider = SupplierDataProvider.class)
-    private Partner provider;
+    private Provider provider;
 
     private boolean costOverrided;
     @SameLine
-    private FastMoney overridedCost;
+    private double overridedCost;
 
     public boolean isOverridedCostVisible() {
         return costOverrided;
@@ -318,8 +317,7 @@ public abstract class Booking {
 
 
     @ManyToOne
-    @DataProvider(dataProvider =  CommissionAgentDataProvider.class)
-    private Partner commissionAgent;
+    private CommissionAgent commissionAgent;
 
     private boolean nonCommissionable;
 
@@ -395,12 +393,12 @@ public abstract class Booking {
         if (getExpiryDate() != null) data.put("Expiry date", "" + getExpiryDate());
         data.put("Locked", isLocked()?"Yes":"No");
         dueDates.forEach(p -> data.put("Due date " + dueDates.indexOf(p), p.toString()));
-        if (getValue() != null) data.put("Value", getValue().toString());
         data.put("Total value", "" + totalValue);
         data.put("Total net", "" + totalNetValue);
         data.put("Total cost", "" + totalCost);
         data.put("Total paid", "" + totalPaid);
         data.put("Balance", "" + balance);
+        data.put("Currency exchange", "" + currencyExchange);
         if (getCurrency() != null) data.put("Currency", getCurrency().getIsoCode());
         data.put("Value overrided", isValueOverrided()?"Yes":"No");
         if (isValueOverrided()) data.put("Overrided value", "" + getOverridedValue());
@@ -472,7 +470,7 @@ public abstract class Booking {
                 d.put("transferType", "" + t.getTransferType());
             }
             todoCancelado &= !s.isActive();
-            allServicesAreValued &= s.isValued();
+            allServicesAreValued &= s.isSaleValued();
             //todo: revisar!
             /*
             allPurchasesAreValued &= s.isPurchaseValued();
@@ -615,11 +613,11 @@ public abstract class Booking {
     }
 
 
-    public static Booking getByAgencyRef(EntityManager em, String agencyRef, Partner partner)
+    public static Booking getByAgencyRef(EntityManager em, String agencyRef, Agency agency)
     {
         try {
             String jpql = "select x from " + Booking.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + partner.getId();
+                    " where x.agencyReference='" + agencyRef + "' and x.agency.id= " + agency.getId();
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<Booking> l = q.getResultList();
             Booking b = (l.size() > 0)?l.get(0):null;
@@ -998,9 +996,11 @@ public abstract class Booking {
     public void pre() throws Error {
         try {
 
+            complete();
+
             if (isValueOverrided() || isValueOverrided()) {
-                if (isValueOverrided() && overridedValue == null) throw new Exception("Overrided value is required. Please fill");
-                if (isCostOverrided() && overridedCost == null) throw new Exception("Overrided cost is required. Please fill");
+                if (isValueOverrided() && overridedValue == 0) throw new Exception("Overrided value is required. Please fill");
+                if (isCostOverrided() && overridedCost == 0) throw new Exception("Overrided cost is required. Please fill");
                 if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             }
             validate();
@@ -1054,9 +1054,11 @@ public abstract class Booking {
 
     @PostPersist@PostUpdate
     public void post() {
+        System.out.println("Booking " + getId() + ".post(" + updatePending + ")");
         if (updatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
+                System.out.println("Booking " + getId() + ".post(" + updatePending + ").run()");
                 try {
                     Helper.transact(em -> {
                         if (updatePending) {
@@ -1083,6 +1085,13 @@ public abstract class Booking {
                 }
             }
         });
+    }
+
+    public void complete() {
+
+        if (getCurrency() == null) setCurrency(getAgency().getCurrency());
+        setCurrencyExchange(getCurrency().getExchangeRateToNucs());
+
     }
 
     public void summarize(EntityManager em) {
@@ -1142,7 +1151,7 @@ public abstract class Booking {
 
         if (isValueOverrided()) {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
-            setValue(new Amount(overridedValue));
+            setTotalValue(overridedValue);
             setValued(true);
         } else {
             priceServices(em);
@@ -1172,25 +1181,37 @@ public abstract class Booking {
         double total = 0;
         double totalNeto = 0;
         double totalCoste = 0;
+        double totalPagado = 0;
 
         for (Charge c : getCharges()) {
             System.out.println("**************************updateTotalsxcharge");
             if (ChargeType.SALE.equals(c.getType())) {
-                total += c.getTotal().getValue();
-                totalNeto += c.getTotal().getValue();
+                total += c.getTotal();
+                totalNeto += c.getTotal();
             } else {
                 //totalCoste += c.getTotal().getValue();
             }
         }
 
         for (Service s : getServices()) {
-            totalCoste += s.getTotal();
+            totalCoste += s.getTotalCost();
         }
+
+        for (BookingPaymentAllocation pa : getPayments()) {
+            totalPagado += pa.getValue();
+        }
+
 
         setTotalValue(Helper.roundEuros(total));
         setTotalNetValue(Helper.roundEuros(totalNeto));
         setTotalCost(Helper.roundEuros(totalCoste));
-        setCurrency(em.find(Currency.class, "EUR"));
+
+        setTotalPaid(Helper.roundEuros(totalPagado));
+        setBalance(Helper.roundEuros(totalPagado - totalNeto));
+
+
+        setValueInNucs(Helper.roundEuros(totalNeto * getCurrency().getExchangeRateToNucs()));
+        setCostInNucs(Helper.roundEuros(totalCoste * getCurrency().getExchangeRateToNucs()));
 
         updateCancellationTerms(em);
 
@@ -1212,7 +1233,7 @@ public abstract class Booking {
                     pl.setAmount(Helper.roundEuros(totalValue * l.getPercent() / 100d));
                     pl.setAgent(agency.getFinancialAgent());
                     pl.setCurrency(agency.getCurrency());
-                    pl.setPartner(agency);
+                    pl.setAgent(agency.getFinancialAgent());
                     pl.setType(DueDateType.COLLECTION);
                 }
             }
@@ -1256,11 +1277,13 @@ public abstract class Booking {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(getAudit().getModifiedBy()));
-            c.setTotal(getValue());
+
+            c.setTotal(getOverridedValue());
+            c.setCurrency(getCurrency());
 
             c.setText("Booking " + getId());
 
-            c.setPartner(getAgency());
+            c.setAgency(getAgency());
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);
@@ -1350,7 +1373,7 @@ public abstract class Booking {
                         getDueDates().add(dd = new BookingDueDate());
                         dd.setBooking(this);
                         dd.setType(DueDateType.COLLECTION);
-                        dd.setPartner(getAgency());
+                        dd.setAgent(getAgency().getFinancialAgent());
                         dd.setCurrency(getAgency().getCurrency());
                         dd.setAgent(getAgency().getFinancialAgent());
                         LocalDate d = LocalDate.now();

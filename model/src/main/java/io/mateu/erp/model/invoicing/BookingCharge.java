@@ -3,6 +3,7 @@ package io.mateu.erp.model.invoicing;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Amount;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.KPI;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,11 @@ public class BookingCharge extends Charge {
 
     @ManyToOne
     @NotNull
+    private Agency agency;
+
+
+    @ManyToOne
+    @NotNull
     private Booking booking;
 
     @KPI
@@ -25,7 +31,7 @@ public class BookingCharge extends Charge {
 
     public void setBooking(Booking booking) {
         this.booking = booking;
-        if (booking != null) setPartner(booking.getAgency());
+        if (booking != null) setAgency(booking.getAgency());
     }
 
     /*
@@ -50,7 +56,7 @@ public class BookingCharge extends Charge {
 
 
     @Override
-    public void setTotal(Amount total) {
+    public void setTotal(double total) {
         super.setTotal(total);
         if (booking != null) booking.setUpdatePending(true);
     }

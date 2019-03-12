@@ -5,16 +5,16 @@ import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.invoicing.Invoice;
+import io.mateu.erp.model.payments.BookingPaymentAllocation;
+import io.mateu.erp.model.payments.InvoicePaymentAllocation;
+import io.mateu.erp.model.payments.Payment;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
-import org.javamoney.moneta.FastMoney;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,7 +55,8 @@ public class FreeTextBookingTest {
             b.setProvider(Populator.proveedor);
 
             b.setValueOverrided(true);
-            b.setOverridedValue(FastMoney.of(130.91, "EUR"));
+            b.setOverridedValue(130.91);
+            b.setCurrency(Populator.agencia.getCurrency());
             b.setOverridedBillingConcept(em.find(BillingConcept.class, "ANY"));
 
 
@@ -66,7 +67,7 @@ public class FreeTextBookingTest {
             b.setOffice(Populator.office);
 
             b.setCostOverrided(true);
-            b.setOverridedCost(FastMoney.of(85.3, "EUR"));
+            b.setOverridedCost(85.3);
 
             em.persist(b);
         });
@@ -83,7 +84,7 @@ public class FreeTextBookingTest {
             assertEquals(1, xb.getServiceCharges().size());
 
             // la línea de cargo debe ser por el total
-            assertEquals(130.91, xb.getServiceCharges().get(0).getTotal().getValue(), 0);
+            assertEquals(130.91, xb.getServiceCharges().get(0).getTotal(), 0);
 
             // el total debe estar ok
             assertEquals(130.91, xb.getTotalValue(), 0);
@@ -120,6 +121,15 @@ public class FreeTextBookingTest {
             // debemos haber creado la PO
             assertEquals(xb.getServices().get(0).getPurchaseOrders().size(), 1);
 
+            // comprobamos el total de la línea de coste
+            assertEquals(85.3, xb.getServices().get(0).getPurchaseOrders().get(0).getTotal(), 0);
+
+            // el importe de la Po debe ser el coste
+            assertEquals(85.3, xb.getServices().get(0).getPurchaseOrders().get(0).getTotal(), 0);
+
+            // debe haber creado una línea de cargo para la PO
+            assertEquals(1, xb.getServices().get(0).getPurchaseOrders().get(0).getCharges().size());
+
             // debemos haber creado el envío de la PO
             assertEquals(xb.getServices().get(0).getPurchaseOrders().get(0).getSendingTasks().size(), 1);
 
@@ -143,7 +153,7 @@ public class FreeTextBookingTest {
 
             FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
 
-            xb.setOverridedCost(FastMoney.of(70.01, "EUR"));
+            xb.setOverridedCost(70.01);
 
         });
 
@@ -155,6 +165,9 @@ public class FreeTextBookingTest {
 
             // el coste total debe estar ok
             assertEquals(70.01, xb.getTotalCost(), 0);
+
+            // el importe de la Po debe ser el coste
+            assertEquals(70.01, xb.getServices().get(0).getPurchaseOrders().get(0).getTotal(), 0);
         });
 
         // cancelamos el servicio
@@ -289,6 +302,173 @@ public class FreeTextBookingTest {
             assertTrue(xb.getChanges().size() > 0);
 
         });
+
+
+
+        // cambiamos el titular de la reserva
+        Helper.transact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            xb.setLeadName("Hola caracola");
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            assertTrue(xb.getChanges().size() > 0);
+
+        });
+
+
+
+
+        // añadimos un cobro
+        Helper.transact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            BookingPaymentAllocation pa;
+            xb.getPayments().add(pa = new BookingPaymentAllocation());
+            pa.setBooking(xb);
+            pa.setValue(30.5);
+            Payment p;
+            pa.setPayment(p = new Payment());
+            p.getBreakdown().add(pa);
+            p.setCurrency(xb.getCurrency());
+            p.setValue(60);
+            p.setAgent(xb.getAgency().getFinancialAgent());
+            p.setDate(LocalDate.now());
+            p.setAccount(Populator.banco);
+
+            em.persist(p);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            assertEquals(30.5, xb.getTotalPaid(), 0);
+
+            assertEquals(-100.41, xb.getBalance(), 0);
+
+
+            assertEquals(29.5, xb.getPayments().get(0).getPayment().getBalance(), 0);
+
+        });
+
+
+        // añadimos otro cobro
+        Helper.transact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            BookingPaymentAllocation pa;
+            xb.getPayments().add(pa = new BookingPaymentAllocation());
+            pa.setBooking(xb);
+            pa.setValue(50);
+            Payment p;
+            pa.setPayment(p = new Payment());
+            p.getBreakdown().add(pa);
+            p.setCurrency(xb.getCurrency());
+            p.setValue(60);
+            p.setAgent(xb.getAgency().getFinancialAgent());
+            p.setDate(LocalDate.now());
+            p.setAccount(Populator.banco);
+
+            em.persist(p);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            assertEquals(80.5, xb.getTotalPaid(), 0);
+
+            assertEquals(-50.41, xb.getBalance(), 0);
+
+        });
+
+
+
+
+        // facturamos
+        Helper.transact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            xb.invoice().createInvoice();
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            assertNotNull(xb.getCharges().get(0).getInvoice());
+
+            assertEquals(130.91, xb.getCharges().get(0).getInvoice().getTotal(), 0);
+
+
+            // se han pasado los pagos a la factura?
+            assertEquals(50.41, xb.getCharges().get(0).getInvoice().getBalance(), 0);
+
+            // como hay pendiente, no debería figurar como pagada
+            assertFalse(xb.getCharges().get(0).getInvoice().isPaid());
+
+        });
+
+
+        // terminamos de cobrar la factura
+        Helper.transact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            Invoice i = xb.getCharges().get(0).getInvoice();
+
+            Payment p = new Payment();
+            p.setCurrency(xb.getCurrency());
+            p.setValue(i.getBalance());
+            p.setAgent(xb.getAgency().getFinancialAgent());
+            p.setDate(LocalDate.now());
+            p.setAccount(Populator.banco);
+            em.persist(p);
+
+            InvoicePaymentAllocation ipa;
+            i.getPayments().add(ipa = new InvoicePaymentAllocation());
+            ipa.setInvoice(i);
+            ipa.setPayment(p);
+            ipa.setValue(p.getValue());
+            ipa.getPayment().getBreakdown().add(ipa);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
+
+            assertNotNull(xb.getCharges().get(0).getInvoice());
+
+            assertEquals(0, xb.getCharges().get(0).getInvoice().getBalance(), 0);
+
+            assertTrue(xb.getCharges().get(0).getInvoice().isPaid());
+
+        });
+
 
     }
 

@@ -5,11 +5,10 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
@@ -23,7 +22,6 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -157,8 +155,7 @@ public abstract class Service {
     @Section("Purchase")
 
     @ManyToOne
-    @QLFilter("x.provider = true")
-    private Partner preferredProvider;
+    private Provider preferredProvider;
 
     private boolean alreadyPurchased;
 
@@ -236,10 +233,17 @@ public abstract class Service {
 
     @KPI
     @CellStyleGenerator(ValuedCellStyleGenerator.class)
-    private boolean valued;
+    private boolean saleValued;
 
     @KPI
-    private double total;
+    private double totalSale;
+
+    @KPI
+    @CellStyleGenerator(ValuedCellStyleGenerator.class)
+    private boolean costValued;
+
+    @KPI
+    private double totalCost;
 
     @KPI
     private boolean available;
@@ -326,12 +330,13 @@ public abstract class Service {
         if (getPreferredProvider() != null) m.put("preferredprovider", getPreferredProvider().getName());
         m.put("start", getStart());
         m.put("finish", getFinish());
+        m.put("overridedCost", "" + getOverridedCostValue());
         return m;
     }
 
 
     @Action
-    public static void sendToProvider(EntityManager em, UserData user, Set<Service> selection, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) {
+    public static void sendToProvider(EntityManager em, UserData user, Set<Service> selection, Provider provider, String email, @TextArea String postscript) {
         Set services = selection.stream().map(s -> em.merge(s)).collect(Collectors.toSet());
         for (Service s : selection) {
             s.setAlreadyPurchased(false);
@@ -342,7 +347,7 @@ public abstract class Service {
                 throwable.printStackTrace();
             }
         }
-        Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
+        Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
         for (Service s : selection) {
             if (s.isActive() || s.getSentToProvider() != null) {
@@ -395,13 +400,13 @@ public abstract class Service {
     }
 
     @Action(saveBefore = true)
-    public void sendToProvider(EntityManager em, UserData user, @QLFilter("x.provider = true") Partner provider, String email, @TextArea String postscript) throws Throwable {
+    public void sendToProvider(EntityManager em, UserData user, Provider provider, String email, @TextArea String postscript) throws Throwable {
         
         setAlreadyPurchased(false);
         if (provider != null) setPreferredProvider(provider);
         checkPurchase(em, user);
 
-        Map<Partner, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
+        Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
         {
             Service s = this;
@@ -463,11 +468,19 @@ public abstract class Service {
             setProcessingStatus(ProcessingStatus.INITIAL);
 
             try {
-                setTotal(rate(em, false));
-                setValued(true);
+                setTotalSale(rate(em, true));
+                setSaleValued(true);
             } catch (Throwable e) {
-                setTotal(0);
-                setValued(false);
+                setTotalCost(0);
+                setSaleValued(false);
+            }
+
+            try {
+                setTotalCost(rate(em, false));
+                setCostValued(true);
+            } catch (Throwable e) {
+                setTotalCost(0);
+                setCostValued(false);
             }
 
             refreshPurchaseOrders(em, u);
@@ -527,7 +540,7 @@ public abstract class Service {
         else {
             try {
                 StringWriter sw = new StringWriter();
-                setTotalNetValue(rate(em, true, new PrintWriter(sw)));
+                setTotalNetValue(rateCost(em, true, new PrintWriter(sw)));
                 setPriceReport(sw.toString());
                 setValued(true);
             } catch (Throwable throwable) {
@@ -711,18 +724,20 @@ public abstract class Service {
             v = getOverridedCostValue();
             report.print("Cost overrided for " + v);
         } else {
-            v = rate(em, sale, null, report);
+            v = sale?rateSale(em, report):rateCost(em, null, report);
         }
 
         System.out.println(sw.toString());
         return v;
     }
 
-    public abstract double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable;
+    public abstract double rateSale(EntityManager em, PrintWriter report) throws Throwable;
+
+    public abstract double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable;
 
 
     public void generatePurchaseOrders(EntityManager em) throws Throwable {
-        Partner provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
+        Provider provider = (getPreferredProvider() != null)?getPreferredProvider():findBestProvider(em);
         if (provider == null) throw new Throwable("Preferred provider needed for service " + getId());
         if (isHeld()) throw new Throwable("Service " + getId() + " is held");
         if (!isActive() && getSentToProvider() == null) throw new Throwable("Cancelled and was never sent");
@@ -750,14 +765,18 @@ public abstract class Service {
             }
             po.setOffice(getOffice());
             po.setProvider(provider);
-            po.setValue(new Amount(FastMoney.of(0, provider.getCurrency().getIsoCode())));
+            po.setCurrency(provider.getCurrency());
+
+            po.setValueOverrided(getBooking().isCostOverrided());
+            po.setOverridedValue(getBooking().getOverridedCost());
+            po.setOverridedBillingConcept(getBooking().getOverridedBillingConcept());
 
             if (nueva) em.persist(po);
 
         }
     }
 
-    public abstract Partner findBestProvider(EntityManager em) throws Throwable;
+    public abstract Provider findBestProvider(EntityManager em) throws Throwable;
 
 
     @Override
@@ -782,7 +801,7 @@ public abstract class Service {
             }
 
             @Override
-            public double rate(EntityManager em) throws Throwable {
+            public double rateCost(EntityManager em) throws Throwable {
                 return 0;
             }
         };
@@ -1027,7 +1046,7 @@ public abstract class Service {
     public Element getSupplierXml() {
         Element xml = new Element("supplier");
         if (getPreferredProvider() != null) {
-            Partner p = getPreferredProvider();
+            Provider p = getPreferredProvider();
             if (p.getName() != null) xml.setAttribute("name", p.getName());
             if (p.getFullAddress() != null) xml.setAttribute("address", p.getFullAddress());
             if (p.getTelephone() != null) xml.setAttribute("telephone", p.getTelephone());

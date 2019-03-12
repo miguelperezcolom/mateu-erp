@@ -5,7 +5,7 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
@@ -277,8 +277,7 @@ public class TransferService extends Service {
     }
 
     @Override
-    public double rate(EntityManager em, boolean sale, Partner supplier, PrintWriter report) throws Throwable {
-
+    public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
         if (!isActive()) return 0;
 
         // verificamos que tenemos lo que necesitamos para valorar
@@ -289,9 +288,8 @@ public class TransferService extends Service {
         List<Contract> contracts = new ArrayList<>();
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
-            ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
-            ok &= supplier == null || supplier.equals(c.getSupplier());
+            ok &= ContractType.SALE.equals(c.getType());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(this.getBooking().getAgency());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -301,7 +299,7 @@ public class TransferService extends Service {
         }
         if (contracts.size() == 0) throw new Exception("No valid contract");
 
-        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
@@ -344,7 +342,10 @@ public class TransferService extends Service {
     }
 
     @Override
-    public Partner findBestProvider(EntityManager em) throws Throwable {
+    public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
+
+        if (!isActive()) return 0;
+
         // verificamos que tenemos lo que necesitamos para valorar
         if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
         if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
@@ -354,7 +355,71 @@ public class TransferService extends Service {
         for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
             boolean ok = true;
             ok &= ContractType.PURCHASE.equals(c.getType());
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(this.getBooking().getAgency());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(this.getBooking().getAgency());
+            ok &= supplier == null || supplier.equals(c.getSupplier());
+            ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
+            ok &= c.getValidTo().isAfter(getFinish()) || c.getValidTo().equals(getFinish());
+            LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
+            ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
+            ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            if (ok) contracts.add(c);
+        }
+        if (contracts.size() == 0) throw new Exception("No valid contract");
+
+        List<Contract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
+
+        if (propietaryContracts.size() > 0) contracts = propietaryContracts;
+
+        List<Price> prices = new ArrayList<>();
+        for (Contract c : contracts) for (Price p : c.getPrices()) {
+            boolean ok = true;
+            ok &= getTransferType().equals(p.getTransferType());
+            ok &= ((p.getOrigin().getResorts().contains(getEffectivePickup().getResort()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
+                    && (p.getDestination().getResorts().contains(getEffectiveDropoff().getResort()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+                    ||
+                    ((p.getOrigin().getResorts().contains(getEffectiveDropoff().getResort()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
+                            && (p.getDestination().getResorts().contains(getEffectivePickup().getResort()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+            ok &= p.getVehicle().getMinPax() <= getPax();
+            ok &= p.getVehicle().getMaxPax() >= getPax();
+            if (ok) prices.add(p);
+        }
+        if (prices.size() == 0) throw new Exception("No valid price in selectable contracts");
+
+        // valoramos con cada uno de ellos y nos quedamos con el precio más económico
+        double value = Double.MAX_VALUE;
+        Price bestPrice = null;
+        for (Price p : prices) {
+            double v = p.getPrice();
+            if (PricePer.PAX.equals(p.getPricePer())) {
+                int pax = getPax();
+                if (p.getContract().getMinPaxPerBooking() > pax) pax = p.getContract().getMinPaxPerBooking();
+                v = pax * p.getPrice();
+            }
+            if (v < value) {
+                value = v;
+                bestPrice = p;
+            }
+        }
+
+        if (bestPrice != null) {
+            report.print("Used price from " + bestPrice.getOrigin().getName() + " to " + bestPrice.getDestination().getName() + " in " + bestPrice.getVehicle().getName() + " from contract " + bestPrice.getContract().getTitle());
+        }
+
+        return value;
+    }
+
+    @Override
+    public Provider findBestProvider(EntityManager em) throws Throwable {
+        // verificamos que tenemos lo que necesitamos para valorar
+        if (getEffectivePickup() == null) throw new Throwable("Missing pickup. " + getPickupText() + " is not mapped.");
+        if (getEffectiveDropoff() == null) throw new Throwable("Missing dropoff. " + getDropoffText() + " is not mapped.");
+
+        // seleccionamos los contratos válidos
+        List<Contract> contracts = new ArrayList<>();
+        for (Contract c : (List<Contract>) em.createQuery("select x from " + Contract.class.getName() + " x").setFlushMode(FlushModeType.COMMIT).getResultList()) {
+            boolean ok = true;
+            ok &= ContractType.PURCHASE.equals(c.getType());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(this.getBooking().getAgency());
             ok &= !c.getValidFrom().isAfter(getStart());
             ok &= c.getValidTo().isAfter(getFinish());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
@@ -381,7 +446,7 @@ public class TransferService extends Service {
 
         // valoramos con cada uno de ellos y nos quedamos con el precio más económico
         double value = Double.MAX_VALUE;
-        Partner provider = null;
+        Provider provider = null;
         for (Price p : prices) {
             double v = p.getPrice();
             if (PricePer.PAX.equals(p.getPricePer())) v = getPax() * p.getPrice();

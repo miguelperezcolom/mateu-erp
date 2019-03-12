@@ -4,7 +4,7 @@ import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
@@ -32,7 +32,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, User user, Partner customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public ShuttleDirectImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -53,7 +53,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
        setBillingConcept(billingConcept);
     }
 
-    public ShuttleDirectImportTask(User user, Partner customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public ShuttleDirectImportTask(User user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this("ShuttleDirect", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }
@@ -119,7 +119,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
       }
 
 
-    private TransferBookingRequest rellenarTransferBookingRequest(Element tr, EntityManager em, Partner agencia)
+    private TransferBookingRequest rellenarTransferBookingRequest(Element tr, EntityManager em, Agency agencia)
     {
         TransferBookingRequest rq = new TransferBookingRequest();
         rq.setAgencyReference(tr.getChildText("barcode"));

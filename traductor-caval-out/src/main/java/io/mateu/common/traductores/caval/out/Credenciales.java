@@ -13,7 +13,7 @@ public class Credenciales {
 
     public Credenciales(String authToken) throws IOException {
         Map<String, Object> d = Helper.fromJson(authToken, HashMap.class);
-        setAgentId((String) d.get("agentId"));
+        setAgentId((String) d.get("agencyId"));
         setLogin((String) d.get("login"));
         setPass((String) d.get("pass"));
         setLan((String) d.get("lan"));

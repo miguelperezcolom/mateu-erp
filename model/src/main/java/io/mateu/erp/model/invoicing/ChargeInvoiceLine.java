@@ -28,7 +28,7 @@ public class ChargeInvoiceLine extends AbstractInvoiceLine {
 
         this.charge = charge;
 
-        setPrice(charge.getTotal().getValue());
+        setPrice(charge.getTotal());
         setQuantity(1);
         setTotal(getPrice());
         setSubject(charge.getText());

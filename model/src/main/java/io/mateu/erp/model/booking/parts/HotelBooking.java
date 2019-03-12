@@ -121,7 +121,7 @@ public class HotelBooking extends Booking {
         for (HotelContract c : getHotel().getContracts()) {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
-            ok &= c.getPartners().size() == 0 || c.getPartners().contains(getAgency());
+            ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(getAgency());
             ok &= getProvider() == null || getProvider().equals(c.getSupplier());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getEnd()) || c.getValidTo().equals(getEnd());
@@ -131,7 +131,7 @@ public class HotelBooking extends Booking {
             if (ok) contracts.add(c);
         }
 
-        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getPartners().size() > 0).collect(Collectors.toList());
+        List<HotelContract> propietaryContracts = contracts.stream().filter((c) -> c.getAgencies().size() > 0).collect(Collectors.toList());
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
@@ -258,11 +258,12 @@ public class HotelBooking extends Booking {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
-            c.setTotal(new Amount(FastMoney.of(l.getValue(), "EUR")));
+            c.setTotal(l.getValue());
+            c.setCurrency(getCurrency());
 
             c.setText(l.toSimpleString());
 
-            c.setPartner(getAgency());
+            c.setAgency(getAgency());
 
             c.setType(ChargeType.SALE);
             c.setBooking(this);

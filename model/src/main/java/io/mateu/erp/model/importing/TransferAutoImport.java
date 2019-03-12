@@ -2,7 +2,7 @@ package io.mateu.erp.model.importing;
 
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
@@ -41,7 +41,7 @@ public abstract class TransferAutoImport {
     private String password;
 
     @ManyToOne
-    private Partner customer;//cliente de las reservas
+    private Agency customer;//cliente de las reservas
 
     @ManyToOne
     private Office office;

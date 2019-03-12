@@ -5,7 +5,6 @@ import io.mateu.erp.dispo.interfaces.portfolio.IHotel;
 import io.mateu.erp.dispo.interfaces.product.IStopSaleLine;
 import io.mateu.erp.model.caval.CAVALClient;
 import io.mateu.erp.model.caval.CavalIdDataProvider;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.DataSheet;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
@@ -62,7 +61,7 @@ public class Hotel extends AbstractProduct implements IHotel {
     private HotelCategory category;
 
     @ManyToOne
-    private Partner hotelChain;
+    private HotelChain hotelChain;
 
 
     /**

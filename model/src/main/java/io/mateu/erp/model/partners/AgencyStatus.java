@@ -1,6 +1,6 @@
 package io.mateu.erp.model.partners;
 
-public enum PartnerStatus {
+public enum AgencyStatus {
 
     ACTIVE, INACTIVE, CREDITEXCEEDED
 

@@ -3,7 +3,7 @@ package io.mateu.erp.model.invoicing.lists;
 import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.invoicing.*;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,13 +27,13 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
     private LocalDate to;
 
     @MainSearchFilter
-    private Partner partner;
+    private Agency agency;
 
     @Getter@Setter
     public class Row {
         private long bookingId;
 
-        private String agentName;
+        private String agencyName;
 
         private String leadName;
 
@@ -59,7 +60,7 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
 
         String ql = "";
 
-        ql += " select l.booking.id, l.partner.name, l.booking.leadName, sum(l.total.value) as total " +
+        ql += " select l.booking.id, l.agency.name, l.booking.leadName, sum(l.total) as total " +
                 " from " + BookingCharge.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();
@@ -69,7 +70,7 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
 
 
 
-        ql += " group by l.booking.id, l.partner.name, l.booking.leadName ";
+        ql += " group by l.booking.id, l.agency.name, l.booking.leadName ";
         ql += " order by total ";
 
 
@@ -84,7 +85,7 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
     }
 
     private String complete(Map<String,Object> params) {
-        String w = " l.type = " + ChargeType.class.getName() + "." + ChargeType.SALE + " and l.invoice = null ";
+        String w = " l.invoice = null ";
 
         if (from != null) {
             if (!"".equals(w)) w += " and ";
@@ -97,10 +98,10 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
             params.put("t", from);
         }
 
-        if (partner != null) {
+        if (agency != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.partner.id = :h";
-            params.put("h", partner.getId());
+            w += " l.agency.id = :h";
+            params.put("h", agency.getId());
         }
 
         return w;
@@ -108,12 +109,12 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
 
 
     @Action
-    public InvoiceResult invoice(EntityManager em, Set<Row> selection) throws Throwable {
-        InvoiceResult result = new NotInvoicedByBookingListView().new InvoiceResult();
+    public InvoiceResult proform(EntityManager em, Set<Row> selection) throws Throwable {
+        InvoiceResult result = new InvoiceResult();
 
-        List<Charge> charges = new ArrayList<>();
+        List<BookingCharge> charges = new ArrayList<>();
 
-        String ql = "select l from " + Charge.class.getName() + " l ";
+        String ql = "select l from " + BookingCharge.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();
         String w = complete(params);
@@ -131,24 +132,16 @@ public class NotInvoicedByBookingListView extends AbstractJPQLListView<NotInvoic
 
         charges.addAll(q.getResultList());
 
-        List<IssuedInvoice> invoices = Invoicer.invoice(em, MDD.getCurrentUser(), charges);
+        List<IssuedInvoice> invoices = Invoicer.proform(em, MDD.getCurrentUser(), charges);
 
         result.setInvoices(invoices);
-        result.setMsg("" + invoices.size() + " invoices created.");
+        result.setMsg("" + invoices.size() + " proformas created.");
+
+        URL pdf = Invoice.createPdf(invoices);
+
+        result.setPdf(pdf);
 
         return result;
     }
 
-    @Getter@Setter
-    public class InvoiceResult {
-        @Output
-        private String msg;
-        @Ignored
-        private List<IssuedInvoice> invoices = new ArrayList<>();
-
-        @Action
-        public void send(String to, @TextArea String postscript) {
-            MDD.alert("Invoices sent");
-        }
-    }
 }

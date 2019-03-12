@@ -7,7 +7,7 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.MDD;
@@ -58,7 +58,7 @@ public class HotelBookingTester {
             b.setConfirmed(true);
             b.setActive(true);
             b.setPos(em.find(PointOfSale.class, 1l));
-            b.setAgency(em.find(Partner.class, 4l)); // der its
+            b.setAgency(em.find(Agency.class, 4l)); // der its
             b.setAgencyReference("TEST " + LocalDateTime.now());
             b.setLeadName("MR TEST");
             b.setHotel(em.find(Hotel.class, 5l)); // casin vt

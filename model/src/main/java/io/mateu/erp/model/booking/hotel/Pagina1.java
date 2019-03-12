@@ -1,6 +1,6 @@
 package io.mateu.erp.model.booking.hotel;
 
-import io.mateu.erp.model.partners.Partner;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.interfaces.WizardPage;
@@ -17,7 +17,7 @@ import java.util.List;
 public class Pagina1 implements WizardPage {
 
     @NotNull
-    private Partner agency;
+    private Agency agency;
 
     @NotNull
     private Destination state;
