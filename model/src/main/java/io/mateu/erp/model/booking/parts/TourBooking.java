@@ -12,6 +12,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ public abstract class TourBooking extends Booking {
     private List<TourBookingExtra> extras = new ArrayList<>();
 
 
+    private LocalDateTime checkTime;
 
 
 }

@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.tickets;
 
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.NotWhenEditing;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
@@ -50,7 +51,7 @@ public class TicketBook {
 
     @Override
     public String toString() {
-        return product.getName() + " " + serie + " " + fromNumber + " to " + toNumber;
+        return "" + reference + " " + serie + " " + (product != null?"(" + product.getName() + ")":"") + " " + fromNumber + " to " + toNumber;
     }
 
     @Action

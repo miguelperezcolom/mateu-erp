@@ -1,5 +1,6 @@
 package io.mateu.erp.model.config;
 
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.TextArea;
@@ -78,6 +79,22 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     @TextArea
     private String pickupSmsTemplateEs;
 
+
+    @Section("Default billing concepts")
+    @ManyToOne
+    private BillingConcept billingConceptForHotel;
+
+    @ManyToOne
+    private BillingConcept billingConceptForTransfer;
+
+    @ManyToOne
+    private BillingConcept billingConceptForExcursion;
+
+    @ManyToOne
+    private BillingConcept billingConceptForCircuit;
+
+    @ManyToOne
+    private BillingConcept billingConceptForOthers;
 
     @Section("Currency")
     @NotNull

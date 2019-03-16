@@ -9,6 +9,8 @@ import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
@@ -414,6 +416,11 @@ public class HotelService extends Service {
     @Override
     protected String getDescription() {
         return "Stay at " + ((getHotel() != null)?getHotel().getName():"");
+    }
+
+    @Override
+    public BillingConcept getBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForHotel();
     }
 
 

@@ -4,6 +4,8 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
@@ -94,5 +96,10 @@ public class FreeTextService extends Service {
     @Override
     protected String getDescription() {
         return text;
+    }
+
+    @Override
+    public BillingConcept getBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForOthers();
     }
 }

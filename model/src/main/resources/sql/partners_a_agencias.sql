@@ -86,11 +86,22 @@ alter sequence agency_id_seq restart with 58;
 
 alter sequence provider_id_seq restart with 58;
 
-alter table booking alter column overridedvalue type double precision using 0;
+alter table booking alter column overridedvalue type double precision using totalvalue;
 
-update booking set overridedvalue = totalvalue where valueoverrided;
+--update booking set overridedvalue = totalvalue where valueoverrided;
 
-update charge set currency_isocode = 'EUR', currencyexchange = 1;
+update charge set currency_isocode = 'EUR', currencyexchange = 1, nucs = total_value, total = total_value, agency_id = partner_id;
 
-update charge set total = total_value;
+update purchaseorder set currency_isocode = 'EUR', total = value_value;
+
+update service set totalsale = total;
+
+alter table booking alter column overridedcost type double precision using totalcost;
+
+update booking set overridedcost = 28.38, overridedcostcurrency_isocode = 'EUR' where id = 12290;
+
+update currency set exchangeratetonucs = 1 where isocode = 'EUR';
+
+update booking set valueinnucs = totalnetvalue, costinnucs = totalcost, totalmarkup = totalnetvalue - totalcost;
+
 

@@ -3,8 +3,10 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
+import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
@@ -227,6 +229,7 @@ public abstract class Service {
     private boolean costOverrided;
     @SameLine
     private double overridedCostValue;
+
     @Ignored
     private String overridedCostValueCalculator;
 
@@ -390,13 +393,7 @@ public abstract class Service {
                 }
             }
         }
-//        for (SendPurchaseOrdersTask t : taskPerProvider.values()) {
-//            try {
-//                t.execute(em, u);
-//            } catch (Throwable e) {
-//                e.printStackTrace();
-//            }
-//        }
+
     }
 
     @Action(saveBefore = true)
@@ -450,13 +447,6 @@ public abstract class Service {
                 }
             }
         }
-//        for (SendPurchaseOrdersTask t : taskPerProvider.values()) {
-//            try {
-//                t.execute(em, u);
-//            } catch (Throwable e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
 
@@ -521,79 +511,6 @@ public abstract class Service {
     public void checkPurchase(EntityManager em, UserData user) throws Throwable {
         checkPurchase(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
     }
-
-
-    /*
-    public void price(EntityManager em, User u) {
-        setValued(false);
-
-        //todo: ver si lo llevamos a la reserva
-        if (!isCancelled() && isValueOverrided()) {
-            setTotalNetValue(getOverridedNetValue());
-            setValued(true);
-            setPriceReport("Used overrided value");
-        } else if (isCancelled()) {
-            setValued(true);
-            setTotalNetValue(0);
-            setPriceReport("Value 0 as it is cancelled");
-        }
-        else {
-            try {
-                StringWriter sw = new StringWriter();
-                setTotalNetValue(rateCost(em, true, new PrintWriter(sw)));
-                setPriceReport(sw.toString());
-                setValued(true);
-            } catch (Throwable throwable) {
-                setPriceReport("" + throwable.getClass().getName() + ":" + throwable.getMessage());
-                throwable.printStackTrace();
-            }
-        }
-
-        try {
-            checkPurchase(em, u);
-        } catch (Throwable e) {
-            String error = "" + e.getClass().getName() + ":" + e.getMessage();
-            if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) e.printStackTrace();
-            else error = error.substring(error.indexOf(":"));
-            System.out.println(error);
-        }
-
-        double totalCost = 0;
-
-        if (isCostOverrided()) {
-            setTotalCost(getOverridedCostValue());
-            setPurchaseValued(true);
-
-            for (PurchaseOrder po : getPurchaseOrders()) {
-                if (!po.isCancelled()) {
-                    po.setValueOverrided(true);
-                    po.setOverridedValue(getOverridedCostValue());
-                }
-            }
-
-        } else {
-            boolean purchaseValued = getPurchaseOrders().size() > 0;
-
-            for (PurchaseOrder po : getPurchaseOrders()) {
-                try {
-                    po.price(em);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-                if (po.isValued()) totalCost += po.getValue().getValue();
-                purchaseValued &= po.isValued();
-            }
-            setTotalCost(Helper.roundOffEuros(totalCost));
-            setPurchaseValued(purchaseValued);
-        }
-
-    }
-
-    @Action
-    public void price(EntityManager em, UserData user) {
-        price(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
-    }
-    */
 
     @Action(value = "Print POs", saveBefore = true)
     public URL printOrders(EntityManager em) throws Throwable {
@@ -723,6 +640,9 @@ public abstract class Service {
         if (!sale && isCostOverrided()) {
             v = getOverridedCostValue();
             report.print("Cost overrided for " + v);
+        } else if (sale && booking.isValueOverrided()) {
+            v = Helper.roundEuros(booking.getOverridedValue() / booking.getServices().size());
+            report.print("Sale overrided at booking for " + v);
         } else {
             v = sale?rateSale(em, report):rateCost(em, null, report);
         }
@@ -766,10 +686,8 @@ public abstract class Service {
             po.setOffice(getOffice());
             po.setProvider(provider);
             po.setCurrency(provider.getCurrency());
-
-            po.setValueOverrided(getBooking().isCostOverrided());
-            po.setOverridedValue(getBooking().getOverridedCost());
-            po.setOverridedBillingConcept(getBooking().getOverridedBillingConcept());
+            po.setValued(false);
+            po.setTotal(0);
 
             if (nueva) em.persist(po);
 
@@ -841,19 +759,6 @@ public abstract class Service {
         d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
-/*
-        double base = Helper.roundOffEuros(getTotalNetValue() / (1d + 10d / 100d));
-        double iva = Helper.roundOffEuros(getTotalNetValue() - base);
-
-
-        d.put("base", base);
-        d.put("iva", iva);
-
-        d.put("valued", isValued());
-        d.put("total", getTotalNetValue());
-        d.put("purchaseValued", isPurchaseValued());
-        d.put("totalCost", getTotalCost());
-*/
         return d;
     }
 
@@ -1089,4 +994,7 @@ public abstract class Service {
             }
         };
     }
+
+    public abstract BillingConcept getBillingConcept(EntityManager em);
+
 }

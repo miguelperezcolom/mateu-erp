@@ -2,6 +2,8 @@ package io.mateu.erp.model.booking.excursion;
 
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
@@ -198,4 +200,10 @@ public class ExcursionService extends Service {
                 + "-" + ((getVariant() != null)?getVariant().getName():"")
                 + "-" + ((getShift() != null)? getShift().getName():"");
     }
+
+    @Override
+    public BillingConcept getBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForExcursion();
+    }
+
 }

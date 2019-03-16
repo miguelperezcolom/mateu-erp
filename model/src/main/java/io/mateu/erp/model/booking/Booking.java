@@ -183,7 +183,7 @@ public abstract class Booking {
     private boolean locked;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking", orphanRemoval = true)
-    @Output
+    @UseLinkToListView
     private List<BookingDueDate> dueDates = new ArrayList<>();
 
 
@@ -247,6 +247,10 @@ public abstract class Booking {
     private boolean costOverrided;
     @SameLine
     private double overridedCost;
+
+    @SameLine
+    @ManyToOne
+    private Currency overridedCostCurrency;
 
     public boolean isOverridedCostVisible() {
         return costOverrided;
@@ -1001,6 +1005,7 @@ public abstract class Booking {
             if (isValueOverrided() || isValueOverrided()) {
                 if (isValueOverrided() && overridedValue == 0) throw new Exception("Overrided value is required. Please fill");
                 if (isCostOverrided() && overridedCost == 0) throw new Exception("Overrided cost is required. Please fill");
+                if (isCostOverrided() && getOverridedCostCurrency() == null) throw new Exception("Overrided cost currency is required. Please fill");
                 if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             }
             validate();
@@ -1016,6 +1021,14 @@ public abstract class Booking {
                 setSignature(createSignature());
                 setUpdatePending(true);
             }
+
+            if (currencyExchange == 0) {
+                currencyExchange = currency.getExchangeRateToNucs();
+            }
+
+            setValueInNucs(Helper.roundEuros(totalNetValue * currencyExchange));
+            setCostInNucs(Helper.roundEuros(totalCost * currencyExchange));
+            setTotalMarkup(Helper.roundEuros(totalNetValue - totalCost));
 
         } catch (Throwable e) {
             throw new Error(e);
@@ -1134,6 +1147,17 @@ public abstract class Booking {
     public void build(EntityManager em) {
         if (confirmed && !alreadyPurchased) {
             generateServices(em);
+            if (isValueOverrided()) {
+                services.forEach(s -> {
+                    s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
+                });
+            }
+            if (isCostOverrided()) {
+                services.forEach(s -> {
+                    s.setCostOverrided(isCostOverrided());
+                    s.setOverridedCostValue(Helper.roundEuros(getOverridedCost() / services.size()));
+                });
+            }
             services.forEach(s -> {
                 if (!s.isUpdatePending() && (s.getSignature() == null || !s.getSignature().equals(s.createSignature()))) s.setUpdatePending(true);
             });

@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
@@ -241,4 +243,10 @@ public class GenericService extends Service {
     public String toString() {
         return (getProduct() != null)?getProduct().getName():"--";
     }
+
+    @Override
+    public BillingConcept getBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForOthers();
+    }
+
 }

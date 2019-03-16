@@ -2,7 +2,6 @@ package io.mateu.erp.model.invoicing;
 
 
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.KPI;
 import lombok.Getter;

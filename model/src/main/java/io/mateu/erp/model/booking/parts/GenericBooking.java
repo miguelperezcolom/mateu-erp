@@ -5,7 +5,6 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.performance.Accessor;
@@ -20,7 +19,6 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;

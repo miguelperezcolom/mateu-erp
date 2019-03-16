@@ -22,7 +22,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter@Setter
-public class NotReceivedByBookingListView extends AbstractJPQLListView<NotReceivedByBookingListView.Row> {
+public class NotReceivedByPurchaseOrderListView extends AbstractJPQLListView<NotReceivedByPurchaseOrderListView.Row> {
 
     @MainSearchFilter
     private LocalDate from;

@@ -4,13 +4,17 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
+import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.booking.parts.TourBooking;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
+import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
@@ -572,7 +576,389 @@ public class CMSServiceImpl implements CMSService {
 
 
 
-        return rs;        }
+        return rs;
+    }
+
+    @Override
+    public GetActivityCheckListRS getActivityCheckList(String token, int date) throws Throwable {
+        GetActivityCheckListRS rs = new GetActivityCheckListRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+        LocalDate d = LocalDate.parse("" + date, DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        Helper.notransact(em -> {
+
+            ((List<Excursion>) em.createQuery("select x from " + Excursion.class.getName() + " x order by x.name").getResultList()).forEach(e -> {
+
+                if (e.isActive()) {
+
+                    boolean happens = false;
+
+                    for (TourShift s : e.getShifts()) {
+                        if ((s.getStart() == null || !d.isBefore(s.getStart()))
+                                && (s.getEnd() == null || !d.isAfter(s.getEnd()))
+                                && s.getWeekdays()[d.getDayOfWeek().getValue()]
+                                ) {
+                            happens = true;
+                            break;
+                        }
+                    }
+
+
+                    if (happens) {
+
+                        ActivityCheckItem i;
+                        rs.getActivity().add(i = new ActivityCheckItem());
+
+                        i.setActivityId("" + e.getId());
+                        i.setDate(date);
+                        if (e.getDataSheet() != null) {
+                            if (e.getDataSheet().getDescription() != null) i.setDescription(e.getDataSheet().getDescription().toString());
+                            if (e.getDataSheet().getMainImage() != null) {
+                                try {
+                                    i.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
+                                } catch (Exception e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+                        }
+                        i.setName(e.getName());
+
+                    }
+
+                }
+
+            });
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public GetEventCheckListRS getEventCheckList(String token, int date, String activityId) throws Throwable {
+        GetEventCheckListRS rs = new GetEventCheckListRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+        LocalDate d = LocalDate.parse("" + date, DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        Helper.notransact(em -> {
+
+            Excursion e = em.find(Excursion.class, Long.parseLong(activityId));
+
+            e.getEvents().stream().filter(ev -> ev.isActive() && ev.getDate().equals(d)).forEach(ev -> {
+
+                EventCheckItem i;
+                rs.getEvent().add(i = new EventCheckItem());
+
+                i.setActivityId(activityId);
+                i.setId("" + i.getId());
+                i.setName(i.getName());
+
+            });
+
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public GetTicketCheckListRS getTicketCheckList(String token, String eventId) throws Throwable {
+        GetTicketCheckListRS rs = new GetTicketCheckListRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+        Helper.notransact(em -> {
+
+            ManagedEvent e = em.find(ManagedEvent.class, Long.parseLong(eventId));
+
+            TicketListItem i;
+            rs.setTicket(i = new TicketListItem());
+
+            i.setEventId("" + e.getId());
+
+            int totalPax = 0;
+            int totalBookings = 0;
+            int checkedPax = 0;
+            int checkedBookings = 0;
+            int remPax = 0;
+            int remBookings = 0;
+            for (TourBooking b : e.getBookings()) {
+
+                TicketCheckItem t;
+                i.getTicket().add(t = new TicketCheckItem());
+
+                t.setComments(b.getSpecialRequests());
+                t.setId("" + b.getId());
+                t.setLeadname(b.getLeadName());
+                t.setPax(b.getAdults() + b.getChildren());
+                t.setQrcode("" + b.getId());
+
+                totalPax += t.getPax();
+                totalBookings ++;
+
+                if (b.getCheckTime() != null) {
+                    t.setChecked(true);
+                    t.setCheckedDate(b.getCheckTime().getYear() * 10000 + b.getCheckTime().getMonthValue() * 100 + b.getCheckTime().getDayOfMonth());
+                    t.setCheckedTime(b.getCheckTime().getHour() * 100 + b.getCheckTime().getMinute());
+                    checkedPax += t.getPax();
+                    checkedBookings ++;
+                } else {
+                    t.setChecked(false);
+                    remPax += t.getPax();
+                    remBookings ++;
+                }
+            }
+
+
+            i.setCheckedPax(checkedPax);
+            i.setCheckedTickets(checkedBookings);
+            i.setRemainingPax(remPax);
+            i.setRemainingTickets(remBookings);
+            i.setTotalPax(totalPax);
+            i.setTotalTickets(totalBookings);
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public CheckTicketRS checkTicket(String token, String eventId, String qrcode) throws Throwable {
+        CheckTicketRS rs = new CheckTicketRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+        Helper.transact(em -> {
+
+            TourBooking b = em.find(TourBooking.class, Long.parseLong(qrcode));
+            ManagedEvent e = em.find(ManagedEvent.class, Long.parseLong(eventId));
+
+            if (b == null) {
+                rs.setStatusCode(404);
+                rs.setMsg("Booking " + qrcode + " not found");
+                rs.setValidationMessage(rs.getMsg());
+            } else if (e == null) {
+                rs.setStatusCode(404);
+                rs.setMsg("Event " + eventId + " not found");
+                rs.setValidationMessage(rs.getMsg());
+            } else if (!b.getManagedEvent().equals(e)) {
+                rs.setStatusCode(503);
+                rs.setMsg("Booking " + qrcode + " not valid for event " + eventId + "");
+                rs.setValidationMessage(rs.getMsg());
+            } else {
+                TicketCheckItem t;
+                rs.setTicket(t = new TicketCheckItem());
+
+                b.setCheckTime(LocalDateTime.now());
+
+                t.setComments(b.getSpecialRequests());
+                t.setId("" + b.getId());
+                t.setLeadname(b.getLeadName());
+                t.setPax(b.getAdults() + b.getChildren());
+                t.setQrcode("" + b.getId());
+
+                rs.setValidationMessage("Ok");
+            }
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public GetLoginRS login(String token, GetLoginRQ rq) throws Throwable {
+        GetLoginRS rs = new GetLoginRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+
+        if (Strings.isNullOrEmpty(rq.getUser()) || Strings.isNullOrEmpty(rq.getPassword())) {
+            rs.setStatusCode(500);
+            rs.setMsg("User and password are required. Please fill");
+        } else {
+            Helper.transact(em -> {
+
+                User u = em.find(User.class, rq.getUser().trim().toLowerCase());
+
+                if (u == null) {
+                    rs.setStatusCode(404);
+                    rs.setMsg("User " + rq.getUser() + " not found");
+                } else {
+                    if (u.checkPassword(rq.getPassword())) {
+                        rs.setAuthUser(rq.getUser());
+                        rs.setLogged(true);
+                        rs.setMessage("Hello " + u.getName());
+                    } else {
+                        rs.setStatusCode(503);
+                        rs.setMsg("Wrong password for user " + rq.getUser() + ".");
+                    }
+                }
+
+
+            });
+        }
+
+        return rs;
+    }
+
+    @Override
+    public GetOfflineCheckListRS getOfflineCheckList(String token) throws Throwable {
+        GetOfflineCheckListRS rs = new GetOfflineCheckListRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+
+        Helper.notransact(em -> {
+
+            ((List<Excursion>) em.createQuery("select x from " + Excursion.class.getName() + " x order by x.name").getResultList()).forEach(e -> {
+
+                if (e.isActive()) {
+
+                    LocalDate d = LocalDate.now();
+
+                    for (int deltaDias = 0; deltaDias < 7; deltaDias++) {
+
+                        boolean happens = false;
+
+                        for (TourShift s : e.getShifts()) {
+                            if ((s.getStart() == null || !d.isBefore(s.getStart()))
+                                    && (s.getEnd() == null || !d.isAfter(s.getEnd()))
+                                    && s.getWeekdays()[d.getDayOfWeek().getValue()]
+                                    ) {
+                                happens = true;
+                                break;
+                            }
+                        }
+
+
+                        if (happens) {
+
+                            ActivityCheckItem i;
+                            rs.getActivity().add(i = new ActivityCheckItem());
+
+                            i.setActivityId("" + e.getId());
+                            i.setDate(d.getYear() * 10000 + d.getMonthValue() * 100 + d.getDayOfMonth());
+                            if (e.getDataSheet() != null) {
+                                if (e.getDataSheet().getDescription() != null) i.setDescription(e.getDataSheet().getDescription().toString());
+                                if (e.getDataSheet().getMainImage() != null) {
+                                    try {
+                                        i.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
+                                }
+                            }
+                            i.setName(e.getName());
+
+
+
+                            for (ManagedEvent me : e.getEvents()) if (me.getDate().equals(d)) {
+
+                                EventCheckItem ei;
+                                rs.getEvent().add(ei = new EventCheckItem());
+
+                                ei.setActivityId("" + e.getId());
+                                ei.setId("" + me.getId());
+                                ei.setName(me.getShift().getName());
+
+
+                                TicketListItem tli;
+                                rs.getTicketList().add(tli = new TicketListItem());
+
+                                tli.setEventId("" + e.getId());
+
+                                int totalPax = 0;
+                                int totalBookings = 0;
+                                int checkedPax = 0;
+                                int checkedBookings = 0;
+                                int remPax = 0;
+                                int remBookings = 0;
+                                for (TourBooking b : me.getBookings()) {
+
+                                    TicketCheckItem t;
+                                    tli.getTicket().add(t = new TicketCheckItem());
+
+                                    t.setComments(b.getSpecialRequests());
+                                    t.setId("" + b.getId());
+                                    t.setLeadname(b.getLeadName());
+                                    t.setPax(b.getAdults() + b.getChildren());
+                                    t.setQrcode("" + b.getId());
+
+                                    totalPax += t.getPax();
+                                    totalBookings ++;
+
+                                    if (b.getCheckTime() != null) {
+                                        t.setChecked(true);
+                                        t.setCheckedDate(b.getCheckTime().getYear() * 10000 + b.getCheckTime().getMonthValue() * 100 + b.getCheckTime().getDayOfMonth());
+                                        t.setCheckedTime(b.getCheckTime().getHour() * 100 + b.getCheckTime().getMinute());
+                                        checkedPax += t.getPax();
+                                        checkedBookings ++;
+                                    } else {
+                                        t.setChecked(false);
+                                        remPax += t.getPax();
+                                        remBookings ++;
+                                    }
+                                }
+
+
+                                tli.setCheckedPax(checkedPax);
+                                tli.setCheckedTickets(checkedBookings);
+                                tli.setRemainingPax(remPax);
+                                tli.setRemainingTickets(remBookings);
+                                tli.setTotalPax(totalPax);
+                                tli.setTotalTickets(totalBookings);
+
+                            }
+
+
+
+                        }
+
+                    }
+
+
+                }
+
+            });
+
+
+
+        });
+
+        return rs;
+    }
+
+    @Override
+    public GeUpdatedTicketsRS updateTickets(String token, GetUpdatedTicketsRQ rq) throws Throwable {
+        GeUpdatedTicketsRS rs = new GeUpdatedTicketsRS();
+
+        rs.setStatusCode(200);
+        rs.setMsg("");
+
+        Helper.transact(em -> {
+
+
+            rq.getTickets().forEach(t -> {
+
+                TourBooking b = em.find(TourBooking.class, Long.parseLong(t.getId()));
+                if (b.getCheckTime() == null) b.setCheckTime(LocalDateTime.parse("" + (t.getCheckedDate() * 10000 + t.getCheckedTime()), DateTimeFormatter.ofPattern("yyyyMMddHHmm")));
+
+            });
+
+        });
+
+        return rs;
+    }
 
 
     private int[] getCupo(Hotel h, LocalDate start) throws Throwable {

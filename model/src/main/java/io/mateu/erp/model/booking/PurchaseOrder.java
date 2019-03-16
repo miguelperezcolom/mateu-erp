@@ -17,6 +17,7 @@ import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -149,21 +150,6 @@ public class PurchaseOrder {
 
 
     @Section("Price")
-    private boolean valueOverrided;
-
-    @SameLine
-    private double overridedValue;
-
-
-    @ManyToOne
-    private BillingConcept overridedBillingConcept;
-
-
-    @Ignored
-    private String overridedValueCalculator;
-
-
-
     @KPI
     private boolean valued;
 
@@ -173,12 +159,18 @@ public class PurchaseOrder {
     @NotNull@KPI@ManyToOne
     private Currency currency;
 
+    @KPI
+    private double currencyExchange;
+
+    @KPI
+    private double valueInNucs;
+
 
     @Output
     private String priceReport;
 
 
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
     @UseLinkToListView
     private List<PurchaseCharge> charges = new ArrayList<>();
 
@@ -221,6 +213,7 @@ public class PurchaseOrder {
         try {
             Map<String, Object> m = new HashMap<>();
             m.put("provider", getProvider().getName());
+            m.put("active", active);
             List<String> serviceSignatures = new ArrayList<>();
             for (Service sv : getServices()) {
                 serviceSignatures.add(sv.createSignature());
@@ -311,48 +304,22 @@ public class PurchaseOrder {
         }
     }
 
-    public void price(EntityManager em) throws Throwable {
-        boolean v = false;
-        double t = 0;
-        if (isValueOverrided()) {
-            t = getOverridedValue();
-            v = true;
-            setPriceReport("Used overrided value");
-        }
-        else {
-            try {
-                StringWriter sw = new StringWriter();
-                t = rate(em, new PrintWriter(sw));
-                setPriceReport(sw.toString());
-                v = true;
-            } catch (Throwable throwable) {
-                String error = "" + throwable.getClass().getName() + ":" + throwable.getMessage();
-                if (!error.startsWith("java.lang.Throwable") && !error.startsWith("java.lang.Exception")) throwable.printStackTrace();
-                else error = error.substring(error.indexOf(":"));
-                System.out.println(error);
-                setPriceReport(error);
-            }
-        }
-        setValued(v);
-        setTotal(t);
-        setCurrency(getProvider().getCurrency());
-
-
-        updateCharges(em);
-    }
-
     private void updateCharges(EntityManager em) {
         getCharges().clear();
 
-        if (isValueOverrided()) {
+        createCharges(em);
+    }
+
+    public void createCharges(EntityManager em) {
+        for (Service s : getServices()) {
             PurchaseCharge c;
             getCharges().add(c = new PurchaseCharge());
-            c.setAudit(new Audit(getAudit().getModifiedBy()));
+            c.setAudit(new Audit(MDD.getCurrentUser()));
 
-            c.setTotal(getOverridedValue());
+            c.setTotal(s.getTotalCost());
             c.setCurrency(getCurrency());
 
-            c.setText("PO " + getId());
+            c.setText("" + s);
 
             c.setProvider(getProvider());
 
@@ -361,16 +328,8 @@ public class PurchaseOrder {
 
             c.setInvoice(null);
 
-
-            c.setBillingConcept(getOverridedBillingConcept());
-
-        } else {
-            createCharges(em);
+            c.setBillingConcept(s.getBillingConcept(em));
         }
-    }
-
-    public void createCharges(EntityManager em) {
-
     }
 
 
@@ -385,18 +344,6 @@ public class PurchaseOrder {
     }
 
 
-    @Action
-    public static void price(EntityManager em, Set<PurchaseOrder> selection) {
-        for (PurchaseOrder po : selection) {
-            try {
-                po.price(em);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
     @Override
     public String toString() {
         return "" + id + " " + reference + " " + (audit != null?audit.getCreated():"");
@@ -407,6 +354,22 @@ public class PurchaseOrder {
         LocalDate d = null;
         for (Service s : services) if (d == null || d.isAfter(s.getStart())) d = s.getStart();
         start = d;
+
+        if (currencyExchange == 0) {
+            currencyExchange = currency.getExchangeRateToNucs();
+        }
+
+        double t = 0;
+        boolean v = services.size() > 0;
+        for (Service service : services) {
+            t += service.getTotalCost();
+            v = v && service.isCostValued();
+        }
+        setTotal(Helper.roundEuros(t));
+        setValued(v);
+
+        setValueInNucs(total * currencyExchange);
+
 
         if (getSignature() == null || !getSignature().equals(createSignature()) || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
             setUpdatePending(true);
@@ -439,11 +402,6 @@ public class PurchaseOrder {
                         @Override
                         public void run(EntityManager em) throws Throwable {
                             PurchaseOrder po = em.merge(PurchaseOrder.this);
-                            try {
-                                po.price(em);
-                            } catch (Throwable e) {
-                                e.printStackTrace();
-                            }
 
                             po.summarize(em);
 

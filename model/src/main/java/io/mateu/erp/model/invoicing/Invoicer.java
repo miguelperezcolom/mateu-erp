@@ -1,7 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
 import io.mateu.erp.dispo.Helper;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.authentication.Audit;

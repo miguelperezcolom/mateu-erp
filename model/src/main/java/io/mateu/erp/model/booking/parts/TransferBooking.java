@@ -5,7 +5,6 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.Amount;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
@@ -21,11 +20,9 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
-import org.javamoney.moneta.FastMoney;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -116,6 +113,9 @@ public class TransferBooking extends Booking {
     @Position(27)
     private String departureFlightDestination;
 
+
+    @Position(28)
+    private LocalDateTime overridePickupTime;
 
 
     @ManyToOne@Output
@@ -230,6 +230,8 @@ public class TransferBooking extends Booking {
             s.setFlightNumber(departureFlightNumber);
             s.setFlightOriginOrDestination(departureFlightDestination);
             s.setFlightTime(departureFlightTime);
+
+            if (overridePickupTime != null) s.setPickupTime(overridePickupTime);
 
             s.setActive(isActive());
         } else {
