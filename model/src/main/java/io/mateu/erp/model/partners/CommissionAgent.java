@@ -40,4 +40,8 @@ public class CommissionAgent {
     private String comments;
 
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

@@ -79,9 +79,6 @@ public class TransferPoint {
     @SameLine
     private String fax;
 
-    @ManyToOne
-    private Destination gatewayOf;
-
     private int minutesForNationalFlights;
 
     private int minutesForInternationalFlights;

@@ -4,12 +4,17 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.DataSheet;
 import io.mateu.erp.model.product.transfer.*;
+import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
+import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -66,6 +71,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             @Override
             public void run(EntityManager em) throws Throwable {
 
+                AppConfig c = AppConfig.get(em);
+
                 TransferBooking b = new TransferBooking();
                 b.setAgency(em.find(Agency.class, finalIdAgencia));
                 b.setAdults(pax);
@@ -84,7 +91,19 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     if (b.getTotalValue() > 0) {
                         AvailableTransfer t = new AvailableTransfer();
                         t.setType("" + b.getTransferType());
-                        t.setDescription(b.getPriceForVehicle().getName() + " " + b.getPriceForVehicle().getMinPax() + " - " + b.getPriceForVehicle().getMaxPax());
+                        DataSheet ds = c.getShuttleDataSheet();
+                        if (TransferType.PRIVATE.equals(tipo)) ds = c.getPrivateDataSheet();
+                        else if (TransferType.EXECUTIVE.equals(tipo)) ds = c.getExecutiveDataSheet();
+                        if (ds != null) {
+                            t.setDescription(ds.getDescription().get("es"));
+                            try {
+                                if (ds.getMainImage() != null) t.setImage(ds.getMainImage().toFileLocator().getUrl());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            t.setDescription(b.getPriceForVehicle().getName() + " " + b.getPriceForVehicle().getMinPax() + " - " + b.getPriceForVehicle().getMaxPax());
+                        }
                         t.setVehicle(b.getPriceForVehicle().getName());
                         Amount a;
                         t.setTotal(new BestDeal());
@@ -98,6 +117,13 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+
+
+                        double v = a.getValue();
+
+                        if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                        if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+
                     }
                 });
 
@@ -131,8 +157,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         data.put("golfBaggages", golfBaggages);
         data.put("bigLuggages", bigLuggages);
         data.put("wheelChairs", wheelChairs);
-        data.put("incomingDate", incomingDate);
-        data.put("outgoingDate", outgoingDate);
+        if (incomingDate > 0) data.put("incomingDate", incomingDate);
+        if (outgoingDate > 0) data.put("outgoingDate", outgoingDate);
         data.put("priceId", p.getId());
         data.put("valor", valor);
 
@@ -187,6 +213,9 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     r.setText("Wheel chairs are on request and an extra charge will be added.");
                 }
 
+                rs.setArrivalInstructions(b.getOrigin().getInstructions());
+                rs.setDepartureInstructions(b.getDestination().getInstructions());
+
                 int pos = 1;
                 for (Charge l : b.getCharges()) {
                     PriceLine pl;
@@ -228,11 +257,15 @@ public class TransferBookingServiceImpl implements TransferBookingService {
     private TransferBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
         Map<String, Object> data = Helper.fromJson(new String((Base64.getDecoder().decode(key))));
 
+        System.out.println("key=" + key);
+        System.out.println("key decoded=" + new String((Base64.getDecoder().decode(key))));
+
         long idAgencia = 0;
         long idHotel = 0;
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
+            System.out.println("creds=" + new String(BaseEncoding.base64().decode((String) data.get("token"))));
             if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
             if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
@@ -241,6 +274,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        System.out.println("idAgencia=" + idAgencia);
 
         /*
                 data.put("token", token);
@@ -258,8 +293,6 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         data.put("valor", valor);
          */
 
-        int incomingDate = (int) data.get("incomingDate");
-        int outgoingDate = (int) data.get("outgoingDate");
 
         TransferBooking b = new TransferBooking();
         User user = em.find(User.class, login);
@@ -275,15 +308,21 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
         b.setTransferType(p.getTransferType());
 
-        LocalDate llegada = LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100);
-        LocalDate salida = LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100);
+        if (data.containsKey("incomingDate")) {
+            int incomingDate = (int) data.get("incomingDate");
+            if (incomingDate != 0) {
+                LocalDate llegada = LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100);
+                b.setArrivalFlightTime(llegada.atTime(0, 0));
+            }
+        }
+        if (data.containsKey("outgoingDate")) {
+            int outgoingDate = (int) data.get("outgoingDate");
+            if (outgoingDate != 0) {
+                LocalDate salida = LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100);
+                b.setDepartureFlightTime(salida.atTime(0, 0));
+            }
+        }
 
-        if (incomingDate != 0) {
-            b.setArrivalFlightTime(llegada.atTime(0, 0));
-        }
-        if (outgoingDate != 0) {
-            b.setDepartureFlightTime(salida.atTime(0, 0));
-        }
 
 
         if (data.containsKey("bikes")) b.setBikes((Integer) data.get("bikes"));
@@ -299,55 +338,72 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
         //todo: validar auth token
 
+        System.out.println("captchaToken=" + rq.getCaptchaToken());
+
         BookTransferRS rs = new BookTransferRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed ok");
 
+        io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
-        TransferBooking[] bs = {null};
+        try {
 
-        Helper.transact(new JPATransaction() {
-            @Override
-            public void run(EntityManager em) throws Throwable {
+            Helper.transact(new JPATransaction() {
+                @Override
+                public void run(EntityManager em) throws Throwable {
 
-                TransferBooking b = buildBookingFromKey(em, rq.getKey());
+                    TransferBooking b = buildBookingFromKey(em, rq.getKey());
 
-                b.setConfirmed(true);
-                b.setAgencyReference(rq.getBookingReference());
-                if (b.getAgencyReference() == null) b.setAgencyReference("");
-                b.setSpecialRequests(rq.getCommentsToProvider());
-                b.setEmail(rq.getEmail());
-                b.setLeadName(rq.getLeadName());
-                b.setPrivateComments(rq.getPrivateComments());
-                b.setPos(em.find(AuthToken.class, token).getPos());
-                b.setTelephone(rq.getContactPhone());
+                    b.setAgencyReference(rq.getBookingReference());
+                    if (b.getAgencyReference() == null) b.setAgencyReference("");
+                    b.setSpecialRequests(rq.getCommentsToProvider());
+                    b.setEmail(rq.getEmail());
+                    b.setLeadName(rq.getLeadName());
+                    b.setPrivateComments(rq.getPrivateComments());
+                    b.setPos(em.find(AuthToken.class, token).getPos());
+                    b.setTelephone(rq.getContactPhone());
+                    b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
+                    b.setConfirmNow(false);
 
-                b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
+                    b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
 
 
-                if (b.getArrivalFlightTime() != null) {
-                    b.setArrivalFlightTime(b.getArrivalFlightTime().toLocalDate().atTime((rq.getIncomingFlightTime() - rq.getIncomingFlightTime() % 100) / 100, rq.getIncomingFlightTime() % 100));
-                    b.setArrivalFlightNumber(rq.getIncomingFlightNumber());
-                    b.setArrivalFlightOrigin(rq.getIncomingFlightOrigin());
+                    if (b.getArrivalFlightTime() != null) {
+                        b.setArrivalFlightTime(b.getArrivalFlightTime().toLocalDate().atTime((rq.getIncomingFlightTime() - rq.getIncomingFlightTime() % 100) / 100, rq.getIncomingFlightTime() % 100));
+                        b.setArrivalFlightNumber(rq.getIncomingFlightNumber());
+                        b.setArrivalFlightOrigin(rq.getIncomingFlightOrigin());
+                    }
+                    if (b.getDepartureFlightTime() != null) {
+                        b.setDepartureFlightTime(b.getDepartureFlightTime().toLocalDate().atTime((rq.getOutgoingFlightTime() - rq.getOutgoingFlightTime() % 100) / 100, rq.getOutgoingFlightTime() % 100));
+                        b.setDepartureFlightNumber(rq.getOutgoingFlightNumber());
+                        b.setDepartureFlightDestination(rq.getOutgoingFlightDestination());
+                    }
+
+
+                    em.persist(b);
+
+                    bx[0] = b;
+
                 }
-                if (b.getDepartureFlightTime() != null) {
-                    b.setDepartureFlightTime(b.getDepartureFlightTime().toLocalDate().atTime((rq.getOutgoingFlightTime() - rq.getOutgoingFlightTime() % 100) / 100, rq.getOutgoingFlightTime() % 100));
-                    b.setDepartureFlightNumber(rq.getOutgoingFlightNumber());
-                    b.setDepartureFlightDestination(rq.getOutgoingFlightDestination());
-                }
+            });
 
 
-                em.persist(b);
+            io.mateu.erp.model.booking.Booking b = bx[0];
+            rs.setBookingId("" + bx[0].getId());
+            Helper.notransact(em -> {
+                io.mateu.erp.model.booking.Booking bz = em.find(Booking.class, bx[0].getId());
+                if (bz.getTPVTransactions().size() > 0) rs.setPaymentUrl(bz.getTPVTransactions().get(0).getBoton(em));
+                else rs.setPaymentUrl("");
+            });
+            //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
 
-                bs[0] = b;
-
-            }
-        });
-
-
-        rs.setBookingId("" + bs[0].getId());
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            rs.setStatusCode(500);
+            rs.setMsg(throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+        }
 
 
         return rs;
@@ -374,6 +430,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             r.setType("transferpoint");
             r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
         });
+
+        Collections.sort(rs.getAirports(), Comparator.comparing(a -> a.getName().get("es")));
 
         return rs;
     }
@@ -407,7 +465,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     Resource r;
                     rs.getDestination().add(r = new Resource());
                     r.setResourceId("tp-" + p.getId());
-                    r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
+                    r.setName(new MultilingualText("es", p.getName() + " (" + p.getResort().getName() + ")", "en", p.getName() + " (" + p.getResort().getName() + ")"));
                     r.setType("transferpoint");
                     r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
                 }
@@ -416,6 +474,32 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
         });
 
+        Collections.sort(rs.getDestination(), Comparator.comparing(a -> a.getName().get("es")));
+
+        return rs;
+    }
+
+    @Override
+    public GetDestinationRS getDestinations(String s) throws Throwable {
+        GetDestinationRS rs = new GetDestinationRS();
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setStatusCode(200);
+        rs.setMsg("Possible destinations filtered");
+
+        Helper.notransact(em -> {
+
+            ((List<TransferPoint>)em.createQuery("select x from " + TransferPoint.class.getName() + " x").getResultList()).forEach(p -> {
+                Resource r;
+                rs.getDestination().add(r = new Resource());
+                r.setResourceId("tp-" + p.getId());
+                r.setName(new MultilingualText("es", p.getName() + " (" + p.getResort().getName() + ")", "en", p.getName() + " (" + p.getResort().getName() + ")"));
+                r.setType("transferpoint");
+                r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+            });
+
+        });
+
+        Collections.sort(rs.getDestination(), Comparator.comparing(a -> a.getName().get("es")));
 
         return rs;
     }

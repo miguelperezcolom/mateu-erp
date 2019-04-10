@@ -20,6 +20,7 @@ import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -215,7 +216,7 @@ public class GenericService extends Service {
         d.put("agency", this.getBooking().getAgency().getName());
         d.put("agencyReference", this.getBooking().getAgencyReference());
         d.put("status", (isActive())?"ACTIVE":"CANCELLED");
-        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        if (getAudit().getCreated() != null) d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
 
         String c = getBooking().getSpecialRequests();
@@ -225,6 +226,13 @@ public class GenericService extends Service {
             c += getOperationsComment();
         }
         d.put("comments", c);
+
+        d.put("product", getProduct().getName());
+        d.put("variant", getVariant().getName().getEs());
+
+        d.put("units", getUnits());
+        d.put("adults", getAdults());
+        d.put("children", getChildren());
 
         return d;
     }
@@ -247,6 +255,45 @@ public class GenericService extends Service {
     @Override
     public BillingConcept getBillingConcept(EntityManager em) {
         return AppConfig.get(em).getBillingConceptForOthers();
+    }
+
+
+    @Override
+    public Element toXml() {
+        Element xml = super.toXml();
+
+        xml.setAttribute("type", "generic");
+
+        xml.setAttribute("header", "" + getDescription());
+
+        if (getProduct() != null) xml.setAttribute("product", getProduct().getName());
+        if (getVariant() != null) xml.setAttribute("variant", getVariant().getName().getEs());
+        String s = "";
+        if (getProduct().isDateDependant()) {
+            if (!"".equalsIgnoreCase(s)) s += " / ";
+            s += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        }
+        if (getProduct().isDatesRangeDependant()) {
+            if (!"".equalsIgnoreCase(s)) s += " / ";
+            s += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            s += " - ";
+            s += getFinish().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        }
+        if (getProduct().isUnitsDependant()) {
+            if (!"".equalsIgnoreCase(s)) s += " / ";
+            s += getUnits() + " uds";
+        }
+        if (getProduct().isAdultsDependant()) {
+            if (!"".equalsIgnoreCase(s)) s += " / ";
+            s += getAdults() + " ads";
+        }
+        if (getProduct().isChildrenDependant()) {
+            if (!"".equalsIgnoreCase(s)) s += " / ";
+            s += getChildren() + " chdn";
+        }
+        xml.setAttribute("units", s);
+
+        return xml;
     }
 
 }

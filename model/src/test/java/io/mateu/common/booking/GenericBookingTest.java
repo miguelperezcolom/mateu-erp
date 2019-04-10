@@ -1,18 +1,15 @@
 package io.mateu.common.booking;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
-import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.booking.parts.GenericBooking;
-import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
-import org.javamoney.moneta.FastMoney;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -37,7 +34,7 @@ public class GenericBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(User.class, "admin"));
+        assertNotNull(Helper.find(ERPUser.class, "admin"));
 
     }
 

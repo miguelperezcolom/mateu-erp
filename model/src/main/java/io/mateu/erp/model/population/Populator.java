@@ -5,6 +5,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import io.mateu.erp.model.accounting.AccountingPlan;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.invoicing.InvoiceSerial;
 import io.mateu.erp.model.organization.Company;
@@ -15,6 +16,7 @@ import io.mateu.erp.model.partners.AgencyStatus;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.partners.ProviderStatus;
 import io.mateu.erp.model.payments.Account;
+import io.mateu.erp.model.payments.MethodOfPayment;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.ProductType;
 import io.mateu.erp.model.product.Variant;
@@ -34,6 +36,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.Permission;
 import io.mateu.mdd.core.model.authentication.USER_STATUS;
 import io.mateu.mdd.core.model.common.Resource;
+import io.mateu.mdd.core.model.config.AppConfig;
 import io.mateu.mdd.core.model.config.TemplateUseCase;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.model.util.Constants;
@@ -67,6 +70,10 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
     public static Hotel hotel;
     public static Excursion excursion;
     public static Account banco;
+    public static MethodOfPayment visa;
+    public static Currency eur;
+    public static Currency usd;
+    public static Currency gbp;
 
     public static void main(String... args) throws Throwable {
 
@@ -600,15 +607,32 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             }
 
 
-            Currency eur;
             if (true) {
                 eur = new Currency();
                 eur.setIsoCode("EUR");
                 eur.setIsoNumericCode(978);
                 eur.setName("Euro");
+                eur.setExchangeRateToNucs(1);
                 em.persist(eur);
             }
 
+            {
+                usd = new Currency();
+                usd.setIsoCode("USD");
+                usd.setIsoNumericCode(117);
+                usd.setName("US dollar");
+                usd.setExchangeRateToNucs(0.875);
+                em.persist(usd);
+            }
+
+            {
+                gbp = new Currency();
+                gbp.setIsoCode("GBP");
+                gbp.setIsoNumericCode(875);
+                gbp.setName("GB pound");
+                gbp.setExchangeRateToNucs(1.423);
+                em.persist(gbp);
+            }
 
             io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
@@ -619,6 +643,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setXslfoForTourContract(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/contrato_tour.xsl"), Charsets.UTF_8));
             c.setXslfoForWorld(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
             c.setXslfoForList(Resources.toString(Resources.getResource(Populator.class, "/xsl/listing.xsl"), Charsets.UTF_8));
+            c.setXslfoForPOSSettlement(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/liquidacion_pos.xsl"), Charsets.UTF_8));
+            c.setXslfoForQuotationRequest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/grupo.xsl"), Charsets.UTF_8));
             c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
             c.setXslfoForPurchaseOrder(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/please_book.xsl"), Charsets.UTF_8));
             c.setXslfoForTransfersList(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/transfers_list.xsl"), Charsets.UTF_8));
@@ -631,6 +657,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setPurchaseOrderTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
             c.setVouchersEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/voucheremail.ftl"), Charsets.UTF_8));
             c.setPaymentEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/paymentemail.ftl"), Charsets.UTF_8));
+            c.setBookedEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/bookingemail.ftl"), Charsets.UTF_8));
 
 
             c.setAdminEmailSmtpHost((String) Helper.get(initialData, "smtp/host"));
@@ -709,7 +736,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
+                ERPUser u = new ERPUser();
                 u.setLogin(USER_ADMIN);
                 u.setName("Admin");
                 //u.setPassword(Helper.md5("1"));
@@ -727,7 +754,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
+                ERPUser u = new ERPUser();
                 u.setLogin(Constants.SYSTEM_USER_LOGIN);
                 u.setName("System");
                 //u.setPassword(Helper.md5("1"));
@@ -745,7 +772,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                io.mateu.erp.model.authentication.User u = new io.mateu.erp.model.authentication.User();
+                ERPUser u = new ERPUser();
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));
@@ -818,27 +845,36 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 banco.setName("Banco Santander 65465465465464");
                 em.persist(banco);
 
-                pos = new PointOfSale();
-                pos.setName("Point of sale");
-                em.persist(pos);
+                visa = new MethodOfPayment();
+                visa.setName("VISA");
+                em.persist(visa);
+
+
+                io.mateu.erp.model.config.AppConfig ac = io.mateu.erp.model.config.AppConfig.get(em);
 
                 BillingConcept bc = new BillingConcept();
                 bc.setName("Anything");
                 bc.setCode("ANY");
                 bc.setLocalizationRule(LocalizationRule.ISSUING_COMPANY);
                 em.persist(bc);
+                ac.setBillingConceptForCircuit(bc);
+                ac.setBillingConceptForExcursion(bc);
+                ac.setBillingConceptForOthers(bc);
+
 
                 bc = new BillingConcept();
                 bc.setName("Hotel");
                 bc.setCode("HOT");
                 bc.setLocalizationRule(LocalizationRule.SERVICE);
                 em.persist(bc);
+                ac.setBillingConceptForHotel(bc);
 
                 bc = new BillingConcept();
                 bc.setName("Transfer");
                 bc.setCode("TRA");
                 bc.setLocalizationRule(LocalizationRule.SERVICE);
                 em.persist(bc);
+                ac.setBillingConceptForTransfer(bc);
 
                 bc = new BillingConcept();
                 bc.setName("Handling fee");
@@ -911,6 +947,11 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 office.setCompany(cia);
                 em.persist(office);
 
+                pos = new PointOfSale();
+                pos.setName("Point of sale");
+                pos.setOffice(office);
+                em.persist(pos);
+
                 s.getResorts().add(alcudia = resort = new Resort());
                 resort.setDestination(s);
                 resort.setName("Alcudia");
@@ -956,6 +997,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 agencia.setCurrency(eur);
                 agencia.setStatus(AgencyStatus.ACTIVE);
                 agencia.setEmail("miguelperezcolom@gmail.com");
+                agencia.setDocumentationRequired(true);
 
 
                 a = new FinancialAgent();
@@ -965,6 +1007,10 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 a.setInvoiceGrouping(InvoiceGrouping.BOOKING);
                 a.setRiskType(RiskType.CREDIT);
                 a.setCurrency(eur);
+
+                // directos. Se enviará email
+                a.setDirectSale(true);
+
                 em.persist(a);
 
                 agencia.setFinancialAgent(a);

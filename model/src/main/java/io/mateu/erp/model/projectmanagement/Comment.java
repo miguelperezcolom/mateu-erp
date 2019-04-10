@@ -1,5 +1,6 @@
 package io.mateu.erp.model.projectmanagement;
 
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class Comment {
 
     @ManyToOne
     @NotNull
-    private io.mateu.erp.model.authentication.User user;
+    private ERPUser user;
 
     private String text;
 

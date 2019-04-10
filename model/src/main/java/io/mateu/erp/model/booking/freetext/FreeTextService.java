@@ -11,6 +11,7 @@ import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Element;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
@@ -19,6 +20,7 @@ import javax.persistence.PreUpdate;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Entity
@@ -101,5 +103,28 @@ public class FreeTextService extends Service {
     @Override
     public BillingConcept getBillingConcept(EntityManager em) {
         return AppConfig.get(em).getBillingConceptForOthers();
+    }
+
+
+    @Override
+    public Element toXml() {
+        Element xml = super.toXml();
+
+        xml.setAttribute("type", "freetext");
+
+        xml.setAttribute("header", "Free text service");
+
+        if (getDescription() != null) xml.setAttribute("description", getDescription());
+
+        return xml;
+    }
+
+    @Override
+    public Map<String, Object> getData() {
+        Map<String, Object> d = super.getData();
+
+        d.put("text", getText());
+
+        return d;
     }
 }

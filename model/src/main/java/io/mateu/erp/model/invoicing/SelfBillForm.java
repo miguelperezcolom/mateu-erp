@@ -22,7 +22,7 @@ public class SelfBillForm {
                 BookingInvoiceLine bil = (BookingInvoiceLine) l;
                 AmountPerBooking a;
                 amounts.add(a = new AmountPerBooking());
-                a.setBookingId(((BookingInvoiceLine) l).getBooking().getId());
+                a.setBookingId(((BookingInvoiceLine) l).getCharge().getBooking().getId());
                 a.setAmount(l.getTotal());
             }
         }

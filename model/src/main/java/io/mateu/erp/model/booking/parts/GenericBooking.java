@@ -1,10 +1,12 @@
 package io.mateu.erp.model.booking.parts;
 
+import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.performance.Accessor;
@@ -22,6 +24,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,12 +153,50 @@ public class GenericBooking extends Booking {
         c.setTotal(getTotalValue());
         c.setCurrency(getCurrency());
         c.setText("" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch");
-        c.setBillingConcept(getContract().getBillingConcept());
+        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForOthers());
         c.setAgency(getAgency());
     }
 
     @Override
     protected void completeSignature(Map<String, Object> m) {
+        if (getProduct() != null) m.put("product", getProduct().getName());
+        if (getVariant() != null) m.put("variant", getVariant().getName());
+        List<Map<String, Object>> extras = new ArrayList<>();
+        getExtras().forEach(e -> {
+            HashMap<String, Object> x;
+            extras.add(x = new HashMap<>());
+            if (e.getExtra() != null) x.put("extra", e.getExtra().getName());
+            x.put("units", e.getUnits());
+        });
+        if (extras.size() > 0) m.put("extras", extras);
+        m.put("units", getUnits());
+        m.put("adults", getAdults());
+        m.put("children", getChildren());
+        if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
+        m.put("serviceCost", "" + getOverridedCost());
+    }
 
+    @Override
+    public String getServiceDataHtml() {
+        String h = "<pre>";
+
+        h += "GENERIC BOOKING \n";
+
+        h += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h += "Product: " + getProduct().getName() + " \n";
+        if (getVariant() != null) h += "Variant: " + getVariant().getName() + " \n";
+        h += "Units: " + getUnits() + " \n";
+        h += "Adults: " + getAdults() + " \n";
+        h += "Children: " + getChildren() + " \n";
+
+        for (GenericBookingExtra e : getExtras()) {
+            h += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
+        }
+
+        if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
+
+        h += "</pre>";
+        return h;
     }
 }

@@ -1,11 +1,16 @@
 package io.mateu.erp.model.booking.parts;
 
+import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.revenue.ProductLine;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -17,6 +22,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 @Entity
@@ -91,9 +97,48 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
+    public void createCharges(EntityManager em) throws Throwable {
+        getServiceCharges().clear();
+
+        BookingCharge c;
+        getServiceCharges().add(c = new BookingCharge());
+        c.setAudit(new Audit(MDD.getCurrentUser()));
+        c.setTotal(getTotalValue());
+        c.setCurrency(getCurrency());
+
+        c.setText(getDescription());
+
+        c.setAgency(getAgency());
+
+        c.setType(ChargeType.SALE);
+        c.setBooking(this);
+
+        c.setInvoice(null);
+
+        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer());
+    }
+
+    @Override
     protected void completeSignature(Map<String, Object> m) {
         if (getServiceDescription() != null) m.put("serviceDescription", getServiceDescription());
         if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
         m.put("serviceCost", "" + getOverridedCost());
+    }
+
+    @Override
+    public String getServiceDataHtml() {
+        String h = "<pre>";
+
+        h += "FREE TEXT TRANSFER BOOKING \n";
+
+        h += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
+
+        h += "Service description: " + getServiceDescription() + " \n";
+
+        if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
+
+        h += "</pre>";
+        return h;
     }
 }

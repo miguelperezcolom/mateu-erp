@@ -40,6 +40,10 @@ public class Currency {
     @NotNull
     private String name;
 
+    private String symbol;
+
+    private String entity;
+
     private double exchangeRateToNucs;
 
     @Override

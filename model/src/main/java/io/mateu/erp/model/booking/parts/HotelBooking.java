@@ -5,6 +5,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.HotelServiceLine;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.product.ContractType;
@@ -252,7 +253,7 @@ public class HotelBooking extends Booking {
     @Override
     public void createCharges(EntityManager em) throws Throwable {
         getServiceCharges().clear();
-        for (HotelBookingLine l : lines) if (l.getContract() != null) {
+        for (HotelBookingLine l : lines) {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
@@ -268,7 +269,7 @@ public class HotelBooking extends Booking {
 
             c.setInvoice(null);
 
-            c.setBillingConcept(l.getContract().getBillingConcept());
+            c.setBillingConcept(l.getContract() != null?l.getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForHotel());
         }
     }
 

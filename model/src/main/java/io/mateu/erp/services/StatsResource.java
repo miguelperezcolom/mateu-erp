@@ -1,6 +1,7 @@
 package io.mateu.erp.services;
 
 
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 
@@ -34,7 +35,7 @@ public class StatsResource {
                 @Override
                 public void run(EntityManager em) throws Throwable {
 
-                    io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, "admin");
+                    ERPUser u = em.find(ERPUser.class, "admin");
 
                     System.out.println("user admin exists");
 

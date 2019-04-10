@@ -3,8 +3,7 @@ package io.mateu.erp.model.invoicing.lists;
 import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.invoicing.Invoice;
-import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.invoicing.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.util.EmailHelper;
@@ -67,6 +66,17 @@ public class InvoiceResult {
         invoices.forEach(i -> {
             i.setNumber(i.getAgency().getCompany().getBillingSerial().createInvoiceNumber());
             i.setSerial(i.getAgency().getCompany().getBillingSerial());
+            for (AbstractInvoiceLine l : i.getLines()) {
+                if (l instanceof BookingInvoiceLine) {
+                    BookingInvoiceLine bil = (BookingInvoiceLine) l;
+                    bil.getCharge().setInvoice(i);
+                    em.merge(bil.getCharge());
+                } else if (l instanceof ChargeInvoiceLine) {
+                    ChargeInvoiceLine bil = (ChargeInvoiceLine) l;
+                    bil.getCharge().setInvoice(i);
+                    em.merge(bil.getCharge());
+                }
+            }
             em.persist(i);
         });
 

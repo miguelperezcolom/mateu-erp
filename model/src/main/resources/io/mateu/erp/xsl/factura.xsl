@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:fo="http://www.w3.org/1999/XSL/Format"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output indent="yes"/>
-    <xsl:template match="/">
+    <xsl:template match="//invoice">
         <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
         <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
         <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>
@@ -37,11 +37,14 @@
                                     <fo:block><xsl:value-of select="issuer/@email"/> - t. <xsl:value-of select="issuer/@telephone"/> - f. <xsl:value-of select="issuer/@fax"/></fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell text-align="right" font-weight="bold" padding="1mm">
-                                    <fo:block font-size="9pt" space-after="-2pt">FACTURA Nº <xsl:value-of select="@number"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt"><xsl:choose>
+                                        <xsl:when test="@number = 'PROFORMA'">PROFORMA</xsl:when>
+                                        <xsl:otherwise>FACTURA Nº <xsl:value-of select="@number"/></xsl:otherwise>
+                                    </xsl:choose></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Invoice number</fo:block>
-                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE EMISIÓN <xsl:value-of select="@date"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE EMISIÓN <xsl:value-of select="@issueDate"/></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Emission date</fo:block>
-                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE VENCIMIENTO <xsl:value-of select="@duedate"/></fo:block>
+                                    <fo:block font-size="9pt" space-after="-2pt">FECHA DE VENCIMIENTO <xsl:value-of select="@dueDate"/></fo:block>
                                     <fo:block font-size="7pt" font-style="italic" space-after="2pt">Due date </fo:block>
                                 </fo:table-cell>
                                 <fo:table-cell text-align="right" font-size="8pt" padding="1mm">
@@ -70,7 +73,7 @@
                 <fo:flow flow-name="xsl-region-body" >
 
 
-                    <xsl:for-each select="//invoice">
+                    <xsl:for-each select=".">
 
                         <!--
                         <fo:block>FACTURA</fo:block>
@@ -101,9 +104,9 @@
 
                             <fo:table-column column-width="15mm"></fo:table-column>
                             <fo:table-column column-width="20mm"></fo:table-column>
+                            <fo:table-column column-width="26mm"></fo:table-column>
                             <fo:table-column column-width="25mm"></fo:table-column>
-                            <fo:table-column column-width="40mm"></fo:table-column>
-                            <fo:table-column column-width="54mm"></fo:table-column>
+                            <fo:table-column column-width="68mm"></fo:table-column>
                             <fo:table-column column-width="20mm"></fo:table-column>
 
                             <!-- CONCEPTOS -->
@@ -132,7 +135,7 @@
                                             <fo:block>fecha</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>cliente / servicio</fo:block>
+                                            <fo:block>cliente</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
                                             <fo:block>concepto</fo:block>
@@ -167,7 +170,7 @@
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@leadName"/> / <xsl:value-of select="@service"/></fo:block>
+                                                <fo:block><xsl:value-of select="@leadName"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
@@ -233,7 +236,7 @@
 
                             <!-- PRECIO FINAL -->
                             <!-- PRECIO FINAL -->
-                            <fo:table-body font-weight="bold">
+                            <fo:table-body>
                                 <fo:table-row>
                                     <fo:table-cell padding="3mm">
                                         <fo:block></fo:block>
@@ -260,23 +263,24 @@
                                          -->
 
 
-                                        <xsl:for-each select="impuesto">
+                                        <xsl:for-each select="vats/vat">
                                             <fo:block space-after="3pt">
 
                                                 <xsl:choose>
                                                     <xsl:when test="@regime = 'SPECIAL'">Total IVA incluido (régimen especial)</xsl:when>
                                                     <xsl:when test="vat = ''">Total IVA no aplicable</xsl:when>
-                                                    <xsl:otherwise>Base with <xsl:value-of select="@porcentaje"/>% IVA</xsl:otherwise>
+                                                    <xsl:otherwise>Base with <xsl:value-of select="@percent"/>% IVA</xsl:otherwise>
                                                 </xsl:choose>
 
-                                                <xsl:if test="$moneda != $monedacontable">(<xsl:value-of select="@accountingbase"/>&#x00A0;<xsl:value-of select="@accountingcurrency"/>)</xsl:if>
                                             </fo:block>
 
-                                            <xsl:if test="@total != '0,00'">
-                                                <fo:block space-after="3pt"><xsl:value-of select="@vat"/> (<xsl:value-of select="@porcentaje"/>%) <xsl:if test="$moneda != $monedacontable">(<xsl:value-of select="@accountingvalue"/>&#x00A0;<xsl:value-of select="@accountingcurrency"/>)</xsl:if></fo:block>
-                                            </xsl:if>
+                                            <fo:block space-after="3pt">IVA (<xsl:value-of select="@percent"/>%)</fo:block>
 
                                         </xsl:for-each>
+
+                                        <fo:block space-after="3pt" color="white">x</fo:block>
+
+                                        <fo:block space-after="3pt" font-weight="bold">Total invoice</fo:block>
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
@@ -297,14 +301,16 @@
                                             padding="1mm"
                                             border-right-style="solid"
                                             border-right-width="0.2px">
-                                        <xsl:for-each select="impuesto">
+                                        <xsl:for-each select="vats/vat">
 
-                                            <fo:block space-after="3pt"><xsl:value-of select="@base"/>&#x00A0;<xsl:value-of select="$moneda"/></fo:block>
+                                            <fo:block space-after="3pt"><xsl:value-of select="@base"/>&#x00A0;€</fo:block>
 
-                                            <xsl:if test="@total != '0,00'">
-                                                <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0;<xsl:value-of select="$moneda"/></fo:block>
-                                            </xsl:if>
+                                            <fo:block space-after="3pt"><xsl:value-of select="@vat"/>&#x00A0;€</fo:block>
                                         </xsl:for-each>
+
+                                        <fo:block space-after="3pt" color="white">x</fo:block>
+
+                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@total"/>&#x00A0; €</fo:block>
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 

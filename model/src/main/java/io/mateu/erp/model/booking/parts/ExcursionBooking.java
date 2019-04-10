@@ -1,10 +1,12 @@
 package io.mateu.erp.model.booking.parts;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.excursion.ExcursionService;
 import io.mateu.erp.model.booking.generic.GenericService;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
@@ -23,6 +25,7 @@ import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -158,7 +161,7 @@ public class ExcursionBooking extends TourBooking {
             final double[] v = {0};
             int dias = 1;
             if (getStart() != null && getEnd() != null) {
-                dias = (int) DAYS.between(getStart(), getEnd());
+                dias = (int) DAYS.between(getStart(), getEnd()) + 1;
             }
             int finalDias = dias;
             c.getPrices().stream()
@@ -169,7 +172,7 @@ public class ExcursionBooking extends TourBooking {
                         v[0] += getAdults() * p.getPricePerAdult();
                         v[0] += getChildren() * p.getPricePerChild();
                     });
-            prices. put(c, v[0]);
+            if (v[0] != 0) prices. put(c, v[0]);
         });
 
         setTotalValue(0);
@@ -186,12 +189,51 @@ public class ExcursionBooking extends TourBooking {
         c.setTotal(getTotalValue());
         c.setCurrency(getCurrency());
         c.setText("" + excursion.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getAdults() + " ad/" + getChildren() + "ch");
-        c.setBillingConcept(getContract().getBillingConcept());
+        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForExcursion());
         c.setAgency(getAgency());
     }
 
     @Override
     protected void completeSignature(Map<String, Object> m) {
-
+        if (getExcursion() != null) m.put("excursion", getExcursion().getName());
+        if (getVariant() != null) m.put("variant", getVariant().getName());
+        List<Map<String, Object>> extras = new ArrayList<>();
+        getExtras().forEach(e -> {
+            HashMap<String, Object> x;
+            extras.add(x = new HashMap<>());
+            if (e.getExtra() != null) x.put("extra", e.getExtra().getName());
+            x.put("units", e.getUnits());
+        });
+        if (extras.size() > 0) m.put("extras", extras);
+        m.put("adults", getAdults());
+        m.put("children", getChildren());
+        if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
+        m.put("serviceCost", "" + getOverridedCost());
     }
+
+
+    @Override
+    public String getServiceDataHtml() {
+        String h = "<pre>";
+
+        h += "EXCURSION BOOKING \n";
+
+        h += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h += "Excursion: " + getExcursion().getName() + " \n";
+        if (getVariant() != null) h += "Variant: " + getVariant().getName() + " \n";
+        if (getShift() != null) h += "Shift: " + getShift().getName() + " \n";
+        h += "Adults: " + getAdults() + " \n";
+        h += "Children: " + getChildren() + " \n";
+
+        for (TourBookingExtra e : getExtras()) {
+            h += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
+        }
+
+        if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
+
+        h += "</pre>";
+        return h;
+    }
+
 }

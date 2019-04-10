@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +28,7 @@ public class Excursion extends Tour {
     private TourDuration duration;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
+    @UseLinkToListView
     private List<TourShift> shifts = new ArrayList<>();
 
 

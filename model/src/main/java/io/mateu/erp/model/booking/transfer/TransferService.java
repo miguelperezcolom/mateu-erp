@@ -2,8 +2,10 @@ package io.mateu.erp.model.booking.transfer;
 
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
+import io.mateu.erp.model.booking.hotel.HotelServiceLine;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Provider;
@@ -18,6 +20,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -27,6 +30,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * Created by miguel on 25/2/17.
@@ -581,7 +586,7 @@ public class TransferService extends Service {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
                 t.getServices().add(this);
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
@@ -594,7 +599,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
@@ -619,7 +624,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
@@ -645,7 +650,7 @@ public class TransferService extends Service {
             if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);
@@ -666,7 +671,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
@@ -696,7 +701,7 @@ public class TransferService extends Service {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 getTasks().add(t);
                 t.getServices().add(this);
-                t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, user.getLogin())));
+                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 em.persist(t);
             } else throw new Exception("No telephone or clickatell api. Please set before sending the sms");
@@ -706,6 +711,28 @@ public class TransferService extends Service {
     @Override
     public BillingConcept getBillingConcept(EntityManager em) {
         return AppConfig.get(em).getBillingConceptForTransfer();
+    }
+
+
+    @Override
+    public Element toXml() {
+        Element xml = super.toXml();
+
+        xml.setAttribute("type", "transfer");
+
+        xml.setAttribute("header", "" + getTransferType().name() + " " + "" + getDirection().name());
+
+        xml.setAttribute("pickup", getPickup().getName());
+        xml.setAttribute("dropoff", getDropoff().getName());
+
+        xml.setAttribute("flightDate", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        xml.setAttribute("flightTime", getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+        if (getFlightNumber() != null) xml.setAttribute("flightNumber", getFlightNumber());
+        if (getFlightOriginOrDestination() != null) xml.setAttribute("flightOriginOrDestination", getFlightOriginOrDestination());
+
+        xml.setAttribute("pax", "" + getPax());
+
+        return xml;
     }
 
 }

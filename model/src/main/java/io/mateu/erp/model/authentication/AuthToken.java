@@ -8,6 +8,7 @@ import io.mateu.mdd.core.annotations.Caption;
 import io.mateu.mdd.core.annotations.Indelible;
 import io.mateu.mdd.core.annotations.NewNotAllowed;
 import io.mateu.mdd.core.model.authentication.Permission;
+import io.mateu.mdd.core.model.authentication.User;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -69,7 +70,7 @@ public class AuthToken {
 
 
     @Action
-    public static void createToken(EntityManager em, @NotNull User user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @NotNull @Caption("Agency") Agency p, @Caption("Hotel") Hotel h) throws IOException {
+    public static void createToken(EntityManager em, @NotNull ERPUser user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @NotNull @Caption("Agency") Agency p, @Caption("Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
         t.setAgency(p);
         t.setPos(pos);

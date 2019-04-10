@@ -1,7 +1,7 @@
 package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.parts.TransferBooking;
@@ -490,8 +490,9 @@ public class TransferBookingRequest {
                 boolean hayCambios=false;
 
                 //Si ok, actualizamos la reserva...
-                TransferBooking b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
-                User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                TransferBooking b = (TransferBooking) getBooking();
+                if (b == null) b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+                ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                 if (b==null)//Crear reserva nueva
                 {
                     b = new TransferBooking();

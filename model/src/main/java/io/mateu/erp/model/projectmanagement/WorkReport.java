@@ -1,5 +1,6 @@
 package io.mateu.erp.model.projectmanagement;
 
+import io.mateu.erp.model.authentication.ERPUser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +24,7 @@ public class WorkReport {
 
     @ManyToOne
     @NotNull
-    private io.mateu.erp.model.authentication.User user;
+    private ERPUser user;
 
     @OneToMany(mappedBy = "report")
     private List<WorkReportLine> lines = new ArrayList<>();

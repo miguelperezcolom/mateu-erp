@@ -1,12 +1,17 @@
 package io.mateu.erp.model.partners;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.revenue.HandlingFee;
 import io.mateu.erp.model.revenue.Markup;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -62,6 +67,7 @@ public class Agency {
 
     private String comments;
 
+    private boolean documentationRequired;
 
 
 
@@ -147,5 +153,53 @@ public class Agency {
         return xml;
     }
 
+
+    @PostUpdate@PostPersist
+    public void post() {
+
+        if (updatePending) {
+
+            WorkflowEngine.add(() -> {
+
+                System.out.println("Agency " + getId() + ".post().run()");
+                try {
+                    Helper.transact(em -> {
+                        Agency b = em.merge(Agency.this);
+                        if (b.isUpdatePending()) {
+
+
+                            Object[] l = (Object[]) em.createQuery("select sum(x.valueInNucs), sum(x.balance) from " + Booking.class.getName() + " x where x.agency.id = " + b.getId()).getSingleResult();
+
+                            if (l != null) {
+                                b.setBookings((Double) l[0]);
+                                b.setBalance((Double) l[1]);
+                            }
+
+                            Double v = (Double) em.createQuery("select sum(x.total) from " + IssuedInvoice.class.getName() + " x where x.agency.id = " + b.getId()).getSingleResult();
+
+                            if (v != null) {
+                                b.setInvoiced(v);
+                            }
+
+                            b.setUpdatePending(false);
+                        }
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+
+        }
+
+    }
+
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Agency && id == ((Agency) obj).getId());
+    }
 
 }

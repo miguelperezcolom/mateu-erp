@@ -2,10 +2,8 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
-import io.mateu.erp.model.authentication.User;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
-import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.mdd.core.MDD;
@@ -120,14 +118,6 @@ public class BookingInvoiceForm {
         AppConfig appconfig = AppConfig.get(em);
 
 
-        if (EmailHelper.isTesting()) {
-
-            System.out.println("************************************");
-            System.out.println("Mail not sent as we are TESTING");
-            System.out.println("************************************");
-
-
-        } else {
 
 // Create the email message
             HtmlEmail email = new HtmlEmail();
@@ -160,10 +150,7 @@ public class BookingInvoiceForm {
             java.io.File attachment = temp;
             if (attachment != null) email.attach(attachment);
 
-            email.send();
-
-        }
-
+        EmailHelper.send(email);
 
     }
 

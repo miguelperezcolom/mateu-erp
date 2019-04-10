@@ -181,6 +181,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                     HotelBooking hb = new HotelBooking();
                     hb.setAgency(a);
+                    hb.setCurrency(hb.getAgency().getCurrency());
 
                     HotelBookingLine l;
                     hb.getLines().add(l = new HotelBookingLine());
@@ -298,6 +299,12 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                                         ah.getBestDeal().setOffer(true);
                                         ah.getBestDeal().setBeforeOfferPrice(new Amount(a.getCurrency().getIsoCode(), Helper.roundEuros(minTotal - offerValueForMinTotal)));
                                     }
+
+                                    double v = ah.getBestDeal().getRetailPrice().getValue();
+
+                                    if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                                    if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+
                                 }
 
                             }
@@ -372,6 +379,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
             HotelBooking hb = new HotelBooking();
             hb.setAgency(em.find(Agency.class, finalIdAgencia));
+            hb.setCurrency(hb.getAgency().getCurrency());
             hb.setHotel(h);
 
             HotelBookingLine l;
@@ -541,6 +549,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 HotelBooking hb = new HotelBooking();
                 hb.setAgency(em.find(Agency.class, finalIdAgencia));
+                hb.setCurrency(hb.getAgency().getCurrency());
 
                 DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -566,6 +575,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                     int pos = 0;
                     hb.setAgency(em.find(Agency.class, Long.parseLong(tks[pos++])));
+                    hb.setCurrency(hb.getAgency().getCurrency());
                     hb.setHotel(em.find(Hotel.class, Long.parseLong(tks[pos++])));
                     l.setStart(LocalDate.parse(tks[pos++], dfx));
                     l.setEnd(LocalDate.parse(tks[pos++], dfx));
@@ -735,7 +745,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         long finalIdAgencia = idAgencia;
         try {
 
-            HotelBooking hb = new HotelBooking();
+            io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
             Helper.transact((JPATransaction) (em) -> {
 
@@ -743,8 +753,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 User user = em.find(User.class, u.getLogin());
 
+                HotelBooking hb = new HotelBooking();
                 hb.setAudit(new Audit(user));
-                hb.setConfirmed(true);
                 hb.setAgency(em.find(Agency.class, finalIdAgencia));
                 hb.setCurrency(hb.getAgency().getCurrency());
                 hb.setAgencyReference(rq.getBookingReference());
@@ -754,6 +764,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 hb.setLeadName(rq.getLeadName());
                 hb.setPrivateComments(rq.getPrivateComments());
                 hb.setPos(em.find(AuthToken.class, token).getPos());
+                hb.setConfirmed(hb.getAgency() != null && !hb.getAgency().getFinancialAgent().isDirectSale());
+                hb.setConfirmNow(false);
 
 
                 hb.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
@@ -821,29 +833,20 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     }
                 }
 
-
-                if (hb.getPos().getTpv() != null) {
-                    TPVTransaction t;
-                    hb.getTPVTransactions().add(t = new TPVTransaction());
-                    t.setBooking(hb);
-                    t.setTpv(hb.getPos().getTpv());
-                    t.setSubject("Booking " + hb.getLeadName());
-                    t.setValue(Helper.roundEuros(hb.getTotalValue() / 2));
-                    t.setLanguage("es");
-                    t.setCurrency(hb.getCurrency());
-                }
-
-
                 em.persist(hb);
 
+                bx[0] = hb;
+
             });
 
 
-            rs.setBookingId("" + hb.getId());
-            if (hb.getTPVTransactions().size() > 0) Helper.notransact(em -> {
-                rs.setPaymentUrl(hb.getTPVTransactions().get(0).getBoton(em));
+            io.mateu.erp.model.booking.Booking b = bx[0];
+            rs.setBookingId("" + bx[0].getId());
+            Helper.notransact(em -> {
+                io.mateu.erp.model.booking.Booking bz = em.find(io.mateu.erp.model.booking.Booking.class, bx[0].getId());
+                if (bz.getTPVTransactions().size() > 0) rs.setPaymentUrl(bz.getTPVTransactions().get(0).getBoton(em));
+                else rs.setPaymentUrl("");
             });
-            else rs.setPaymentUrl("");
             //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
 
 
@@ -854,18 +857,6 @@ public class HotelBookingServiceImpl implements HotelBookingService {
             System.out.println(msg);
 
             rs.setMsg(msg);
-
-
-            if (!Strings.isNullOrEmpty(hb.getEmail())) {
-                try {
-                    Helper.transact(em -> {
-                        em.find(HotelBooking.class, hb.getId()).sendBooked(em, null, null);
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-
 
         } catch (Throwable throwable) {
             rs.setStatusCode(500);

@@ -1,6 +1,6 @@
 package io.mateu.common.booking;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.parts.HotelBooking;
@@ -35,7 +35,7 @@ public class HotelBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(User.class, "admin"));
+        assertNotNull(Helper.find(ERPUser.class, "admin"));
 
     }
 

@@ -1,7 +1,7 @@
 package io.mateu.erp.viajesibiza;
 
 import io.mateu.erp.model.accounting.AccountingPlan;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
@@ -45,7 +45,7 @@ public class Importer {
     private static Currency eur;
     private static Map<String, Resort> ciudades = new HashMap<>();
     private static Map<String, TransferPoint> puntos = new HashMap<>();
-    private static Map<String, User> usuarios = new HashMap<>();
+    private static Map<String, ERPUser> usuarios = new HashMap<>();
     private static Map<String, Agency> agencies = new HashMap<>();
     private static Map<String, Provider> providers = new HashMap<>();
     private static Map<String, io.mateu.erp.model.product.transfer.Zone> zonas = new HashMap<>();
@@ -295,9 +295,9 @@ public class Importer {
         List<String> vistos = new ArrayList<>();
         xml.getRootElement().getChild("users").getChildren().forEach(eu -> {
             if (!vistos.contains(eu.getAttributeValue("login").trim().toLowerCase())) {
-                User u = em.find(User.class, eu.getAttributeValue("login"));
+                ERPUser u = em.find(ERPUser.class, eu.getAttributeValue("login"));
                 if (u == null) {
-                    u = new User();
+                    u = new ERPUser();
                     u.setLogin(eu.getAttributeValue("login"));
                     u.setName(eu.getAttributeValue("name"));
                     u.setEmail(eu.getAttributeValue("email"));

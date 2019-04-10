@@ -6,11 +6,13 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.payments.InvoicePaymentAllocation;
 import io.mateu.erp.model.taxes.VAT;
+import io.mateu.erp.model.taxes.VATPercent;
 import io.mateu.erp.model.taxes.VATSettlement;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -169,6 +171,18 @@ public abstract class Invoice {
 
         double total = 0;
 
+        Map<VAT, Map<Double, Double>> vats = new HashMap<>();
+
+        Map<BillingConcept, Double> vatPercents = new HashMap<>();
+        if (issuer.getVat() != null) {
+            for (VATPercent vp : issuer.getVat().getPercents()) {
+                vatPercents.put(vp.getBillingConcept(), vp.getPercent());
+            }
+        }
+
+
+        double totalExento = 0;
+
         for (BookingCharge c : charges) {
 
             if (inicializar) {
@@ -210,13 +224,53 @@ public abstract class Invoice {
                 inicializar = false;
             }
 
-
             getLines().add(new BookingInvoiceLine(this, (BookingCharge) c));
             if (!proforma) {
                 c.setInvoice(this);
             }
 
             total += c.getTotal();
+
+
+            if (issuer.getVat() != null && vatPercents.containsKey(c.getBillingConcept())) {
+                Map<Double, Double> m = vats.get(issuer.getVat());
+                if (m == null) vats.put(issuer.getVat(), m = new HashMap<>());
+                double p = vatPercents.get(c.getBillingConcept());
+                double v = m.containsKey(p)?m.get(p):0;
+                m.put(p, v + c.getTotal());
+            } else {
+                totalExento += c.getTotal();
+            }
+
+        }
+
+
+        for (VAT v : vats.keySet()) {
+
+            for (double p : vats.get(v).keySet()) {
+                VATLine l;
+                getVATLines().add(l = new VATLine());
+                l.setInvoice(this);
+                l.setPercent(p);
+                l.setTotal(Helper.roundEuros(vats.get(v).get(p)));
+                l.setBase(Helper.roundEuros(100d * (l.getTotal() / (100d + p))));
+                l.setVat(Helper.roundEuros(l.getTotal() - l.getBase()));
+            }
+
+        }
+
+        if (vats.size() > 0) {
+            totalExento = Helper.roundEuros(totalExento);
+            if (totalExento != 0) {
+                VATLine l;
+                getVATLines().add(l = new VATLine());
+                l.setInvoice(this);
+                l.setPercent(0);
+                l.setTotal(totalExento);
+                l.setBase(totalExento);
+                l.setVat(0);
+                l.setExempt(true);
+            }
         }
 
 
@@ -232,6 +286,7 @@ public abstract class Invoice {
 
         Element xml = new Element("invoice");
         if (getNumber() != null) xml.setAttribute("number", getNumber());
+        else xml.setAttribute("number", "PROFORMA");
         if (getIssueDate() != null) xml.setAttribute("issueDate", getIssueDate().format(df));
         if (getDueDate() != null) xml.setAttribute("dueDate", getDueDate().format(df));
 
@@ -304,29 +359,48 @@ public abstract class Invoice {
             if (l instanceof BookingInvoiceLine) {
                 BookingInvoiceLine xl = (BookingInvoiceLine) l;
 
-                if (xl.getBooking() != null) {
-                    Booking b = xl.getBooking();
-                    el.setAttribute("id", "" + b.getId());
-                    if (b.getLeadName() != null) el.setAttribute("leadName", b.getLeadName());
-                    if (b.getAgencyReference() != null) el.setAttribute("reference", b.getAgencyReference());
-                    if (b.getStart() != null) el.setAttribute("start", df.format(b.getStart()));
-                    if (b.getEnd() != null) el.setAttribute("end", df.format(b.getEnd()));
-                    if (b instanceof HotelBooking) {
-                        HotelBooking hb = (HotelBooking) b;
-                        if (hb.getHotel() != null && hb.getHotel().getName() != null)
-                            el.setAttribute("service", hb.getHotel().getName());
-                    } else if (b instanceof FreeTextBooking) {
-                        FreeTextBooking hb = (FreeTextBooking) b;
-                            if (hb.getServiceDescription() != null) el.setAttribute("service", hb.getServiceDescription());
-                    }
+                Booking b = xl.getCharge().getBooking();
+                el.setAttribute("id", "" + b.getId());
+                if (b.getLeadName() != null) el.setAttribute("leadName", b.getLeadName());
+                if (b.getAgencyReference() != null) el.setAttribute("reference", b.getAgencyReference());
+                if (b.getStart() != null) el.setAttribute("start", df.format(b.getStart()));
+                if (b.getEnd() != null) el.setAttribute("end", df.format(b.getEnd()));
+                if (b instanceof HotelBooking) {
+                    HotelBooking hb = (HotelBooking) b;
+                    if (hb.getHotel() != null && hb.getHotel().getName() != null)
+                        el.setAttribute("service", hb.getHotel().getName());
+                } else if (b instanceof FreeTextBooking) {
+                    FreeTextBooking hb = (FreeTextBooking) b;
+                        if (hb.getServiceDescription() != null) el.setAttribute("service", hb.getServiceDescription());
                 }
 
             }
 
-            xml.setAttribute("paid", nf.format(0));
-            xml.setAttribute("pending", nf.format(getTotal()));
-
         }
+
+        List<io.mateu.erp.model.booking.File> files = new ArrayList<>();
+        List<Booking> bookings = new ArrayList<>();
+        for (AbstractInvoiceLine l : lines) {
+            if (l instanceof BookingInvoiceLine) {
+                BookingInvoiceLine xl = (BookingInvoiceLine) l;
+                if (!bookings.contains(xl.getCharge().getBooking())) bookings.add(xl.getCharge().getBooking());
+                if (xl.getCharge().getBooking().getFile() != null && !files.contains(xl.getCharge().getBooking().getFile())) files.add(xl.getCharge().getBooking().getFile());
+            }
+        }
+
+        double pagado = 0;
+        for (io.mateu.erp.model.booking.File file : files) {
+            pagado += file.getTotalValue() + file.getBalance();
+        }
+        for (Booking booking : bookings) {
+            pagado += booking.getTotalPaid();
+        }
+        pagado = Helper.roundEuros(pagado);
+
+
+        xml.setAttribute("paid", nf.format(pagado));
+        xml.setAttribute("pending", nf.format(Helper.roundEuros(getTotal() - pagado)));
+        xml.setAttribute("total", nf.format(getTotal()));
 
         xml.addContent(els = new Element("vats"));
         for (VATLine l : VATLines) {
@@ -352,10 +426,15 @@ public abstract class Invoice {
     @PrePersist@PreUpdate
     public void pre() {
         double t = 0;
-        for (InvoicePaymentAllocation payment : payments) {
-            t += payment.getValue();
+        for (AbstractInvoiceLine l : getLines()) {
+            t += l.getTotal();
         }
-        setBalance(Helper.roundEuros(total - t));
+        setTotal(Helper.roundEuros(t));
+        double p = 0;
+        for (InvoicePaymentAllocation payment : payments) {
+            p += payment.getValue();
+        }
+        setBalance(Helper.roundEuros(total - p));
         setPaid(getBalance() <= 0);
     }
 

@@ -17,7 +17,7 @@ public class BookingInvoiceLine extends AbstractInvoiceLine {
 
     @ManyToOne
     @NotNull
-    private Booking booking;
+    private BookingCharge charge;
 
 
     public BookingInvoiceLine() {
@@ -27,7 +27,7 @@ public class BookingInvoiceLine extends AbstractInvoiceLine {
     public BookingInvoiceLine(Invoice invoice, BookingCharge c) {
         super(invoice);
 
-        booking = c.getBooking();
+        charge = c;
 
         setPrice(c.getTotal());
         setQuantity(1);

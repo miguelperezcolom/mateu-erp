@@ -1,6 +1,6 @@
 package io.mateu.erp.tests;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
@@ -89,7 +89,7 @@ public class HotelBookingTester {
 
         Helper.transact(em -> {
 
-            User u = em.find(User.class, "admin");
+            ERPUser u = em.find(ERPUser.class, "admin");
 
             Booking b = em.find(Booking.class, bookingId);
 
@@ -131,7 +131,7 @@ public class HotelBookingTester {
 
         Helper.transact(em -> {
 
-            User u = em.find(User.class, "admin");
+            ERPUser u = em.find(ERPUser.class, "admin");
 
             Booking b = em.find(Booking.class, bookingId);
 

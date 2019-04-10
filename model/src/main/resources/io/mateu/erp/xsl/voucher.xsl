@@ -23,7 +23,7 @@
                         <fo:block page-break-inside="avoid" font-size="8pt">
                             <xsl:if test="position() > 1"><xsl:attribute name="page-break-before">always</xsl:attribute></xsl:if>
 
-                            <fo:block margin-bottom="5mm"><fo:external-graphic src="url('{/services/@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
+                            <fo:block margin-bottom="5mm"><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
 
 
                             <fo:block text-align="center" font-size="12pt"><fo:inline font-weight="bold">Bono</fo:inline> / <fo:inline font-style="italic">Voucher</fo:inline> / <xsl:choose>
@@ -31,7 +31,9 @@
                                 <xsl:otherwise><fo:inline font-weight="bold">Servicio</fo:inline> / <fo:inline font-style="italic">Service</fo:inline></xsl:otherwise>
                             </xsl:choose></fo:block>
 
-                            <fo:block text-align="center" font-size="8pt"><fo:inline font-weight="bold">Reserva Confirmada y Garantizada - Bono - Hotel</fo:inline> / <fo:inline font-style="italic">Booking confirmed and guaranteed - Voucher - Hotel</fo:inline></fo:block>
+                            <fo:block text-align="center" font-size="8pt"><fo:inline font-weight="bold">Reserva Confirmada y Garantizada - Bono - <xsl:value-of
+                                    select="@serviceType"/></fo:inline> / <fo:inline font-style="italic">Booking confirmed and guaranteed - Voucher - <xsl:value-of
+                                    select="@serviceType"/></fo:inline></fo:block>
 
                             <fo:table margin-top="5mm" margin-bottom="5mm">
                                 <fo:table-column column-width="33%"/>
@@ -59,6 +61,10 @@
                                 </fo:table-body>
 
                             </fo:table>
+
+                            <!--
+                            <fo:block>@type = <xsl:value-of select="@type"></xsl:value-of></fo:block>
+                            -->
 
 
                             <fo:table margin-top="5mm" margin-bottom="5mm" width="100%" border-top-style="solid" border-top-width="0.5pt" border-bottom-style="solid" border-bottom-width="0.5pt">
@@ -143,6 +149,155 @@
                                         </fo:table-body>
 
                                     </xsl:when>
+                                    <xsl:when test="@type = 'transfer'">
+
+                                        <fo:table-column column-width="1cm"/>
+                                        <fo:table-column column-width="4cm"/>
+                                        <fo:table-column column-width="4cm"/>
+                                        <fo:table-column column-width="2.5cm"/>
+                                        <fo:table-column column-width="2.5cm"/>
+                                        <fo:table-column column-width="2.5cm"/>
+                                        <fo:table-column/>
+
+                                        <fo:table-body>
+                                        <fo:table-row>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Pax</fo:block>
+                                                <fo:block font-style="italic">Pax</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Recogida</fo:block>
+                                                <fo:block font-style="italic">Pickup</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Destino</fo:block>
+                                                <fo:block font-style="italic">Dropoff</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Fecha vuelo</fo:block>
+                                                <fo:block font-style="italic">Flight date</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Hora vuelo</fo:block>
+                                                <fo:block font-style="italic">Flight time</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">Nº vuelo</fo:block>
+                                                <fo:block font-style="italic">Flight Nr</fo:block>
+                                            </fo:table-cell>
+                                            <fo:table-cell padding="2mm">
+                                                <fo:block font-weight="bold">A/De</fo:block>
+                                                <fo:block font-style="italic">To/From</fo:block>
+                                            </fo:table-cell>
+                                        </fo:table-row>
+
+                                            <fo:table-row border-top-style="solid" border-top-width="0.1pt">
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@pax"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@pickup"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@dropoff"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@flightDate"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@flightTime"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@flightNumber"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@flightOriginOrDestination"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+
+
+                                        </fo:table-body>
+
+                                    </xsl:when>
+
+                                    <xsl:when test="@type = 'freetext'">
+
+                                        <fo:table-column column-width="2cm"/>
+                                        <fo:table-column column-width="2cm"/>
+                                        <fo:table-column/>
+
+                                        <fo:table-body>
+                                            <fo:table-row>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Desde</fo:block>
+                                                    <fo:block font-style="italic">From</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Hasta</fo:block>
+                                                    <fo:block font-style="italic">To</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Descripción servicio</fo:block>
+                                                    <fo:block font-style="italic">Service description</fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+
+                                            <fo:table-row border-top-style="solid" border-top-width="0.1pt">
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@start"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@finish"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@description"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+
+
+                                        </fo:table-body>
+
+                                    </xsl:when>
+
+                                    <xsl:when test="@type = 'generic'">
+
+                                        <fo:table-column column-width="6cm"/>
+                                        <fo:table-column column-width="6cm"/>
+                                        <fo:table-column/>
+
+                                        <fo:table-body>
+                                            <fo:table-row>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Producto</fo:block>
+                                                    <fo:block font-style="italic">Product</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Variante</fo:block>
+                                                    <fo:block font-style="italic">Variant</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block font-weight="bold">Unidades</fo:block>
+                                                    <fo:block font-style="italic">Units</fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+
+                                            <fo:table-row border-top-style="solid" border-top-width="0.1pt">
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@product"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@variant"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell padding="2mm">
+                                                    <fo:block><xsl:value-of select="@units"></xsl:value-of></fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+
+
+                                        </fo:table-body>
+
+                                    </xsl:when>
+
                                     <xsl:otherwise>
 
                                         <fo:table-column column-width="2cm"/>
@@ -255,7 +410,11 @@
 
                             </xsl:for-each>
 
-                            <fo:block margin-top="5mm" text-align="center"><fo:inline font-weight="bold">Reservado y pagadero por</fo:inline> / <fo:inline font-style="italic">Booked and payable by</fo:inline> VIAJES ES FREUS</fo:block>
+                            <fo:block margin-top="5mm" text-align="center"><fo:inline font-weight="bold">Reservado y pagadero por</fo:inline> / <fo:inline font-style="italic">Booked and payable by</fo:inline> <fo:inline padding-start="2mm"><xsl:value-of
+                                    select="@payableBy"></xsl:value-of></fo:inline></fo:block>
+
+
+                            <fo:block margin-bottom="5mm" text-align="center"><fo:external-graphic src="url('{@qrfile}')" content-width="scale-to-fit" width="80mm"/></fo:block>
 
                         </fo:block>
 

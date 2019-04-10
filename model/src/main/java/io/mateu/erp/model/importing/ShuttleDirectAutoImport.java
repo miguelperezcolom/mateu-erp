@@ -1,6 +1,6 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
@@ -65,7 +65,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                     //crear nueva ShuttleDirectImportTask
                     if (xml!=null && xml.length()>0)
                     {
-                        User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                        ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                         ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),xml, getOffice(), getPointOfSale(), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");

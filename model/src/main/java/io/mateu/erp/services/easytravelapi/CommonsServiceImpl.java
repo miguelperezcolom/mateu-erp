@@ -727,7 +727,50 @@ case: 'latitude': --> latitud
     public SearchPortfolioRS searchPortfolio(String token,
                                              String language,
                                              String query) throws Throwable {
-        return new SearchPortfolioRS();
+        SearchPortfolioRS rs = new SearchPortfolioRS();
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setMsg("");
+        rs.setStatusCode(200);
+
+        Helper.notransact(em -> {
+
+            ((List<Hotel>)em.createQuery("select x from " + Hotel.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+                Match m;
+                rs.getMatches().add(m = new Match());
+                m.setName(h.getName());
+                m.setResourceId("hot-" + h.getId());
+                m.setDescription("Hotel in " + h.getResort().getName() + " (" + h.getResort().getDestination().getName() + ")");
+            });
+
+
+        });
+
+
+        return rs;
+    }
+
+    @Override
+    public SearchPortfolioRS searchTransferPoints(String token, String language, String query) throws Throwable {
+        SearchPortfolioRS rs = new SearchPortfolioRS();
+        rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
+        rs.setMsg("");
+        rs.setStatusCode(200);
+
+        Helper.notransact(em -> {
+
+            ((List<TransferPoint>)em.createQuery("select x from " + TransferPoint.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+                Match m;
+                rs.getMatches().add(m = new Match());
+                m.setName(h.getName());
+                m.setResourceId("tp-" + h.getId());
+                m.setDescription("" + h.getName() + " (" + h.getResort().getName() + " - " + h.getResort().getDestination().getName() + ")");
+            });
+
+
+        });
+
+
+        return rs;
     }
 
 

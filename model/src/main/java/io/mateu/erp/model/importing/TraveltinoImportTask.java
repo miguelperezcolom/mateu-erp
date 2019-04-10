@@ -2,7 +2,7 @@ package io.mateu.erp.model.importing;
 
 import com.Ostermiller.util.CSVParser;
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -35,7 +35,7 @@ public class TraveltinoImportTask extends TransferImportTask {
 
     public TraveltinoImportTask() {}
 
-    public TraveltinoImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TraveltinoImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -94,7 +94,7 @@ public class TraveltinoImportTask extends TransferImportTask {
             this.setStatus(STATUS.ERROR);//fichero no procesado
         }
 
-        this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+        this.getAudit().touch(em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN));
         this.setReport(result.replaceFirst("\n",""));
 
       }

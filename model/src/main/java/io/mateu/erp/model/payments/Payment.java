@@ -3,10 +3,9 @@ package io.mateu.erp.model.payments;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Ignored;
-import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,111 +20,83 @@ import java.util.List;
 @Setter
 public class Payment {
 
-    @Ignored
-    private transient FinancialAgent oldAgent;
-    @Ignored
-    private transient Account oldAccount;
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @ManyToOne
-    @NotNull
+    @NotNull@NotWhenEditing
     private Account account;
 
     @ManyToOne
-    @NotNull
+    @NotNull@NotWhenEditing
     private FinancialAgent agent;
+
+    @NotNull@NotWhenEditing
+    private LocalDate date = LocalDate.now();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "payment")
+    private List<PaymentLine> lines = new ArrayList<>();
+
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<AbstractPaymentAllocation> breakdown = new ArrayList<>();
 
-    @ManyToOne
-    @NotNull
-    private Currency currency;
 
-    @NotNull
-    private LocalDate date = LocalDate.now();
-
-    /*
-    positivo es a nuestro favor (cobro)
-    negativo es en nuestra contra (pago)
-     */
-    private double value;
-
+    @KPI
     private double valueInNucs;
-
-    public void setValue(double value) {
-        this.value = value;
-        updateBalance();
-    }
-
-    private double transactionCost;
-
-    private double currencyExchangeCost;
 
     @KPI
     private double balance;
 
+    @Ignored
+    private boolean markedForUpdate;
+
+
     public void updateBalance() {
         double consumed = 0;
         for (AbstractPaymentAllocation a : breakdown) {
-            if (a instanceof BookingPaymentAllocation && ((BookingPaymentAllocation) a).getInvoice() != null) {
-                // se ha movido a una factura
-            } else {
-                consumed += a.getValue();
-            }
+            consumed += a.getValue();
         }
-        setBalance(Helper.roundEuros(value - consumed));
+        setBalance(Helper.roundEuros(valueInNucs - consumed));
     }
 
 
-    @PostLoad
-    public void postload() {
-        oldAgent = agent;
-        oldAccount = account;
+    @PreUpdate@PrePersist
+    public void pre() throws Throwable {
+        double v = 0;
+        for (PaymentLine l : lines) {
+            v += l.getValueInNucs();
+        }
+
+        double r = 0;
+        for (AbstractPaymentAllocation a : breakdown) {
+            r += a.getValue();
+        }
+
+        setBalance(Helper.roundEuros(v - r));
+        setValueInNucs(Helper.roundEuros(v));
     }
 
-    @PreUpdate
-    public void preupdate() throws Throwable {
-        Helper.transact(em ->{
-            if (oldAgent != null && !oldAgent.equals(agent)) {
-                oldAgent.setMarkedForUpdate(true);
-                em.merge(oldAgent);
 
-            }
-            if (agent != null) {
-                agent.setMarkedForUpdate(true);
-                em.merge(agent);
-            }
+    @PostPersist@PostUpdate@PostRemove
+    public void post() {
+        WorkflowEngine.add(() -> {
+            try {
 
-            if (oldAccount != null && !oldAccount.equals(account)) {
-                oldAccount.setMarkedForUpdate(true);
-                em.merge(oldAccount);
-            }
-            if (account != null) {
-                account.setMarkedForUpdate(true);
-                em.merge(account);
+                Helper.transact(em -> {
+                    Payment p = em.find(Payment.class, getId());
+
+                    p.setMarkedForUpdate(false);
+
+                    p.getAgent().setMarkedForUpdate(true);
+                    p.getAccount().setMarkedForUpdate(true);
+                });
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
             }
         });
     }
-
-    @PreRemove
-    public void preremove() throws Throwable {
-        Helper.transact(em -> {
-            if (oldAgent != null) {
-                oldAgent.setMarkedForUpdate(true);
-                em.merge(oldAgent);
-            }
-            if (oldAccount != null) {
-                oldAccount.setMarkedForUpdate(true);
-                em.merge(oldAccount);
-            }
-        });
-    }
-
 
 
     @Action(icon = VaadinIcons.ENVELOPE)

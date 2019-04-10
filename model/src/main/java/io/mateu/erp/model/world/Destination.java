@@ -35,9 +35,9 @@ public class Destination {
     @Ignored
     private List<Resort> resorts = new ArrayList<>();
 
-    @OneToMany(mappedBy = "gatewayOf")
+    @OneToMany(mappedBy = "destination")
     @Ignored
-    private List<TransferPoint> gateways = new ArrayList<>();
+    private List<Airport> airports = new ArrayList<>();
 
     @ManyToOne
     private VAT vat;

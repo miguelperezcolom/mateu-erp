@@ -3,8 +3,8 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.invoicing.ChargeType;
@@ -33,7 +33,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -137,6 +136,10 @@ public class PurchaseOrder {
     @Ignored
     private String signature;
 
+    @Ignored
+    private String priceSignature;
+
+
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name="purchaseorder_task",
@@ -166,6 +169,10 @@ public class PurchaseOrder {
     private double valueInNucs;
 
 
+    @KPI
+    private double balance;
+
+
     @Output
     private String priceReport;
 
@@ -178,13 +185,16 @@ public class PurchaseOrder {
     private boolean updatePending = true;
 
     @Ignored
+    private boolean priceUpdatePending = true;
+
+    @Ignored
     private transient String servicesUpdateSignature;
 
 
 
     @Action("Send")
     public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
-        send(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
+        send(em, em.find(ERPUser.class, user.getLogin()));
     }
 
     @Action("Send")
@@ -192,7 +202,7 @@ public class PurchaseOrder {
         SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
         t.setStatus(TaskStatus.PENDING);
         t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        t.setAudit(new Audit(em.find(io.mateu.erp.model.authentication.User.class, Constants.SYSTEM_USER_LOGIN)));
+        t.setAudit(new Audit(em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN)));
         String a = email;
         for (PurchaseOrder po : selection) {
             t.getPurchaseOrders().add(po);
@@ -201,7 +211,7 @@ public class PurchaseOrder {
         }
         t.setTo(a);
         if (!Strings.isNullOrEmpty(a)) em.persist(t);
-        t.execute(em, em.find(io.mateu.erp.model.authentication.User.class, Constants.SYSTEM_USER_LOGIN));
+        t.execute(em, em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN));
     }
 
 
@@ -360,10 +370,12 @@ public class PurchaseOrder {
         }
 
         double t = 0;
-        boolean v = services.size() > 0;
-        for (Service service : services) {
-            t += service.getTotalCost();
-            v = v && service.isCostValued();
+        boolean v = !isActive() || services.size() > 0;
+        if (isActive()) {
+            for (Service service : services) {
+                t += service.getTotalCost();
+                v = v && service.isCostValued();
+            }
         }
         setTotal(Helper.roundEuros(t));
         setValued(v);
@@ -373,6 +385,10 @@ public class PurchaseOrder {
 
         if (getSignature() == null || !getSignature().equals(createSignature()) || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
             setUpdatePending(true);
+        }
+
+        if (getPriceSignature() == null || !getPriceSignature().equals(createPriceSignature())) {
+            setPriceUpdatePending(true);
         }
 
     }
@@ -386,6 +402,24 @@ public class PurchaseOrder {
         return "" + isActive() + "-" + isSent() + "-" + status;
     }
 
+    private String createPriceSignature() {
+        String s = "error when serializing";
+        try {
+            Map<String, Object> m = new HashMap<>();
+            m.put("provider", getProvider().getName());
+            m.put("active", active);
+            List<String> serviceSignatures = new ArrayList<>();
+            for (Service sv : getServices()) {
+                serviceSignatures.add("" + sv.getDescription() + " " + sv.getTotalCost());
+            }
+            m.put("serviceSignatures", serviceSignatures);
+            s = Helper.toJson(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
     public void markServicesForUpdate() {
         getServices().forEach(s -> s.setUpdatePending(true));
     }
@@ -393,23 +427,39 @@ public class PurchaseOrder {
     @PostPersist@PostUpdate
     public void post() throws Exception, Throwable {
 
-        if (updatePending) WorkflowEngine.add(new Runnable() {
+        if (updatePending || priceUpdatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    if (updatePending) Helper.transact(new JPATransaction() {
+                    Helper.transact(new JPATransaction() {
                         @Override
                         public void run(EntityManager em) throws Throwable {
+
                             PurchaseOrder po = em.merge(PurchaseOrder.this);
 
-                            po.summarize(em);
+                            boolean somethingHappened = false;
+                            if (po.isPriceUpdatePending()) {
+                                po.updateCharges(em);
+                                po.setPriceSignature(createPriceSignature());
+                                po.setPriceUpdatePending(false);
+                                somethingHappened = true;
+                            }
 
-                            po.markServicesForUpdate();
+                            if (po.isUpdatePending()) {
+                                po.summarize(em);
 
-                            po.setSignature(po.createSignature());
+                                po.markServicesForUpdate();
 
-                            po.setUpdatePending(false);
+                                po.setSignature(po.createSignature());
+                                po.setUpdatePending(false);
+
+                                somethingHappened = true;
+                            }
+
+                            if (somethingHappened) {
+                                po.getProvider().setUpdatePending(true);
+                            }
 
                         }
                     });

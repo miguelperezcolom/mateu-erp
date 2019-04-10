@@ -37,7 +37,7 @@ public class DataSheet {
     @NoChart
     private Literal description;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private Resource mainImage;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "dataSheet", orphanRemoval = true)

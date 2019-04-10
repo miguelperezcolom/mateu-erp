@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.invoicing.Charge;
@@ -13,6 +14,8 @@ import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
+import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
+import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
@@ -434,7 +437,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed ok");
 
-        GenericBooking[] bs = {null};
+        io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
         try {
             Helper.transact(new JPATransaction() {
@@ -443,7 +446,6 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
                     GenericBooking b = buildBookingFromKey(em, rq.getKey());
 
-                    b.setConfirmed(true);
                     b.setAgencyReference(rq.getBookingReference());
                     if (b.getAgencyReference() == null) b.setAgencyReference("");
                     b.setSpecialRequests(rq.getCommentsToProvider());
@@ -451,24 +453,34 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                     b.setLeadName(rq.getLeadName());
                     b.setPos(em.find(AuthToken.class, token).getPos());
                     b.setTelephone(rq.getPhoneNumber());
+                    b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
+                    b.setConfirmNow(false);
 
                     b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
 
 
                     em.persist(b);
 
-                    bs[0] = b;
+                    bx[0] = b;
 
                 }
             });
+
+            io.mateu.erp.model.booking.Booking b = bx[0];
+            rs.setBookingId("" + bx[0].getId());
+            Helper.notransact(em -> {
+                io.mateu.erp.model.booking.Booking bz = em.find(Booking.class, bx[0].getId());
+                if (bz.getTPVTransactions().size() > 0) rs.setPaymentUrl(bz.getTPVTransactions().get(0).getBoton(em));
+                else rs.setPaymentUrl("");
+            });
+            //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
+
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             rs.setStatusCode(500);
             rs.setMsg(throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
         }
 
-
-        rs.setBookingId("" + bs[0].getId());
 
 
         return rs;

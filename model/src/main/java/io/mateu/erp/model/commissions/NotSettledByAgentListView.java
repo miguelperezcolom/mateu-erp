@@ -41,11 +41,7 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
 
         private double total;
 
-        private double cash;
-
         private double commission;
-
-        private double balance;
 
         @Ignored
         private LocalDate from;
@@ -67,7 +63,7 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
     public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
-        ql += " select l.commissionAgent.id, l.commissionAgent.name, sum(l.totalValue) as total, sum(l.totalValue) as total, sum(l.totalValue) as total " +
+        ql += " select l.commissionAgent.id, l.commissionAgent.name, sum(l.totalValue) as total, sum(l.totalCommission) as commission " +
                 " from " + Booking.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();

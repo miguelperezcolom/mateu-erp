@@ -51,15 +51,6 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
     public void runParticular(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable {
         AppConfig appconfig = AppConfig.get(em);
 
-        if (EmailHelper.isTesting()) {
-
-            System.out.println("************************************");
-            System.out.println("SendPurchaseOrdersByEmailTask(" + getId() + ") Mail not sent as we are TESTING");
-            System.out.println("************************************");
-
-
-        } else {
-
             // Create the attachment
 //                EmailAttachment attachment = new EmailAttachment();
 //                attachment.setPath("mypictures/john.jpg");
@@ -106,9 +97,8 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
                 email.attach(new ByteArrayDataSource(new XMLOutputter(Format.getPrettyFormat()).outputString(IslandbusHelper.toShuttleXml(getPurchaseOrders())).getBytes(), "text/xml"), "shuttle.xml", "xml for shuttle");
             }
 
-            email.send();
+        EmailHelper.send(email);
 
-        }
 
 
 

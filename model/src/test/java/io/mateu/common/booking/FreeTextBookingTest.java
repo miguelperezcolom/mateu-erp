@@ -1,14 +1,16 @@
 package io.mateu.common.booking;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.payments.InvoicePaymentAllocation;
 import io.mateu.erp.model.payments.Payment;
+import io.mateu.erp.model.payments.PaymentLine;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
@@ -38,7 +40,7 @@ public class FreeTextBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(User.class, "admin"));
+        assertNotNull(Helper.find(ERPUser.class, "admin"));
 
     }
 
@@ -46,31 +48,7 @@ public class FreeTextBookingTest {
     @Test
     public void testBooking() throws Throwable {
 
-        FreeTextBooking b = new FreeTextBooking();
-        Helper.transact(em -> {
-            b.setAudit(new Audit(MDD.getCurrentUser()));
-            b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
-            b.setAgencyReference("TEST");
-            b.setPos(Populator.pos);
-            b.setProvider(Populator.proveedor);
-
-            b.setValueOverrided(true);
-            b.setOverridedValue(130.91);
-            b.setCurrency(Populator.agencia.getCurrency());
-            b.setOverridedBillingConcept(em.find(BillingConcept.class, "ANY"));
-
-
-            b.setStart(LocalDate.of(2019, 10, 1));
-            b.setEnd(LocalDate.of(2019, 10, 6));
-            b.setServiceDescription("Servicios varios prueba");
-            b.setProductLine(Populator.prodLine);
-            b.setOffice(Populator.office);
-
-            b.setCostOverrided(true);
-            b.setOverridedCost(85.3);
-
-            em.persist(b);
-        });
+        FreeTextBooking b = crearReserva(130.91, Populator.agencia.getCurrency(), 85.3, Populator.agencia.getCurrency());
 
         // comprobamos antes de confirmar
         Helper.notransact(em -> {
@@ -339,8 +317,13 @@ public class FreeTextBookingTest {
             Payment p;
             pa.setPayment(p = new Payment());
             p.getBreakdown().add(pa);
-            p.setCurrency(xb.getCurrency());
-            p.setValue(60);
+
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(Populator.visa);
+            l.setCurrency(xb.getCurrency());
+            l.setValue(60);
             p.setAgent(xb.getAgency().getFinancialAgent());
             p.setDate(LocalDate.now());
             p.setAccount(Populator.banco);
@@ -377,8 +360,13 @@ public class FreeTextBookingTest {
             Payment p;
             pa.setPayment(p = new Payment());
             p.getBreakdown().add(pa);
-            p.setCurrency(xb.getCurrency());
-            p.setValue(60);
+
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(Populator.visa);
+            l.setCurrency(xb.getCurrency());
+            l.setValue(60);
             p.setAgent(xb.getAgency().getFinancialAgent());
             p.setDate(LocalDate.now());
             p.setAccount(Populator.banco);
@@ -439,18 +427,24 @@ public class FreeTextBookingTest {
             Invoice i = xb.getCharges().get(0).getInvoice();
 
             Payment p = new Payment();
-            p.setCurrency(xb.getCurrency());
-            p.setValue(i.getBalance());
             p.setAgent(xb.getAgency().getFinancialAgent());
             p.setDate(LocalDate.now());
             p.setAccount(Populator.banco);
             em.persist(p);
 
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(Populator.visa);
+            l.setCurrency(xb.getCurrency());
+            l.setValue(i.getBalance());
+
+
             InvoicePaymentAllocation ipa;
             i.getPayments().add(ipa = new InvoicePaymentAllocation());
             ipa.setInvoice(i);
             ipa.setPayment(p);
-            ipa.setValue(p.getValue());
+            ipa.setValue(p.getValueInNucs());
             ipa.getPayment().getBreakdown().add(ipa);
 
         });
@@ -470,6 +464,36 @@ public class FreeTextBookingTest {
         });
 
 
+    }
+
+    public static FreeTextBooking crearReserva(double venta, Currency monedaVenta, double compra, Currency monedaCompra) throws Throwable {
+        FreeTextBooking b = new FreeTextBooking();
+        Helper.transact(em -> {
+            b.setAudit(new Audit(MDD.getCurrentUser()));
+            b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
+            b.setAgencyReference("TEST");
+            b.setPos(Populator.pos);
+            b.setProvider(Populator.proveedor);
+
+            b.setValueOverrided(true);
+            b.setOverridedValue(venta);
+            b.setCurrency(monedaVenta);
+            b.setOverridedBillingConcept(em.find(BillingConcept.class, "ANY"));
+
+
+            b.setStart(LocalDate.of(2019, 10, 1));
+            b.setEnd(LocalDate.of(2019, 10, 6));
+            b.setServiceDescription("Servicios varios prueba");
+            b.setProductLine(Populator.prodLine);
+            b.setOffice(Populator.office);
+
+            b.setCostOverrided(true);
+            b.setOverridedCost(compra);
+            b.setOverridedCostCurrency(monedaCompra);
+
+            em.persist(b);
+        });
+        return b;
     }
 
 

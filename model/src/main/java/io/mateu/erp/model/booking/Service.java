@@ -3,7 +3,7 @@ package io.mateu.erp.model.booking;
 import com.google.common.base.Strings;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
-import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.BillingConcept;
@@ -262,6 +262,13 @@ public abstract class Service {
     @Ignored
     private boolean deprecated;
 
+    @Section("Delivering")
+    @Output
+    private LocalDateTime delivered;
+
+    @Output
+    private String deliveringComments;
+
 
 
     public void updateProcessingStatus(EntityManager em) {
@@ -351,7 +358,7 @@ public abstract class Service {
             }
         }
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
+        ERPUser u = em.find(ERPUser.class, user.getLogin());
         for (Service s : selection) {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
@@ -404,7 +411,7 @@ public abstract class Service {
         checkPurchase(em, user);
 
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
+        ERPUser u = em.find(ERPUser.class, user.getLogin());
         {
             Service s = this;
             if (s.isActive() || s.getSentToProvider() != null) {
@@ -456,29 +463,33 @@ public abstract class Service {
         if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
             setSignature(createSignature());
             setProcessingStatus(ProcessingStatus.INITIAL);
-
-            try {
-                setTotalSale(rate(em, true));
-                setSaleValued(true);
-            } catch (Throwable e) {
-                setTotalCost(0);
-                setSaleValued(false);
-            }
-
-            try {
-                setTotalCost(rate(em, false));
-                setCostValued(true);
-            } catch (Throwable e) {
-                setTotalCost(0);
-                setCostValued(false);
-            }
-
             refreshPurchaseOrders(em, u);
-
         } else {
             throw new Throwable("Nothing changed. No need to purchase again");
         }
 
+    }
+
+    public void price(EntityManager em) {
+        try {
+            setTotalSale(rate(em, true));
+            setSaleValued(true);
+        } catch (Throwable e) {
+            setTotalCost(0);
+            setSaleValued(false);
+        }
+
+        try {
+            setTotalCost(rate(em, false));
+            setCostValued(true);
+        } catch (Throwable e) {
+            setTotalCost(0);
+            setCostValued(false);
+        }
+
+        for (PurchaseOrder po : getPurchaseOrders()) {
+            po.pre();
+        }
     }
 
     public void refreshPurchaseOrders(EntityManager em, User u) throws Throwable {
@@ -509,7 +520,7 @@ public abstract class Service {
 
     @Action(value = "Purchase", saveBefore = true)
     public void checkPurchase(EntityManager em, UserData user) throws Throwable {
-        checkPurchase(em, em.find(io.mateu.erp.model.authentication.User.class, user.getLogin()));
+        checkPurchase(em, em.find(ERPUser.class, user.getLogin()));
     }
 
     @Action(value = "Print POs", saveBefore = true)
@@ -699,8 +710,8 @@ public abstract class Service {
 
     @Override
     public String toString() {
-        String s = "" + getId() + " " + getIcons();
-        if (getBooking() != null) s += getBooking().getLeadName();
+        String s = "" + getId();
+        if (getBooking() != null) s += " " + getBooking().getAgency().getName() + " / " + getBooking().getLeadName() + " - " + getBooking().getAgencyReference();
         return s;
     }
 
@@ -738,12 +749,12 @@ public abstract class Service {
 
         d.put("id", getId());
         d.put("locator", this.getBooking().getId());
-        d.put("leadname", this.getBooking().getLeadName());
+        d.put("leadName", this.getBooking().getLeadName());
         d.put("agency", this.getBooking().getAgency().getName());
         if (this.getBooking().getAgency().getMarket() != null) d.put("market", this.getBooking().getAgency().getMarket().getName());
         d.put("agencyReference", this.getBooking().getAgencyReference());
         d.put("status", (isActive())?"ACTIVE":"CANCELLED");
-        d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        if (getAudit().getCreated() != null) d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getOffice() != null) d.put("office", getOffice().getName());
 
         String c = getBooking().getSpecialRequests();
@@ -752,9 +763,10 @@ public abstract class Service {
             else if (!"".equals(c)) c += " / ";
             c += getOperationsComment();
         }
-        d.put("comment", c);
+        d.put("comments", c);
 
-        d.put("start", getStart());
+        if (getStart() != null) d.put("start", getStart().format(DateTimeFormatter.ISO_DATE));
+        if (getFinish() != null) d.put("finish", getFinish().format(DateTimeFormatter.ISO_DATE));
         DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
@@ -766,18 +778,6 @@ public abstract class Service {
     public void cancel(EntityManager em, User u) {
         if (isActive()) {
             setActive(false);
-            /*
-            setTotalNetValue(getCurrentCancellationCost());
-            setTotalCost(0);
-            setTotalCommissionValue(0);
-            setTotalRetailValue(0);
-            price(em, u);
-            */
-            try {
-                checkPurchase(em, u);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
         }
     }
 
@@ -807,6 +807,12 @@ public abstract class Service {
     public void pre() {
         if (getSignature() == null || !getSignature().equals(createSignature())) {
             setUpdatePending(true);
+            System.out.println("service.signature changed from ");
+            System.out.println("" + getSignature());
+            System.out.println("to ");
+            System.out.println("" + createSignature());
+            System.out.println("====================== ");
+
         }
     }
 
@@ -816,13 +822,16 @@ public abstract class Service {
             @Override
             public void run() {
                 try {
-                    if (updatePending) Helper.transact(em -> {
-                        Service s = em.merge(Service.this);
-                        s.complete(em);
-                        s.logChanges(em);
-                        s.purchase(em);
-                        s.summarize(em);
-                        s.setUpdatePending(false);
+                    Helper.transact(em -> {
+                        Service s = em.find(Service.class, getId());
+                        if (s.isUpdatePending()) {
+                            s.complete(em);
+                            s.logChanges(em);
+                            s.purchase(em);
+                            s.price(em);
+                            s.summarize(em);
+                            s.setUpdatePending(false);
+                        }
                     });
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
@@ -923,22 +932,52 @@ public abstract class Service {
 
     }
 
+    public Element toXml(boolean includeQR) {
+        Element xml = toXml();
+
+        if (includeQR) {
+            try {
+                String archivo = UUID.randomUUID().toString();
+                java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+                Helper.generateQRCodeImage("BOOKING" + getBooking().getId() + "/SERVICE" + getId(), 300, 300, temp.getAbsolutePath());
+
+                xml.setAttribute("qrfile", temp.getAbsolutePath());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return xml;
+    }
+
 
     public Element toXml() {
         Element xml = new Element("service");
         xml.setAttribute("id", "" + getId());
         xml.setAttribute("status", isActive()?"OK":"CANCELLED");
         xml.setAttribute("header", getDescription());
+        try {
+            if (getOffice().getCompany().getLogo() != null) xml.setAttribute("urllogo", getOffice().getCompany().getLogo().toFileLocator().getTmpPath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        xml.setAttribute("serviceType", getClass().getSimpleName().replaceAll("Service", ""));
         xml.setAttribute("description", getDescription());
         if (booking.getLeadName() != null) xml.setAttribute("leadname", booking.getLeadName());
         xml.setAttribute("formalization", "" + (booking.getFormalizationDate() != null?booking.getFormalizationDate().toLocalDate():booking.getAudit().getCreated().toLocalDate()));
         if (booking.getAgencyReference() != null) xml.setAttribute("fileto", booking.getAgencyReference());
         xml.setAttribute("remarks", Strings.isNullOrEmpty(booking.getSpecialRequests())?"None":booking.getSpecialRequests());
 
-        Element supplxml;
-        xml.addContent(supplxml = getSupplierXml());
+        Element supplxml = getSupplierXml();
+        if (supplxml != null) xml.addContent(supplxml);
         if (getProviderReference() != null) supplxml.setAttribute("hisreference", getProviderReference());
 
+        if (getPreferredProvider() != null && !Strings.isNullOrEmpty(getPreferredProvider().getPayableByInVoucher())) {
+            xml.setAttribute("payableBy", getPreferredProvider().getPayableByInVoucher());
+        } else {
+            xml.setAttribute("payableBy", getOffice().getCompany().getName());
+        }
 
 
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -949,8 +988,9 @@ public abstract class Service {
     }
 
     public Element getSupplierXml() {
-        Element xml = new Element("supplier");
+        Element xml = null;
         if (getPreferredProvider() != null) {
+            xml = new Element("supplier");
             Provider p = getPreferredProvider();
             if (p.getName() != null) xml.setAttribute("name", p.getName());
             if (p.getFullAddress() != null) xml.setAttribute("address", p.getFullAddress());
@@ -997,4 +1037,34 @@ public abstract class Service {
 
     public abstract BillingConcept getBillingConcept(EntityManager em);
 
+    public void rateSale(EntityManager em) {
+
+        try {
+            setTotalSale(rate(em, true));
+            setSaleValued(true);
+        } catch (Throwable e) {
+            setTotalCost(0);
+            setSaleValued(false);
+        }
+
+    }
+
+    public void rateCost(EntityManager em) {
+
+        try {
+            setTotalCost(rate(em, false));
+            setCostValued(true);
+        } catch (Throwable e) {
+            setTotalCost(0);
+            setCostValued(false);
+        }
+
+        purchaseOrders.forEach(o -> o.setValued(false));
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Service && id == ((Service) obj).getId());
+    }
 }

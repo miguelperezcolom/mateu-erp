@@ -5,30 +5,45 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
-import io.mateu.erp.dispo.Helper;
-import io.mateu.erp.model.booking.parts.HotelBookingLine;
+import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.invoicing.*;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.payments.*;
+import io.mateu.erp.model.product.transfer.TransferPointType;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.Template;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.javamoney.moneta.FastMoney;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.xml.transform.stream.StreamSource;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Entity
 @Getter
@@ -53,6 +68,9 @@ public class QuotationRequest {
     @ManyToOne
     @ListColumn
     private Agency agency;
+
+    @ManyToOne@NotNull
+    private PointOfSale pos;
 
     @ListColumn@KPI
     private boolean active = true;
@@ -79,6 +97,75 @@ public class QuotationRequest {
     @ListColumn
     private double totalMarkup;
 
+    @KPI
+    @ListColumn
+    private double balance;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
+    @NotInlineEditable
+    private List<QuotationRequestHotel> hotels = new ArrayList<>();
+
+    public String getHotelsHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestHotel l : hotels) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
+    @NotInlineEditable
+    private List<QuotationRequestTransfer> transfers = new ArrayList<>();
+
+    public String getTransfersHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestTransfer l : transfers) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
+
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
+    @NotInlineEditable
+    private List<QuotationRequestExcursion> excursions = new ArrayList<>();
+
+    public String getExcursionsHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestHotel l : hotels) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
+    @NotInlineEditable
+    private List<QuotationRequestGeneric> generics = new ArrayList<>();
+
+    public String getGenericsHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestHotel l : hotels) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toString();
+            h += "</div>";
+        }
+        h += "</div>";
+
+        return h;
+    }
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
     private List<QuotationRequestLine> lines = new ArrayList<>();
@@ -98,6 +185,9 @@ public class QuotationRequest {
 
     @Section("Operation")
     @ListColumn
+    private LocalDate date;
+
+    @ListColumn
     private LocalDate expiryDate;
 
     @TextArea
@@ -106,17 +196,16 @@ public class QuotationRequest {
     @TextArea
     private String privateComments;
 
-    @Section("Contact")
-
-    private String name;
-
-    private String email;
-
-    private String telephone;
-
+    @UseLinkToListView(addEnabled = false, deleteEnabled = false)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "quotationRequest")
+    private List<QuotationRequestComment> comments = new ArrayList<>();
 
     @NotNull@Ignored
     private QuotationRequestAnswer answer = QuotationRequestAnswer.PENDING;
+
+    @UseLinkToListView(addEnabled = false, deleteEnabled = false)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "quotationRequest")
+    private List<QuotationRequestPaymentAllocation> payments = new ArrayList<>();
 
     @UseLinkToListView
     @OneToMany(cascade = CascadeType.ALL)
@@ -137,16 +226,53 @@ public class QuotationRequest {
     @Ignored
     private FastMoney answerPrice;
 
+    @Ignored
+    private transient boolean alreadyConfirmed;
+
+    @Section("Contact")
+
+    private String name;
+
+    private String email;
+
+    private String telephone;
+
+    @Ignored
+    private boolean forcePre = false;
+
+
+
     public void updateTotal() {
         double t = 0;
         double c = 0;
         for (QuotationRequestLine line : lines) if (line.isActive()) {
-            t += line.getTotal();
+            t += line.getTotalSale();
+            c += line.getTotalCost();
+        }
+        for (QuotationRequestHotel line : hotels) if (line.isActive()) {
+            t += line.getTotalSale();
+            c += line.getTotalCost();
+        }
+        for (QuotationRequestTransfer line : transfers) if (line.isActive()) {
+            t += line.getTotalSale();
+            c += line.getTotalCost();
+        }
+        for (QuotationRequestExcursion line : excursions) if (line.isActive()) {
+            t += line.getTotalSale();
+            c += line.getTotalCost();
+        }
+        for (QuotationRequestGeneric line : generics) if (line.isActive()) {
+            t += line.getTotalSale();
             c += line.getTotalCost();
         }
         setTotal(Helper.roundEuros(t));
         setTotalCost(Helper.roundEuros(c));
         setTotalMarkup(Helper.roundEuros(t - c));
+        double p = 0;
+        for (QuotationRequestPaymentAllocation a : payments) {
+            p += a.getValue();
+        }
+        setBalance(Helper.roundEuros(p - t));
     }
 
     @Action(saveAfter = true, order = 1, confirmationMessage = "Are you sure you want to cancel this quotation?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
@@ -212,16 +338,25 @@ public class QuotationRequest {
 
 
 
-
+    @Action(order = 3, icon = VaadinIcons.EDIT, saveBefore = true, saveAfter = true)
+    @NotWhenCreating
+    public void addComment(@NotEmpty String text) {
+        if (!Strings.isNullOrEmpty(text)) {
+            QuotationRequestComment c = new QuotationRequestComment();
+            c.setQuotationRequest(this);
+            c.setComment(text);
+            getComments().add(c);
+        }
+    }
 
 
 
     @Action(order = 3, icon = VaadinIcons.ENVELOPE, saveBefore = true, saveAfter = true)
     @NotWhenCreating
-    public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript, boolean includeProforma) throws Throwable {
+    public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript, boolean excludeProforma) throws Throwable {
 
 
-        io.mateu.mdd.core.util.Helper.transact(em ->{
+        Helper.transact(em ->{
 
             long t0 = new Date().getTime();
 
@@ -259,12 +394,547 @@ public class QuotationRequest {
                 msg = postscript;
             }
 
+            if (!excludeProforma) {
+
+                t.getAttachments().add(new Resource(createProforma(em)));
+            }
+
             t.setMessage(msg);
-
-            em.merge(this);
-
 
         });
 
     }
+
+    @Action(icon = VaadinIcons.FILE, order = 50)
+    public URL proforma(EntityManager em) throws Exception {
+        return new URL(new Resource(createProforma(em)).toFileLocator().getUrl());
+    }
+
+    @Action(order = 5, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
+    @NotWhenCreating
+    public void enterPayment(EntityManager em, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment, @NotNull Currency currency, double amount) throws Throwable {
+        if (getAgency().getFinancialAgent() == null) throw  new Exception("Missing financial agent for agency " + getAgency().getName() + ". Please fill");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(getAgency().getFinancialAgent());
+
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(currency);
+            l.setValue(amount);
+
+
+            QuotationRequestPaymentAllocation a;
+            p.getBreakdown().add(a = new QuotationRequestPaymentAllocation());
+            a.setPayment(p);
+            a.setQuotationRequest(this);
+            getPayments().add(a);
+            a.setValue(amount);
+
+            em.persist(p);
+
+        }
+    }
+
+
+    private java.io.File createProforma(EntityManager em) throws IOException {
+        String archivo = UUID.randomUUID().toString();
+        java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+        createProforma(em, temp);
+
+        return temp;
+    }
+
+    public void createProforma(EntityManager em, java.io.File f) {
+
+        long t0 = new Date().getTime();
+
+        try {
+
+            Element xml = new Element("quotationRequests");
+            xml.addContent(toXmlForProforma(em));
+
+            try {
+                String archivo = UUID.randomUUID().toString();
+
+                System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+                System.out.println("File : " + f.getAbsolutePath());
+
+                FileOutputStream fileOut = new FileOutputStream(f);
+                //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+                String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+                System.out.println("xml=" + sxml);
+                fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForQuotationRequest())), new StreamSource(new StringReader(sxml))));
+                fileOut.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+
+    }
+
+    private Element toXmlForProforma(EntityManager em) throws Exception {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DecimalFormat pf = new DecimalFormat("#####0.00");
+        DecimalFormat nf = new DecimalFormat("##,###,###,###,##0.00");
+
+
+
+        Element xml = new Element("quotationRequest");
+
+        if (title != null) xml.setAttribute("title", title);
+        if (date != null) xml.setAttribute("date", date.format(DateTimeFormatter.ISO_DATE));
+        else if (audit != null && audit.getModified() != null) xml.setAttribute("date", audit.getModified().format(DateTimeFormatter.ISO_DATE));
+        if (expiryDate != null) xml.setAttribute("expiryDate", expiryDate.format(DateTimeFormatter.ISO_DATE));
+        if (text != null) xml.setAttribute("text", text);
+
+        xml.setAttribute("total", nf.format(total));
+        xml.setAttribute("paid", nf.format(Helper.roundEuros(total + balance)));
+        xml.setAttribute("pending", nf.format(Helper.roundEuros(-1d * balance)));
+
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+
+
+        if (getAgency().getCompany().getFinancialAgent() != null) {
+
+            FinancialAgent a = getAgency().getCompany().getFinancialAgent();
+
+            Element d;
+            xml.addContent(d = new Element("issuer"));
+
+            if (a.getName() != null) d.setAttribute("name", a.getName());
+            if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
+            if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
+            if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
+            if (a.getCity() != null) d.setAttribute("resort", a.getCity());
+            if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
+            if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
+            if (a.getFax() != null) d.setAttribute("fax", a.getFax());
+            if (a.getEmail() != null) d.setAttribute("email", a.getEmail());
+            if (a.getCountry() != null) d.setAttribute("country", a.getCountry());
+            if (a.getState() != null) d.setAttribute("state", a.getState());
+
+        }
+
+        if (getAgency().getFinancialAgent() != null) {
+
+            FinancialAgent a = getAgency().getFinancialAgent();
+
+            Element d;
+            xml.addContent(d = new Element("recipient"));
+
+            if (a == null || a.isDirectSale()) {
+                if (name != null) d.setAttribute("name", name);
+                if (telephone != null) d.setAttribute("telephone", telephone);
+                if (email != null) d.setAttribute("email", email);
+            } else {
+                if (a.getName() != null) d.setAttribute("name", a.getName());
+                if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
+                if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
+                if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
+                if (a.getCity() != null) d.setAttribute("resort", a.getCity());
+                if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
+                if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
+                if (a.getFax() != null) d.setAttribute("fax", a.getFax());
+                if (a.getEmail() != null) d.setAttribute("email", a.getEmail());
+                if (a.getCountry() != null) d.setAttribute("country", a.getCountry());
+                if (a.getState() != null) d.setAttribute("state", a.getState());
+            }
+
+        }
+
+
+        Element els;
+        xml.addContent(els = new Element("lines"));
+
+        for (QuotationRequestLine l : lines) {
+            els.addContent(l.toXml());
+        }
+
+        xml.addContent(els = new Element("hotels"));
+
+        for (QuotationRequestHotel l : hotels) {
+            els.addContent(l.toXml());
+        }
+
+        xml.addContent(els = new Element("transfers"));
+
+        for (QuotationRequestTransfer l : transfers) {
+            els.addContent(l.toXml());
+        }
+
+        xml.addContent(els = new Element("excursions"));
+
+        for (QuotationRequestExcursion l : excursions) {
+            els.addContent(l.toXml());
+        }
+
+        xml.addContent(els = new Element("generics"));
+
+        for (QuotationRequestGeneric l : generics) {
+            els.addContent(l.toXml());
+        }
+
+        return xml;
+    }
+
+    private Element toXmlForInvoice(EntityManager em) throws Exception {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        Element xml = new Element("invoice");
+        /*
+        if (getNumber() != null) xml.setAttribute("number", getNumber());
+        if (getIssueDate() != null) xml.setAttribute("issueDate", getIssueDate().format(df));
+        if (getDueDate() != null) xml.setAttribute("dueDate", getDueDate().format(df));
+        */
+
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
+
+
+        if (getAgency().getCompany().getFinancialAgent() != null) {
+
+            FinancialAgent a = getAgency().getCompany().getFinancialAgent();
+
+            Element d;
+            xml.addContent(d = new Element("issuer"));
+
+            if (a.getName() != null) d.setAttribute("name", a.getName());
+            if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
+            if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
+            if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
+            if (a.getCity() != null) d.setAttribute("resort", a.getCity());
+            if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
+            if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
+            if (a.getFax() != null) d.setAttribute("fax", a.getFax());
+            if (a.getEmail() != null) d.setAttribute("email", a.getEmail());
+            if (a.getCountry() != null) d.setAttribute("country", a.getCountry());
+            if (a.getState() != null) d.setAttribute("state", a.getState());
+
+        }
+
+        if (getAgency().getFinancialAgent() != null) {
+
+            FinancialAgent a = getAgency().getFinancialAgent();
+
+            Element d;
+            xml.addContent(d = new Element("recipient"));
+
+            if (a.getName() != null) d.setAttribute("name", a.getName());
+            if (a.getBusinessName() != null) d.setAttribute("businessName", a.getBusinessName());
+            if (a.getVatIdentificationNumber() != null) d.setAttribute("vatid", a.getVatIdentificationNumber());
+            if (a.getAddress() != null) d.setAttribute("address", a.getAddress());
+            if (a.getCity() != null) d.setAttribute("resort", a.getCity());
+            if (a.getPostalCode() != null) d.setAttribute("zip", a.getPostalCode());
+            if (a.getTelephone() != null) d.setAttribute("telephone", a.getTelephone());
+            if (a.getFax() != null) d.setAttribute("fax", a.getFax());
+            if (a.getEmail() != null) d.setAttribute("email", a.getEmail());
+            if (a.getCountry() != null) d.setAttribute("country", a.getCountry());
+            if (a.getState() != null) d.setAttribute("state", a.getState());
+
+        }
+
+
+        DecimalFormat pf = new DecimalFormat("#####0.00");
+        DecimalFormat nf = new DecimalFormat("##,###,###,###,##0.00");
+
+        Element els;
+        xml.addContent(els = new Element("lines"));
+
+        for (QuotationRequestLine l : lines) {
+            Element el;
+            els.addContent(el = new Element("line"));
+
+            if (l.getText() != null) el.setAttribute("subject", l.getText());
+
+            //el.setAttribute("discountPercent", pf.format(l.getDiscountPercent()));
+            el.setAttribute("quantity", "" + l.getUnits());
+            el.setAttribute("total", nf.format(l.getTotalSale()));
+
+            /*
+            if (l instanceof BookingInvoiceLine) {
+                BookingInvoiceLine xl = (BookingInvoiceLine) l;
+
+                Booking b = xl.getCharge().getBooking();
+                el.setAttribute("id", "" + b.getId());
+                if (b.getLeadName() != null) el.setAttribute("leadName", b.getLeadName());
+                if (b.getAgencyReference() != null) el.setAttribute("reference", b.getAgencyReference());
+                if (b.getStart() != null) el.setAttribute("start", df.format(b.getStart()));
+                if (b.getEnd() != null) el.setAttribute("end", df.format(b.getEnd()));
+                if (b instanceof HotelBooking) {
+                    HotelBooking hb = (HotelBooking) b;
+                    if (hb.getHotel() != null && hb.getHotel().getName() != null)
+                        el.setAttribute("service", hb.getHotel().getName());
+                } else if (b instanceof FreeTextBooking) {
+                    FreeTextBooking hb = (FreeTextBooking) b;
+                    if (hb.getServiceDescription() != null) el.setAttribute("service", hb.getServiceDescription());
+                }
+
+            }
+            */
+
+            xml.setAttribute("paid", nf.format(0));
+            xml.setAttribute("pending", nf.format(getTotal()));
+
+        }
+
+        xml.addContent(els = new Element("vats"));
+        /*
+        for (VATLine l : VATLines) {
+            Element el;
+            els.addContent(el = new Element("vat"));
+
+            if (l.isSpecialRegime()) el.setAttribute("specialRegime", "");
+            if (l.isExempt()) el.setAttribute("exempt", "");
+            el.setAttribute("percent", pf.format(l.getPercent()));
+            el.setAttribute("base", nf.format(l.getBase()));
+            el.setAttribute("vat", nf.format(l.getVat()));
+            el.setAttribute("total", nf.format(l.getTotal()));
+
+        }
+        */
+
+
+
+
+        return xml;
+    }
+
+    @PostLoad
+    public void postLoad() {
+        alreadyConfirmed = file != null;
+    }
+
+    @PrePersist@PreUpdate
+    public void pre() {
+        if (alreadyConfirmed) throw new Error("This quotation request has already been related to a File. It can not be modified");
+    }
+
+    @PostUpdate@PostPersist
+    public void post() {
+            WorkflowEngine.add(() -> {
+
+                try {
+                    Helper.transact(em -> {
+
+                        QuotationRequest r = em.find(QuotationRequest.class, getId());
+
+                        r.updateTotal();
+
+
+                        if (r.isConfirmed()) {
+                            r.build(em);
+                        }
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+    }
+
+    private void build(EntityManager em) {
+
+        if (getFile() == null) {
+
+            AppConfig c = AppConfig.get(em);
+
+            File f = new File();
+            f.setAudit(new Audit(MDD.getCurrentUser()));
+            f.setAgency(getAgency());
+            f.setLeadName(getName());
+            f.setCurrency(getCurrency());
+
+            for (QuotationRequestHotel qrl : getHotels()) {
+                HotelBooking b;
+                f.getBookings().add(b = new HotelBooking());
+                b.setFile(f);
+                b.setAgency(getAgency());
+                b.setCurrency(getCurrency());
+                b.setLeadName(getName());
+                b.setConfirmed(true);
+                b.setAudit(new Audit(MDD.getCurrentUser()));
+                b.setCostOverrided(true);
+                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
+                b.setValueOverrided(true);
+                b.setPos(getPos());
+                b.setAgencyReference("");
+                b.setAvailable(true);
+                b.setAdults(0);
+                b.setChildren(0);
+                b.setEmail(getEmail());
+                b.setOverridedValue(qrl.getTotalSale());
+                b.setOverridedCostCurrency(getCurrency());
+                b.setOverridedCost(qrl.getTotalCost());
+                b.setTelephone(getTelephone());
+
+                b.setHotel(qrl.getHotel());
+                HotelBookingLine hbl;
+                b.getLines().add(hbl = new HotelBookingLine());
+                hbl.setBooking(b);
+                hbl.setRoom(qrl.getRoom());
+                hbl.setBoard(qrl.getBoard());
+                hbl.setStart(qrl.getStart());
+                hbl.setEnd(qrl.getEnd());
+                hbl.setRooms(qrl.getNumberOfRooms());
+                hbl.setActive(qrl.isActive());
+                hbl.setAdultsPerRoom(qrl.getAdultsPerRoom());
+                hbl.setChildrenPerRoom(qrl.getChildrenPerRoom());
+                hbl.setAges(qrl.getAges());
+                em.persist(b);
+            }
+            for (QuotationRequestTransfer qrl : getTransfers()) {
+                TransferBooking b;
+                f.getBookings().add(b = new TransferBooking());
+                b.setFile(f);
+                b.setAgency(getAgency());
+                b.setCurrency(getCurrency());
+                b.setLeadName(getName());
+                b.setConfirmed(true);
+                b.setAudit(new Audit(MDD.getCurrentUser()));
+                b.setCostOverrided(true);
+                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
+                b.setValueOverrided(true);
+                b.setPos(getPos());
+                b.setAgencyReference("");
+                b.setAvailable(true);
+                b.setAdults(0);
+                b.setChildren(0);
+                b.setEmail(getEmail());
+                b.setOverridedValue(qrl.getTotalSale());
+                b.setOverridedCostCurrency(getCurrency());
+                b.setOverridedCost(qrl.getTotalCost());
+                b.setTelephone(getTelephone());
+
+                b.setTransferType(qrl.getTransferType());
+                b.setOrigin(qrl.getOrigin());
+                b.setDestination(qrl.getDestination());
+                if (TransferPointType.AIRPORT.equals(qrl.getDestination().getType())) {
+                    b.setArrivalFlightTime(qrl.getFlightDate());
+                    b.setArrivalFlightNumber(qrl.getFlightNumber());
+                    b.setArrivalFlightOrigin(qrl.getFlightOriginOrDestination());
+                } else {
+                    b.setDepartureFlightTime(qrl.getFlightDate());
+                    b.setDepartureFlightNumber(qrl.getFlightNumber());
+                    b.setDepartureFlightDestination(qrl.getFlightOriginOrDestination());
+                }
+                b.setAdults(qrl.getPax());
+                em.persist(b);
+            }
+            for (QuotationRequestExcursion qrl : getExcursions()) {
+                ExcursionBooking b;
+                f.getBookings().add(b = new ExcursionBooking());
+                b.setFile(f);
+                b.setAgency(getAgency());
+                b.setCurrency(getCurrency());
+                b.setLeadName(getName());
+                b.setConfirmed(true);
+                b.setAudit(new Audit(MDD.getCurrentUser()));
+                b.setCostOverrided(true);
+                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
+                b.setValueOverrided(true);
+                b.setPos(getPos());
+                b.setAgencyReference("");
+                b.setAvailable(true);
+                b.setAdults(0);
+                b.setChildren(0);
+                b.setEmail(getEmail());
+                b.setOverridedValue(qrl.getTotalSale());
+                b.setOverridedCostCurrency(getCurrency());
+                b.setOverridedCost(qrl.getTotalCost());
+                b.setTelephone(getTelephone());
+
+                b.setExcursion(qrl.getExcursion());
+                b.setVariant(qrl.getVariant());
+                b.setShift(qrl.getShift());
+                b.setAdults(qrl.getAdults());
+                b.setChildren(qrl.getChildren());
+                b.setStart(qrl.getDate());
+                b.setEnd(qrl.getDate());
+                em.persist(b);
+            }
+            for (QuotationRequestGeneric qrl : getGenerics()) {
+                GenericBooking b;
+                f.getBookings().add(b = new GenericBooking());
+                b.setFile(f);
+                b.setAgency(getAgency());
+                b.setCurrency(getCurrency());
+                b.setLeadName(getName());
+                b.setConfirmed(true);
+                b.setAudit(new Audit(MDD.getCurrentUser()));
+                b.setCostOverrided(true);
+                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
+                b.setValueOverrided(true);
+                b.setPos(getPos());
+                b.setAgencyReference("");
+                b.setAvailable(true);
+                b.setAdults(0);
+                b.setChildren(0);
+                b.setEmail(getEmail());
+                b.setOverridedValue(qrl.getTotalSale());
+                b.setOverridedCostCurrency(getCurrency());
+                b.setOverridedCost(qrl.getTotalCost());
+                b.setTelephone(getTelephone());
+
+                b.setProduct(qrl.getProduct());
+                b.setVariant(qrl.getVariant());
+                b.setUnits(qrl.getUnits());
+                b.setAdults(qrl.getAdults());
+                b.setChildren(qrl.getChildren());
+                b.setStart(qrl.getStart());
+                b.setEnd(qrl.getEnd());
+                b.setOffice(b.getProduct().getOffice());
+                em.persist(b);
+            }
+            for (QuotationRequestLine qrl : getLines()) {
+                FreeTextBooking b;
+                f.getBookings().add(b = new FreeTextBooking());
+                b.setFile(f);
+                b.setAgency(getAgency());
+                b.setCurrency(getCurrency());
+                b.setLeadName(getName());
+                b.setConfirmed(true);
+                b.setAudit(new Audit(MDD.getCurrentUser()));
+                b.setCostOverrided(true);
+                b.setOverridedBillingConcept(qrl.getBillingConcept());
+                b.setStart(qrl.getStart());
+                b.setEnd(qrl.getEnd());
+                b.setOffice(qrl.getOffice());
+                b.setProductLine(qrl.getProductLine());
+                b.setServiceDescription(qrl.getText());
+                b.setValueOverrided(true);
+                b.setPos(getPos());
+                b.setAgencyReference("");
+                b.setAvailable(true);
+                b.setAdults(0);
+                b.setChildren(0);
+                b.setEmail(getEmail());
+                b.setOverridedValue(qrl.getTotalSale());
+                b.setOverridedCostCurrency(getCurrency());
+                b.setOverridedCost(qrl.getTotalCost());
+                b.setProvider(qrl.getProvider());
+                b.setTelephone(getTelephone());
+                em.persist(b);
+            }
+
+            f.setQuotationRequest(this);
+            setFile(f);
+
+            em.persist(f);
+
+        }
+
+    }
+
 }

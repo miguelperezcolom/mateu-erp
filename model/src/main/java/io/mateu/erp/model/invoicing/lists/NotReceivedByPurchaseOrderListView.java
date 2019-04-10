@@ -11,11 +11,14 @@ import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
 import io.mateu.mdd.core.model.authentication.Audit;
+import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -109,11 +112,18 @@ public class NotReceivedByPurchaseOrderListView extends AbstractJPQLListView<Not
         return w;
     }
 
+    @Override
+    public boolean isEditHandled() {
+        return true;
+    }
+
+    @Override
+    public Object onEdit(Row row) throws Throwable {
+        return Helper.find(PurchaseOrder.class, row.getPurchaseOrderId());
+    }
 
     @Action
-    public Invoice receive(EntityManager em, Set<Row> selection) {
-        ReceivedInvoice result = new ReceivedInvoice();
-        result.setAudit(new Audit(MDD.getCurrentUser()));
+    public Invoice receive(EntityManager em, Set<Row> selection, @NotEmpty String invoiceNumber, @NotNull LocalDate invoiceDate, LocalDate taxDate, LocalDate dueDate) throws Exception {
 
         String ql = "";
 
@@ -136,7 +146,34 @@ public class NotReceivedByPurchaseOrderListView extends AbstractJPQLListView<Not
 
         List<PurchaseCharge> charges = q.getResultList();
 
-        charges.forEach(c -> result.getLines().add(new PurchaseOrderInvoiceLine(result, c)));
+        return createInvoice(em, charges, invoiceNumber, invoiceDate, taxDate, dueDate);
+    }
+
+    public static Invoice createInvoice(EntityManager em, List<PurchaseCharge> charges, String invoiceNumber, LocalDate invoiceDate, LocalDate taxDate, LocalDate dueDate) throws Exception {
+        ReceivedInvoice result = new ReceivedInvoice();
+        result.setAudit(new Audit(MDD.getCurrentUser()));
+
+
+        if (charges.size() == 0) throw new Exception("No charge selected");
+
+        charges.forEach(c -> {
+            result.getLines().add(new PurchaseOrderInvoiceLine(result, c));
+            c.setInvoice(result);
+        });
+
+        result.setNumber(invoiceNumber);
+        result.setIssueDate(invoiceDate);
+        result.setDueDate(dueDate);
+        result.setTaxDate(taxDate);
+        result.setProvider(charges.get(0).getProvider());
+        result.setRecipient(charges.get(0).getPurchaseOrder().getOffice().getCompany().getFinancialAgent());
+        result.setIssuer(result.getProvider().getFinancialAgent());
+        result.setCurrency(result.getProvider().getCurrency());
+
+        if (result.getRecipient() == null) throw new Exception("Missing financial agent for company " + charges.get(0).getPurchaseOrder().getOffice().getCompany().getName() + ". Please fill");
+        if (result.getIssuer() == null) throw new Exception("Missing financial agent for provider " + result.getProvider().getName() + ". Please fill");
+
+        em.persist(result);
 
         return result;
     }

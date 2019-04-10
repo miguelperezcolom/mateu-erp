@@ -7,6 +7,10 @@ import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.payments.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -15,6 +19,7 @@ import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -27,6 +32,7 @@ import org.jdom2.output.XMLOutputter;
 import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
@@ -58,8 +64,13 @@ public class File {
     @SearchFilter(field="modified")
     private Audit audit;
 
+
+    @ManyToOne@NotNull
+    private Agency agency;
+
     @ListColumn
     @SearchFilter
+    @NotEmpty
     private String leadName;
 
 
@@ -112,10 +123,8 @@ public class File {
 
 
     @Section("Links")
-    @OneToMany(mappedBy = "file")
-    @OrderColumn(name = "orderInBooking")
-    @UseLinkToListView
-    private List<QuotationRequest> quotationRequests = new ArrayList<>();
+    @ManyToOne@Output
+    private QuotationRequest quotationRequest;
 
 
     @OneToMany(mappedBy = "file")
@@ -124,8 +133,14 @@ public class File {
     private List<Booking> bookings = new ArrayList<>();
 
 
+    @OneToMany(mappedBy = "file")
+    @OrderColumn(name = "id")
+    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    private List<FilePaymentAllocation> payments = new ArrayList<>();
 
 
+    @Ignored
+    private boolean forcePre = false;
 
 
     @Override
@@ -138,49 +153,6 @@ public class File {
     public void beforeSet() throws Throwable {
         setAlreadyCancelled(!isActive());
     }
-
-    @PostPersist@PostUpdate
-    public void afterSet() throws Exception, Throwable {
-
-        EntityManager em = Helper.getEMFromThreadLocal();
-        
-        if (!isActive() && (!isActive()) != isAlreadyCancelled()) {
-            cancel(em, getAudit().getModifiedBy());
-        }
-        
-        /*
-        
-        WorkflowEngine.add(new Runnable() {
-
-            long bookingId = getId();
-
-            @Override
-            public void run() {
-
-                try {
-                    Helper.transact(new JPATransaction() {
-                        @Override
-                        public void run(EntityManager em) throws Throwable {
-
-                            File b = em.find(File.class, bookingId);
-
-                            if (b.isCancelled() && b.isCancelled() != b.isWasCancelled()) {
-                                b.cancel(em, b.getAudit().getModifiedBy());
-                            }
-
-                        }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-
-            }
-        });
-        */
-    }
-
-
-
 
     @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this file?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
@@ -252,15 +224,6 @@ public class File {
 
             AppConfig appconfig = AppConfig.get(em);
 
-            if (EmailHelper.isTesting()) {
-
-                System.out.println("************************************");
-                System.out.println("Mail not sent as we are TESTING");
-                System.out.println("************************************");
-
-
-            } else {
-
                 // Create the email message
                 HtmlEmail email = new HtmlEmail();
                 //Email email = new HtmlEmail();
@@ -292,9 +255,8 @@ public class File {
                 java.io.File attachment = temp;
                 if (attachment != null) email.attach(attachment);
 
-                email.send();
+                EmailHelper.send(email);
 
-            }
 
 
         });
@@ -337,6 +299,36 @@ public class File {
     }
 
 
+    @Action(order = 5, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
+    @NotWhenCreating
+    public void enterPayment(EntityManager em, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment, @NotNull Currency currency, double amount) throws Throwable {
+        if (getAgency().getFinancialAgent() == null) throw  new Exception("Missing financial agent for agency " + getAgency().getName() + ". Please fill");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(getAgency().getFinancialAgent());
+
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(currency);
+            l.setValue(amount);
+
+
+            FilePaymentAllocation a;
+            p.getBreakdown().add(a = new FilePaymentAllocation());
+            a.setPayment(p);
+            a.setFile(this);
+            getPayments().add(a);
+            a.setValue(amount);
+
+            em.persist(p);
+
+        }
+    }
+
 
 
 
@@ -362,6 +354,66 @@ public class File {
                 });
             }
         };
+    }
+
+
+    private void updateTotals(EntityManager em) {
+
+        double total = 0;
+        double totalNeto = 0;
+        double totalCoste = 0;
+        double totalPagado = 0;
+
+        if (getQuotationRequest() != null) {
+            for (QuotationRequestPaymentAllocation pa : getQuotationRequest().getPayments()) {
+                totalPagado += pa.getValue();
+            }
+        }
+
+        for (Booking b : getBookings()) {
+            total += b.getTotalValue();
+            totalNeto += b.getTotalNetValue();
+            totalCoste += b.getTotalCost();
+            for (BookingPaymentAllocation pa : b.getPayments()) {
+                totalPagado += pa.getValue();
+            }
+        }
+
+        for (FilePaymentAllocation pa : getPayments()) {
+            totalPagado += pa.getValue();
+        }
+
+
+        setTotalValue(Helper.roundEuros(total));
+        setTotalNetValue(Helper.roundEuros(totalNeto));
+        setTotalCost(Helper.roundEuros(totalCoste));
+
+        setBalance(Helper.roundEuros(totalPagado - totalNeto));
+
+    }
+
+
+    @PostPersist@PostUpdate
+    public void post() {
+
+        WorkflowEngine.add(() -> {
+
+            try {
+                Helper.transact(em -> {
+
+                    File f = em.find(File.class, getId());
+
+                    f.updateTotals(em);
+
+                    if (f.isForcePre()) f.setForcePre(false);
+
+                });
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+        });
+
     }
 
 }

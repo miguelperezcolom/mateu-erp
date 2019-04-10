@@ -6,12 +6,15 @@ import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.CircuitBooking;
+import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
+import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
+import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -60,6 +63,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         try {
 
+            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
 
@@ -70,33 +74,69 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                 excursions.forEach(e -> {
                     {
-                        AvailableCircuit a;
-                        rs.getAvailableCircuits().add(a = new AvailableCircuit());
 
-                        a.setCircuitId("cir-" + e.getId());
-                        a.setName(e.getName());
-                        if (e.getDataSheet() != null) {
-                            if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
-                            if (e.getDataSheet().getMainImage() != null) {
-                                try {
-                                    a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
+                        CircuitBooking b = new CircuitBooking();
+                        b.setAgency(em.find(Agency.class, finalIdAgencia));
+
+                        b.setCircuit(e);
+                        b.setStart(LocalDate.now());
+                        b.setEnd(LocalDate.now());
+                        b.setAdults(1);
+
+
+                        double min = 0;
+
+                        for (Variant var : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
+                            b.setVariant(var);
+                            b.priceServices(em);
+
+                            if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
+
+                        }
+
+                        if (min != 0) {
+
+                            AvailableCircuit a;
+                            rs.getAvailableCircuits().add(a = new AvailableCircuit());
+
+                            a.setCircuitId("cir-" + e.getId());
+                            a.setName(e.getName());
+                            if (e.getDataSheet() != null) {
+                                if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
+                                if (e.getDataSheet().getMainImage() != null) {
+                                    try {
+                                        a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
+                                    } catch (Exception e1) {
+                                        e1.printStackTrace();
+                                    }
                                 }
+
+                                e.getDataSheet().getLabels().forEach(x -> {
+                                    labels.putIfAbsent(x.getId(), x);
+                                });
+
                             }
+
 
                             e.getDataSheet().getLabels().forEach(x -> {
                                 labels.putIfAbsent(x.getId(), x);
+                                Label l;
+                                a.getLabels().add(l = new Label());
+                                l.setId("" + x.getId());
+                                l.setName(x.getName());
                             });
 
-                        }
-                        BestDeal bd;
-                        a.setBestDeal(bd = new BestDeal());
-                        double v = 200.34;
-                        bd.setRetailPrice(new Amount("EUR", v));
 
-                        if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
-                        if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+                            BestDeal bd;
+                            a.setBestDeal(bd = new BestDeal());
+                            double v = min;
+                            bd.setRetailPrice(new Amount("EUR", v));
+
+                            if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                            if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+
+                        }
+
                     }
 
                 });
@@ -152,19 +192,34 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         try {
 
+            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
                 Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
+                CircuitBooking b = new CircuitBooking();
+                b.setAgency(em.find(Agency.class, finalIdAgencia));
+
+                b.setCircuit(e);
+                b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
+                b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
+                b.setAdults(1);
+
+
                 rs.setVariants(new ArrayList<>());
                 e.getVariants().forEach(v -> {
+
+                    b.setVariant(v);
+                    b.priceServices(em);
+
                     ActivityVariant av;
                     rs.getVariants().add(av = new ActivityVariant());
                     av.setKey("" + v.getId());
                     if (v.getName() != null) av.setName(v.getName().get(language));
                     if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
                     av.setBestDeal(new BestDeal());
-                    av.getBestDeal().setRetailPrice(new Amount("EUR", 200.34));
+                    av.getBestDeal().setRetailPrice(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
+
                 });
 
             });
@@ -187,13 +242,46 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
+        System.out.println("activity rates. token = " + token);
+
+
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long t0 = System.currentTimeMillis();
+
+
+        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
 
             Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
-            rs.setAvailable(true);
+            CircuitBooking b = new CircuitBooking();
+            b.setAgency(em.find(Agency.class, finalIdAgencia));
+
+            b.setCircuit(e);
+            b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
+            b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
+            b.setAdults(adults);
+            b.setChildren(children);
+
+            b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
+            b.priceServices(em);
+
+            rs.setAvailable(b.getTotalValue() > 0);
             rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant));
-            rs.setValue(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
+            rs.setValue(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
 
 
         });
@@ -406,7 +494,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed ok");
 
-        CircuitBooking[] bs = {null};
+        io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
         try {
             Helper.transact(new JPATransaction() {
@@ -415,7 +503,6 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                     CircuitBooking b = buildBookingFromKey(em, rq.getKey());
 
-                    b.setConfirmed(true);
                     b.setAgencyReference(rq.getBookingReference());
                     if (b.getAgencyReference() == null) b.setAgencyReference("");
                     b.setSpecialRequests(rq.getCommentsToProvider());
@@ -424,24 +511,31 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                     b.setPrivateComments(rq.getPrivateComments());
                     b.setPos(em.find(AuthToken.class, token).getPos());
                     b.setTelephone(rq.getPhoneNumber());
+                    b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
+                    b.setConfirmNow(false);
 
                     b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
 
 
                     em.persist(b);
 
-                    bs[0] = b;
-
+                    bx[0] = b;
                 }
             });
+
+            io.mateu.erp.model.booking.Booking b = bx[0];
+            rs.setBookingId("" + bx[0].getId());
+            if (b.getTPVTransactions().size() > 0) Helper.notransact(em -> {
+                rs.setPaymentUrl(b.getTPVTransactions().get(0).getBoton(em));
+            });
+            else rs.setPaymentUrl("");
+            //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
+
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             rs.setStatusCode(500);
             rs.setMsg(throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
         }
-
-
-        rs.setBookingId("" + bs[0].getId());
 
         return rs;
     }

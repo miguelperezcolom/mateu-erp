@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.QuerySortOrder;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.mdd.core.MDD;
@@ -52,7 +53,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
         o.setStopSales(getHotel().getStopSales());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));
+        o.setCreatedBy(em.find(ERPUser.class, MDD.getUserData().getLogin()));
         o.setAction(action);
         o.getAgencies().addAll(agencies);
         o.getRooms().addAll(rooms);

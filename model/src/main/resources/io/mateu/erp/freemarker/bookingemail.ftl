@@ -24,26 +24,57 @@
 
             <table width="100%"><tr><td><p>Estimado/a ${leadName},</p>
 
-<p>Muchas gracias por reservar con VIAJES ES FREUS.</p>
+<p>Muchas gracias por reservar con ${us!}.</p>
 
 <p>${postscript!}</p>
 
-<p>Por favor, verifique los datos de su reserva que se muestran más abajo. En el caso de que fueran incorrectos comuníquenoslo en la mayor brevedad posible a booking@esfreus.com.</p>
+<#if availstatus == 'CANCELADA' >
+<p>Su reserva ha sido cancelada. Para cualquier aclaración diríjase por favor a ${bookingemail!}.</p>
+<#else>
+<p>Por favor, verifique los datos de su reserva que se muestran más abajo. En el caso de que fueran incorrectos comuníquenoslo en la mayor brevedad posible a ${bookingemail!}.</p>
+</#if>
+
 
             </td></tr>
 
                 <tr><td style="padding-bottom: 0px;border-bottom: 1px dashed dimgrey;">
                     <hr><table width="100%"><tr><td><span style="font-size: 20px; font-weight: bold;">LOCALIZADOR RESERVA: ${locator}</span></td><td align="right"><span><b>Fecha reserva: ${formalization}</b></span></td></tr></table>
                     </td></tr>
-                <tr><td style="border-bottom: 1px solid dimgrey; background-color: lightgoldenrodyellow;"><span style="font-size: 20px;">ESTADO DE LA RESERVA: ${availstatus} / ${paymentstatus}</span></td></tr>
+                <tr><td style="border-bottom: 1px solid dimgrey; background-color: <#switch availstatus>
+                    <#case "CANCELADA">indianred<#break>
+                    <#case "CONFIRMADA">darkseagreen<#break>
+                    <#case "ON REQUEST">lightblue<#break>
+                    <#default>lightgoldenrodyellow</#switch>;"><span style="font-size: 20px;">ESTADO DE LA RESERVA: ${availstatus} / ${paymentstatus}</span></td></tr>
 
+<#if availstatus != 'CANCELADA' >
                 <tr><td>
 
+<!--
 <p>Puede realizar cambios, pagos, imprimir su reserva y consultar su estado desde la siguiente dirección: <a
                         href="">Gestionar mi reserva</a></p>
+                        -->
                     <p></p>
 </td></tr>
 
+
+                <#if paymentlink?? >
+
+                <tr><td style="border-top: 1px dashed dimgrey;border-bottom: 1px dashed dimgrey;">
+
+                    <center>
+                        <p></p>
+                        ${paymentlink!}
+                        <p></p>
+                        <p>Dispone de <b>2 horas</b> para realizar el pago de la reserva: ${totalretail}</p>
+                    </center>
+
+                    <p></p>
+                </td></tr>
+
+                </#if>
+</#if>
+
+<!--
                 <tr><td style="border-top: 1px dashed dimgrey;border-bottom: 1px dashed dimgrey;">
 <p>Dispone de <b>24 horas hábiles</b> para realizar el pago de la reserva mediante ingreso bancario, transfiriendo la cantidad de <b>${paymentamounttxt!'---'}</b> al número de cuenta indicado a continuación:</p>
 
@@ -60,7 +91,7 @@
 <p>Una vez efectuada la transferencia deberá mandarnos el <b>justificante</b> por <b>e-mail</b> para enviarle el bono de confirmacion lo antes posible.</p>
 
 <table width="100%">
-    <tr><td width="33%"><b>E-mail:</b></td><td>booking@esfreus.com</td></tr>
+    <tr><td width="33%"><b>E-mail:</b></td><td>${bookingemail!}</td></tr>
 </table>
                     <p></p>
 
@@ -69,13 +100,15 @@
 <p></p>
 </td></tr>
 
+-->
+
                 <tr><td><p></p><p></p><p></p><p></p><h2 style="margin-bottom: 0px;">DATOS RESERVA</h2>
                     <hr style="margin-top: 0px;"></td></tr>
 <tr><td>
 
-    ${servicedata}
+    <#if availstatus == 'CANCELADA' > <div style="text-decoration: line-through; white-space: pre;"> </#if>${servicedata}<#if availstatus == 'CANCELADA' > </div> </#if>
 
-<p></p><p></p><p></p>
+    <p></p><p></p><p></p>
                 <table width="100%">
                     <tr><td width="50%"><h2 style="margin-bottom: 0px;">DATOS VIAJERO</h2>
 
@@ -112,24 +145,36 @@
         ${productdata}
 
 
+
+<#if availstatus != 'CANCELADA' >
                 <h2 style="margin-bottom: 0px;">DATOS DE PAGO</h2>
 
                 <hr style="margin-top: 0px;">
 
                 <table width="100%">
                     <tr><td width="50%" style="vertical-align: top;">
+                        <p></p>
 
                         <table width="100%">
                             <tr><td width="200px">Precio total (IVA incl.)</td><td align="right">${totalretail}</td></tr>
+                            <!--
                             <tr><td>Precio total profesional (IVA incl.)</td><td align="right">${totalnet}</td></tr>
+                            -->
                             <tr><td colspan="2">Método de pago: ${paymentmethod!'---'}</td></tr>
-                            ${payments!'---'}
+
+                        ${payments!'---'}
+
                         </table>
 
-                    </td><td style="border-left: 1px dashed black; padding-left: 10px;">
+                        <center>
+                        <p>${paymentlink!}</p>
+                        </center>
 
-                        <p>EL PAGO DEL DEPÓSITO O DEL TOTAL SERÁ PROCESADO NORMALMENTE EN LAS PRÓXIMAS 24-48 HORAS. SU RESERVA LE SERÁ CONFIRMADA A TRAVÉS DE E-MAIL UNA VEZ EL PAGO SE HAYA PROCESADO CORRECTAMENTE.</p>
 
+                    </td><td style="border-left: 1px dashed black; padding-left: 10px; vertical-align: top;">
+
+                        <p><!-- EL PAGO DEL DEPÓSITO O DEL TOTAL SERÁ PROCESADO NORMALMENTE EN LAS PRÓXIMAS 24-48 HORAS. -->SU RESERVA LE SERÁ CONFIRMADA A TRAVÉS DE E-MAIL UNA VEZ EL PAGO SE HAYA PROCESADO CORRECTAMENTE.</p>
+                        <p><b>POR FAVOR RECUERDE QUE SI NO EFECTÚA EL PAGO EN LAS PRÓXIMAS 2 HORAS ESTA RESERVA SE CANCELARÁ AUTOMÁTICAMENTE.</b></p>
 
                         ${paymentremarks!'---'}
 
@@ -155,6 +200,8 @@
 
         ${cancellationterms!'---'}
 
+
+</#if>
 
             </td></tr></table>
 

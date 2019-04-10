@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.hotel;
 
 import com.vaadin.data.provider.QuerySortOrder;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Caption;
@@ -166,7 +167,7 @@ public class InventoryView implements RpcCrudView<InventoryView, InventoryMonth,
         em.persist(o);
         o.setInventory(getInventory());
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()));
+        o.setCreatedBy(em.find(ERPUser.class, MDD.getUserData().getLogin()));
         o.setAction(action);
         o.setRoom(room);
         o.setStart(start);

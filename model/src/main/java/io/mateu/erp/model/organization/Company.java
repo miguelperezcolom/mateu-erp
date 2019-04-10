@@ -33,11 +33,11 @@ public class Company {
     @ManyToOne(cascade = CascadeType.ALL)
     private Resource logo;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private InvoiceSerial billingSerial;
 
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private InvoiceSerial selfBillingSerial;
 
 

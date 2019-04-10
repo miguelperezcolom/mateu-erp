@@ -2,13 +2,16 @@ package io.mateu.erp.services.easytravelapi;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
+import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.world.Country;
@@ -20,6 +23,7 @@ import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.ActivityBookingService;
 import org.easytravelapi.activity.*;
+import org.easytravelapi.circuit.Label;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;
@@ -66,8 +70,10 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         try {
 
+            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
+                Map<Long, ProductLabel> labels = new HashMap<>();
                 List<Excursion> excursions = new ArrayList<>();
 
                 for (String s : Splitter.on(',')
@@ -88,27 +94,79 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                 excursions.forEach(e -> {
                     {
-                        AvailableActivity a;
-                        rs.getAvailableActivities().add(a = new AvailableActivity());
 
-                        a.setActivityId("exc-" + e.getId());
-                        a.setName(e.getName());
-                        if (e.getDataSheet() != null) {
-                            if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
-                            if (e.getDataSheet().getMainImage() != null) {
-                                try {
-                                    a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
-                                }
+                        try {
+                            ExcursionBooking b = new ExcursionBooking();
+                            b.setAgency(em.find(Agency.class, finalIdAgencia));
+
+                            b.setExcursion(e);
+                            b.setStart(io.mateu.erp.dispo.Helper.toDate(start));
+                            b.setEnd(io.mateu.erp.dispo.Helper.toDate(start));
+                            b.setAdults(1);
+
+                            double min = 0;
+
+                            for (Variant var : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
+                                b.setVariant(var);
+                                b.priceServices(em);
+
+                                if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
+
                             }
+
+                            if (min != 0) {
+
+                                AvailableActivity a;
+                                rs.getAvailableActivities().add(a = new AvailableActivity());
+
+                                a.setActivityId("exc-" + e.getId());
+                                a.setName(e.getName());
+                                if (e.getDataSheet() != null) {
+                                    if (e.getDataSheet().getDescription() != null) a.setDescription(e.getDataSheet().getDescription().get(language));
+                                    if (e.getDataSheet().getMainImage() != null) {
+                                        try {
+                                            a.setImage(e.getDataSheet().getMainImage().toFileLocator().getUrl());
+                                        } catch (Exception e1) {
+                                            e1.printStackTrace();
+                                        }
+                                    }
+                                }
+                                BestDeal bd;
+                                a.setBestDeal(bd = new BestDeal());
+                                bd.setRetailPrice(new Amount("EUR", min));
+
+                                e.getDataSheet().getLabels().forEach(x -> {
+                                    labels.putIfAbsent(x.getId(), x);
+                                    Label l;
+                                    a.getLabels().add(l = new Label());
+                                    l.setId("" + x.getId());
+                                    l.setName(x.getName());
+                                });
+
+
+
+                                double v = min;
+
+                                if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                                if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+
+
+                            }
+
+
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
                         }
-                        BestDeal bd;
-                        a.setBestDeal(bd = new BestDeal());
-                        bd.setRetailPrice(new Amount("EUR", 200.34));
 
                     }
 
+                });
+
+                labels.values().forEach(pl -> {
+                    Label l;
+                    rs.getLabels().add(l = new Label());
+                    l.setId("" + pl.getId());
+                    l.setName(pl.getName());
                 });
 
             });
@@ -155,19 +213,37 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         try {
 
+            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
                 Excursion e = em.find(Excursion.class, Long.parseLong(activityId.split("-")[1]));
 
+                ExcursionBooking b = new ExcursionBooking();
+                b.setAgency(em.find(Agency.class, finalIdAgencia));
+
+                b.setExcursion(e);
+                b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
+                b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
+                b.setAdults(1);
+
+
                 rs.setVariants(new ArrayList<>());
                 e.getVariants().forEach(v -> {
-                    ActivityVariant av;
-                    rs.getVariants().add(av = new ActivityVariant());
-                    av.setKey("" + v.getId());
-                    if (v.getName() != null) av.setName(v.getName().get(language));
-                    if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
-                    av.setBestDeal(new BestDeal());
-                    av.getBestDeal().setRetailPrice(new Amount("EUR", 200.34));
+
+                    b.setVariant(v);
+                    b.priceServices(em);
+
+                    double p = Helper.roundEuros(b.getTotalValue());
+
+                    if (p != 0) {
+                        ActivityVariant av;
+                        rs.getVariants().add(av = new ActivityVariant());
+                        av.setKey("" + v.getId());
+                        if (v.getName() != null) av.setName(v.getName().get(language));
+                        if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
+                        av.setBestDeal(new BestDeal());
+                        av.getBestDeal().setRetailPrice(new Amount("EUR", p));
+                    }
 
                 });
 
@@ -180,7 +256,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 rs.setShifts(new ArrayList<>());
                 e.getShifts().forEach(x -> {
 
-                    if ((x.getStart() == null || !x.getStart().isBefore(d)) && (x.getEnd() == null || !x.getEnd().isAfter(d)) && (x.getWeekdays() == null || x.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
+                    if ((x.getStart() == null || !x.getStart().isAfter(d)) && (x.getEnd() == null || !x.getEnd().isBefore(d)) && (x.getWeekdays() == null || x.getWeekdays()[d.getDayOfWeek().getValue() - 1])) {
 
                         System.out.println("turno " + x.getId() + " es válido");
 
@@ -265,14 +341,47 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
+        System.out.println("activity rates. token = " + token);
+
+
+        long idAgencia = 0;
+        long idHotel = 0;
+        String login = "";
+        try {
+            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
+            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
+            //rq.setLanguage(creds.getLan());
+            login = creds.getLogin();
+            //rq.setPassword(creds.getPass());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        long t0 = System.currentTimeMillis();
+
+
+        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
 
             Excursion e = em.find(Excursion.class, Long.parseLong(key.split("-")[1]));
 
-            rs.setAvailable(true);
-            rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant, shift, pickup, activityLanguage));
-            rs.setValue(new Amount("EUR", Helper.roundEuros(200.34 * (adults + children))));
+            ExcursionBooking b = new ExcursionBooking();
+            b.setAgency(em.find(Agency.class, finalIdAgencia));
 
+            b.setExcursion(e);
+            b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
+            b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
+            b.setAdults(adults);
+            b.setChildren(children);
+
+            b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
+            b.setShift(em.find(TourShift.class, Long.parseLong(shift)));
+            b.priceServices(em);
+
+            rs.setAvailable(b.getTotalValue() > 0);
+            rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant, shift, pickup, activityLanguage));
+            rs.setValue(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
 
         });
 
@@ -479,7 +588,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
     }
 
     @Override
-    public BookActivityRS bookActivity(String token, BookActivityRQ rq) {
+    public BookActivityRS bookActivity(String token, BookActivityRQ rq) throws Throwable {
         System.out.println("rq=" + rq);
 
         BookActivityRS rs = new BookActivityRS();
@@ -488,7 +597,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed ok");
 
-        ExcursionBooking[] bs = {null};
+        io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
         try {
             Helper.transact(new JPATransaction() {
@@ -497,7 +606,6 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                     ExcursionBooking b = buildBookingFromKey(em, rq.getKey());
 
-                    b.setConfirmed(true);
                     b.setAgencyReference(rq.getBookingReference());
                     if (b.getAgencyReference() == null) b.setAgencyReference("");
                     b.setSpecialRequests(rq.getCommentsToProvider());
@@ -506,13 +614,15 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                     b.setPrivateComments(rq.getPrivateComments());
                     b.setPos(em.find(AuthToken.class, token).getPos());
                     b.setTelephone(rq.getPhoneNumber());
+                    b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
+                    b.setConfirmNow(false);
 
                     b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
 
 
                     em.persist(b);
 
-                    bs[0] = b;
+                    bx[0] = b;
 
                 }
             });
@@ -523,9 +633,16 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         }
 
 
-        rs.setBookingId("" + bs[0].getId());
+        io.mateu.erp.model.booking.Booking b = bx[0];
+        rs.setBookingId("" + bx[0].getId());
 
+        Helper.notransact(em -> {
+            Booking bz = em.find(Booking.class, bx[0].getId());
+            if (bz.getTPVTransactions().size() > 0) rs.setPaymentUrl(bz.getTPVTransactions().get(0).getBoton(em));
+            else rs.setPaymentUrl("");
+        });
 
+        //rs.setAvailableServices(""); // todo: añadir servicios adicionales que podemos reservar
 
         return rs;
     }

@@ -1,9 +1,8 @@
 package io.mateu.common.booking;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
-import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.product.transfer.TransferType;
@@ -11,11 +10,11 @@ import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
+import io.mateu.mdd.core.model.util.EmailMock;
 import io.mateu.mdd.core.util.Helper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.Assert.*;
@@ -26,7 +25,7 @@ public class TransferBookingTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         Helper.closeEMFs();
-        EmailHelper.setTesting(true);
+        EmailHelper.setMock(new EmailMock());
         Populator.main();
         Populator.populateBaseForTests();
         Populator.populateTransferProduct();
@@ -37,7 +36,7 @@ public class TransferBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(User.class, "admin"));
+        assertNotNull(Helper.find(ERPUser.class, "admin"));
 
     }
 
@@ -45,31 +44,7 @@ public class TransferBookingTest {
     @Test
     public void testBooking() throws Throwable {
 
-        TransferBooking b = new TransferBooking();
-        Helper.transact(em -> {
-            b.setAudit(new Audit(MDD.getCurrentUser()));
-            b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
-            b.setAgencyReference("TEST");
-            b.setPos(Populator.pos);
-            b.setCurrency(Populator.agencia.getCurrency());
-
-            b.setTransferType(TransferType.PRIVATE);
-            b.setOrigin(Populator.apt);
-            b.setDestination(Populator.hotelEnAlcudia);
-
-            b.setAdults(3);
-
-            b.setArrivalFlightOrigin("MAD");
-            b.setArrivalFlightNumber("UX4578");
-            b.setArrivalFlightTime(LocalDateTime.of(2019, 10, 1, 10, 45));
-
-            b.setDepartureFlightDestination("CDG");
-            b.setDepartureFlightNumber("IB4577");
-            b.setDepartureFlightTime(LocalDateTime.of(2019, 10, 7, 20, 30));
-
-
-            em.persist(b);
-        });
+        TransferBooking b = crearReserva();
 
         // comprobamos antes de confirmar
         Helper.notransact(em -> {
@@ -139,7 +114,111 @@ public class TransferBookingTest {
             assertEquals(true, xb.isAvailable());
         });
 
+
+        // confirmamos el servicio
+
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.cancel(em);
+
+        });
+
+        EmailHelper.getMock().print();
+
+        // 3 emails bienvenida
+        // 1 email booking recibida
+        // 1 email booking confirmada
+        // 2 emails compra servicios
+        // 1 email booking cancelada
+        // 2 emails cancelación servicios
+        assertEquals(10, EmailHelper.getMock().getSent().size());
+
     }
 
+    private TransferBooking crearReserva() throws Throwable {
+        TransferBooking b = new TransferBooking();
+        Helper.transact(em -> {
+            b.setAudit(new Audit(MDD.getCurrentUser()));
+            b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
+            b.setAgencyReference("TEST");
+            b.setLeadName("Mr. Test");
+            b.setPos(Populator.pos);
+            b.setCurrency(Populator.agencia.getCurrency());
 
+            b.setEmail("miguelperezcolom@gmail.com");
+
+            b.setTransferType(TransferType.PRIVATE);
+            b.setOrigin(Populator.apt);
+            b.setDestination(Populator.hotelEnAlcudia);
+
+            b.setAdults(3);
+
+            b.setArrivalFlightOrigin("MAD");
+            b.setArrivalFlightNumber("UX4578");
+            b.setArrivalFlightTime(LocalDateTime.of(2019, 10, 1, 10, 45));
+
+            b.setDepartureFlightDestination("CDG");
+            b.setDepartureFlightNumber("IB4577");
+            b.setDepartureFlightTime(LocalDateTime.of(2019, 10, 7, 20, 30));
+
+
+            em.persist(b);
+        });
+        return b;
+    }
+
+    @Test
+    public void testBookingPaid() throws Throwable {
+
+        EmailHelper.getMock().reset();
+
+        TransferBooking b = crearReserva();
+
+        Helper.transact(em -> {
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+            xb.enterPayment(em, Populator.banco, Populator.visa, xb.getCurrency(), xb.getTotalValue());
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // depués de pagar el saldo debe ser 0
+            assertEquals(0, xb.getBalance(), 0);
+
+            // la reserva debe aparecer como pagada
+            assertEquals(true, xb.isPaid());
+
+            // la reserva debe aparecer como pagada
+            EmailHelper.getMock().print();
+
+            // 1 email booking recibida
+            // 1 email booking confirmada
+            // 2 emails compra servicios
+            assertEquals(4, EmailHelper.getMock().getSent().size());
+
+        });
+
+
+        Helper.transact(em -> {
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+            xb.cancel(em);
+        });
+
+        // la reserva debe aparecer como pagada
+        EmailHelper.getMock().print();
+
+        // 1 email booking recibida
+        // 1 email booking confirmada
+        // 2 emails compra servicios
+        // 1 email booking cancelada
+        // 2 emails cancelación servicios
+        assertEquals(7, EmailHelper.getMock().getSent().size());
+
+
+    }
 }

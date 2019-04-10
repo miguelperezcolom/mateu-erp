@@ -1,9 +1,23 @@
 package io.mateu.erp.services.easytravelapi.test;
 
-import io.mateu.erp.services.easytravelapi.CommonsServiceImpl;
-import io.mateu.erp.services.easytravelapi.GenericBookingServiceImpl;
-import io.mateu.erp.services.easytravelapi.HotelBookingServiceImpl;
-import io.mateu.erp.services.easytravelapi.TransferBookingServiceImpl;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import io.mateu.erp.model.authentication.ERPUser;
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.QuotationRequest;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.organization.PointOfSaleSettlementForm;
+import io.mateu.erp.model.population.Populator;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
+import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
+import io.mateu.erp.services.easytravelapi.*;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import org.easytravelapi.generic.BookGenericRQ;
@@ -12,8 +26,21 @@ import org.easytravelapi.hotel.BookingKey;
 import org.easytravelapi.hotel.GetHotelPriceDetailsRQ;
 import org.easytravelapi.hotel.GetHotelRatesRQ;
 import org.easytravelapi.transfer.BookTransferRQ;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.StringReader;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class CommonsTester {
 
@@ -21,7 +48,11 @@ public class CommonsTester {
     public static void main(String[] args) {
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
 
-        String token = "eyAiY3JlYXRlZCI6ICJXZWQgRmViIDIwIDE2OjI3OjE1IENFVCAyMDE5IiwgInVzZXJJZCI6ICJ3ZWIiLCAicGFydG5lcklkIjogIjEifQ==";
+        String token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
+
+
+        //testxx();
+
 
         //testPortfolio(token);
 
@@ -49,11 +80,177 @@ public class CommonsTester {
 
         //testGenericPriceDetail(token);
 
-        testGenericConfirm(token);
+        //testGenericConfirm(token);
 
         //testTourAvail(token);
 
+        //testExcursionAvail(token);
+
+        //testExcursionRates(token);
+
+        //testCircuitAvail(token);
+
+        //testCircuitRates(token);
+
+        //testGroup();
+
+        //testInvoice();
+
+        testLiquidacion();
+
         WorkflowEngine.exit(0);
+    }
+
+    private static void testLiquidacion() {
+        try {
+
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForPOSSettlement(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/liquidacion_pos.xsl"), Charsets.UTF_8));
+
+            });
+
+
+            Helper.transact(em -> {
+
+                PointOfSale pos = em.find(PointOfSale.class, 1l);
+
+                PointOfSaleSettlementForm liq = new PointOfSaleSettlementForm(pos);
+                liq.search();
+
+                liq.crearPdf(em, new File("/home/miguel/Descargas/liquidacion.pdf"));
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+
+    private static void testInvoice() {
+
+        try {
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForIssuedInvoice(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                io.mateu.erp.model.booking.File file = em.find(io.mateu.erp.model.booking.File.class, 320l);
+
+                Document xml = new Document(new Element("invoices"));
+
+                List<BookingCharge> charges = new ArrayList<>();
+                for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
+
+                Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
+
+
+                if (firstBooking != null) xml.getRootElement().addContent(new IssuedInvoice(MDD.getCurrentUser(), charges, true, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null).toXml(em));
+
+                System.out.println(Helper.toString(xml.getRootElement()));
+
+
+                File temp = new File("/home/miguel/Descargas/factura.pdf");
+
+                FileOutputStream fileOut = new FileOutputStream(temp);
+                //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+                String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+                System.out.println("xml=" + sxml);
+                fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForIssuedInvoice())), new StreamSource(new StringReader(sxml))));
+                fileOut.close();
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testGroup() {
+
+        try {
+            Helper.transact(em -> {
+
+                //AppConfig.get(em).setXslfoForQuotationRequest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/grupo.xsl"), Charsets.UTF_8));
+                AppConfig.get(em).setPurchaseOrderTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                QuotationRequest r = em.find(QuotationRequest.class, 1l);
+
+                //r.createProforma(em, new File("/home/miguel/Descargas/testGrupo.pdf"));
+                //r.confirm();
+
+                List<PurchaseOrder> pos = new ArrayList<>();
+
+                for (Booking b : r.getFile().getBookings()) for (Service s : b.getServices()) pos.addAll(s.getPurchaseOrders());
+
+                for (PurchaseOrder po : pos) {
+                    for (SendPurchaseOrdersTask t : po.getSendingTasks()) {
+                        Map<String, Object> data = t.getData();
+                        System.out.println("data=" + Helper.toJson(data));
+                        Helper.escribirFichero("/home/miguel/Descargas/po_" + t.getId() + ".html", Helper.freemark(AppConfig.get(em).getPurchaseOrderTemplate(), data));
+                    }
+                }
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testxx() {
+
+        try {
+            Helper.transact(em -> {
+
+                TransferBooking b = em.find(TransferBooking.class, 12525l);
+                b.setSpecialRequests(b.getSpecialRequests() + "x");
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testCircuitRates(String token) {
+        try {
+            System.out.println(Helper.toJson(new CircuitBookingServiceImpl().getCircuitRates(token, "cir-153", 20190501, "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testCircuitAvail(String token) {
+        try {
+            System.out.println(Helper.toJson(new CircuitBookingServiceImpl().getAvailableCircuits(token, "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testExcursionRates(String token) {
+        try {
+            System.out.println(Helper.toJson(new ActivityBookingServiceImpl().getActivityRates(token, "exc-155", 20190501, "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testExcursionAvail(String token) {
+        try {
+            System.out.println(Helper.toJson(new ActivityBookingServiceImpl().getAvailableActivities(token, 20190325, "cou-ES", "es")));
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
     }
 
     private static void testTourAvail(String token) {
@@ -107,7 +304,7 @@ public class CommonsTester {
     }
 
     private static void testTransferConfirm(String token) {
-        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xIiwKICAiYmlrZXMiIDogMCwKICAicGF4IiA6IDIsCiAgInZhbG9yIiA6IDE2MS4xLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTIiLAogICJvdXRnb2luZ0RhdGUiIDogMjAxOTA1MTMsCiAgImluY29taW5nRGF0ZSIgOiAyMDE5MDUwMSwKICAiYWdlcyIgOiBbIF0sCiAgImdvbGZCYWdnYWdlcyIgOiAwLAogICJwcmljZUlkIiA6IDIsCiAgImJpZ0x1Z2dhZ2VzIiA6IDAKfQ==";
+        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xMTQiLAogICJiaWtlcyIgOiAwLAogICJwYXgiIDogMSwKICAidmFsb3IiIDogNjcuODIsCiAgInRva2VuIiA6ICJleUFpWTNKbFlYUmxaQ0k2SUNKR2Nta2dUV0Z5SURJeUlERXdPakl5T2pJNUlFTkZWQ0F5TURFNUlpd2dJblZ6WlhKSlpDSTZJQ0poWkcxcGJpSXNJQ0poWjJWdVkzbEpaQ0k2SUNJekluMD0iLAogICJ3aGVlbENoYWlycyIgOiAwLAogICJ0b1RyYW5zZmVyUG9pbnRJZCIgOiAidHAtMTE1IiwKICAib3V0Z29pbmdEYXRlIiA6IDIwMTkwNTE3LAogICJpbmNvbWluZ0RhdGUiIDogMjAxOTA1MTMsCiAgImFnZXMiIDogWyBdLAogICJnb2xmQmFnZ2FnZXMiIDogMCwKICAicHJpY2VJZCIgOiA1LAogICJiaWdMdWdnYWdlcyIgOiAwCn0=";
         try {
             BookTransferRQ rq = new BookTransferRQ();
             rq.setBookingReference("Test " + LocalDateTime.now());
@@ -142,7 +339,7 @@ public class CommonsTester {
 
     private static void testAvailTransfers(String token) {
         try {
-            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-779", "tp-781", 1, 0, 0, 0, 0, 0, 20190501, 20190513)));
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-1", "tp-49", 1, 0, 0, 0, 0, 0, 20190501, 20190513)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -212,7 +409,7 @@ public class CommonsTester {
     private static void testAvailHotels(String token) {
 
         try {
-            System.out.println(Helper.toJson(new HotelBookingServiceImpl().getAvailableHotels(token, "es", "des-2", 20190601, 20190608, "1x2", true)));
+            System.out.println(Helper.toJson(new HotelBookingServiceImpl().getAvailableHotels(token, "es", "des-1", 20190513, 20190517, "1x2", true)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }

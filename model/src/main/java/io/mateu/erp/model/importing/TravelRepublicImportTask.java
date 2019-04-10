@@ -1,7 +1,7 @@
 package io.mateu.erp.model.importing;
 
 import com.google.common.base.Strings;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -29,7 +29,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     public TravelRepublicImportTask() {}
 
-    public TravelRepublicImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TravelRepublicImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this.setCustomer(customer);
 
@@ -51,7 +51,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
 
     }
 
-    public TravelRepublicImportTask(User user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TravelRepublicImportTask(ERPUser user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this("TravelRepublic", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }
@@ -121,7 +121,7 @@ public class TravelRepublicImportTask extends TransferImportTask {
             this.setStatus(STATUS.ERROR);//fichero no procesado
         }
 
-        this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+        this.getAudit().touch(em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN));
         this.setReport(result.replaceFirst("\n",""));
 
     }

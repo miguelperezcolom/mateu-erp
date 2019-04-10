@@ -1,5 +1,6 @@
 package io.mateu.erp.model.projectmanagement;
 
+import io.mateu.erp.model.authentication.ERPUser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,5 +25,5 @@ public class Team {
     private Department department;
 
     @ManyToMany
-    private List<io.mateu.erp.model.authentication.User> users = new ArrayList<>();
+    private List<ERPUser> users = new ArrayList<>();
 }

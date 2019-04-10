@@ -4,7 +4,7 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.parts.TourBooking;
@@ -787,7 +787,7 @@ public class CMSServiceImpl implements CMSService {
         } else {
             Helper.transact(em -> {
 
-                User u = em.find(User.class, rq.getUser().trim().toLowerCase());
+                ERPUser u = em.find(ERPUser.class, rq.getUser().trim().toLowerCase());
 
                 if (u == null) {
                     rs.setStatusCode(404);

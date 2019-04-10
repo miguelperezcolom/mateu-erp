@@ -44,6 +44,54 @@
     <p>please provide these services:</p>
 
 
+                <#if hotels??>
+
+<h2>Hotels</h2>
+
+                    <#list hotels as s>
+<table width="100%">
+    <tr>
+        <td width="50%" style="vertical-align: top;">
+
+            <table style="border-collapse:collapse; width: 100%;" border="1" cellpadding="5">
+                <tr>
+                    <th>Ref.</th><td>${s.po!}</td>
+                </tr><tr>
+                <th>Status</th><td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
+            </tr></table>
+
+        </td>
+        <td width="50%" style="vertical-align: top;">
+
+            <table style="border-collapse:collapse; width: 100%;" border="1" cellpadding="5">
+                <tr>
+                <th>Agency</th><td>${s.agency!}</td>
+            </tr><tr>
+                <th>Lead name</th><td>${s.leadName!} / ${s.agencyReference!}</td>
+            </tr><tr>
+                <th>Comments</th><td>${s.comments!}</td>
+            </tr></table>
+
+
+        </td>
+    </tr>
+</table>
+<table width="100%" border="1">
+    <tr><th>Checkin</th><th>Checkout</th><th>Room</th><th>Board</th><th>Nr of rooms</th><th>Adults / Room</th><th>Children / Room</th><th>Children ages</th></tr>
+                        <#if s.lines??>
+                            <#list s.lines as l>
+    <tr><td>${l.start!}</td><td>${l.end!}</td><td>${l.room!}</td><td>${l.board!}</td><td>${l.rooms!}</td><td>${l.adults!}</td><td>${l.children!}</td><td>${l.ages!}</td></tr>
+                            </#list>
+                        </#if>
+
+</table>
+
+<hr/>
+                    </#list>
+
+
+                </#if>
+
 <#if transfers??>
 
 <h2>Transfers</h2>
@@ -124,7 +172,6 @@
     <th>Children</th>
     <th>Start</th>
     <th>Finish</th>
-    <th>Description</th>
     <th>Lead name</th>
     <th>Comments</th>
     </thead>
@@ -139,7 +186,6 @@
       <td>${s.children!}</td>
       <td>${s.start!}</td>
       <td>${s.finish!}</td>
-      <td>${s.description!}</td>
       <td>${s.leadName!} / ${s.agencyReference!}</td>
       <td>${s.comments!}</td>
   </tr>
@@ -149,6 +195,33 @@
 </#if>
 
 
+                <#if freetexts??>
+
+<h2>Other services</h2>
+<table style="border-collapse:collapse;" border="1" cellpadding="5">
+    <thead style="background-color: lightsteelblue;">
+    <th>Ref.</th>
+    <th>Status</th>
+    <th>Service</th>
+    <th>Start</th>
+    <th>Finish</th>
+    <th>Lead name</th>
+    <th>Comments</th>
+    </thead>
+<#list freetexts as s>
+  <tr>
+      <td>${s.po!}</td>
+      <td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
+      <td>${s.text!}</td>
+      <td>${s.start!}</td>
+      <td>${s.finish!}</td>
+      <td>${s.leadName!} / ${s.agencyReference!}</td>
+      <td>${s.comments!}</td>
+  </tr>
+</#list>
+</table>
+
+                </#if>
 
 
     <p>Thanks and best regards,</p>

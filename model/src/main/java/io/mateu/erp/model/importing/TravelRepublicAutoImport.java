@@ -2,7 +2,7 @@ package io.mateu.erp.model.importing;
 
 //import okhttp3.*;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
@@ -104,7 +104,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
                     //crear nueva TravelRepublicImportTask
                     if (csv!=null && csv.length()>0)
                     {
-                        User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                        ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                         TravelRepublicImportTask t = new TravelRepublicImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),csv, getOffice(), getPointOfSale(), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");

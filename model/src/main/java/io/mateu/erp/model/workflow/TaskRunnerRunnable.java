@@ -1,6 +1,6 @@
 package io.mateu.erp.model.workflow;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.importing.TransferImportQueue;
 import io.mateu.mdd.core.model.util.Constants;
@@ -42,7 +42,7 @@ public class TaskRunnerRunnable implements Runnable {
 
                     if (l.size() > 0) {
                         AbstractTask t = l.get(0);
-                        t.execute(em, em.find(User.class, Constants.SYSTEM_USER_LOGIN));
+                        t.execute(em, em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN));
                     } else {
                         Thread.sleep(pausaMs);
                     }

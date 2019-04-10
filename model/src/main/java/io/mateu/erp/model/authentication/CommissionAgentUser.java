@@ -9,24 +9,14 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
-@Entity(name = "ERPUser")
+@Entity
 @Getter
 @Setter
-public class User extends io.mateu.mdd.core.model.authentication.User {
+public class CommissionAgentUser extends io.mateu.mdd.core.model.authentication.User {
 
-    @ManyToOne
-    private Agency agency;
-
-    @ManyToOne
-    private Provider provider;
-
-    @ManyToOne
+    @ManyToOne@NotNull
     private CommissionAgent commissionAgent;
-
-    @ManyToOne
-    private Office office;
-
-
 
 }

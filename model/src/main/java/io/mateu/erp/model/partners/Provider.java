@@ -1,13 +1,19 @@
 package io.mateu.erp.model.partners;
 
 import com.google.common.base.Strings;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.invoicing.ReceivedInvoice;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -71,6 +77,27 @@ public class Provider {
     private boolean automaticOrderConfirmation;
 
 
+    // estos valores se actualizan cada 5 o 10 minutos....
+
+    @ListColumn
+    @KPI
+    private double orders;
+
+    @ListColumn
+    @KPI
+    private double received;
+
+    @ListColumn
+    @KPI
+    private double balance;
+
+    // ... hasta aquí
+
+    @Ignored
+    private boolean updatePending;
+
+
+
     public SendPurchaseOrdersTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
         return createTask(em, getSendOrdersTo(), purchaseOrder.getOffice().getEmailCC());
     }
@@ -115,6 +142,54 @@ public class Provider {
         if (getComments() != null) xml.setAttribute("comments", getComments());
 
         return xml;
+    }
+
+
+
+
+    @PostUpdate@PostPersist
+    public void post() {
+
+        if (updatePending) {
+
+            WorkflowEngine.add(() -> {
+
+                System.out.println("Provider " + getId() + ".post().run()");
+                try {
+                    Helper.transact(em -> {
+                        Provider b = em.merge(Provider.this);
+                        if (b.isUpdatePending()) {
+
+
+                            Object[] l = (Object[]) em.createQuery("select sum(x.valueInNucs), sum(x.balance) from " + PurchaseOrder.class.getName() + " x where x.provider.id = " + b.getId()).getSingleResult();
+
+                            b.setOrders(l != null?(Double) l[0]:0);
+                            b.setBalance(l != null?(Double) l[1]:0);
+
+                            Double v = (Double) em.createQuery("select sum(x.total) from " + ReceivedInvoice.class.getName() + " x where x.provider.id = " + b.getId()).getSingleResult();
+
+                            b.setReceived(v != null?v:0);
+
+                            b.setUpdatePending(false);
+
+                        }
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+
+        }
+
+    }
+
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (obj != null && obj instanceof Provider && id == ((Provider) obj).getId());
     }
 
 

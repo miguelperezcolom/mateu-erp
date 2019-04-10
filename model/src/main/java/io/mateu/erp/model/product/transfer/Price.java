@@ -1,7 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.Passenger;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
@@ -73,7 +72,7 @@ public class Price {
         return "From " + origin.getName() + " to " + destination.getName() + " in " + vehicle.getName() + " (" + fromPax + "-" + toPax + ") " + pricePer.name() + " = " + price + "/" + returnPrice;
     }
 
-    public Price clone(EntityManager em, User u) {
+    public Price clone(EntityManager em, ERPUser u) {
         Price p = new Price();
         p.setPrice(getPrice());
         p.setDestination(getDestination());

@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -84,9 +85,9 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
                 ds.put("po", po.getId());
                 if (s instanceof TransferService) {
-                    ds.put("orderby", ((TransferService) s).getFlightTime());
+                    ds.put("orderby", ((TransferService) s).getFlightTime().format(DateTimeFormatter.ISO_DATE_TIME));
                 } else {
-                    ds.put("orderby", s.getStart().atStartOfDay());
+                    ds.put("orderby", s.getStart().atStartOfDay().format(DateTimeFormatter.ISO_DATE));
                 }
                 if (s instanceof TransferService) t.add(ds);
                 else if (s instanceof GenericService) g.add(ds);

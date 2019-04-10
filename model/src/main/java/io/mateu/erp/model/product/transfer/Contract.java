@@ -1,6 +1,6 @@
 package io.mateu.erp.model.product.transfer;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.world.Resort;
@@ -38,7 +38,7 @@ public class Contract extends AbstractContract {
 
     @Action
     public static void cloneContracts(EntityManager em, UserData user, Set<Contract> selection, @Caption("% increment") double percent, @Caption("Value increment") double amount) throws CloneNotSupportedException {
-        User u = em.find(User.class, user.getLogin());
+        ERPUser u = em.find(ERPUser.class, user.getLogin());
         for (Contract c0 : selection) {
             Contract c1 = c0.clone(em, u);
             c1.increment(percent, amount);
@@ -47,7 +47,7 @@ public class Contract extends AbstractContract {
     }
 
 
-    public Contract clone(EntityManager em, User u) {
+    public Contract clone(EntityManager em, ERPUser u) {
         Contract c = new Contract();
         c.setAudit(new Audit());
         c.setBillingConcept(getBillingConcept());

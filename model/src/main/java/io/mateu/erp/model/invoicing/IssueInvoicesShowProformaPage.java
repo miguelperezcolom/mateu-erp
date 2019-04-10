@@ -1,6 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
 
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.MDD;
@@ -117,7 +118,7 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
                 Invoice i = null;
                 try {
 
-                    i = new IssuedInvoice(em.find(io.mateu.erp.model.authentication.User.class, MDD.getUserData().getLogin()), chargesByPartner.get(p), false, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), null);
+                    i = new IssuedInvoice(em.find(ERPUser.class, MDD.getUserData().getLogin()), chargesByPartner.get(p), false, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), null);
 
                     em.persist(i);
 

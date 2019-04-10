@@ -103,9 +103,10 @@ public class IssuedInvoice extends Invoice {
                     i.getLines().forEach(l -> {
                         if (l instanceof BookingInvoiceLine) {
                             BookingInvoiceLine bil = (BookingInvoiceLine) l;
-                            if (!bookings.contains(bil.getBooking())) bookings.add(bil.getBooking());
+                            if (!bookings.contains(bil.getCharge().getBooking())) bookings.add(bil.getCharge().getBooking());
                         }
                     });
+                    /*
                     bookings.forEach(b -> {
                         b.getPayments().forEach(a -> {
                             if (a.getInvoice() == null) {
@@ -119,7 +120,7 @@ public class IssuedInvoice extends Invoice {
                             }
                         });
                     });
-
+                    */
 
                 });
 

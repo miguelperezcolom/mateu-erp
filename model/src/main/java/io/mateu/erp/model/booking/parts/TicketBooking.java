@@ -86,6 +86,7 @@ public class TicketBooking extends Booking {
     @PrePersist
     public void pre() throws Error {
         if (!TicketStatus.LIVE.equals(ticket.getStatus())) throw new Error("Ticket must be live");
+        super.pre();
     }
 
     @Override

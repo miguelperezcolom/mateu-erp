@@ -1,6 +1,6 @@
 package io.mateu.erp.model.importing;
 
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -32,7 +32,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, User user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public ShuttleDirectImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -53,7 +53,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
        setBillingConcept(billingConcept);
     }
 
-    public ShuttleDirectImportTask(User user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public ShuttleDirectImportTask(ERPUser user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
     {
         this("ShuttleDirect", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
     }
@@ -113,7 +113,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
             this.setStatus(STATUS.ERROR);//fichero no procesado
         }
 
-        this.getAudit().touch(em.find(User.class, Constants.IMPORTING_USER_LOGIN));
+        this.getAudit().touch(em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN));
         this.setReport(result.replaceFirst("\n",""));
 
       }

@@ -3,8 +3,9 @@ package io.mateu.erp.model.email;
 import com.Ostermiller.util.CSVParser;
 import com.Ostermiller.util.CSVPrinter;
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.sun.mail.pop3.POP3Folder;
-import io.mateu.erp.model.authentication.User;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.transfer.Importer;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
@@ -80,7 +81,7 @@ public class Pop3Reader {
 
                         try {
                             Helper.transact(em -> {
-                                User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                                ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                                 TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                                 em.persist(t);
 
@@ -119,72 +120,79 @@ public class Pop3Reader {
 
                         io.mateu.erp.model.config.AppConfig appconfig = io.mateu.erp.model.config.AppConfig.get(em);
 
-
-                        // connect to my pop3 inbox
-                        Properties properties = System.getProperties();
-                        properties.setProperty("mail.transport.protocol", "smtp");
-                        properties.setProperty("mail.smtp.host", appconfig.getAdminEmailSmtpHost());
-                        properties.setProperty("mail.host", appconfig.getAdminEmailSmtpHost());
+                        if (!Strings.isNullOrEmpty(appconfig.getPop3Host())
+                                && !Strings.isNullOrEmpty(appconfig.getPop3User())
+                                && !Strings.isNullOrEmpty(appconfig.getPop3Password())
+                                && !Strings.isNullOrEmpty(appconfig.getAdminEmailSmtpHost())
+                                && !Strings.isNullOrEmpty(appconfig.getAdminEmailUser())
+                                && !Strings.isNullOrEmpty(appconfig.getAdminEmailPassword())
+                                ) {
+                            // connect to my pop3 inbox
+                            Properties properties = System.getProperties();
+                            properties.setProperty("mail.transport.protocol", "smtp");
+                            properties.setProperty("mail.smtp.host", appconfig.getAdminEmailSmtpHost());
+                            properties.setProperty("mail.host", appconfig.getAdminEmailSmtpHost());
 //                        properties.setProperty("mail.user", appconfig.geta);
 //                        properties.setProperty("mail.password", password);
-                        Session session = Session.getDefaultInstance(properties);
-                        Store store = session.getStore("pop3");
-                        store.connect(appconfig.getPop3Host(), appconfig.getPop3User(), appconfig.getPop3Password());
+                            Session session = Session.getDefaultInstance(properties);
+                            Store store = session.getStore("pop3");
+                            store.connect(appconfig.getPop3Host(), appconfig.getPop3User(), appconfig.getPop3Password());
 
-                        Folder inbox = store.getFolder("Inbox");
+                            Folder inbox = store.getFolder("Inbox");
 
-                        inbox.open(Folder.READ_WRITE);
+                            inbox.open(Folder.READ_WRITE);
 
-                        try {
+                            try {
 
-                            // get the list of inbox messages
-                            Message[] messages = inbox.getMessages();
-
-
+                                // get the list of inbox messages
+                                Message[] messages = inbox.getMessages();
 
 
-                            if (messages.length == 0) System.out.println("" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ": No messages found.");
-                            else System.out.println("" + messages.length + " messages read from pop3");
-
-                            for (int i = 0; i < messages.length; i++) {
-                                if (i > 10) break;
-
-                                Message m = messages[i];
-
-                                if (!testing) m.setFlag(Flags.Flag.DELETED, true);
-
-                                try {
 
 
-                                    System.out.println("Message " + (i + 1));
-                                    System.out.println("From : " + m.getFrom()[0]);
-                                    System.out.println("Subject : " + m.getSubject());
-                                    System.out.println("Sent Date : " + m.getSentDate());
-                                    System.out.println();
+                                if (messages.length == 0) System.out.println("" + LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE) + ": No messages found.");
+                                else System.out.println("" + messages.length + " messages read from pop3");
 
-                                    if ("error".equalsIgnoreCase(m.getSubject())) throw new Exception("este no es correcto");
-                                    else if ("pickups".equalsIgnoreCase(m.getSubject())) procesarPickups(em, appconfig, m);
-                                    else if (m.getSubject() != null && m.getSubject().toLowerCase().contains("banktransfers")) procesarTraveltino(em, appconfig, m);
+                                for (int i = 0; i < messages.length; i++) {
+                                    if (i > 10) break;
+
+                                    Message m = messages[i];
+
+                                    if (!testing) m.setFlag(Flags.Flag.DELETED, true);
+
+                                    try {
 
 
-                                } catch (Throwable e) {
-                                    e.printStackTrace();
+                                        System.out.println("Message " + (i + 1));
+                                        System.out.println("From : " + m.getFrom()[0]);
+                                        System.out.println("Subject : " + m.getSubject());
+                                        System.out.println("Sent Date : " + m.getSentDate());
+                                        System.out.println();
 
-                                    Helper.resend(appconfig.getAdminEmailSmtpHost(), appconfig.getAdminEmailSmtpPort(), appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword(), m, "ERROR:" + e.getClass().getName() + "(" + e.getMessage() + ")", appconfig.getPop3ReboundToEmail(), null);
+                                        if ("error".equalsIgnoreCase(m.getSubject())) throw new Exception("este no es correcto");
+                                        else if ("pickups".equalsIgnoreCase(m.getSubject())) procesarPickups(em, appconfig, m);
+                                        else if (m.getSubject() != null && m.getSubject().toLowerCase().contains("banktransfers")) procesarTraveltino(em, appconfig, m);
+
+
+                                    } catch (Throwable e) {
+                                        e.printStackTrace();
+
+                                        Helper.resend(appconfig.getAdminEmailSmtpHost(), appconfig.getAdminEmailSmtpPort(), appconfig.getAdminEmailUser(), appconfig.getAdminEmailPassword(), m, "ERROR:" + e.getClass().getName() + "(" + e.getMessage() + ")", appconfig.getPop3ReboundToEmail(), null);
+
+                                    }
+
 
                                 }
 
-
+                            } catch (Throwable e) {
+                                e.printStackTrace();
                             }
 
-                        } catch (Throwable e) {
-                            e.printStackTrace();
+
+
+                            inbox.close(!testing);
+                            store.close();
                         }
-
-
-
-                        inbox.close(!testing);
-                        store.close();
 
                     }
                 });
@@ -224,7 +232,7 @@ public class Pop3Reader {
                         StringWriter sw = new StringWriter();
                         new CSVPrinter(sw).println(csv);
 
-                        User u = em.find(User.class, Constants.IMPORTING_USER_LOGIN);
+                        ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                         TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
 

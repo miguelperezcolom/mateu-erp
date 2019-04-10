@@ -17,14 +17,14 @@ import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.ExtraBookingCharge;
 import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.organization.PointOfSaleSettlement;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.partners.Provider;
-import io.mateu.erp.model.payments.BookingDueDate;
-import io.mateu.erp.model.payments.BookingPaymentAllocation;
-import io.mateu.erp.model.payments.DueDateType;
+import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.tpv.TPV;
+import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
 import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
@@ -91,6 +91,11 @@ public abstract class Booking {
     @MainSearchFilter
     private Agency agency;
 
+    public void setAgency(Agency agency) {
+        this.agency = agency;
+        setCurrency(agency.getCurrency());
+    }
+
     @NotNull
     @MainSearchFilter
     @ListColumn
@@ -116,6 +121,9 @@ public abstract class Booking {
     @ColumnWidth(100)
     private String icons;
 
+
+    @Output
+    private boolean documentationSent;
 
 
     @KPI
@@ -164,6 +172,10 @@ public abstract class Booking {
     private String privateComments;
 
 
+    @NotWhenEditing
+    private transient boolean confirmNow = true;
+
+
     @ListColumn
     @ColumnWidth(156)
     @NotInEditor
@@ -206,6 +218,11 @@ public abstract class Booking {
     @KPI
     @SameLine
     @Sum
+    private double totalCommission;
+
+    @KPI
+    @SameLine
+    @Sum
     private double totalMarkup;
 
     @KPI
@@ -218,9 +235,23 @@ public abstract class Booking {
     @Sum
     private double balance;
 
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+        if (totalPaid > 0) {
+            setConfirmed(true);
+            setConfirmNow(true);
+        }
+    }
+
     @KPI
     @ManyToOne@NotNull
     private Currency currency;
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+        if (currency != null) setCurrencyExchange(currency.getExchangeRateToNucs());
+    }
 
     @KPI
     private double currencyExchange;
@@ -284,6 +315,9 @@ public abstract class Booking {
     private boolean valued;
 
     @KPI
+    private boolean costValued;
+
+    @KPI
     private boolean paid;
 
     private boolean alreadyInvoiced;
@@ -294,6 +328,7 @@ public abstract class Booking {
     @UseLinkToListView
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     @NotWhenCreating
+    @OrderColumn(name = "_orderInBooking")
     private List<Service> services = new ArrayList<>();
 
     @NotWhenCreating
@@ -324,6 +359,9 @@ public abstract class Booking {
     private CommissionAgent commissionAgent;
 
     private boolean nonCommissionable;
+
+    @ManyToOne@Output
+    private PointOfSaleSettlement pointOfSaleSettlement;
 
     @ManyToOne@Output
     private CommissionSettlement commissionSettlement;
@@ -359,11 +397,22 @@ public abstract class Booking {
     private String changesControlSignature;
 
     @Ignored
+    private String priceSignature;
+
+    @Ignored
+    private String docSignature;
+
+    @Ignored
+    private boolean changeRecordPending = true;
+
+    @Ignored
     private boolean updatePending = true;
 
-    public void setUpdatePending(boolean updatePending) {
-        this.updatePending = updatePending;
-    }
+    @Ignored
+    private boolean priceUpdatePending = true;
+
+    @Ignored
+    private boolean forcePre = false;
 
     public String createChangeControlSignature() {
         try {
@@ -435,13 +484,16 @@ public abstract class Booking {
     @Override
     public String toString() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return "" + getId() + " - " + getLeadName() + ": " + Helper.capitalize(getClass().getSimpleName().replaceAll("Booking", "")) + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
+        return "" + getId() + " - " + (getAgency() != null?getAgency().getName():"No agency") + " - " + getLeadName() + ": " + Helper.capitalize(getClass().getSimpleName().replaceAll("Booking", "")) + " from " + ((start != null)?start.format(dtf):"-") + " to " + ((end != null)?end.format(dtf):"-");
     }
 
-    public Map<String,Object> getData() throws Throwable {
+    public Map<String,Object> getData(EntityManager em) throws Throwable {
         Map<String, Object> d = Helper.getGeneralData();
 
         DecimalFormat df = new DecimalFormat("###,###,###,###,##0.00");
+
+        d.put("us", getAgency().getCompany().getName());
+        d.put("bookingemail", getPos().getOffice().getEmail());
 
 
         d.put("start", getStart());
@@ -484,7 +536,7 @@ public abstract class Booking {
             */
         }
 
-        d.put("valued", allServicesAreValued);
+        d.put("valued", isValued());
         d.put("total", getTotalNetValue());
         d.put("purchaseValued", allPurchasesAreValued);
         d.put("totalCost", totalCost);
@@ -507,9 +559,10 @@ public abstract class Booking {
         d.put("pax", pax);
 
 
-
-        d.put("availstatus", confirmed?available?"CONFIRMADA":"ON REQUEST":"PRESUPUESTO");
-        d.put("paymentstatus", paid?"PAGADA":"PENDIENTE DE PAGO");
+    //todo: recuperar
+        //d.put("availstatus", active?(confirmed?(available?"CONFIRMADA":"ON REQUEST"):"REALIZADA"):"CANCELADA");
+        d.put("availstatus", active?(confirmed?"CONFIRMADA":"REALIZADA"):"CANCELADA");
+        d.put("paymentstatus", active?(paid?"PAGADA":"PENDIENTE DE PAGO"):"--");
 
 
         d.put("paymentamounttxt", df.format(getTotalNetValue()) + " &euro;");
@@ -537,6 +590,10 @@ public abstract class Booking {
             d.put("agencytelephone", getTelephone());
         }
 
+        if (getTPVTransactions().size() > 0 && TPVTRANSACTIONSTATUS.PENDING.equals(getTPVTransactions().get(0).getStatus())) {
+            d.put("paymentlink", getTPVTransactions().get(0).getBoton(em));
+        }
+
 
         d.put("servicedata", getServiceDataHtml());
 
@@ -544,8 +601,8 @@ public abstract class Booking {
 
         d.put("totalretail", df.format(getTotalValue()) + " &euro;");
         d.put("totalnet", df.format(getTotalNetValue()) + " &euro;");
-        if (agency.getFinancialAgent() != null) d.put("paymentmethod", agency.getFinancialAgent().getPaymentMethod());
-        d.put("payments", getPaymentsDataHtml());
+        if (agency.getFinancialAgent() != null) d.put("paymentmethod", agency.getFinancialAgent().getMethodOfPayment());
+        d.put("payments", getPaymentsDataHtml(em));
 
         d.put("paymentremarks", getPaymentRemarksHtml());
 
@@ -559,7 +616,9 @@ public abstract class Booking {
     public String getCancellationTermsHtml() {
         String h = "";
 
-        h +=
+        h += "<p>Sin condiciones especiales.</p>";
+
+        if (false) h +=
                 "                <p>- Devolución total del depósito cuando la anulación se realice con más de 20 días de antelación sobre la fecha de entrada.</p>\n" +
                 "                <p>- Pérdida del depósito cuando la anulación se realice durante los 20 días anteriores a la fecha de entrada.</p>\n";
 
@@ -569,7 +628,9 @@ public abstract class Booking {
     public String getBookingTermsHtml() {
         String h = "";
 
-        h +=
+        h += "<p>Sin condiciones especiales.</p>";
+
+        if (false) h +=
                 "<p>Usted está reservando directamente con el Hotel.</p>\n" +
                 "                <p>- Usted autoriza al Hotel Voramar a realizar un cobro, en concepto de depósito, mediante la tarjeta de crédito facilitada.</p>\n" +
                 "                <p>- El pago de la parte pendiente de la reserva se ralizará una vez lleguen al hotel.</p>\n" +
@@ -582,7 +643,10 @@ public abstract class Booking {
     public String getPaymentRemarksHtml() {
         String h = "";
 
-        h =
+        if (getPos().getTpv() != null) h += "<p>Pago a realizar online utilizando " + getPos().getTpv().getName() + ".</p>";
+        else h += "<p>Sin forma de pago concreta.</p>";
+
+        if (false) h =
                 "                        <p>Tasa turística no incluida en el precio de la habitación.</p>\n" +
                 "\n" +
                 "                        <p>Se cargará la tasa en el momento del check-in.</p>\n" +
@@ -598,10 +662,15 @@ public abstract class Booking {
         return h;
     }
 
-    public String getPaymentsDataHtml() {
+    public String getPaymentsDataHtml(EntityManager em) {
+
+        DecimalFormat df = new DecimalFormat("###,###,###,###,##0.00");
+
         String h = "";
 
-        h +=
+        h += "                            <tr><td>Total a pagar ahora</td><td align='right'>" + df.format(getTotalValue()) + " &euro;</td></tr>\n";
+
+        if (false) h +=
                 "                            <tr><td>Depósito a pagar ahora</td><td align='right'>1.152,00 &euro;</td></tr>\n" +
                 "                            <tr><td>A pagar el 13/07/2018</td><td align='right'>2.567,00 &euro;</td></tr>\n";
 
@@ -640,7 +709,6 @@ public abstract class Booking {
 
     }
 
-
     @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
     public void sendBooked(EntityManager em, String changeEmail, String postscript) throws Throwable {
@@ -651,10 +719,11 @@ public abstract class Booking {
 
         String to = changeEmail;
         if (Strings.isNullOrEmpty(to)) {
-            to = getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) {
-            to = getAgency().getEmail();
+            if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
+                to = getEmail();
+            } else {
+                to = getAgency().getEmail();
+            }
         }
         if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
@@ -665,7 +734,10 @@ public abstract class Booking {
         if (getPos() != null && getPos().getOffice() != null) {
             t.setOffice(getPos().getOffice());
         }
-        t.setSubject("Booking " + getId() + "");
+        String status = "received";
+        if (isConfirmed()) status = "confirmed";
+        if (!isActive()) status = "cancelled";
+        t.setSubject("Booking " + getId() + " " + status);
         t.setTo(to);
         t.setAudit(new Audit(MDD.getCurrentUser()));
         t.setDescription("Send booked email");
@@ -676,13 +748,18 @@ public abstract class Booking {
         String freemark = appconfig.getBookedEmailTemplate();
 
         if (!Strings.isNullOrEmpty(freemark)) {
-            Map<String, Object> data = getData();
+            Map<String, Object> data = getData(em);
             data.put("postscript", postscript);
             msg = Helper.freemark(freemark, data);
         }
 
         t.setMessage(msg);
 
+        if (confirmed && active) {
+            adjuntarVouchers(em, t);
+        }
+
+        setDocumentationSent(true);
 
     }
 
@@ -699,10 +776,11 @@ public abstract class Booking {
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
-                to = getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) {
-                to = getAgency().getEmail();
+                if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
+                    to = getEmail();
+                } else {
+                    to = getAgency().getEmail();
+                }
             }
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
@@ -724,43 +802,14 @@ public abstract class Booking {
             String freemark = appconfig.getVouchersEmailTemplate();
 
             if (!Strings.isNullOrEmpty(freemark)) {
-                Map<String, Object> data = getData();
+                Map<String, Object> data = getData(em);
                 msg = Helper.freemark(freemark, data);
             }
 
             t.setMessage(msg);
 
 
-            // creamos vouchers
-
-            Document xml = new Document(new Element("services"));
-
-            if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
-
-            for (Service s : services) {
-                xml.getRootElement().addContent(s.toXml());
-            }
-
-            System.out.println(Helper.toString(xml.getRootElement()));
-
-
-            String archivo = UUID.randomUUID().toString();
-
-            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-            System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-            System.out.println("Temp file : " + temp.getAbsolutePath());
-
-            FileOutputStream fileOut = new FileOutputStream(temp);
-            //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
-            String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-            System.out.println("xml=" + sxml);
-            fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForVoucher())), new StreamSource(new StringReader(sxml))));
-            fileOut.close();
-
-
-            if (temp != null) t.getAttachments().add(new Resource(temp));
+            adjuntarVouchers(em, t);
 
 
             // fin crear vouchers
@@ -770,6 +819,45 @@ public abstract class Booking {
 
         });
 
+
+    }
+
+    private void adjuntarVouchers(EntityManager em, SendEmailTask t) throws Exception {
+        // creamos vouchers
+
+        if (getServices().stream().filter(s -> s.isActive()).count() > 0) {
+            String archivo = UUID.randomUUID().toString();
+            java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+            writeVouchers(em, temp);
+
+
+            if (temp != null) t.getAttachments().add(new Resource(temp));
+        }
+
+    }
+
+    public void writeVouchers(EntityManager em, java.io.File temp) throws Exception {
+
+        Document xml = new Document(new Element("services"));
+
+        if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+
+        services.stream().filter(s -> s.isActive()).forEach(s -> {
+            xml.getRootElement().addContent(s.toXml(true));
+        });
+
+        System.out.println(Helper.toString(xml.getRootElement()));
+
+        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+        System.out.println("Temp file : " + temp.getAbsolutePath());
+
+        FileOutputStream fileOut = new FileOutputStream(temp);
+        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+        System.out.println("xml=" + sxml);
+        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForVoucher())), new StreamSource(new StringReader(sxml))));
+        fileOut.close();
 
     }
 
@@ -786,10 +874,11 @@ public abstract class Booking {
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
-                to = getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) {
-                to = getAgency().getEmail();
+                if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
+                    to = getEmail();
+                } else {
+                    to = getAgency().getEmail();
+                }
             }
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
@@ -863,7 +952,7 @@ public abstract class Booking {
     @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void cancel(EntityManager em) {
-        cancel(em, em.find(User.class, MDD.getUserData().getLogin()));
+        cancel(em, MDD.getCurrentUser());
     }
 
     public void cancel(EntityManager em, User u) {
@@ -936,10 +1025,11 @@ public abstract class Booking {
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
-                to = getEmail();
-            }
-            if (Strings.isNullOrEmpty(to)) {
-                to = getAgency().getEmail();
+                if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
+                    to = getEmail();
+                } else {
+                    to = getAgency().getEmail();
+                }
             }
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
 
@@ -988,7 +1078,37 @@ public abstract class Booking {
 
     }
 
-    @Action(order = 5, icon = VaadinIcons.INVOICE)
+    @Action(order = 5, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
+    @NotWhenCreating
+    public void enterPayment(EntityManager em, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment, @NotNull Currency currency, double amount) throws Throwable {
+        if (getAgency().getFinancialAgent() == null) throw  new Exception("Missing financial agent for agency " + getAgency().getName() + ". Please fill");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(getAgency().getFinancialAgent());
+
+            PaymentLine l;
+            p.getLines().add(l = new PaymentLine());
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(currency);
+            l.setValue(amount);
+
+
+            BookingPaymentAllocation a;
+            p.getBreakdown().add(a = new BookingPaymentAllocation());
+            a.setPayment(p);
+            a.setBooking(this);
+            getPayments().add(a);
+            a.setValue(amount);
+
+            em.persist(p);
+
+        }
+    }
+
+    @Action(order = 6, icon = VaadinIcons.INVOICE)
     @NotWhenCreating
     public BookingInvoiceForm invoice() throws Throwable {
         return new BookingInvoiceForm(this);
@@ -1012,16 +1132,6 @@ public abstract class Booking {
 
             setDescription(getParticularDescription());
 
-
-            if (changesControlSignature != null && !changesControlSignature.equals(createChangeControlSignature())) {
-                setUpdatePending(true);
-            }
-
-            if (getSignature() == null || !getSignature().equals(createSignature())) {
-                setSignature(createSignature());
-                setUpdatePending(true);
-            }
-
             if (currencyExchange == 0) {
                 currencyExchange = currency.getExchangeRateToNucs();
             }
@@ -1030,9 +1140,48 @@ public abstract class Booking {
             setCostInNucs(Helper.roundEuros(totalCost * currencyExchange));
             setTotalMarkup(Helper.roundEuros(totalNetValue - totalCost));
 
+
+            if (getChangesControlSignature() != null && !getChangesControlSignature().equals(createChangeControlSignature())) {
+                setChangeRecordPending(true);
+                System.out.println("change control signature changed from ");
+                System.out.println("" + getChangesControlSignature());
+                System.out.println("to ");
+                System.out.println("" + createChangeControlSignature());
+                System.out.println("====================== ");
+            }
+
+            if (isConfirmed() && (getSignature() == null || !getSignature().equals(createSignature()))) {
+                setUpdatePending(true);
+                System.out.println("service signature changed from ");
+                System.out.println("" + getSignature());
+                System.out.println("to ");
+                System.out.println("" + createSignature());
+                System.out.println("====================== ");
+            }
+
+            if (getPriceSignature() == null || !getPriceSignature().equals(createPriceSignature())) {
+                setPriceUpdatePending(true);
+                System.out.println("price signature changed from ");
+                System.out.println("" + getPriceSignature());
+                System.out.println("to ");
+                System.out.println("" + createPriceSignature());
+                System.out.println("====================== ");
+            }
+
+            if (getDocSignature() == null || !getDocSignature().equals(createDocSignature())) {
+                setDocumentationSent(false);
+                System.out.println("doc signature changed from ");
+                System.out.println("" + getDocSignature());
+                System.out.println("to ");
+                System.out.println("" + createDocSignature());
+                System.out.println("====================== ");
+            }
+
         } catch (Throwable e) {
             throw new Error(e);
         }
+
+        setForcePre(false);
     }
 
     private void recordChanges() {
@@ -1067,34 +1216,91 @@ public abstract class Booking {
 
     @PostPersist@PostUpdate
     public void post() {
-        System.out.println("Booking " + getId() + ".post(" + updatePending + ")");
-        if (updatePending) WorkflowEngine.add(new Runnable() {
+        System.out.println("Booking " + getId() + ".post(" + changeRecordPending + "," + updatePending + "," + priceUpdatePending + ")");
+        if (changeRecordPending || updatePending || priceUpdatePending) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Booking " + getId() + ".post(" + updatePending + ").run()");
-                try {
-                    Helper.transact(em -> {
-                        if (updatePending) {
-                            Booking b = em.merge(Booking.this);
+                System.out.println("Booking " + getId() + ".post(" + changeRecordPending + "," + updatePending + "," + priceUpdatePending + ").run()");
+                if (changeRecordPending || updatePending || priceUpdatePending) {
+                    try {
+                        Helper.transact(em -> {
+                            Booking b = em.find(Booking.class, getId());
 
-                            b.price(em);
+                            boolean somethingHappened = false;
+                            if (b.isUpdatePending()) {
 
-                            b.build(em);
+                                b.build(em);
+
+                                b.setSignature(b.createSignature());
+                                b.setUpdatePending(false);
+
+                                somethingHappened = true;
+                            }
+                            if (b.isPriceUpdatePending()) {
+
+                                b.price(em);
+
+                                b.setPriceSignature(b.createPriceSignature());
+                                b.setPriceUpdatePending(false);
+
+                                somethingHappened = true;
+                            }
+                            if (b.isUpdatePending() || somethingHappened) {
+                                b.getAgency().setUpdatePending(true);
+                                somethingHappened = true;
+                            }
 
                             b.summarize(em);
 
-                            b.getAgency().setUpdatePending(true);
-
-                            if (b.getChangesControlSignature() != null && !b.getChangesControlSignature().equals(b.createChangeControlSignature())) {
-                                b.recordChanges();
+                            if (b.isChangeRecordPending() || somethingHappened) {
+                                if (b.getChangesControlSignature() != null && !b.getChangesControlSignature().equals(b.createChangeControlSignature())) {
+                                    b.recordChanges();
+                                }
+                                b.setChangesControlSignature(createChangeControlSignature());
+                                b.setChangeRecordPending(false);
                             }
-                            b.setChangesControlSignature(createChangeControlSignature());
 
-                            b.setUpdatePending(false);
+                            if (b.getPos().getTpv() != null && b.getTPVTransactions().size() == 0) {
+                                TPVTransaction t;
+                                b.getTPVTransactions().add(t = new TPVTransaction());
+                                t.setBooking(b);
+                                t.setTpv(b.getPos().getTpv());
+                                t.setStatus(TPVTRANSACTIONSTATUS.PENDING);
+                                t.setCreated(LocalDateTime.now());
+                                t.setLanguage("es");
+                                t.setCurrency(b.getCurrency());
+                                t.setValue(b.getTotalValue());
+                                t.setSubject("Booking " + b.getId());
+
+                                em.persist(t);
+                            }
+
+                            b.setForcePre(false);
+
+                        });
+
+
+                        try {
+                            Helper.transact(em -> {
+                                Booking b = em.find(Booking.class, getId());
+
+                                if (b.getAgency().isDocumentationRequired() && !b.isDocumentationSent()) {
+                                    try {
+                                        b.sendBooked(em, null, null);
+                                        b.setDocSignature(b.createDocSignature());
+                                    } catch (Throwable t) {
+                                        t.printStackTrace();
+                                    }
+                                }
+
+                            });
+                        } catch (Throwable throwable) {
+                            throwable.printStackTrace();
                         }
-                    });
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
+                    }
                 }
             }
         });
@@ -1102,8 +1308,14 @@ public abstract class Booking {
 
     public void complete() {
 
-        if (getCurrency() == null) setCurrency(getAgency().getCurrency());
-        setCurrencyExchange(getCurrency().getExchangeRateToNucs());
+        if (getId() == 0 && confirmNow) {
+            setConfirmed(true);
+        }
+
+        if (getCurrency() == null) {
+            setCurrency(getAgency().getCurrency());
+            setCurrencyExchange(getCurrency().getExchangeRateToNucs());
+        }
 
     }
 
@@ -1145,20 +1357,12 @@ public abstract class Booking {
     //@Action(order = 8, icon = VaadinIcons.SPLIT)
     @NotWhenCreating
     public void build(EntityManager em) {
-        if (confirmed && !alreadyPurchased) {
+        if (confirmed) {
             generateServices(em);
-            if (isValueOverrided()) {
-                services.forEach(s -> {
-                    s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
-                });
-            }
-            if (isCostOverrided()) {
-                services.forEach(s -> {
-                    s.setCostOverrided(isCostOverrided());
-                    s.setOverridedCostValue(Helper.roundEuros(getOverridedCost() / services.size()));
-                });
-            }
             services.forEach(s -> {
+                s.setAlreadyPurchased(alreadyPurchased);
+                if (s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() == null) s.setAlreadyPurchasedDate(LocalDateTime.now());
+                else if (!s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() != null) s.setAlreadyPurchasedDate(null);
                 if (!s.isUpdatePending() && (s.getSignature() == null || !s.getSignature().equals(s.createSignature()))) s.setUpdatePending(true);
             });
         }
@@ -1173,13 +1377,37 @@ public abstract class Booking {
     @NotWhenCreating
     public void price(EntityManager em) throws Throwable {
 
+        System.out.println("Booking " + getId() + ".price()");
+
         if (isValueOverrided()) {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             setTotalValue(overridedValue);
             setValued(true);
+            services.forEach(s -> {
+                s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
+            });
         } else {
             priceServices(em);
-            if (getTotalValue() != 0) setValued(true);
+            services.forEach(s -> s.rateSale(em));
+            boolean v = getServices().size() > 0;
+            if (v) for (Service service : getServices()) v &= service.isSaleValued();
+            setValued(v);
+        }
+
+        if (isCostOverrided()) {
+            if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
+            setTotalCost(overridedCost);
+            setCostValued(true);
+            services.forEach(s -> {
+                s.setCostOverrided(isCostOverrided());
+                s.setOverridedCostValue(Helper.roundEuros(getOverridedCost() / services.size()));
+                s.rateCost(em);
+            });
+        } else {
+            services.forEach(s -> s.rateCost(em));
+            boolean v = getServices().size() > 0;
+            if (v) for (Service service : getServices()) v &= service.isCostValued();
+            setCostValued(v);
         }
 
         updateCharges(em);
@@ -1217,8 +1445,12 @@ public abstract class Booking {
             }
         }
 
-        for (Service s : getServices()) {
-            totalCoste += s.getTotalCost();
+        if (isCostOverrided()) {
+            totalCoste = getOverridedCost() * getOverridedCostCurrency().getExchangeRateToNucs() / getCurrency().getExchangeRateToNucs();
+        } else {
+            for (Service s : getServices()) {
+                totalCoste += s.getTotalCost();
+            }
         }
 
         for (BookingPaymentAllocation pa : getPayments()) {
@@ -1237,9 +1469,13 @@ public abstract class Booking {
         setValueInNucs(Helper.roundEuros(totalNeto * getCurrency().getExchangeRateToNucs()));
         setCostInNucs(Helper.roundEuros(totalCoste * getCurrency().getExchangeRateToNucs()));
 
+        setPaid(getBalance() >= 0);
+
         updateCancellationTerms(em);
 
         updateDueDates(em);
+
+        getAgency().setUpdatePending(true);
 
     }
 
@@ -1359,7 +1595,7 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 10)
+    //@Action(order = 10)
     public static void updateAll() throws Throwable {
         Helper.transact(em -> {
 
@@ -1434,6 +1670,46 @@ public abstract class Booking {
             e.printStackTrace();
         }
         return s;
+    }
+
+    public String createPriceSignature() {
+        String s = "error when serializing";
+        try {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("priceOverrided", isValueOverrided());
+            if (isValueOverrided()) {
+                m.put("overridedValue", getOverridedValue());
+            }
+            m.put("costOverrided", isCostOverrided());
+            if (isCostOverrided()) {
+                m.put("overridedCost", getOverridedCost());
+            }
+
+            if (!isValueOverrided() || !isCostOverrided()) {
+                if (getStart() != null) m.put("start", getStart().toString());
+                if (getEnd() != null) m.put("end", getEnd().toString());
+                completeSignature(m);
+            }
+
+            s = Helper.toJson(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+    public String createDocSignature() {
+        String s = "error when serializing";
+        try {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("totalPaid", getTotalPaid());
+            m.put("paid", isPaid());
+            m.put("confirmed", isConfirmed());
+            s = Helper.toJson(m);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s + createSignature();
     }
 
     protected abstract void completeSignature(Map<String,Object> m);

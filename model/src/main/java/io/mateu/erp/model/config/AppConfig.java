@@ -2,6 +2,7 @@ package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.product.DataSheet;
 import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.common.Resource;
@@ -38,10 +39,16 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     private String xslfoForVoucher;
 
     @TextArea
+    private String xslfoForQuotationRequest;
+
+    @TextArea
     private String xslfoForIssuedInvoice;
 
     @TextArea
     private String xslfoForReceivedInvoice;
+
+    @TextArea
+    private String xslfoForPOSSettlement;
 
     @TextArea
     private String xslfoForWorld;
@@ -103,6 +110,21 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Resource invoiceWatermark;
+
+
+
+    @Section("Transfers")
+    @ManyToOne
+    private DataSheet shuttleDataSheet;
+
+    @ManyToOne
+    private DataSheet privateDataSheet;
+
+    @ManyToOne
+    private DataSheet executiveDataSheet;
+
+    @ManyToOne
+    private DataSheet incomingDataSheet;
 
 
     //@Tab("Currency exchange")

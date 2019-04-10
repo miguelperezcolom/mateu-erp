@@ -4,10 +4,7 @@ import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
 @Entity@Getter@Setter
@@ -19,6 +16,7 @@ public class ProductLabel {
     @NotEmpty
     private String name;
 
+    @ManyToOne(cascade = CascadeType.ALL)
     private Literal description;
 
     @Override

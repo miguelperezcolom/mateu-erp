@@ -6,6 +6,7 @@ import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.dispo.KeyValue;
 import io.mateu.erp.dispo.Occupancy;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.parts.HotelBooking;
@@ -451,7 +452,7 @@ public class HotelService extends Service {
 
         io.mateu.mdd.core.util.Helper.transact((JPATransaction) (em) -> {
 
-            io.mateu.erp.model.authentication.User u = em.find(io.mateu.erp.model.authentication.User.class, user.getLogin());
+            ERPUser u = em.find(ERPUser.class, user.getLogin());
 
             Agency agencia = em.find(Agency.class, k.getAgencyId());
             Hotel hotel = em.find(Hotel.class, k.getHotelId());

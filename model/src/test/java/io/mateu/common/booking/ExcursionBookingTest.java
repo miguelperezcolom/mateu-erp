@@ -1,12 +1,8 @@
 package io.mateu.common.booking;
 
-import io.mateu.erp.model.authentication.User;
-import io.mateu.erp.model.booking.ProcessingStatus;
-import io.mateu.erp.model.booking.PurchaseOrderStatus;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
-import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.population.Populator;
-import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
@@ -35,7 +31,7 @@ public class ExcursionBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(User.class, "admin"));
+        assertNotNull(Helper.find(ERPUser.class, "admin"));
 
     }
 

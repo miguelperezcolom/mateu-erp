@@ -1,7 +1,14 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.payments.MethodOfPayment;
+import io.mateu.erp.model.payments.Payment;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -101,7 +108,7 @@ public class FinancialAgent {
     private RetentionTerms retention;
 
     @ManyToOne
-    private PaymentMethod paymentMethod;
+    private MethodOfPayment methodOfPayment;
 
     private boolean paymentsBlocked;
 
@@ -142,4 +149,40 @@ public class FinancialAgent {
     public String toString() {
         return getName();
     }
+
+
+
+    @PostUpdate@PostPersist
+    public void post() {
+
+        if (isMarkedForUpdate()) {
+
+            WorkflowEngine.add(() -> {
+
+                System.out.println("FinancialAgent " + getId() + ".post().run()");
+                try {
+                    Helper.transact(em -> {
+                        FinancialAgent b = em.find(FinancialAgent.class, getId());
+                        if (b.isMarkedForUpdate()) {
+
+                            Double l = (Double) em.createQuery("select sum(x.balance) from " + Payment.class.getName() + " x where x.agent.id = " + b.getId()).getSingleResult();
+
+                            if (l != null) {
+                                b.setBalance(l);
+                            }
+
+                            b.setMarkedForUpdate(false);
+                        }
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+
+        }
+
+    }
+
 }

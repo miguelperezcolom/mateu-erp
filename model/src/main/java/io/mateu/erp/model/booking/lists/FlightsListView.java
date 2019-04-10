@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.MainSearchFilter;
 import io.mateu.mdd.core.interfaces.AbstractJPQLListView;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -24,9 +25,15 @@ import java.util.Set;
 @Getter@Setter
 public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
+    @MainSearchFilter
     private LocalDate checkInFrom = LocalDate.now();
 
+    @MainSearchFilter
     private LocalDate checkInTo;
+
+    @MainSearchFilter
+    private TransferDirection direction;
+
 
     @Getter@Setter
     public class Row {
@@ -70,6 +77,12 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
             if (!"".equals(w)) w += " and ";
             w += " b.flightTime < ?t";
             params.put("t", checkInTo.plusDays(1).atStartOfDay());
+        }
+
+        if (direction != null) {
+            if (!"".equals(w)) w += " and ";
+            w += " b.direction = ?d";
+            params.put("d", direction.ordinal());
         }
 
         if (!"".equals(w)) ql += " where " + w + " ";

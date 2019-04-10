@@ -104,7 +104,7 @@ public class TPVTransaction {
             apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency));
             apiMacSha256.setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
             apiMacSha256.setParameter("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl());
+            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
             apiMacSha256.setParameter("DS_MERCHANT_URLOK", getTpv().getOkUrl());
             apiMacSha256.setParameter("DS_MERCHANT_URLKO", getTpv().getKoUrl());
 
@@ -199,20 +199,20 @@ public class TPVTransaction {
     }
 
     public String getBoton(EntityManager em) throws Exception {
-        return getBoton(em, this.getBooking().getId(), getValue(), "" + getCurrency().getIsoNumericCode(), "" + getCurrency().getIsoCode());
+        return getBoton(em, this.getBooking().getId(), getValue(), getCurrency());
     }
 
-    public String getBoton(EntityManager em, final long bookingId, final double amount, final String currency, final String currencyIsoCode) throws Exception {
+    public String getBoton(EntityManager em, final long bookingId, final double amount, final Currency currency) throws Exception {
         if (TPVTYPE.SERMEPA.equals(getTpv().getType()) || TPVTYPE.WEBPAY.equals(getTpv().getType())) {
             ApiMacSha256 apiMacSha256 = new ApiMacSha256();
 
             apiMacSha256.setParameter("DS_MERCHANT_AMOUNT", getMerchantAmount(amount));
             apiMacSha256.setParameter("DS_MERCHANT_ORDER", "" + getId());
             apiMacSha256.setParameter("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
-            apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency));
+            apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", "" + currency.getIsoNumericCode());
             apiMacSha256.setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
             apiMacSha256.setParameter("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl());
+            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
             apiMacSha256.setParameter("DS_MERCHANT_URLOK", getTpv().getOkUrl());
             apiMacSha256.setParameter("DS_MERCHANT_URLKO", getTpv().getKoUrl());
 
@@ -223,9 +223,9 @@ public class TPVTransaction {
 
             h.append("<form name=f action='" + getTpv().getActionUrl() + "' method='post'>");
             h.append("<input type='hidden' name=Ds_SignatureVersion value='HMAC_SHA256_V1' />");
-            h.append("<input type='hidden' name=Ds_MarchantParameters value='" + params + "' />");
+            h.append("<input type='hidden' name=Ds_MerchantParameters value='" + params + "' />");
             h.append("<input type='hidden' name=Ds_Signature value='" + signature + "' />");
-            h.append("<input type='submit' value='PAY NOW' />");
+            h.append("<input type='submit' class='btn' value='PAY NOW' />");
             h.append("</form>");
 
             return h.toString();
@@ -241,7 +241,7 @@ public class TPVTransaction {
                     + "<input type='hidden' name='item_number' value='" + getId() + "'>"
                     + "<input type='hidden' name='item_name' value='BOOKING NR " + bookingId + "'>"
                     + "<input type='hidden' name='amount' value='" + Helper.roundOffEuros(amount) + "'>"
-                    + "<input type='hidden' name='currency_code' value='" + currencyIsoCode + "'>"
+                    + "<input type='hidden' name='currency_code' value='" + currency.getIsoCode() + "'>"
                     + "<!-- Display the payment button. -->"
                     + "<input type='image' name='submit' border='0' src='http://www.paypalobjects.com/en_US/i/btn/btn_paynowCC_LG.gif' alt='PayPal - The safer, easier way to pay online'>"
                     + "<img alt='' border='0' width='1' height='1' src='http://www.paypalobjects.com/en_US/i/scr/pixel.gif' >"
@@ -378,7 +378,12 @@ public class TPVTransaction {
             @Override
             public void run(EntityManager em) throws Exception {
 
-                String idtransaccion = request.getParameter("idtransaccion");
+                String uri = request.getRequestURI();
+
+                String idtransaccion = uri.substring(uri.lastIndexOf("/") + 1);
+                if (idtransaccion == null && request.getParameter("idtransaccion") != null) {
+                    idtransaccion = request.getParameter("idtransaccion");
+                }
                 if (idtransaccion == null && request.getParameter("item_number") != null) {
                     idtransaccion = request.getParameter("item_number");
                 }
