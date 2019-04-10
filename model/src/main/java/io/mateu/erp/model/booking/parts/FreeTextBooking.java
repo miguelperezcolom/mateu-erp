@@ -92,6 +92,11 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
+    public String getChargeSubject() {
+        return serviceDescription;
+    }
+
+    @Override
     public void priceServices(EntityManager em) throws Throwable {
         throw new Exception("Free text needs price to be overrided");
     }

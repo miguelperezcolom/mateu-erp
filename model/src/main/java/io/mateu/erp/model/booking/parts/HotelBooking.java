@@ -273,6 +273,18 @@ public class HotelBooking extends Booking {
         }
     }
 
+
+    @Override
+    public String getChargeSubject() {
+        String s = "" + getHotel().getName() + ": ";
+        boolean primera = true;
+        for (HotelBookingLine l : lines) {
+            if (primera) primera = false; else s += " and ";
+            s += l.toSimpleString();
+        }
+        return s;
+    }
+
     public void updateData() {
         LocalDate d0 = null;
         LocalDate d1 = null;

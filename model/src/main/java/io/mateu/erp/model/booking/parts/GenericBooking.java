@@ -2,6 +2,8 @@ package io.mateu.erp.model.booking.parts;
 
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
@@ -14,6 +16,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
+import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
@@ -51,6 +54,11 @@ public class GenericBooking extends Booking {
     @ManyToOne
     @Position(16)
     private Variant variant;
+
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(product != null?product.getVariants():new ArrayList());
+    }
+
 
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
@@ -152,9 +160,14 @@ public class GenericBooking extends Booking {
         getServiceCharges().add(c = new BookingCharge(this));
         c.setTotal(getTotalValue());
         c.setCurrency(getCurrency());
-        c.setText("" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch");
+        c.setText(getChargeSubject());
         c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForOthers());
         c.setAgency(getAgency());
+    }
+
+    @Override
+    public String getChargeSubject() {
+        return "" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch";
     }
 
     @Override

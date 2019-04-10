@@ -1541,7 +1541,7 @@ public abstract class Booking {
             c.setTotal(getOverridedValue());
             c.setCurrency(getCurrency());
 
-            c.setText("Booking " + getId());
+            c.setText(getChargeSubject());
 
             c.setAgency(getAgency());
 
@@ -1557,6 +1557,10 @@ public abstract class Booking {
             createCharges(em);
         }
 
+    }
+
+    public String getChargeSubject() {
+        return "Booking " + getId();
     }
 
     public void createCharges(EntityManager em) throws Throwable {

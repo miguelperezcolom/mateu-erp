@@ -1,6 +1,8 @@
 package io.mateu.erp.model.booking;
 
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.hotel.BoardType;
@@ -12,12 +14,14 @@ import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
+import sun.plugin.extension.ExtensionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @Entity@Getter@Setter
 public class QuotationRequestExcursion {
@@ -40,9 +44,19 @@ public class QuotationRequestExcursion {
     @ManyToOne
     private Variant variant;
 
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getVariants():new ArrayList());
+    }
+
+
     @NotNull
     @ManyToOne
     private TourShift shift;
+
+    public DataProvider getShiftDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getShifts():new ArrayList());
+    }
+
 
     @NotNull
     private LocalDate date;

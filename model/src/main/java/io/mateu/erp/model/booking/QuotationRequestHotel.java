@@ -1,6 +1,8 @@
 package io.mateu.erp.model.booking;
 
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.product.hotel.Board;
 import io.mateu.erp.model.product.hotel.BoardType;
@@ -17,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Entity@Getter@Setter
@@ -47,8 +50,17 @@ public class QuotationRequestHotel {
     @ManyToOne@NotNull
     private Room room;
 
+    public DataProvider getRoomDataProvider() {
+        return new ListDataProvider(hotel != null?hotel.getRooms():new ArrayList());
+    }
+
     @ManyToOne@NotNull
     private Board board;
+
+    public DataProvider getBoardDataProvider() {
+        return new ListDataProvider(hotel != null?hotel.getBoards():new ArrayList());
+    }
+
 
     private int numberOfRooms;
 

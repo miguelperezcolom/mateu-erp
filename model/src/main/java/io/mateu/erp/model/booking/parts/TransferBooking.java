@@ -320,7 +320,7 @@ public class TransferBooking extends Booking {
             c.setTotal(getTotalValue());
             c.setCurrency(getCurrency());
 
-            c.setText(((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + (getPriceForVehicle() != null?" in " + getPriceForVehicle().getName():"") + " for " + (getAdults() + getChildren()) + " pax");
+            c.setText(getChargeSubject());
 
             c.setAgency(getAgency());
 
@@ -333,8 +333,10 @@ public class TransferBooking extends Booking {
     }
 
 
-
-
+    @Override
+    public String getChargeSubject() {
+        return ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + (getPriceForVehicle() != null?" in " + getPriceForVehicle().getName():"") + " for " + (getAdults() + getChildren()) + " pax";
+    }
 
     public void setBigLuggages(int bigLuggages) {
         if (this.bigLuggages != bigLuggages) setUpdatePending(true);

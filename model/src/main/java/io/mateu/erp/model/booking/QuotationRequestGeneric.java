@@ -1,6 +1,8 @@
 package io.mateu.erp.model.booking;
 
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
@@ -18,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 @Entity@Getter@Setter
 public class QuotationRequestGeneric {
@@ -39,6 +42,11 @@ public class QuotationRequestGeneric {
     @NotNull
     @ManyToOne
     private Variant variant;
+
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(product != null?product.getVariants():new ArrayList());
+    }
+
 
     @Column(name = "_start")
     @NotNull

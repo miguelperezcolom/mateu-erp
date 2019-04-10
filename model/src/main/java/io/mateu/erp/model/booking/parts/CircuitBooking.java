@@ -2,10 +2,13 @@ package io.mateu.erp.model.booking.parts;
 
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Circuit;
+import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -37,6 +40,11 @@ public class CircuitBooking extends TourBooking {
     @NotNull
     @Position(14)
     private Variant variant;
+
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(circuit != null?circuit.getVariants():new ArrayList());
+    }
+
 
     public boolean isEndOutput() { return true; }
 

@@ -1,6 +1,8 @@
 package io.mateu.erp.model.booking.parts;
 
 import com.google.common.base.Strings;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
@@ -45,10 +47,19 @@ public class ExcursionBooking extends TourBooking {
     @Position(14)
     private Variant variant;
 
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getVariants():new ArrayList());
+    }
+
     @ManyToOne
     @NotNull
     @Position(15)
     private TourShift shift;
+
+    public DataProvider getShiftDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getShifts():new ArrayList());
+    }
+
 
 
     public boolean isEndOutput() { return true; }
@@ -188,9 +199,14 @@ public class ExcursionBooking extends TourBooking {
         getServiceCharges().add(c = new BookingCharge(this));
         c.setTotal(getTotalValue());
         c.setCurrency(getCurrency());
-        c.setText("" + excursion.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getAdults() + " ad/" + getChildren() + "ch");
+        c.setText(getChargeSubject());
         c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForExcursion());
         c.setAgency(getAgency());
+    }
+
+    @Override
+    public String getChargeSubject() {
+        return "" + excursion.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getAdults() + " ad/" + getChildren() + "ch";
     }
 
     @Override
