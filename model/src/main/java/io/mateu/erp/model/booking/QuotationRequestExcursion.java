@@ -5,8 +5,6 @@ import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.product.Variant;
-import io.mateu.erp.model.product.hotel.BoardType;
-import io.mateu.erp.model.product.hotel.Room;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourShift;
 import io.mateu.mdd.core.annotations.DependsOn;
@@ -14,7 +12,6 @@ import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
-import sun.plugin.extension.ExtensionUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
