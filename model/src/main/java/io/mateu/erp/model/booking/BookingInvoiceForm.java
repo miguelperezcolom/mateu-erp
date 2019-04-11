@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter@Setter
 public class BookingInvoiceForm {
@@ -60,7 +61,7 @@ public class BookingInvoiceForm {
         Document xml = new Document(new Element("invoices"));
 
         List<BookingCharge> charges = new ArrayList<>();
-        charges.addAll(booking.getCharges());
+        charges.addAll(booking.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
 
 
         Helper.notransact(em -> {
@@ -165,9 +166,11 @@ public class BookingInvoiceForm {
         Helper.transact(em -> {
 
             List<BookingCharge> charges = new ArrayList<>();
-            charges.addAll(booking.getCharges());
+            charges.addAll(booking.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
 
             Invoice i = new IssuedInvoice(MDD.getCurrentUser(), charges, false, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null);
+            ((IssuedInvoice) i).setAgency(booking.getAgency());
+            i.setNumber(((IssuedInvoice) i).getAgency().getCompany().getBillingSerial().createInvoiceNumber());
             em.persist(i);
 
             charges.forEach(c -> em.merge(c));

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter@Setter
 public class FileInvoiceForm {
@@ -57,7 +58,7 @@ public class FileInvoiceForm {
         Document xml = new Document(new Element("invoices"));
 
         List<BookingCharge> charges = new ArrayList<>();
-        for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
+        for (Booking b : file.getBookings()) charges.addAll(b.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
 
         Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
 
@@ -154,13 +155,15 @@ public class FileInvoiceForm {
         Helper.transact(em -> {
 
             List<BookingCharge> charges = new ArrayList<>();
-            for (Booking b : file.getBookings()) charges.addAll(b.getCharges());
+            for (Booking b : file.getBookings()) charges.addAll(b.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
 
             Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
 
             if (firstBooking != null) {
 
                 Invoice i = new IssuedInvoice(em.find(ERPUser.class, MDD.getUserData().getLogin()), charges, false, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null);
+                ((IssuedInvoice) i).setAgency(file.getAgency());
+                i.setNumber(((IssuedInvoice) i).getAgency().getCompany().getBillingSerial().createInvoiceNumber());
                 em.persist(i);
 
                 charges.forEach(c -> em.merge(c));
