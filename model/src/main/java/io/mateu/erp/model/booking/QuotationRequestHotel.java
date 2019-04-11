@@ -22,6 +22,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Entity@Getter@Setter
 public class QuotationRequestHotel {
 
@@ -197,8 +199,17 @@ public class QuotationRequestHotel {
 
 
     private void updateTotal() {
-        if (isSaleOverrided()) setTotalSale(Helper.roundEuros(numberOfRooms * pricePerRoom + (numberOfRooms * adultsPerRoom) * pricePerAdult) + (numberOfRooms * childrenPerRoom) * pricePerChild);
-        if (isCostOverrided()) setTotalCost(Helper.roundEuros(numberOfRooms * costPerRoom + (numberOfRooms * adultsPerRoom) * costPerAdult) + (numberOfRooms * childrenPerRoom) * costPerChild);
+        if (isSaleOverrided()) setTotalSale(Helper.roundEuros(getNumNights() * (numberOfRooms * pricePerRoom + (numberOfRooms * adultsPerRoom) * pricePerAdult) + (numberOfRooms * childrenPerRoom) * pricePerChild));
+        if (isCostOverrided()) setTotalCost(Helper.roundEuros(getNumNights() * (numberOfRooms * costPerRoom + (numberOfRooms * adultsPerRoom) * costPerAdult) + (numberOfRooms * childrenPerRoom) * costPerChild));
+    }
+
+    private int getNumNights() {
+        int n = 1;
+        if (start != null && end != null) {
+            n = (int) DAYS.between(start, end);
+            if (n < 1) n = 1;
+        }
+        return n;
     }
 
 
