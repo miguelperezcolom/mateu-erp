@@ -98,8 +98,7 @@ public class QuotationRequestLine {
     }
 
 
-    @Override
-    public String toString() {
+    public String toHtml() {
         String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
         h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
         h += "<tr><th>Nr of units:</th><td>" + units + "</td></tr>";
@@ -119,6 +118,10 @@ public class QuotationRequestLine {
         return s;
     }
 
+    @Override
+    public String toString() {
+        return id > 0?"Line " + id:"New line";
+    }
 
     @PrePersist@PreUpdate
     public void pre() {
@@ -127,7 +130,7 @@ public class QuotationRequestLine {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
     }
 
     public Element toXml() {

@@ -213,14 +213,13 @@ public class QuotationRequestHotel {
     }
 
 
-    @Override
-    public String toString() {
+    public String toHtml() {
         String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
         h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
-        h += "<tr><th>Hotel:</th><td>" + hotel.getName() + "</td></tr>";
+        if (hotel != null) h += "<tr><th>Hotel:</th><td>" + hotel.getName() + "</td></tr>";
         h += "<tr><th>Nr of rooms:</th><td>" + numberOfRooms + "</td></tr>";
-        h += "<tr><th>Room:</th><td>" + room.getName() + "</td></tr>";
-        h += "<tr><th>Board:</th><td>" + board.getName() + "</td></tr>";
+        if (room != null) h += "<tr><th>Room:</th><td>" + room.getName() + "</td></tr>";
+        if (board != null) h += "<tr><th>Board:</th><td>" + board.getName() + "</td></tr>";
         h += "<tr><th>Adults per room:</th><td>" + adultsPerRoom + "</td></tr>";
         h += "<tr><th>Children per room:</th><td>" + childrenPerRoom + "</td></tr>";
         h += "<tr><th>Total sale:</th><td>" + totalSale + "</td></tr>";
@@ -235,6 +234,11 @@ public class QuotationRequestHotel {
         return s;
     }
 
+    @Override
+    public String toString() {
+        return id > 0?"Line " + id:"New line";
+    }
+
 
     @PrePersist@PreUpdate
     public void pre() {
@@ -243,7 +247,7 @@ public class QuotationRequestHotel {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
     }
 
     public Element toXml() {

@@ -109,7 +109,7 @@ public class QuotationRequest {
         String h = "<div class='lines'>";
         for (QuotationRequestHotel l : hotels) {
             h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
-            h += l.toString();
+            h += l.toHtml();
             h += "</div>";
         }
         h += "</div>";
@@ -125,7 +125,7 @@ public class QuotationRequest {
         String h = "<div class='lines'>";
         for (QuotationRequestTransfer l : transfers) {
             h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
-            h += l.toString();
+            h += l.toHtml();
             h += "</div>";
         }
         h += "</div>";
@@ -142,7 +142,7 @@ public class QuotationRequest {
         String h = "<div class='lines'>";
         for (QuotationRequestHotel l : hotels) {
             h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
-            h += l.toString();
+            h += l.toHtml();
             h += "</div>";
         }
         h += "</div>";
@@ -158,7 +158,7 @@ public class QuotationRequest {
         String h = "<div class='lines'>";
         for (QuotationRequestHotel l : hotels) {
             h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
-            h += l.toString();
+            h += l.toHtml();
             h += "</div>";
         }
         h += "</div>";
@@ -174,7 +174,7 @@ public class QuotationRequest {
         String h = "<div class='lines'>";
         for (QuotationRequestLine l : lines) {
             h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
-            h += l.toString();
+            h += l.toHtml();
             h += "</div>";
         }
         h += "</div>";
@@ -338,7 +338,7 @@ public class QuotationRequest {
 
 
 
-    @Action(order = 3, icon = VaadinIcons.EDIT, saveBefore = true, saveAfter = true)
+    @Action(order = 3, icon = VaadinIcons.EDIT, saveAfter = true)
     @NotWhenCreating
     public void addComment(@NotEmpty String text) {
         if (!Strings.isNullOrEmpty(text)) {
@@ -351,7 +351,7 @@ public class QuotationRequest {
 
 
 
-    @Action(order = 3, icon = VaadinIcons.ENVELOPE, saveBefore = true, saveAfter = true)
+    @Action(order = 3, icon = VaadinIcons.ENVELOPE, saveAfter = true)
     @NotWhenCreating
     public void sendEmail(@Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript, boolean excludeProforma) throws Throwable {
 
@@ -410,7 +410,7 @@ public class QuotationRequest {
         return new URL(new Resource(createProforma(em)).toFileLocator().getUrl());
     }
 
-    @Action(order = 5, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
+    @Action(order = 5, icon = VaadinIcons.EURO, saveAfter = true)
     @NotWhenCreating
     public void enterPayment(EntityManager em, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment, @NotNull Currency currency, double amount) throws Throwable {
         if (getAgency().getFinancialAgent() == null) throw  new Exception("Missing financial agent for agency " + getAgency().getName() + ". Please fill");
@@ -436,6 +436,8 @@ public class QuotationRequest {
             a.setValue(amount);
 
             em.persist(p);
+
+            setPayments(new ArrayList<>(getPayments()));
 
         }
     }
@@ -753,7 +755,7 @@ public class QuotationRequest {
             File f = new File();
             f.setAudit(new Audit(MDD.getCurrentUser()));
             f.setAgency(getAgency());
-            f.setLeadName(getName());
+            f.setLeadName(getTitle());
             f.setCurrency(getCurrency());
 
             for (QuotationRequestHotel qrl : getHotels()) {
@@ -762,7 +764,7 @@ public class QuotationRequest {
                 b.setFile(f);
                 b.setAgency(getAgency());
                 b.setCurrency(getCurrency());
-                b.setLeadName(getName());
+                b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setCostOverrided(true);
@@ -800,7 +802,7 @@ public class QuotationRequest {
                 b.setFile(f);
                 b.setAgency(getAgency());
                 b.setCurrency(getCurrency());
-                b.setLeadName(getName());
+                b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setCostOverrided(true);
@@ -838,7 +840,7 @@ public class QuotationRequest {
                 b.setFile(f);
                 b.setAgency(getAgency());
                 b.setCurrency(getCurrency());
-                b.setLeadName(getName());
+                b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setCostOverrided(true);
@@ -870,7 +872,7 @@ public class QuotationRequest {
                 b.setFile(f);
                 b.setAgency(getAgency());
                 b.setCurrency(getCurrency());
-                b.setLeadName(getName());
+                b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setCostOverrided(true);
@@ -903,7 +905,7 @@ public class QuotationRequest {
                 b.setFile(f);
                 b.setAgency(getAgency());
                 b.setCurrency(getCurrency());
-                b.setLeadName(getName());
+                b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
                 b.setCostOverrided(true);

@@ -158,14 +158,13 @@ public class QuotationRequestTransfer {
 
 
 
-    @Override
-    public String toString() {
+    public String toHtml() {
         String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
         h += "<tr><th width='150px'>Date:</th><td> " + flightDate + "</td></tr>";
         h += "<tr><th>Flight:</th><td> " + flightNumber + " to/from " + flightOriginOrDestination + "</td></tr>";
-        h += "<tr><th>Transfer type:</th><td>" + transferType.name() + "</td></tr>";
-        h += "<tr><th>Origin:</th><td>" + origin.getName() + "</td></tr>";
-        h += "<tr><th>Destination:</th><td>" + destination.getName() + "</td></tr>";
+        if (transferType != null) h += "<tr><th>Transfer type:</th><td>" + transferType.name() + "</td></tr>";
+        if (origin != null) h += "<tr><th>Origin:</th><td>" + origin.getName() + "</td></tr>";
+        if (destination != null) h += "<tr><th>Destination:</th><td>" + destination.getName() + "</td></tr>";
         h += "<tr><th>Pax:</th><td>" + pax + "</td></tr>";
         h += "<tr><th>Total sale:</th><td>" + totalSale + "</td></tr>";
         h += "<tr><th>Total cost:</th><td>" + totalCost + "</td></tr>";
@@ -179,6 +178,10 @@ public class QuotationRequestTransfer {
         return s;
     }
 
+    @Override
+    public String toString() {
+        return id > 0?"Line " + id:"New line";
+    }
 
     @PrePersist@PreUpdate
     public void pre() {
@@ -187,7 +190,7 @@ public class QuotationRequestTransfer {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
     }
 
     public Element toXml() {

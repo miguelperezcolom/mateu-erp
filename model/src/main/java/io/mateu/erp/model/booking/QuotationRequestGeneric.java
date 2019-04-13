@@ -195,12 +195,11 @@ public class QuotationRequestGeneric {
 
 
 
-    @Override
-    public String toString() {
+    public String toHtml() {
         String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
         h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
-        h += "<tr><th>Product:</th><td>" + product.getName() + "</td></tr>";
-        h += "<tr><th>Variant:</th><td>" + variant.getName() + "</td></tr>";
+        if (product != null) h += "<tr><th>Product:</th><td>" + product.getName() + "</td></tr>";
+        if (variant != null) h += "<tr><th>Variant:</th><td>" + variant.getName() + "</td></tr>";
         h += "<tr><th>Units:</th><td>" + units + "</td></tr>";
         h += "<tr><th>Adults:</th><td>" + adults + "</td></tr>";
         h += "<tr><th>Children:</th><td>" + children + "</td></tr>";
@@ -216,6 +215,10 @@ public class QuotationRequestGeneric {
         return s;
     }
 
+    @Override
+    public String toString() {
+        return id > 0?"Line " + id:"New line";
+    }
 
     @PrePersist@PreUpdate
     public void pre() {
@@ -224,7 +227,7 @@ public class QuotationRequestGeneric {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
     }
 
     public Element toXml() {
