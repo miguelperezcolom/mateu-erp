@@ -376,7 +376,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             b.setChildren(children);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
-            b.setShift(em.find(TourShift.class, Long.parseLong(shift)));
+            b.setShift(em.find(ExcursionShift.class, Long.parseLong(shift)));
             b.priceServices(em);
 
             rs.setAvailable(b.getTotalValue() > 0);
@@ -571,7 +571,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
         if (data.get("variant") != null && !"x".equals(data.get("variant")) && !"null".equals(data.get("variant"))) b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
-        if (data.get("shift") != null && !"x".equals(data.get("shift")) && !"null".equals(data.get("shift"))) b.setShift(em.find(TourShift.class, new Long(String.valueOf(data.get("shift")))));
+        if (data.get("shift") != null && !"x".equals(data.get("shift")) && !"null".equals(data.get("shift"))) b.setShift(em.find(ExcursionShift.class, new Long(String.valueOf(data.get("shift")))));
         //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
         //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión
 

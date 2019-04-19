@@ -621,14 +621,14 @@ public class TransferBookingRequest {
 
         if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setActive(!arrivalStatus.equals(STATUS.CANCELLED));
 
-        /*
+
         if (lastRequest == null || !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()) || !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime())) {
             if (arrivalPickupDate!=null && arrivalPickupTime!=null)
-                s.setImportedPickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
+                s.setOverridePickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
             else
-                s.setImportedPickupTime(null);
+                s.setOverridePickupTime(null);
         }
-        */
+
 
         //todo: se ha movido a la reserva
         /*
@@ -683,14 +683,14 @@ public class TransferBookingRequest {
 
         if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setActive(!departureStatus.equals(STATUS.CANCELLED));
 
-        /*
+
         if (lastRequest == null || !departurePickupDate.equals(lastRequest.getDeparturePickupDate()) || !departurePickupTime.equals(lastRequest.getDeparturePickupTime())) {
             if (departurePickupDate!=null && departurePickupTime!=null)
-                s.setImportedPickupTime(getTime(departurePickupDate + " " + departurePickupTime));
+                s.setOverridePickupTime(getTime(departurePickupDate + " " + departurePickupTime));
             else
-                s.setImportedPickupTime(null);
+                s.setOverridePickupTime(null);
         }
-        */
+
 
         if (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed()) {
             ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
@@ -699,14 +699,20 @@ public class TransferBookingRequest {
             //s.setAnswer(a);
         }
 
-        if (lastRequest == null || !destination.equals(lastRequest.getDestination())) s.setDestination(destination);
+        if (lastRequest == null || !destination.equals(lastRequest.getDestination())) {
+            if (s.getArrivalFlightTime() != null) s.setDestination(destination);
+            else s.setOrigin(destination);
+        }
         if (lastRequest == null || !departureFlightCompany.equals(lastRequest.getDepartureFlightCompany()) || !departureFlightNumber.equals(lastRequest.getDepartureFlightNumber())) s.setDepartureFlightNumber("" + departureFlightCompany + departureFlightNumber);
         if (lastRequest == null || !departureDestinationAirport.equals(lastRequest.getDepartureDestinationAirport())) s.setDepartureFlightDestination("" + departureDestinationAirport);
         if (lastRequest == null || !departureFlightDate.equals(lastRequest.getDepartureFlightDate()) || !departureFlightTime.equals(lastRequest.getDepartureFlightTime())) s.setDepartureFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
         if (lastRequest == null || adults != lastRequest.getAdults()) s.setAdults(adults);
         if (lastRequest == null || children != lastRequest.getChildren()) s.setChildren(children);
 
-        if (lastRequest == null || !airport.equals(lastRequest.getAirport())) s.setOrigin(airport);
+        if (lastRequest == null || !airport.equals(lastRequest.getAirport())) {
+            if (s.getArrivalFlightTime() != null) s.setOrigin(airport);
+            else s.setDestination(airport);
+        }
 
         if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
 

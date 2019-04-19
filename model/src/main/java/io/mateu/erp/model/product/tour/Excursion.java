@@ -29,26 +29,13 @@ public class Excursion extends Tour {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
     @UseLinkToListView
-    private List<TourShift> shifts = new ArrayList<>();
-
-
-    /**
-     * si la comprobación de cupo debe ser por vehículo en lugar de por pax
-     */
-    private boolean salePerVehicle;
-
-    /**
-     * si es venta por vehículo
-     */
-    private double defaultVehicleCapacity;
-
-
+    private List<ExcursionShift> shifts = new ArrayList<>();
 
 
     @Action(order = 4)
     public void generateEvents(EntityManager em) {
-        Map<LocalDate, Map<TourShift, ManagedEvent>> byDate = new HashMap<>();
-        Map<LocalDate, Map<TourShift, ManagedEvent>> byDateDeprecated = new HashMap<>();
+        Map<LocalDate, Map<ExcursionShift, ManagedEvent>> byDate = new HashMap<>();
+        Map<LocalDate, Map<ExcursionShift, ManagedEvent>> byDateDeprecated = new HashMap<>();
         fill(byDate);
         fill(byDateDeprecated);
 
@@ -56,7 +43,7 @@ public class Excursion extends Tour {
         shifts.forEach(c -> {
             for (LocalDate d = c.getStart(); !d.isAfter(c.getEnd()); d = d.plusDays(1)) if (c.getWeekdays()[d.getDayOfWeek().getValue() - 1]) {
 
-                Map<TourShift, ManagedEvent> byShift = byDateDeprecated.get(d);
+                Map<ExcursionShift, ManagedEvent> byShift = byDateDeprecated.get(d);
                 if (byShift != null) byShift.remove(c);
 
 
@@ -84,9 +71,9 @@ public class Excursion extends Tour {
         byDateDeprecated.values().stream().forEach(byShift -> byShift.values().stream().filter(e -> e.getBookings().size() == 0 && e.getServices().size() == 0).forEach(e -> em.remove(e)));
     }
 
-    private void fill(Map<LocalDate,Map<TourShift,ManagedEvent>> byDate) {
+    private void fill(Map<LocalDate,Map<ExcursionShift,ManagedEvent>> byDate) {
         getEvents().forEach(e -> {
-            Map<TourShift, ManagedEvent> byShift = byDate.get(e.getShift());
+            Map<ExcursionShift, ManagedEvent> byShift = byDate.get(e.getShift());
             if (byShift == null) byDate.put(e.getDate(), byShift = new HashMap<>());
             byShift.put(e.getShift(), e);
         });

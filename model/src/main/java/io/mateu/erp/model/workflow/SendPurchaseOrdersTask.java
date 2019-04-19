@@ -17,7 +17,6 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -98,14 +97,14 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         Collections.sort(h, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                return (o1.get("orderby") != null)?((LocalDate)o1.get("orderby")).compareTo(((LocalDate)o2.get("orderby"))):-1;
+                return (o1.get("orderby") != null)?("" + o1.get("orderby")).compareTo(("" + o2.get("orderby"))):-1;
             }
         });
         if (h.size() > 0) d.put("hotels", h);
         Collections.sort(t, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                return (o1.get("orderby") != null)?((LocalDateTime)o1.get("orderby")).compareTo(((LocalDateTime)o2.get("orderby"))):-1;
+                return (o1.get("orderby") != null)?("" + o1.get("orderby")).compareTo(("" + o2.get("orderby"))):-1;
             }
         });
         if (t.size() > 0) d.put("transfers", t);
@@ -113,7 +112,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         Collections.sort(g, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                return (o1.get("orderby") != null)?((LocalDate)o1.get("orderby")).compareTo(((LocalDate)o2.get("orderby"))):-1;
+                return (o1.get("orderby") != null)?("" + o1.get("orderby")).compareTo(("" + o2.get("orderby"))):-1;
             }
         });
         if (g.size() > 0) d.put("generics", g);
@@ -121,7 +120,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         Collections.sort(f, new Comparator<Map<String, Object>>() {
             @Override
             public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-                return (o1.get("orderby") != null)?((LocalDate)o1.get("orderby")).compareTo(((LocalDate)o2.get("orderby"))):-1;
+                return (o1.get("orderby") != null)?("" + o1.get("orderby")).compareTo(("" + o2.get("orderby"))):-1;
             }
         });
         if (f.size() > 0) d.put("freetexts", f);
@@ -132,7 +131,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
     @Override
     public void statusChanged() {
         for (PurchaseOrder po : getPurchaseOrders()) {
-            po.setUpdatePending(true);
+            po.setUpdateRqTime(LocalDateTime.now());
         }
     }
 

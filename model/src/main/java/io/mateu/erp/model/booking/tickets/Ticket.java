@@ -27,6 +27,6 @@ public class Ticket {
 
     @Override
     public String toString() {
-        return "" + ((getBook() != null)?((getBook().getProduct() != null)?getBook().getProduct().getName():"No product"):"No book") + " - " + getStatus();
+        return "" + ((getBook() != null)?"Book " + getBook().getId():"No book") + " - " + getStatus();
     }
 }

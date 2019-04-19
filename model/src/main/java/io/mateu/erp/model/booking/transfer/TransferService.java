@@ -14,6 +14,7 @@ import io.mateu.erp.model.product.transfer.*;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SMSTask;
 import io.mateu.erp.model.workflow.SendEmailTask;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -206,7 +207,7 @@ public class TransferService extends Service {
 
     public void updateDirection() {
         TransferDirection d = TransferDirection.POINTTOPOINT;
-        if (getEffectivePickup() != null && (TransferPointType.AIRPORT.equals(getEffectivePickup().getType()) || TransferPointType.PORT.equals(getEffectivePickup().getType()))) {
+        if (getEffectivePickup() != null && getEffectivePickup().isAirport()) {
             d = TransferDirection.INBOUND;
             setAirport(getEffectivePickup());
         }
@@ -476,19 +477,21 @@ public class TransferService extends Service {
         d.put("status", (isActive())?"ACTIVE":"CANCELLED");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         d.put("office", getOffice().getName());
+        d.put("pickupConfirmationTelephone", getOffice().getPickupConfirmationTelephone());
+        d.put("company", getOffice().getCompany().getName());
 
         d.put("direction", "" + getDirection());
         d.put("pax", getPax());
 
         d.put("pickup", "" + getPickup().getName());
         d.put("pickupResort", "" + getPickup().getResort().getName());
-        if (getEffectivePickup() != null && !getEffectivePickup().equals(getPickup())) {
+        if (getEffectivePickup() != null) {
             d.put("effectivePickup", "" + getEffectivePickup().getName());
             d.put("effectivePickupResort", "" + getEffectivePickup().getResort().getName());
         }
         d.put("dropoff", "" + getDropoff().getName());
         d.put("dropoffResort", "" + getDropoff().getResort().getName());
-        if (getEffectiveDropoff() != null && !getEffectiveDropoff().equals(getDropoff())) {
+        if (getEffectiveDropoff() != null) {
             d.put("effectiveDropoff", "" + getEffectiveDropoff().getName());
             d.put("effectiveDropoffResort", "" + getEffectiveDropoff().getResort().getName());
         }
@@ -624,7 +627,7 @@ public class TransferService extends Service {
                 }
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
+                t.setAudit(new Audit(MDD.getCurrentUser()));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
@@ -735,4 +738,12 @@ public class TransferService extends Service {
         return xml;
     }
 
+
+    @Override
+    public String getChargeSubject() {
+        String d = "Inbound";
+        if (TransferDirection.OUTBOUND.equals(getDirection())) d = "Outbound";
+        else if (TransferDirection.POINTTOPOINT.equals(getDirection())) d = "Point to point";
+        return d + " transfer from " + getPickup().getName() + " to " + getDropoff().getName() + (getPreferredVehicle() != null?" in " + getPreferredVehicle().getName():"") + " for " + getPax() + " pax";
+    }
 }

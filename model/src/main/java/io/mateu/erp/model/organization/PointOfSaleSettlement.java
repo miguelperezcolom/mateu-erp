@@ -5,6 +5,7 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.commissions.CommissionSettlement;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.payments.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
@@ -39,7 +40,7 @@ public class PointOfSaleSettlement {
     private PointOfSale pointOfSale;
 
     @OneToMany(mappedBy = "pointOfSaleSettlement")@UseLinkToListView
-    private List<Booking> bookings = new ArrayList<>();
+    private List<BookingCharge> charges = new ArrayList<>();
 
     @KPI
     private double totalSale;
@@ -51,9 +52,6 @@ public class PointOfSaleSettlement {
     private double totalCommissions;
 
     @KPI
-    private boolean commissionsDiscounted;
-
-    @KPI
     private double totalPaid;
 
     @OneToMany(mappedBy = "pointOfSaleSettlement")
@@ -62,7 +60,7 @@ public class PointOfSaleSettlement {
     private List<PointOfSaleSettlementPaymentAllocation> payments = new ArrayList<>();
 
 
-    @ManyToOne
+    @ManyToOne@Output
     private CommissionSettlement commissionSettlement;
 
 
@@ -118,6 +116,8 @@ public class PointOfSaleSettlement {
                     s.setTotalPaid(Helper.roundEuros(totalPagado));
 
                     s.setUpdatePending(false);
+
+                    s.getPointOfSale().setUpdatePending(true);
 
                 });
             } catch (Throwable throwable) {

@@ -19,14 +19,14 @@
             </tr>
             <tr>
                 <td width="33%" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">RECOGIDA · PICK-UP</span><br><span style="color: black;">${pickupDate} ${pickupTime!} h</span></td>
-                <td colspan="3" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">LUGAR · PICK-UP POINT</span><br><span style="color: black;">${pickupPointInfo!} - ${pickupResort!}</span></td>
+                <td colspan="3" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">LUGAR · PICK-UP POINT</span><br><span style="color: black;">${effectivePickup!} - ${effectivePickupResort!}</span></td>
             </tr>
         </table>
     </td></tr><tr><td style="padding: 0px;">
         <br/><br/>
         Estimado cliente<br/>
         Confirmamos su traslado de salida para el dia <b><span>${flightDate!} con vuelo ${flight!} a las ${flightTime!} horas</span>.</b>
-        Recogida dia <b><span>${pickupDate} a las ${pickupTime!} horas</span></b> - lugar <b><span>${pickupPointInfo!} - ${pickupResort!}</span></b>
+        Recogida dia <b><span>${pickupDate} a las ${pickupTime!} horas</span></b> - lugar <b><span>${effectivePickup!} - ${effectivePickupResort!}</span></b>
     </td></tr><tr><td style="padding: 0px;">
         Si su alojamiento no tiene un punto general de recogida debe estar esperando fuera del hotel, nunca dentro, y en un lugar bien
         visible. Por favor estén listos 5/10 minutos antes de la hora acordado en el lugar avisado.<br/>
@@ -34,15 +34,15 @@
 
         <i><br/><br/>Dear client<br/>
             We confirm your departure transfer for day <b><span>${flightDate!} with flight ${flight!} at ${flightTime!} hrs</span></b>.
-            Pick-up day <b><span>${pickupDate} at ${pickupTime!} hrs</span></b> - pick up point <b><span>${pickupPointInfo!} - ${pickupResort!}</span></b>
+            Pick-up day <b><span>${pickupDate} at ${pickupTime!} hrs</span></b> - pick up point <b><span>${effectivePickup!} - ${effectivePickupResort!}</span></b>
     </td></tr><tr><td style="padding: 0px;">
         If your accommodation doesn’t have a general pick-up point you will have to wait outside the reception, never inside, at a visible point for the
         driver. Please be ready 5/10 minutes before the informed pick-up time at the advised place.</i><br/><br/><br/>
     </td></tr><tr><td style="padding: 0px;">
         <br/>
-        <b>YOUR BRAND</b>  :
-        YOUR ADDRESS
-        T YOUR TELEPHONE
+        <b>${company!}</b>  :
+    ${address!}
+        T ${pickupConfirmationTelephone!}
     </td></tr><tr><td>
         Horario de oficina /  Office hours :
         Lunes  -  viernes / Monday  -  Friday  :    10 :00 Hrs  -  13:00 Hrs  +  17:00 Hrs  -  19:00 Hrs
@@ -51,7 +51,9 @@
     </td></tr><tr><td style="padding: 0px;">
         <br/>Teléfono de emergencia  24 horas  /   24 hours emergency number
         <b>(NO para confirmaciones de recogida  /  NOT to reconfirm pick-up's)</b>
-        YOUR BRAND :  + YOUR TELEPHONE
+        <b>${company!}</b>  :
+    ${address!}
+        T ${pickupConfirmationTelephone!}
     </td></tr><tr><td style="padding: 0px;">
         <hr>
     </td></tr><tr><td style="padding: 0px;">

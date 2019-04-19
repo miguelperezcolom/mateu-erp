@@ -107,7 +107,7 @@ public class QuotationRequestTest {
             r.setAudit(new Audit(MDD.getCurrentUser()));
             r.setCurrency(Populator.agencia.getCurrency());
             r.setEmail("miguelperezcolom@gmail.com");
-            r.setExpiryDate(LocalDate.now().plusDays(5));
+            r.setOptionDate(LocalDate.now().plusDays(5));
             r.setName("Miguel");
             r.setPos(Populator.pos);
             if (rellenarLineas) {

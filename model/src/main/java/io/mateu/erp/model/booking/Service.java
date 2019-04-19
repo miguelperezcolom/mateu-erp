@@ -15,6 +15,7 @@ import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.model.workflow.TaskStatus;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.interfaces.GridDecorator;
@@ -111,7 +112,7 @@ public abstract class Service {
                 case CONFIRMED: setEffectiveProcessingStatus(500); break;
                 default: setEffectiveProcessingStatus(0);
             }
-            if (booking != null) booking.setUpdatePending(true);
+            if (booking != null) booking.setUpdateRqTime(LocalDateTime.now());
         }
     }
 
@@ -165,6 +166,11 @@ public abstract class Service {
     @Output
     private LocalDateTime alreadyPurchasedDate;
 
+    public void setAlreadyPurchased(boolean alreadyPurchased) {
+        this.alreadyPurchased = alreadyPurchased;
+        if (alreadyPurchased) setProcessingStatus(ProcessingStatus.CONFIRMED);
+    }
+
     private String providerReference;
 
 
@@ -199,7 +205,7 @@ public abstract class Service {
     private String signature;
 
     public void setSignature(String signature) {
-        if (!Helper.equals(this.signature, signature)) updatePending = true;
+        if (!Helper.equals(this.signature, signature)) updateRqTime = LocalDateTime.now();
         this.signature = signature;
     }
 
@@ -257,7 +263,7 @@ public abstract class Service {
     private String changeLog;
 
     @Ignored
-    private boolean updatePending = true;
+    private LocalDateTime updateRqTime = LocalDateTime.now();
 
     @Ignored
     private boolean deprecated;
@@ -346,19 +352,19 @@ public abstract class Service {
 
 
     @Action
-    public static void sendToProvider(EntityManager em, UserData user, Set<Service> selection, Provider provider, String email, @TextArea String postscript) {
+    public static void sendToProvider(EntityManager em, Set<Service> selection, Provider provider, String email, @TextArea String postscript) {
         Set services = selection.stream().map(s -> em.merge(s)).collect(Collectors.toSet());
         for (Service s : selection) {
             s.setAlreadyPurchased(false);
             if (provider != null) s.setPreferredProvider(provider);
             try {
-                s.checkPurchase(em, user);
+                s.checkPurchase(em);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         }
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        ERPUser u = em.find(ERPUser.class, user.getLogin());
+        User u = MDD.getCurrentUser();
         for (Service s : selection) {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
@@ -404,14 +410,18 @@ public abstract class Service {
     }
 
     @Action(saveBefore = true)
-    public void sendToProvider(EntityManager em, UserData user, Provider provider, String email, @TextArea String postscript) throws Throwable {
+    public void sendToProvider(EntityManager em, Provider provider, String email, @TextArea String postscript) throws Throwable {
         
         setAlreadyPurchased(false);
         if (provider != null) setPreferredProvider(provider);
-        checkPurchase(em, user);
+        try {
+            checkPurchase(em);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
 
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
-        ERPUser u = em.find(ERPUser.class, user.getLogin());
+        User u = MDD.getCurrentUser();
         {
             Service s = this;
             if (s.isActive() || s.getSentToProvider() != null) {
@@ -519,8 +529,8 @@ public abstract class Service {
 
 
     @Action(value = "Purchase", saveBefore = true)
-    public void checkPurchase(EntityManager em, UserData user) throws Throwable {
-        checkPurchase(em, em.find(ERPUser.class, user.getLogin()));
+    public void checkPurchase(EntityManager em) throws Throwable {
+        checkPurchase(em, MDD.getCurrentUser());
     }
 
     @Action(value = "Print POs", saveBefore = true)
@@ -806,7 +816,7 @@ public abstract class Service {
     @PrePersist@PreUpdate
     public void pre() {
         if (getSignature() == null || !getSignature().equals(createSignature())) {
-            setUpdatePending(true);
+            setUpdateRqTime(LocalDateTime.now());
             System.out.println("service.signature changed from ");
             System.out.println("" + getSignature());
             System.out.println("to ");
@@ -818,19 +828,19 @@ public abstract class Service {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (updatePending) WorkflowEngine.add(new Runnable() {
+        if (updateRqTime != null) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
                 try {
                     Helper.transact(em -> {
                         Service s = em.find(Service.class, getId());
-                        if (s.isUpdatePending()) {
+                        if (s.getUpdateRqTime() != null) {
                             s.complete(em);
                             s.logChanges(em);
                             s.purchase(em);
                             s.price(em);
                             s.summarize(em);
-                            s.setUpdatePending(false);
+                            s.setUpdateRqTime(null);
                         }
                     });
                 } catch (Throwable throwable) {
@@ -1066,5 +1076,9 @@ public abstract class Service {
     @Override
     public boolean equals(Object obj) {
         return this == obj || (obj != null && obj instanceof Service && id == ((Service) obj).getId());
+    }
+
+    public String getChargeSubject() {
+        return "Service " + getId();
     }
 }

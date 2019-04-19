@@ -1,13 +1,17 @@
 package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.tickets.TicketStatus;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Excursion;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionLanguage;
+import io.mateu.erp.model.product.tour.ExcursionShift;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.Position;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +22,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.PrePersist;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Map;
 
 @Entity
@@ -29,27 +34,49 @@ public class TicketBooking extends Booking {
     @Position(13)
     private Ticket ticket;
 
-    @Position(14)
-    @ManyToOne@NotNull
-    private Excursion excursion;
-
-    @Position(15)
-    @ManyToOne@NotNull
-    private Variant variant;
-
-    @Position(16)
-    @ManyToOne@NotNull
-    private TourShift shift;
 
     @ManyToOne
+    @NotNull
+    @Position(14)
+    private Excursion excursion;
+
+
+    @ManyToOne
+    @NotNull
+    @Position(15)
+    private Variant variant;
+
+    public DataProvider getVariantDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getVariants():new ArrayList());
+    }
+
+    @ManyToOne
+    @NotNull
+    @Position(16)
+    private ExcursionShift shift;
+
+    public DataProvider getShiftDataProvider() {
+        return new ListDataProvider(excursion != null?excursion.getShifts():new ArrayList());
+    }
+
+    @ManyToOne
+    @NotNull
     @Position(17)
+    private ExcursionLanguage language;
+
+    public DataProvider getLanguageDataProvider() {
+        return new ListDataProvider(shift != null?shift.getLanguages():new ArrayList());
+    }
+
+    @ManyToOne
+    @Position(18)
     private TransferPoint pickupPoint;
 
-    @Position(18)
+    @Position(19)
     private int pickupTime;
 
 
-    @Position(19)
+    @Position(20)
     private String roomNumber;
 
 
@@ -98,6 +125,11 @@ public class TicketBooking extends Booking {
     @Override
     public void generateServices(EntityManager em) {
 
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getExcursion() != null?getExcursion().getProductLine():null;
     }
 
     @Override

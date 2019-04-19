@@ -4,6 +4,7 @@ import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.UseCheckboxes;
 import io.mateu.mdd.core.annotations.WeekDays;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +18,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class TourShift {
+public class ExcursionShift {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,10 +57,9 @@ public class TourShift {
      */
     private int release;
 
-    /**
-     * lista de idiomas separados por coma
-     */
-    private String languages;
+    @OneToMany
+    @UseCheckboxes
+    private List<ExcursionLanguage> languages = new ArrayList<>();
 
 
     @Tab("Pickup times")

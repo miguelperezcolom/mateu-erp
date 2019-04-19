@@ -7,8 +7,6 @@ import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.*;
 import io.mateu.mdd.core.MDD;
@@ -37,6 +35,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -140,7 +139,7 @@ public class File {
 
 
     @Ignored
-    private boolean forcePre = false;
+    private LocalDateTime updateRqTime = null;
 
 
     @Override
@@ -403,9 +402,12 @@ public class File {
 
                     File f = em.find(File.class, getId());
 
-                    f.updateTotals(em);
+                    if (f.getUpdateRqTime() != null) {
+                        f.updateTotals(em);
 
-                    if (f.isForcePre()) f.setForcePre(false);
+                        f.setUpdateRqTime(null);
+                    }
+
 
                 });
             } catch (Throwable throwable) {

@@ -22,18 +22,6 @@ public class Tour extends AbstractProduct {
 
 
     @Section("Purchase")
-    /**
-     * no hay coste. Toda la venta es margen para nmosotros
-     */
-    private boolean noCost;
-
-    /**
-     * esperamos una línea de coste por cada ticket en la factura de compra.
-     * Si no está marcado esperamos un coste por servicio
-     */
-    private boolean costPerTicket;
-
-
     private boolean providerConfirmationRequired;
 
 
@@ -43,18 +31,7 @@ public class Tour extends AbstractProduct {
 
 
     @Section("Operation")
-    /**
-     * transporte organizado por la agencia. la excursión es propia
-     */
-    private boolean owned;
-
     private boolean freeSale;
-
-
-    private int childFrom;
-
-    private int adultFrom;
-
 
     @OneToMany(mappedBy = "tour")
     @UseLinkToListView

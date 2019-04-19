@@ -3,11 +3,9 @@ package io.mateu.erp.services.easytravelapi.test;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import io.mateu.erp.model.authentication.ERPUser;
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.QuotationRequest;
-import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
@@ -18,6 +16,8 @@ import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.services.easytravelapi.*;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.data.UserData;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import org.easytravelapi.generic.BookGenericRQ;
@@ -48,8 +48,17 @@ public class CommonsTester {
     public static void main(String[] args) {
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
 
+        EmailHelper.setTesting(true);
+
         String token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
 
+        testzm();
+
+        //testzq();
+
+        //testzy();
+
+        //testzz();
 
         //testxx();
 
@@ -96,9 +105,186 @@ public class CommonsTester {
 
         //testInvoice();
 
-        testLiquidacion();
+        //testLiquidacion();
+
+        //testLlegadaSalida();
+
+        //testManifiesto();
+
+        //testInformeEvento();
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testzm() {
+
+        try {
+            Helper.transact(em -> {
+
+                TransferService s = em.find(TransferService.class, 2001l);
+
+                s.sendToProvider(em, null, "miguelperezcolom@gmail.com", null);
+
+            });
+
+
+            Helper.transact(em -> {
+
+                TransferService s = em.find(TransferService.class, 2001l);
+
+                s.getPurchaseOrders().get(0).getSendingTasks().get(s.getPurchaseOrders().get(0).getSendingTasks().size() - 1).run(em, MDD.getCurrentUser());
+
+            });
+
+
+            Helper.transact(em -> {
+
+                TransferService s = em.find(TransferService.class, 2001l);
+
+                System.out.println("s.getProcessingStatus()=" + s.getProcessingStatus());
+
+            });
+
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testzq() {
+
+        try {
+            Helper.transact(em -> {
+
+                TransferBooking b = em.find(TransferBooking.class, 12773l);
+
+                b.setDepartureFlightNumber(b.getDepartureFlightNumber() + "x");
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testzy() {
+
+        try {
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setPickupEmailTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/pickupemail.ftl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                TransferService s = em.find(TransferService.class, 2170l);
+
+                System.out.println("********************************************");
+                System.out.println("********************************************");
+                System.out.println("********************************************");
+
+                System.out.println(Helper.toJson(s.getData()));
+
+                System.out.println("********************************************");
+                System.out.println("********************************************");
+                System.out.println("********************************************");
+
+
+                Helper.escribirFichero("/home/miguel/Descargas/email.html", Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), s.getData()));
+
+                s.sendEmailToHotel(new UserData(), em);
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testzz() {
+
+        try {
+            Helper.transact(em -> {
+
+                List<TransferBooking> reservas = em.createQuery("select x from " + TransferBooking.class.getName() + " x where x.audit.created > :d and x.arrivalFlightTime = null").setParameter("d", LocalDateTime.of(2019, 02, 28, 0, 1)).getResultList();
+
+                for (TransferBooking reserva : reservas) {
+                    reserva.generateServices(em);
+                }
+
+            });
+        } catch (Throwable throwable) {
+            MDD.alert(throwable);
+        }
+
+
+    }
+
+    private static void testInformeEvento() {
+        try {
+
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForEventReport(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/event_report.xsl"), Charsets.UTF_8));
+
+            });
+
+
+            Helper.transact(em -> {
+
+                ManagedEvent pos = em.find(ManagedEvent.class, 5807l);
+
+                pos.crearReport(em, new File("/home/miguel/Descargas/manifiesto.pdf"));
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+    private static void testManifiesto() {
+        try {
+
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForEventManifest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/event_manifest.xsl"), Charsets.UTF_8));
+
+            });
+
+
+            Helper.transact(em -> {
+
+                ManagedEvent pos = em.find(ManagedEvent.class, 5807l);
+
+                pos.crearPdf(em, new File("/home/miguel/Descargas/manifiesto.pdf"));
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+
+
+    private static void testLlegadaSalida() {
+
+
+        try {
+            Helper.transact(em -> {
+
+                Booking b = em.find(Booking.class, 12820l);
+
+                b.setSpecialRequests("" + LocalDateTime.now());
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
     }
 
     private static void testLiquidacion() {
@@ -211,7 +397,7 @@ public class CommonsTester {
         try {
             Helper.transact(em -> {
 
-                TransferBooking b = em.find(TransferBooking.class, 12525l);
+                TransferBooking b = em.find(TransferBooking.class, 12741l);
                 b.setSpecialRequests(b.getSpecialRequests() + "x");
 
             });

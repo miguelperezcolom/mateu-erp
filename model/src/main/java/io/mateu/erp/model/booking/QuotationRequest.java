@@ -188,7 +188,7 @@ public class QuotationRequest {
     private LocalDate date;
 
     @ListColumn
-    private LocalDate expiryDate;
+    private LocalDate optionDate;
 
     @TextArea
     private String text;
@@ -497,7 +497,7 @@ public class QuotationRequest {
         if (title != null) xml.setAttribute("title", title);
         if (date != null) xml.setAttribute("date", date.format(DateTimeFormatter.ISO_DATE));
         else if (audit != null && audit.getModified() != null) xml.setAttribute("date", audit.getModified().format(DateTimeFormatter.ISO_DATE));
-        if (expiryDate != null) xml.setAttribute("expiryDate", expiryDate.format(DateTimeFormatter.ISO_DATE));
+        if (optionDate != null) xml.setAttribute("optionDate", optionDate.format(DateTimeFormatter.ISO_DATE));
         if (text != null) xml.setAttribute("text", text);
 
         xml.setAttribute("total", nf.format(total));
@@ -782,18 +782,22 @@ public class QuotationRequest {
                 b.setTelephone(getTelephone());
 
                 b.setHotel(qrl.getHotel());
-                HotelBookingLine hbl;
-                b.getLines().add(hbl = new HotelBookingLine());
-                hbl.setBooking(b);
-                hbl.setRoom(qrl.getRoom());
-                hbl.setBoard(qrl.getBoard());
-                hbl.setStart(qrl.getStart());
-                hbl.setEnd(qrl.getEnd());
-                hbl.setRooms(qrl.getNumberOfRooms());
-                hbl.setActive(qrl.isActive());
-                hbl.setAdultsPerRoom(qrl.getAdultsPerRoom());
-                hbl.setChildrenPerRoom(qrl.getChildrenPerRoom());
-                hbl.setAges(qrl.getAges());
+
+                for (QuotationRequestHotelLine hl : qrl.getLines()) {
+                    HotelBookingLine hbl;
+                    b.getLines().add(hbl = new HotelBookingLine());
+                    hbl.setBooking(b);
+                    hbl.setRoom(hl.getRoom());
+                    hbl.setBoard(hl.getBoard());
+                    hbl.setStart(hl.getStart());
+                    hbl.setEnd(hl.getEnd());
+                    hbl.setRooms(hl.getNumberOfRooms());
+                    hbl.setActive(hl.isActive());
+                    hbl.setAdultsPerRoom(hl.getAdultsPerRoom());
+                    hbl.setChildrenPerRoom(hl.getChildrenPerRoom());
+                    hbl.setAges(hl.getAges());
+                }
+
                 em.persist(b);
             }
             for (QuotationRequestTransfer qrl : getTransfers()) {

@@ -8,7 +8,7 @@ import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Circuit;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -67,6 +67,11 @@ public class CircuitBooking extends TourBooking {
     @Override
     public void generateServices(EntityManager em) {
 
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getCircuit().getProductLine();
     }
 
     @Override

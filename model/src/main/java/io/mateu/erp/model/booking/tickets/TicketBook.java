@@ -1,6 +1,9 @@
 package io.mateu.erp.model.booking.tickets;
 
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.product.AbstractProduct;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.NotWhenEditing;
 import io.mateu.mdd.core.annotations.Output;
@@ -8,6 +11,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Currency;
 import java.util.Set;
 
 @Entity
@@ -18,9 +24,6 @@ public class TicketBook {
     private long id;
 
     private String reference;
-
-    @ManyToOne
-    private AbstractProduct product;
 
     public boolean isProductEnabled() {
         return !ticketsGenerated;
@@ -44,14 +47,13 @@ public class TicketBook {
         return !ticketsGenerated;
     }
 
-
     @Output
     private boolean ticketsGenerated;
 
 
     @Override
     public String toString() {
-        return "" + reference + " " + serie + " " + (product != null?"(" + product.getName() + ")":"") + " " + fromNumber + " to " + toNumber;
+        return "" + reference + " " + serie + " " + fromNumber + " to " + toNumber;
     }
 
     @Action

@@ -16,6 +16,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
+import io.mateu.erp.model.workflow.TaskResult;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
@@ -182,10 +183,14 @@ public class PurchaseOrder {
     private List<PurchaseCharge> charges = new ArrayList<>();
 
     @Ignored
-    private boolean updatePending = true;
+    private LocalDateTime updateRqTime = LocalDateTime.now();
+
+    public void setUpdateRqTime(LocalDateTime updateRqTime) {
+        this.updateRqTime = updateRqTime;
+    }
 
     @Ignored
-    private boolean priceUpdatePending = true;
+    private LocalDateTime priceUpdateRqTime = LocalDateTime.now();
 
     @Ignored
     private transient String servicesUpdateSignature;
@@ -383,12 +388,15 @@ public class PurchaseOrder {
         setValueInNucs(total * currencyExchange);
 
 
-        if (getSignature() == null || !getSignature().equals(createSignature()) || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
-            setUpdatePending(true);
+        if (getSignature() == null || !getSignature().equals(createSignature()) || getServicesUpdateSignature() ==null || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
+            setUpdateRqTime(LocalDateTime.now());
+            if (getSignature() == null || !getSignature().equals(createSignature())) {
+                setStatus(PurchaseOrderStatus.PENDING);
+            }
         }
 
         if (getPriceSignature() == null || !getPriceSignature().equals(createPriceSignature())) {
-            setPriceUpdatePending(true);
+            setPriceUpdateRqTime(LocalDateTime.now());
         }
 
     }
@@ -421,13 +429,13 @@ public class PurchaseOrder {
     }
 
     public void markServicesForUpdate() {
-        getServices().forEach(s -> s.setUpdatePending(true));
+        getServices().forEach(s -> s.setUpdateRqTime(LocalDateTime.now()));
     }
 
     @PostPersist@PostUpdate
     public void post() throws Exception, Throwable {
 
-        if (updatePending || priceUpdatePending) WorkflowEngine.add(new Runnable() {
+        if (updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
 
@@ -439,20 +447,20 @@ public class PurchaseOrder {
                             PurchaseOrder po = em.merge(PurchaseOrder.this);
 
                             boolean somethingHappened = false;
-                            if (po.isPriceUpdatePending()) {
+                            if (po.getPriceUpdateRqTime() != null) {
                                 po.updateCharges(em);
                                 po.setPriceSignature(createPriceSignature());
-                                po.setPriceUpdatePending(false);
+                                po.setPriceUpdateRqTime(null);
                                 somethingHappened = true;
                             }
 
-                            if (po.isUpdatePending()) {
+                            if (po.getUpdateRqTime() != null) {
                                 po.summarize(em);
 
                                 po.markServicesForUpdate();
 
                                 po.setSignature(po.createSignature());
-                                po.setUpdatePending(false);
+                                po.setUpdateRqTime(null);
 
                                 somethingHappened = true;
                             }
@@ -482,7 +490,7 @@ public class PurchaseOrder {
     private void updateStatusFromTasks(EntityManager em) {
         if (sendingTasks.size() > 0) {
             SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
-            if (TaskStatus.FINISHED.equals(t.getStatus())) {
+            if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
                 if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
                 setSentTime(t.getFinished());
                 setSent(true);

@@ -12,6 +12,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -24,6 +25,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +109,11 @@ public class HotelBooking extends Booking {
         s.setHotel(hotel);
         for (HotelBookingLine e : getLines()) s.getLines().add(new HotelServiceLine(s, e));
         s.setSpecialRequests(getSpecialRequests());
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return hotel.getProductLine();
     }
 
     @Override
@@ -313,7 +320,7 @@ public class HotelBooking extends Booking {
             setTotalNetValue(Helper.roundEuros(v));
             setTotalValue(Helper.roundEuros(v));
         }
-        setUpdatePending(true);
+        setUpdateRqTime(LocalDateTime.now());
     }
 
 

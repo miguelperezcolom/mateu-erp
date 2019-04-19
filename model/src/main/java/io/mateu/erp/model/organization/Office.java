@@ -50,6 +50,8 @@ public class Office {
 
     private String address;
 
+    private String pickupConfirmationTelephone;
+
 
     /*
     @NotNull
@@ -64,6 +66,10 @@ public class Office {
     private String emailHost;
     @NotInList
     private int emailPort;
+    @NotInList
+    private boolean emailStartTLS;
+    @NotInList
+    private boolean emailSSLOnConnect;
     @NotInList
     private String emailUsuario;
     @NotInList

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.tour;
 
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.ProductType;
@@ -53,4 +54,18 @@ public class TourCost {
 
     private int units;
 
+    private boolean overrideCost;
+
+    @ManyToOne
+    private Currency currency;
+
+    private double costPerService;
+
+    private double costPerAdult;
+
+    private double costPerChild;
+
+    private double costPerUnit;
+
+    private double minCost;
 }

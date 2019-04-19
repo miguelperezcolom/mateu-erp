@@ -15,7 +15,9 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.tour.Excursion;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionLanguage;
+import io.mateu.erp.model.product.tour.ExcursionShift;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -38,13 +40,13 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(13)
+    @Position(16)
     private Excursion excursion;
 
 
     @ManyToOne
     @NotNull
-    @Position(14)
+    @Position(17)
     private Variant variant;
 
     public DataProvider getVariantDataProvider() {
@@ -53,11 +55,20 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(15)
-    private TourShift shift;
+    @Position(18)
+    private ExcursionShift shift;
 
     public DataProvider getShiftDataProvider() {
         return new ListDataProvider(excursion != null?excursion.getShifts():new ArrayList());
+    }
+
+    @ManyToOne
+    @NotNull
+    @Position(19)
+    private ExcursionLanguage language;
+
+    public DataProvider getLanguageDataProvider() {
+        return new ListDataProvider(shift != null?shift.getLanguages():new ArrayList());
     }
 
 
@@ -95,14 +106,15 @@ public class ExcursionBooking extends TourBooking {
             me.setActive(true);
             me.setOffice(excursion.getOffice());
             me.setDate(getStart());
-            me.setUnitsBooked(1);
-            me.setUnitsLeft(-1);
-            me.setMaxUnits(0);
+            me.setMaxUnits(shift.getMaxPax());
             em.persist(me);
         }
         if (!me.getBookings().contains(this)) {
             me.getBookings().add(this);
         }
+        setManagedEvent(me);
+        me.setUpdatePending(true);
+
 
         List<Service> oldServices = new ArrayList<>(getServices());
 
@@ -129,35 +141,14 @@ public class ExcursionBooking extends TourBooking {
             s.setManagedEvent(finalMe);
             s.setOffice(finalMe.getOffice());
         });
-        // si la excusión es de terceros
-        if (excursion.isCostPerTicket()) {
-            ExcursionService s = null;
-            for (Service x : oldServices) if (x instanceof ExcursionService) s = (ExcursionService) x;
-            if (s != null) oldServices.remove(s);
-            else {
-                ExcursionService gs;
-                getServices().add(gs = new ExcursionService());
-                gs.setBooking(this);
-            }
-            ExcursionService gs;
-            getServices().add(gs = new ExcursionService());
-            gs.setBooking(this);
-            gs.setActive(isActive());
-            gs.setAdults(getAdults());
-            gs.setChildren(getChildren());
-            gs.setUnits(0);
-            gs.setExcursion(getExcursion());
-            gs.setVariant(getVariant());
-            gs.setShift(getShift());
-            gs.setStart(getStart());
-            gs.setFinish(getEnd());
-            gs.setAudit(new Audit(MDD.getCurrentUser()));
-            gs.setManagedEvent(finalMe);
-        }
-
 
         oldServices.forEach(s -> s.cancel(em, MDD.getCurrentUser()));
 
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getExcursion().getProductLine();
     }
 
     @Override

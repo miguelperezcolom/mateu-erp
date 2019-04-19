@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:fo="http://www.w3.org/1999/XSL/Format"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output indent="yes"/>
-    <xsl:template match="//settlement">
+    <xsl:template match="//event">
         <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
         <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
         <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>
@@ -91,7 +91,7 @@
                             <fo:table-body>
                                 <fo:table-row>
                                     <fo:table-cell border-bottom-style="solid" border-right-width="1px" padding="1mm">
-                                        <fo:block font-weight="700" font-size="12pt">Liquidación punto de venta <fo:inline font-size="9pt" font-style="italic" font-weight="normal">POINT OF SALE SETTLEMENT</fo:inline></fo:block>
+                                        <fo:block font-weight="700" font-size="12pt">Informe excursión<fo:inline font-size="9pt" font-style="italic" font-weight="normal">EVENT REPORT</fo:inline></fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>
@@ -102,14 +102,14 @@
 
                             <fo:table-column column-width="14mm"></fo:table-column>
                             <fo:table-column column-width="50mm"></fo:table-column>
-                            <fo:table-column column-width="50mm"></fo:table-column>
                             <fo:table-column column-width="20mm"></fo:table-column>
                             <fo:table-column column-width="20mm"></fo:table-column>
-                            <fo:table-column column-width="20mm"></fo:table-column>
+                            <fo:table-column column-width="40mm"></fo:table-column>
+                            <fo:table-column column-width="30mm"></fo:table-column>
 
                             <!-- CONCEPTOS -->
 
-                            <xsl:for-each select="lines">
+                            <xsl:for-each select="bookings">
 
                                 <fo:table-body>
                                     <fo:table-row>
@@ -125,27 +125,27 @@
                                             <fo:block>titular</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>descripción</fo:block>
+                                            <fo:block>adultos</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>total</fo:block>
+                                            <fo:block>niños</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>cash</fo:block>
+                                            <fo:block>datos</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell text-align="right" padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>comisiones</fo:block>
+                                            <fo:block>comentarios</fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
 
-                                    <xsl:for-each select="line">
+                                    <xsl:for-each select="booking">
 
                                         <fo:table-row>
                                             <fo:table-cell
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@bookingId"/></fo:block>
+                                                <fo:block><xsl:value-of select="@id"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
@@ -154,31 +154,30 @@
                                                 <fo:block><xsl:value-of select="@leadName"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
+                                                    text-align="right"
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@description"/></fo:block>
+                                                <fo:block><xsl:value-of select="@adults"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     text-align="right"
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@value"/> €</fo:block>
+                                                <fo:block><xsl:value-of select="@children"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
-                                                    text-align="right"
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@cash"/> €</fo:block>
+                                                <fo:block><xsl:value-of select="@data"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
-                                                    text-align="right"
                                                     padding="1mm"
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@commissions"/> €</fo:block>
+                                                <fo:block><xsl:value-of select="@comments"/></fo:block>
                                             </fo:table-cell>
                                         </fo:table-row>
                                     </xsl:for-each>
@@ -210,19 +209,16 @@
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
-                                        <xsl:for-each select="commissions/line">
-                                            <fo:block space-after="3pt"><xsl:value-of select="@agent"></xsl:value-of></fo:block>
-                                        </xsl:for-each>
-
 
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
                                         <fo:block space-after="3pt">Nr of bookings</fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold">Nr of adults</fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold">Nr of children</fo:block>
                                         <fo:block space-after="3pt">Total sale</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold">Total cash</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold">Total commissions</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold">Total to pay</fo:block>
+                                        <fo:block space-after="3pt">Total cost</fo:block>
+                                        <fo:block space-after="3pt">Total markup</fo:block>
 
                                     </fo:table-cell>
                                     <fo:table-cell
@@ -232,17 +228,15 @@
                                             border-right-width="0.2px">
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
-                                        <xsl:for-each select="commissions/line">
-                                            <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0; €</fo:block>
-                                        </xsl:for-each>
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
-                                        <fo:block space-after="3pt"><xsl:value-of select="@bookings"/>&#x00A0; €</fo:block>
-                                        <fo:block space-after="3pt"><xsl:value-of select="@totalValue"/>&#x00A0; €</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalCash"/>&#x00A0; €</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalCommission"/>&#x00A0; €</fo:block>
-                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalToPay"/>&#x00A0; €</fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@bookings"/></fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@adults"/></fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@children"/></fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@totalSale"/>&#x00A0; €</fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@totalCost"/>&#x00A0; €</fo:block>
+                                        <fo:block space-after="3pt"><xsl:value-of select="@totalMarkup"/>&#x00A0; €</fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>

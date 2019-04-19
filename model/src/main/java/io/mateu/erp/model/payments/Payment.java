@@ -36,10 +36,12 @@ public class Payment {
     private LocalDate date = LocalDate.now();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "payment")
+    @UseLinkToListView
     private List<PaymentLine> lines = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
+    @UseLinkToListView
     private List<AbstractPaymentAllocation> breakdown = new ArrayList<>();
 
 
@@ -104,4 +106,8 @@ public class Payment {
         //todo: pendiente
     }
 
+    @Override
+    public String toString() {
+        return "Payment " + id;
+    }
 }

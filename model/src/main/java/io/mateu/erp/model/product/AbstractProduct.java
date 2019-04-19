@@ -3,6 +3,7 @@ package io.mateu.erp.model.product;
 import io.mateu.erp.model.mdd.ActiveCellStyleGenerator;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
@@ -50,6 +51,8 @@ public abstract class AbstractProduct {
     @SearchFilter
     private Provider providedBy;
 
+    @ManyToOne@NotNull
+    private ProductLine productLine;
 
 
     @ManyToOne

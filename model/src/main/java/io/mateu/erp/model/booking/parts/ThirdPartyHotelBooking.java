@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.parts;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
@@ -97,6 +98,11 @@ public class ThirdPartyHotelBooking extends Booking {
         s.setReturnDate(getEnd());
         em.merge(s);
 
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getIntegration().getProductLine();
     }
 
     public String getDescription() {

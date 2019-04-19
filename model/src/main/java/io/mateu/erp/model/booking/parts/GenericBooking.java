@@ -16,7 +16,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
@@ -51,7 +51,7 @@ public class GenericBooking extends Booking {
     @Position(15)
     private GenericProduct product;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     @Position(16)
     private Variant variant;
 
@@ -113,6 +113,11 @@ public class GenericBooking extends Booking {
         s.setAdults(getAdults());
         s.setChildren(getChildren());
         s.setActive(isActive());
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getProduct().getProductLine();
     }
 
     @Override

@@ -2,13 +2,16 @@ package io.mateu.erp.model.organization;
 
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.BookingCommission;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Content;
@@ -45,9 +48,6 @@ public class PointOfSaleSettlementForm {
     private int bookings;
 
     @Output@SameLine
-    private double totalValue;
-
-    @Output@SameLine
     private double totalCash;
 
     @Output@SameLine
@@ -63,13 +63,11 @@ public class PointOfSaleSettlementForm {
 
     public void sumar() {
         bookings = 0;
-        totalValue = 0;
         totalCash = 0;
         totalCommission = 0;
 
         for (PointOfSaleSettlementFormLine line : lines) {
             bookings++;
-            totalValue = Helper.roundEuros(totalValue + line.getValue());
             totalCash = Helper.roundEuros(totalCash + line.getCash());
             totalCommission = Helper.roundEuros(totalCommission + line.getCommissions());
         }
@@ -77,6 +75,11 @@ public class PointOfSaleSettlementForm {
 
     public PointOfSaleSettlementForm(PointOfSale pointOfSale) {
         this.pointOfSale = pointOfSale;
+        try {
+            search();
+        } catch (Throwable throwable) {
+            MDD.alert(throwable);
+        }
     }
 
 
@@ -85,7 +88,7 @@ public class PointOfSaleSettlementForm {
 
         lines = new ArrayList<>();
 
-        String jpql = "select x from " + Booking.class.getName() + " x where x.pos.id = " + pointOfSale.getId() + " and x.pointOfSaleSettlement is null";
+        String jpql = "select x from " + BookingCharge.class.getName() + " x where x.booking.pos.id = " + pointOfSale.getId() + " and x.pointOfSaleSettlement is null";
 
         Map<String, Object> params = new HashMap<>();
 
@@ -100,18 +103,29 @@ public class PointOfSaleSettlementForm {
 
         jpql += " order by x.id asc";
 
-        List<Booking> bs = Helper.selectObjects(jpql, params);
+        List<BookingCharge> charges = Helper.selectObjects(jpql, params);
 
-        for (Booking booking : bs) {
+        List<Booking> bookings = new ArrayList<>();
+
+        for (BookingCharge charge : charges) {
+            if (!bookings.contains(charge.getBooking())) bookings.add(charge.getBooking());
+        }
+
+        for (Booking booking : bookings) {
             PointOfSaleSettlementFormLine l;
             lines.add(l = new PointOfSaleSettlementFormLine());
+
             l.setBookingId(booking.getId());
-            l.setCash(booking.getTotalPaid());
+            double t = 0;
+            for (BookingCharge c : booking.getCharges()) if (c.getPointOfSaleSettlement() == null) {
+                t += c.getValueInNucs();
+            }
+            l.setCash(Helper.roundEuros(t));
             l.setDate(booking.getAudit().getCreated().toLocalDate());
             l.setDescription(booking.getDescription());
             l.setLeadName(booking.getLeadName());
             l.setValue(booking.getTotalValue());
-            l.setCommissions(booking.getBalance());
+            l.setCommissions(booking.getTotalCommission());
         }
 
         sumar();
@@ -119,7 +133,7 @@ public class PointOfSaleSettlementForm {
 
 
     @Action(icon = VaadinIcons.SEARCH, order = 2)
-    public URL pdf() throws Exception {
+    public URL pdf() throws Throwable {
 
         String archivo = UUID.randomUUID().toString();
 
@@ -129,37 +143,56 @@ public class PointOfSaleSettlementForm {
         System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
         System.out.println("Temp file : " + temp.getAbsolutePath());
 
-        return new URL(new Resource(temp).toFileLocator().getUrl());
+        Helper.transact(em -> {
+            crearPdf(em, temp);
+        });
+
+        String baseUrl = System.getProperty("tmpurl");
+        URL url;
+        if (baseUrl == null) {
+            url = temp.toURI().toURL();
+        } else url = new URL(baseUrl + "/" + temp.getName());
+
+
+        return url;
     }
 
 
     @Action(icon = VaadinIcons.BOLT, order = 3)
-    public void settle(boolean commissionsDiscounted) throws Throwable {
+    public void settle() throws Throwable {
+
+        PointOfSaleSettlement[] r = new PointOfSaleSettlement[1];
 
         Helper.transact(em -> {
 
             PointOfSaleSettlement s = new PointOfSaleSettlement();
-            s.setPointOfSale(pointOfSale);
+            s.setPointOfSale(em.find(PointOfSale.class, pointOfSale.getId()));
             s.setCreatedBy(MDD.getCurrentUser());
 
             for (PointOfSaleSettlementFormLine l : lines) {
                 Booking b = em.find(Booking.class, l.getBookingId());
-                if (b.getPointOfSaleSettlement() != null) throw new Exception("Booking " + b.getId() + " has already been settled in settlement " + b.getPointOfSaleSettlement().getId());
-                s.getBookings().add(b);
-                b.setPointOfSaleSettlement(s);
-            };
 
-            s.setCommissionsDiscounted(commissionsDiscounted);
+                for (BookingCharge c : b.getCharges()) if (c.getPointOfSaleSettlement() == null) {
+                    if (c.getPointOfSaleSettlement() != null) throw new Exception("Charge " + c.getId() + " has already been settled in settlement " + c.getPointOfSaleSettlement().getId());
+                    s.getCharges().add(c);
+                    c.setPointOfSaleSettlement(s);
+                }
 
-            s.setTotalSale(totalValue);
+            }
+
             s.setTotalCash(totalCash);
             s.setTotalCommissions(totalCommission);
 
+            s.getPointOfSale().setUpdatePending(true);
             em.persist(s);
+
+            r[0] = s;
 
         });
 
         search();
+
+        MDDUI.get().getNavegador().goTo("private/financial/financial/more/pointsofsale/possettlements/" + r[0].getId());
     }
 
     public void crearPdf(EntityManager em, File file) throws IOException, SAXException {
@@ -192,14 +225,13 @@ public class PointOfSaleSettlementForm {
 
         xml.setAttribute("pointOfSale", pointOfSale.getName());
         xml.setAttribute("bookings", "" + bookings);
-        xml.setAttribute("totalValue", nf.format(totalValue));
         xml.setAttribute("totalCash", nf.format(totalCash));
         xml.setAttribute("totalCommission", nf.format(totalCommission));
+        xml.setAttribute("totalToPay", nf.format(Helper.roundEuros(totalCash - totalCommission)));
 
 
         Element els;
         xml.addContent(els = new Element("lines"));
-
 
         for (PointOfSaleSettlementFormLine l : lines) {
             Element el;
@@ -214,6 +246,50 @@ public class PointOfSaleSettlementForm {
 
         }
 
+        try {
+            Helper.notransact(em -> {
+
+                Map<CommissionAgent, Double> coms = new HashMap<>();
+
+                for (PointOfSaleSettlementFormLine l : lines) {
+
+                    Booking b = em.find(Booking.class, l.getBookingId());
+
+                    for (BookingCommission c : b.getCommissions()) {
+                        if (c.getAgent() != null && c.getTotal() != 0 && c.getSettlement() == null) {
+
+                            Double v = coms.get(c.getAgent());
+                            if (v == null) v = new Double(0);
+                            coms.put(c.getAgent(), v + c.getTotal());
+
+                        }
+                    }
+
+
+                }
+
+                Element ecs;
+                xml.addContent(ecs = new Element("commissions"));
+
+                for (CommissionAgent commissionAgent : coms.keySet()) {
+                    Element el;
+                    ecs.addContent(el = new Element("line"));
+
+                    el.setAttribute("agent", commissionAgent.getName());
+                    el.setAttribute("total", nf.format(coms.get(commissionAgent)));
+                }
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+
         return xml;
+    }
+
+    @Override
+    public String toString() {
+        return "POS settlement";
     }
 }

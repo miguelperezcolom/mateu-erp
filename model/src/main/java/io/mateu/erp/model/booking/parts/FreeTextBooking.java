@@ -92,6 +92,11 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getProductLine();
+    }
+
+    @Override
     public String getChargeSubject() {
         return serviceDescription;
     }
