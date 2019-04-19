@@ -32,9 +32,7 @@ import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.MDD;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.Permission;
-import io.mateu.mdd.core.model.authentication.USER_STATUS;
+import io.mateu.mdd.core.model.authentication.*;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.TemplateUseCase;
 import io.mateu.mdd.core.model.multilanguage.Literal;
@@ -719,7 +717,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(USER_ADMIN);
                 u.setName("Admin");
                 //u.setPassword(Helper.md5("1"));
@@ -737,7 +735,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(Constants.SYSTEM_USER_LOGIN);
                 u.setName("System");
                 //u.setPassword(Helper.md5("1"));
@@ -755,7 +753,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));

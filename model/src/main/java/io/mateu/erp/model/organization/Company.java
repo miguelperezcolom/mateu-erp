@@ -47,6 +47,7 @@ public class Company {
     private String bankAddress;
     private String recipient;
     private String accountNumber;
+    private String iban;
     private String swift;
 
 

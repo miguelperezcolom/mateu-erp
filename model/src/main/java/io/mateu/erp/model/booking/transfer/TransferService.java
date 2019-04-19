@@ -620,24 +620,20 @@ public class TransferService extends Service {
     public void sendEmailToHotel(UserData user, EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
 
-            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
-                TransferPoint p = getEffectivePickup();
-                if (p.getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(getTransferType()) && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForNonExecutive())) {
-                    p = p.getAlternatePointForShuttle();
-                }
+            if (getPickup() != null && !Strings.isNullOrEmpty(getPickup().getEmail())) {
                 SendEmailTask t = new SendEmailTask();
                 t.setOffice(getOffice());
                 t.setAudit(new Audit(MDD.getCurrentUser()));
                 t.setCc(getOffice().getEmailCC());
                 t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
-                t.setTo(getEffectivePickup().getEmail());
+                t.setTo(getPickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
                 getTasks().add(t);
                 t.getServices().add(this);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            } else throw new Exception("No effective pickup or missing email for it. Please set before sending the email");
+            } else throw new Exception("No pickup or missing email for it. Please set before sending the email");
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
