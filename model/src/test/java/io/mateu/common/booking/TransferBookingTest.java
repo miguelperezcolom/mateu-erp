@@ -1236,4 +1236,231 @@ public class TransferBookingTest {
         assertEquals(4, EmailHelper.getMock().getSent().size());
 
     }
+
+    @Test
+    public void testEnviar() throws Throwable {
+
+        TransferBooking b = crearReservaConfirmada();
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
+
+            xb.setSpecialRequests("" + xb.getSpecialRequests() + "x");
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).sendToProvider(em, null, null, null);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.CONFIRMED, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+        EmailHelper.getMock().print();
+
+        // 1 email booking recibida
+        // 1 email booking confirmada
+        // 2 emails compra servicios
+        // 1 email reserva modificada
+        // 1 emails compra servicios forzada
+        assertEquals(6, EmailHelper.getMock().getSent().size());
+
+    }
+
+
+    @Test
+    public void testMarcarComoConfirmado() throws Throwable {
+
+        TransferBooking b = crearReservaConfirmada();
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
+
+            xb.setSpecialRequests("" + xb.getSpecialRequests() + "x");
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).setAlreadyPurchased(true);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.CONFIRMED, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+        EmailHelper.getMock().print();
+
+        // 1 email booking recibida
+        // 1 email booking confirmada
+        // 2 emails compra servicios
+        // 1 email reserva modificada
+        assertEquals(5, EmailHelper.getMock().getSent().size());
+
+    }
+
+
+    @Test
+    public void testModificarMarcadaComoConfirmado() throws Throwable {
+
+        TransferBooking b = crearReservaConfirmada();
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
+
+            xb.setSpecialRequests("" + xb.getSpecialRequests() + "x");
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).setAlreadyPurchased(true);
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.CONFIRMED, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+        // modificamos el servicio
+        Helper.transact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
+
+            xb.setSpecialRequests("" + xb.getSpecialRequests() + "x");
+
+        });
+
+
+        // comprobamos
+        Helper.notransact(em -> {
+
+            TransferBooking xb = em.find(TransferBooking.class, b.getId());
+
+            assertEquals(false, xb.getServices().get(0).isAlreadyPurchased());
+
+            // el 1er servicio ahora NO debe estar confirmado. Debe estar READY puesto que tenemos la P.O. creada
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(0).getProcessingStatus());
+
+            // el 2o servicio debe estar confirmado
+            assertEquals(ProcessingStatus.READY, xb.getServices().get(1).getProcessingStatus());
+
+        });
+
+
+
+        EmailHelper.getMock().print();
+
+        // 1 email booking recibida
+        // 1 email booking confirmada
+        // 2 emails compra servicios
+        // 1 email reserva modificada
+        // 1 email reserva modificada
+        assertEquals(6, EmailHelper.getMock().getSent().size());
+
+    }
 }

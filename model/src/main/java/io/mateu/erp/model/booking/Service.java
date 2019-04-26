@@ -847,6 +847,7 @@ public abstract class Service {
     public void pre() {
         if (getSignature() == null || !getSignature().equals(createSignature())) {
             setUpdateRqTime(LocalDateTime.now());
+            setAlreadyPurchased(false);
             System.out.println("service.signature changed from ");
             System.out.println("" + getSignature());
             System.out.println("to ");
