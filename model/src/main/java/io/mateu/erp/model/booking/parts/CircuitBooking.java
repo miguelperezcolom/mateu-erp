@@ -32,14 +32,18 @@ public class CircuitBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(13)
+    @Position(18)
     private Circuit circuit;
 
 
     @ManyToOne
     @NotNull
-    @Position(14)
+    @Position(19)
     private Variant variant;
+
+
+
+
 
     public DataProvider getVariantDataProvider() {
         return new ListDataProvider(circuit != null?circuit.getVariants():new ArrayList());

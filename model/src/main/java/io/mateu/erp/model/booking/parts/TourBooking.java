@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,14 @@ public abstract class TourBooking extends Booking {
     @UseLinkToListView
     @Position(15)
     private List<TourBookingExtra> extras = new ArrayList<>();
+
+    @ManyToOne@Position(16)
+    private TransferPoint pickup;
+
+
+    @ManyToOne@Position(17)
+    private TransferPoint dropoff;
+
 
 
     private LocalDateTime checkTime;

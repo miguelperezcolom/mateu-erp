@@ -271,7 +271,8 @@ public class TransferService extends Service {
             m.put("dropoff", "" + getEffectiveDropoff());
             m.put("transferType", getTransferType());
             m.put("preferredVehicle", "" + getPreferredVehicle());
-            //m.put("pickupTime", getPickupTime());
+            m.put("preferredProvider", "" + getPreferredProvider());
+            m.put("pickupTime", getPickupTime());
             m.put("opsComment", "" + getOperationsComment());
             m.put("comment", "" + getBooking().getSpecialRequests());
             //m.put("held", "" + isHeld());

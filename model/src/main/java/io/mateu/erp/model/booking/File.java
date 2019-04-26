@@ -90,18 +90,22 @@ public class File {
 
     @KPI
     @ListColumn
+    @Money
     private double totalValue;
 
     @KPI
     @ListColumn
+    @Money
     private double totalNetValue;
 
     @KPI
     @SameLine
+    @Money
     private double totalCost;
 
     @KPI
     @SameLine
+    @Money
     private double balance;
 
     @KPI
@@ -152,6 +156,12 @@ public class File {
     public void beforeSet() throws Throwable {
         setAlreadyCancelled(!isActive());
     }
+
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
+
 
     @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this file?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
@@ -356,7 +366,7 @@ public class File {
     }
 
 
-    private void updateTotals(EntityManager em) {
+    public void updateTotals() {
 
         double total = 0;
         double totalNeto = 0;
@@ -403,7 +413,7 @@ public class File {
                     File f = em.find(File.class, getId());
 
                     if (f.getUpdateRqTime() != null) {
-                        f.updateTotals(em);
+                        f.updateTotals();
 
                         f.setUpdateRqTime(null);
                     }

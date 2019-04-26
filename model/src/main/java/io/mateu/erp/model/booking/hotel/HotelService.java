@@ -582,6 +582,7 @@ public class HotelService extends Service {
         int totalpax = 0;
         for (HotelServiceLine l: lines) totalpax += l.getNumberOfRooms() * (l.getAdultsPerRoom() + l.getChildrenPerRoom());
         d.put("totalpax", totalpax);
+        d.put("hotel", getHotel().getName());
 
         List<Map<String, Object>> ls;
         d.put("lines", ls = new ArrayList<>());

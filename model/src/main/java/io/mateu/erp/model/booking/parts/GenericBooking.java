@@ -16,6 +16,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
@@ -64,6 +65,7 @@ public class GenericBooking extends Booking {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     @Position(17)
     private List<GenericBookingExtra> extras = new ArrayList<>();
+
 
     @ManyToOne@Output
     private Contract contract;

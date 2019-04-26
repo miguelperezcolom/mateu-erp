@@ -82,7 +82,7 @@ public class QuotationRequestHotelLine {
 
     private int[] ages;
 
-    private boolean saleOverrided;
+    private boolean saleOverrided = true;
 
     public void setSaleOverrided(boolean saleOverrided) {
         this.saleOverrided = saleOverrided;
@@ -129,7 +129,7 @@ public class QuotationRequestHotelLine {
     private double totalSale;
 
 
-    private boolean costOverrided;
+    private boolean costOverrided = true;
 
     public void setCostOverrided(boolean costOverrided) {
         this.costOverrided = costOverrided;
@@ -225,6 +225,10 @@ public class QuotationRequestHotelLine {
 
     public Element toXml() {
 
+        DecimalFormat pf = new DecimalFormat("#####0.00");
+        DecimalFormat nf = new DecimalFormat("##,###,###,###,##0.00");
+
+
         Element el = new Element("line");
 
         el.setAttribute("room", room.getName() != null?room.getName():"--");
@@ -237,6 +241,8 @@ public class QuotationRequestHotelLine {
         el.setAttribute("adultsPerRoom", "" + adultsPerRoom);
         el.setAttribute("childrenPerRoom", "" + childrenPerRoom);
         if (ages != null) el.setAttribute("ages", Arrays.toString(ages));
+
+        el.setAttribute("total", nf.format(totalSale));
 
         return el;
     }

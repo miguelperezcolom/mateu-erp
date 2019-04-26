@@ -90,11 +90,11 @@ public class PointOfSale {
                         if (b.isUpdatePending()) {
 
 
-                            Object[] l = (Object[]) em.createQuery("select sum(x.valueInNucs) from " + BookingCharge.class.getName() + " x where x.booking.pos.id = " + b.getId() + " and x.pointOfSaleSettlement is null").getSingleResult();
+                            Object[] l = (Object[]) em.createQuery("select sum(x.valueInNucs),  sum(x.valueInNucs) from " + BookingCharge.class.getName() + " x where x.booking.pos.id = " + b.getId() + " and x.pointOfSaleSettlement is null").getSingleResult();
 
                             if (l != null) {
                                 b.setTotalSales(l[0] != null?Helper.roundEuros((Double) l[0]):0);
-                                b.setCash(l[1] != null?Helper.roundEuros(-1d * (Double) l[1]):0);
+                                b.setCash(l[1] != null?Helper.roundEuros((Double) l[1]):0);
                             } else {
                                 b.setTotalSales(0);
                                 b.setCash(0);

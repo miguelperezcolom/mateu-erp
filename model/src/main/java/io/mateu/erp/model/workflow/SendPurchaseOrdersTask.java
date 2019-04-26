@@ -10,6 +10,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
@@ -83,6 +84,8 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
                 if (!po.isActive()) ds.put("status", "CANCELLED");
 
                 ds.put("po", po.getId());
+                if (po.isConfirmationNeeded()) ds.put("confirmationUrl", (MDD.getApp() != null?MDD.getApp().getBaseUrl().replaceAll("/app", ""):"") + "/poconfirmation/" + getId());
+
                 if (s instanceof TransferService) {
                     ds.put("orderby", ((TransferService) s).getFlightTime().format(DateTimeFormatter.ISO_DATE_TIME));
                 } else {

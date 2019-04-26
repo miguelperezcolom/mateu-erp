@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.authentication.ERPUser;
@@ -92,6 +93,10 @@ public class PurchaseOrder {
     @ColumnWidth(100)
     private boolean active = true;
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
     @TextArea
     private String comment;
 
@@ -129,6 +134,8 @@ public class PurchaseOrder {
     @ColumnWidth(150)
     private PurchaseOrderStatus status;
 
+
+    private boolean confirmationNeeded;
 
     @ListColumn
     private String providerComment;
@@ -196,6 +203,10 @@ public class PurchaseOrder {
     private transient String servicesUpdateSignature;
 
 
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
 
     @Action("Send")
     public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
@@ -279,6 +290,7 @@ public class PurchaseOrder {
         d.put("sent", isSent());
         d.put("sentTime", getSentTime());
         d.put("valued", isValued());
+        if (isConfirmationNeeded()) d.put("confirmationUrl", (MDD.getApp() != null?MDD.getApp().getBaseUrl():"") + "/poconfirmation/" + getId());
         d.put("total", getTotal());
         d.put("currency", getCurrency().getIsoCode());
 
@@ -387,6 +399,8 @@ public class PurchaseOrder {
 
         setValueInNucs(total * currencyExchange);
 
+        setConfirmationNeeded(getProvider() != null && !getProvider().isAutomaticOrderConfirmation());
+
 
         if (getSignature() == null || !getSignature().equals(createSignature()) || getServicesUpdateSignature() ==null || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
             setUpdateRqTime(LocalDateTime.now());
@@ -460,6 +474,7 @@ public class PurchaseOrder {
                                 po.markServicesForUpdate();
 
                                 po.setSignature(po.createSignature());
+                                po.setServicesUpdateSignature(po.createServicesUpdateSignature());
                                 po.setUpdateRqTime(null);
 
                                 somethingHappened = true;

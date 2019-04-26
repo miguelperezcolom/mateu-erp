@@ -75,14 +75,17 @@ public class Agency {
 
     @ListColumn
     @KPI
+    @Money
     private double bookings;
 
     @ListColumn
     @KPI
+    @Money
     private double invoiced;
 
     @ListColumn
     @KPI
+    @Money
     private double balance;
 
     // ... hasta aquí

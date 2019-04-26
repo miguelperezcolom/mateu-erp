@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.authentication.ERPUser;
@@ -337,9 +338,14 @@ public abstract class Service {
         Map<String, Object> m = new HashMap<>();
         m.put("cancelled", !isActive());
         String c = getBooking().getSpecialRequests();
+        if (!Strings.isNullOrEmpty(getBooking().getCommentsForProvider())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " \n/\n ";
+            c += getBooking().getCommentsForProvider();
+        }
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
-            else if (!"".equals(c)) c += " / ";
+            else if (!"".equals(c)) c += " \n/\n ";
             c += getOperationsComment();
         }
         m.put("comment", c);
@@ -350,6 +356,11 @@ public abstract class Service {
         return m;
     }
 
+
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
 
     @Action
     public static void sendToProvider(EntityManager em, Set<Service> selection, Provider provider, String email, @TextArea String postscript) {
@@ -368,11 +379,15 @@ public abstract class Service {
         for (Service s : selection) {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
-                for (PurchaseOrder po : s.getPurchaseOrders()) {
-                    po.setSignature(po.createSignature());
-                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                    if (t == null) {
-                        if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
+                for (PurchaseOrder po : s.getPurchaseOrders()) if (po.isActive()) {
+
+                    if (false && po.getProvider().isAutomaticOrderSending()) {
+                        po.setSent(false);
+                    } else {
+                        po.setSignature(po.createSignature());
+                        SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                        if (t == null) {
+                            if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
                         /*
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
                         em.persist(t);
@@ -383,26 +398,28 @@ public abstract class Service {
                         ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
                         t.setPostscript(postscript);
                         */
-                        } else { // email
-                            taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
-                            em.persist(t);
-                            t.setOffice(s.getOffice());
-                            t.setProvider(po.getProvider());
-                            t.setStatus(TaskStatus.PENDING);
-                            t.setAudit(new Audit(u));
-                            if (!Strings.isNullOrEmpty(email)) {
-                                t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                                ((SendPurchaseOrdersByEmailTask)t).setTo(email);
-                            } else {
-                                t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                                ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                            } else { // email
+                                taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
+                                em.persist(t);
+                                t.setOffice(s.getOffice());
+                                t.setProvider(po.getProvider());
+                                t.setStatus(TaskStatus.PENDING);
+                                t.setAudit(new Audit(u));
+                                if (!Strings.isNullOrEmpty(email)) {
+                                    t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                                    ((SendPurchaseOrdersByEmailTask) t).setTo(email);
+                                } else {
+                                    t.setMethod((po.getProvider().getOrdersSendingMethod() != null) ? po.getProvider().getOrdersSendingMethod() : PurchaseOrderSendingMethod.EMAIL);
+                                    ((SendPurchaseOrdersByEmailTask) t).setTo(po.getProvider().getSendOrdersTo());
+                                }
+                                ((SendPurchaseOrdersByEmailTask) t).setCc(s.getOffice().getEmailCC());
+                                t.setPostscript(postscript);
                             }
-                            ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
-                            t.setPostscript(postscript);
                         }
+                        t.getPurchaseOrders().add(po);
+                        po.getSendingTasks().add(t);
+                        po.setSent(true);
                     }
-                    t.getPurchaseOrders().add(po);
-                    po.getSendingTasks().add(t);
                 }
             }
         }
@@ -426,11 +443,16 @@ public abstract class Service {
             Service s = this;
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
-                for (PurchaseOrder po : s.getPurchaseOrders()) {
-                    po.setSignature(po.createSignature());
-                    SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                    if (t == null) {
-                        if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
+                for (PurchaseOrder po : s.getPurchaseOrders())
+                    if (po.isActive()) {
+
+                        if (false && po.getProvider().isAutomaticOrderSending()) {
+                            po.setSent(false);
+                        } else {
+                            po.setSignature(po.createSignature());
+                            SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
+                            if (t == null) {
+                                if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
                         /*
                         taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
                         em.persist(t);
@@ -441,27 +463,29 @@ public abstract class Service {
                         ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
                         t.setPostscript(postscript);
                         */
-                        } else { // email
-                            taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
-                            em.persist(t);
-                            t.setOffice(s.getOffice());
-                            t.setProvider(po.getProvider());
-                            t.setStatus(TaskStatus.PENDING);
-                            t.setAudit(new Audit(u));
-                            if (!Strings.isNullOrEmpty(email)) {
-                                t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                                ((SendPurchaseOrdersByEmailTask)t).setTo(email);
-                            } else {
-                                t.setMethod((po.getProvider().getOrdersSendingMethod() != null)?po.getProvider().getOrdersSendingMethod():PurchaseOrderSendingMethod.EMAIL);
-                                ((SendPurchaseOrdersByEmailTask)t).setTo(po.getProvider().getSendOrdersTo());
+                                } else { // email
+                                    taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
+                                    em.persist(t);
+                                    t.setOffice(s.getOffice());
+                                    t.setProvider(po.getProvider());
+                                    t.setStatus(TaskStatus.PENDING);
+                                    t.setAudit(new Audit(u));
+                                    if (!Strings.isNullOrEmpty(email)) {
+                                        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
+                                        ((SendPurchaseOrdersByEmailTask) t).setTo(email);
+                                    } else {
+                                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null) ? po.getProvider().getOrdersSendingMethod() : PurchaseOrderSendingMethod.EMAIL);
+                                        ((SendPurchaseOrdersByEmailTask) t).setTo(po.getProvider().getSendOrdersTo());
+                                    }
+                                    ((SendPurchaseOrdersByEmailTask) t).setCc(s.getOffice().getEmailCC());
+                                    t.setPostscript(postscript);
+                                }
                             }
-                            ((SendPurchaseOrdersByEmailTask)t).setCc(s.getOffice().getEmailCC());
-                            t.setPostscript(postscript);
+                            t.getPurchaseOrders().add(po);
+                            po.getSendingTasks().add(t);
+                            po.setSent(true);
                         }
                     }
-                    t.getPurchaseOrders().add(po);
-                    po.getSendingTasks().add(t);
-                }
             }
         }
     }
@@ -504,10 +528,10 @@ public abstract class Service {
 
     public void refreshPurchaseOrders(EntityManager em, User u) throws Throwable {
         generatePurchaseOrders(em);
-        for (PurchaseOrder po : getPurchaseOrders()) {
+        for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
             if (po.getSignature() == null || !po.getSignature().equals(po.createSignature())) po.setSent(false);
         }
-        for (PurchaseOrder po : getPurchaseOrders()) {
+        for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
             if (!isAlreadyPurchased() && !po.isSent() && po.getProvider() != null && po.getProvider().isAutomaticOrderSending()) {
                 try {
                     po.send(em, u);
@@ -709,6 +733,7 @@ public abstract class Service {
             po.setCurrency(provider.getCurrency());
             po.setValued(false);
             po.setTotal(0);
+            po.setUpdateRqTime(LocalDateTime.now());
 
             if (nueva) em.persist(po);
 
@@ -768,9 +793,14 @@ public abstract class Service {
         if (getOffice() != null) d.put("office", getOffice().getName());
 
         String c = getBooking().getSpecialRequests();
+        if (!Strings.isNullOrEmpty(getBooking().getCommentsForProvider())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += "\n/\n";
+            c += getBooking().getCommentsForProvider();
+        }
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
-            else if (!"".equals(c)) c += " / ";
+            else if (!"".equals(c)) c += "\n/\n";
             c += getOperationsComment();
         }
         d.put("comments", c);

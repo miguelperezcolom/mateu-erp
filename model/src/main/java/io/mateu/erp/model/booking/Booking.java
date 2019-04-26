@@ -164,6 +164,11 @@ public abstract class Booking {
     @TextArea
     private String specialRequests;
 
+
+    @TextArea
+    private String commentsForProvider;
+
+
     @Section("Sale")
     @TextArea
     @SameLine
@@ -201,36 +206,48 @@ public abstract class Booking {
 
     @KPI
     @ListColumn
+    @Money
     @Sum
     private double totalValue;
 
     @KPI
     @ListColumn
+    @Money
     @Sum
     private double totalNetValue;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalCost;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalCommission;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalMarkup;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalPaid;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double balance;
 
@@ -709,6 +726,11 @@ public abstract class Booking {
     @Action(order = 1)
     public static void searchAvailable() {
 
+    }
+
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
     }
 
     @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
@@ -1362,9 +1384,11 @@ public abstract class Booking {
         if (confirmed) {
             generateServices(em);
             services.forEach(s -> {
-                s.setAlreadyPurchased(alreadyPurchased);
-                if (s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() == null) s.setAlreadyPurchasedDate(LocalDateTime.now());
-                else if (!s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() != null) s.setAlreadyPurchasedDate(null);
+                if (s.isAlreadyPurchasedBefore() != s.isAlreadyPurchased()) {
+                    s.setAlreadyPurchased(alreadyPurchased);
+                    if (s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() == null) s.setAlreadyPurchasedDate(LocalDateTime.now());
+                    else if (!s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() != null) s.setAlreadyPurchasedDate(null);
+                }
                 if (s.getSignature() == null || !s.getSignature().equals(s.createSignature())) s.setUpdateRqTime(LocalDateTime.now());
             });
         }
@@ -1509,6 +1533,8 @@ public abstract class Booking {
 
         getAgency().setUpdatePending(true);
         getPos().setUpdatePending(true);
+
+        if (getFile() != null) getFile().updateTotals();
 
     }
 

@@ -225,6 +225,7 @@ public class PointOfSaleSettlementForm {
 
         xml.setAttribute("pointOfSale", pointOfSale.getName());
         xml.setAttribute("bookings", "" + bookings);
+        xml.setAttribute("totalValue", nf.format(totalCash));
         xml.setAttribute("totalCash", nf.format(totalCash));
         xml.setAttribute("totalCommission", nf.format(totalCommission));
         xml.setAttribute("totalToPay", nf.format(Helper.roundEuros(totalCash - totalCommission)));

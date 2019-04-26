@@ -1,5 +1,6 @@
 package io.mateu.erp.model.importing;
 
+import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
@@ -131,6 +132,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         rq.setModified(tr.getAttributeValue("datemodified"));
 
         String type = tr.getChildText("type");
+        if (Strings.isNullOrEmpty(type)) type = tr.getChildText("vehicleType");
         if (type.toUpperCase().contains("SHUTTLE"))
             rq.setServiceType(TransferType.SHUTTLE);
         else if (type.toUpperCase().contains("EXECUTIVE"))

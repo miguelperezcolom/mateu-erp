@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -35,6 +36,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -52,7 +54,11 @@ public class CommonsTester {
 
         String token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
 
-        testzm();
+        //testGroupProforma();
+
+        //testzn();
+
+        //testzm();
 
         //testzq();
 
@@ -101,6 +107,8 @@ public class CommonsTester {
 
         //testCircuitRates(token);
 
+        testPurchaseOrder();
+
         //testGroup();
 
         //testInvoice();
@@ -114,6 +122,23 @@ public class CommonsTester {
         //testInformeEvento();
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testzn() {
+
+        try {
+            Helper.transact(em -> {
+
+                TransferBookingRequest rq = em.find(TransferBookingRequest.class, 1257l);
+
+                rq.updateBooking(em);
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
     }
 
     private static void testzm() {
@@ -356,6 +381,47 @@ public class CommonsTester {
 
     }
 
+    public static void testPurchaseOrder() {
+
+        try {
+            Helper.transact(em -> {
+
+                //AppConfig.get(em).setXslfoForQuotationRequest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/grupo.xsl"), Charsets.UTF_8));
+                AppConfig.get(em).setPurchaseOrderTemplate(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/freemarker/purchaseorder.ftl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                AppConfig appconfig = AppConfig.get(em);
+
+                PurchaseOrder po = em.find(PurchaseOrder.class, 23l);
+
+                //po.setConfirmationNeeded(true);
+
+                for (SendPurchaseOrdersTask t : po.getSendingTasks()) {
+                    Map<String, Object> data = t.getData();
+                    System.out.println("data=" + Helper.toJson(data));
+
+                    String msg = Helper.freemark(AppConfig.get(em).getPurchaseOrderTemplate(), data);
+
+                    if (msg.contains("mylogosrc") && appconfig.getLogo() != null) {
+                        URL url = new URL(appconfig.getLogo().toFileLocator().getUrl());
+                        String cid = url.toString(); //email.embed(url, "" + appconfig.getBusinessName() + " logo");
+                        msg = msg.replaceAll("mylogosrc", cid); //"cid:" + cid);
+                    }
+
+                    Helper.escribirFichero("/home/miguel/Descargas/po_" + t.getId() + ".html", msg);
+                }
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
     private static void testGroup() {
 
         try {
@@ -371,7 +437,7 @@ public class CommonsTester {
                 QuotationRequest r = em.find(QuotationRequest.class, 1l);
 
                 //r.createProforma(em, new File("/home/miguel/Descargas/testGrupo.pdf"));
-                //r.confirm();
+                r.confirm();
 
                 List<PurchaseOrder> pos = new ArrayList<>();
 
@@ -384,6 +450,30 @@ public class CommonsTester {
                         Helper.escribirFichero("/home/miguel/Descargas/po_" + t.getId() + ".html", Helper.freemark(AppConfig.get(em).getPurchaseOrderTemplate(), data));
                     }
                 }
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+
+    private static void testGroupProforma() {
+
+        try {
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForQuotationRequest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/grupo.xsl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                QuotationRequest r = em.find(QuotationRequest.class, 1l);
+
+                r.createProforma(em, new File("/home/miguel/Descargas/testGrupo.pdf"));
+                //r.confirm();
 
             });
         } catch (Throwable throwable) {

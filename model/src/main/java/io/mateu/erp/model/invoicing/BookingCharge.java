@@ -78,6 +78,7 @@ public class BookingCharge extends Charge {
 
     @Override
     public void totalChanged() {
+        super.totalChanged();
         if (booking != null) booking.setUpdateRqTime(LocalDateTime.now());
     }
 

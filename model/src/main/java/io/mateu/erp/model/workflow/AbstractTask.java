@@ -1,9 +1,7 @@
 package io.mateu.erp.model.workflow;
 
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
-import io.mateu.erp.model.booking.PurchaseOrder;
-import io.mateu.erp.model.booking.Service;
+import com.vaadin.icons.VaadinIcons;
+import io.mateu.erp.model.booking.*;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
@@ -126,6 +124,10 @@ public abstract class AbstractTask {
     public abstract void run(EntityManager em, io.mateu.mdd.core.model.authentication.User user) throws Throwable;
 
 
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
 
     @Action("Run")
     public static void launch(EntityManager em, UserData _user, Set<AbstractTask> selection) {

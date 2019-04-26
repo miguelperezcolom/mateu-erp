@@ -40,13 +40,13 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(16)
+    @Position(18)
     private Excursion excursion;
 
 
     @ManyToOne
     @NotNull
-    @Position(17)
+    @Position(19)
     private Variant variant;
 
     public DataProvider getVariantDataProvider() {
@@ -55,7 +55,7 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(18)
+    @Position(20)
     private ExcursionShift shift;
 
     public DataProvider getShiftDataProvider() {
@@ -64,7 +64,7 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(19)
+    @Position(21)
     private ExcursionLanguage language;
 
     public DataProvider getLanguageDataProvider() {
