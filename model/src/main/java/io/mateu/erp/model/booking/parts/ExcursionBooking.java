@@ -4,9 +4,9 @@ import com.google.common.base.Strings;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ValidationStatus;
-import io.mateu.erp.model.booking.excursion.ExcursionService;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.BookingCharge;
@@ -152,7 +152,7 @@ public class ExcursionBooking extends TourBooking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
         Map<io.mateu.erp.model.product.tour.Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getTourContracts().stream().filter(c ->
                 ContractType.SALE.equals(c.getType())
@@ -182,20 +182,10 @@ public class ExcursionBooking extends TourBooking {
             setTotalValue(Helper.roundEuros(prices.get(v)));
             setContract(v);
         });
+
+        breakdown.add(new PriceBreakdownItem(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForExcursion(), getChargeSubject(), getTotalValue()));
     }
 
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        BookingCharge c;
-        getServiceCharges().add(c = new BookingCharge(this));
-        c.setTotal(getTotalValue());
-        c.setCurrency(getCurrency());
-        c.setText(getChargeSubject());
-        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForExcursion());
-        c.setAgency(getAgency());
-    }
-
-    @Override
     public String getChargeSubject() {
         return "" + excursion.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getAdults() + " ad/" + getChildren() + "ch";
     }

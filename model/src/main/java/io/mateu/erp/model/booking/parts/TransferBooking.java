@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.parts;
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
@@ -194,12 +195,18 @@ public class TransferBooking extends Booking {
             s.setTransferType(transferType);
 
             s.setPax(getAdults() + getChildren());
+            s.setBigLuggages(getBigLuggages());
+            s.setGolf(getGolf());
+            s.setBikes(getBikes());
+            s.setWheelChairs(getWheelChairs());
 
             //todo: falta maletas, palos de golf, etc. OJO GRATUIDADES
             //todo: faltan extras?
 
             s.setPickup(origin);
+            s.setPickupText(originAddress);
             s.setDropoff(destination);
+            s.setDropoffText(destinationAddress);
             s.setFlightNumber(arrivalFlightNumber);
             s.setFlightOriginOrDestination(arrivalFlightOrigin);
             s.setFlightTime(arrivalFlightTime);
@@ -224,22 +231,33 @@ public class TransferBooking extends Booking {
             s.setTransferType(transferType);
 
             s.setPax(getAdults() + getChildren());
+            s.setBigLuggages(getBigLuggages());
+            s.setGolf(getGolf());
+            s.setBikes(getBikes());
+            s.setWheelChairs(getWheelChairs());
 
             //todo: falta maletas, palos de golf, etc. OJO GRATUIDADES
             //todo: faltan extras?
 
             if (arrivalFlightTime != null) { // es una vuelta
                 s.setPickup(destination);
+                s.setPickupText(destinationAddress);
                 s.setDropoff(origin);
+                s.setDropoffText(originAddress);
             } else {
                 if (!destination.isAirport() && origin.isAirport()) { // invertimos. Lo normal es salir a un aeropuerto
                     TransferPoint aux = origin;
+                    String auxText = originAddress;
                     setOrigin(destination);
+                    setOriginAddress(destinationAddress);
                     setDestination(aux);
+                    setDestinationAddress(auxText);
                 }
 
                 s.setPickup(origin);
+                s.setPickupText(originAddress);
                 s.setDropoff(destination);
+                s.setDropoffText(destinationAddress);
             }
             s.setFlightNumber(departureFlightNumber);
             s.setFlightOriginOrDestination(departureFlightDestination);
@@ -264,7 +282,7 @@ public class TransferBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
         setTotalValue(0);
 
@@ -323,6 +341,17 @@ public class TransferBooking extends Booking {
                         else if (getArrivalFlightTime() == null && getDepartureFlightTime() == null) valor = 0;
 
                         setTotalValue(Helper.roundEuros(valor));
+
+                        String desc = ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " TRANSFER WITH " + p.getVehicle().getName() + " FROM " + p.getOrigin().getName() + " TO " + p.getDestination().getName() + " FOR ";
+                        if (PricePer.PAX.equals(p.getPricePer())) {
+                            desc += (getAdults() + getChildren()) + " PAX";
+                        } else {
+                            desc += "SERVICE";
+                        }
+                        desc += " " + p.getPrice();
+
+
+                        breakdown.add(new PriceBreakdownItem(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer(), desc, Helper.roundEuros(valor)));
                     }
 
                 }
@@ -331,37 +360,6 @@ public class TransferBooking extends Booking {
 
         }
 
-    }
-
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        getServiceCharges().clear();
-
-        for (Service s : getServices()) {
-            BookingCharge c;
-            getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(MDD.getCurrentUser()));
-            c.setTotal(s.getTotalSale());
-            c.setCurrency(getCurrency());
-
-            c.setText(s.getChargeSubject());
-
-            c.setAgency(getAgency());
-
-            c.setType(ChargeType.SALE);
-            c.setBooking(this);
-
-            c.setInvoice(null);
-
-            c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer());
-        }
-
-    }
-
-
-    @Override
-    public String getChargeSubject() {
-        return ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + (getPriceForVehicle() != null?" in " + getPriceForVehicle().getName():"") + " for " + (getAdults() + getChildren()) + " pax";
     }
 
     public void setBigLuggages(int bigLuggages) {
@@ -433,9 +431,11 @@ public class TransferBooking extends Booking {
     @Override
     protected void completeSignature(Map<String, Object> m) {
         if (getTransferType() != null) m.put("transferType", getTransferType().name());
+        m.put("pickupAddress", getOriginAddress());
         m.put("pickup", getOrigin().getName());
         m.put("pickupResort", getOrigin().getResort().getName());
         if (getOverridePickupTime() != null) m.put("pickupTime", getOverridePickupTime().format(DateTimeFormatter.ISO_DATE_TIME));
+        m.put("dropoffAddress", getDestinationAddress());
         m.put("dropoff", getDestination().getName());
         m.put("dropoffResort", getDestination().getResort().getName());
         if (getDepartureFlightTime() != null) {
@@ -450,6 +450,12 @@ public class TransferBooking extends Booking {
             m.put("arrivalFlightTime", getArrivalFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             m.put("arrivalFlightOriginOrDestination", getArrivalFlightOrigin());
         }
+        m.put("adults", getAdults());
+        m.put("children", getChildren());
+        m.put("bigLuggages", getBigLuggages());
+        m.put("bikes", getBikes());
+        m.put("golf", getGolf());
+        m.put("wheelChairs", getWheelChairs());
         m.put("agencyReference", getAgencyReference());
         m.put("comments", getSpecialRequests());
         m.put("direction", getArrivalFlightTime() != null?"INBOUND":"OUTBOUND");

@@ -13,8 +13,6 @@ import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.DataSheet;
 import io.mateu.erp.model.product.transfer.*;
-import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
-import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -87,7 +85,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 Lists.newArrayList(TransferType.SHUTTLE, TransferType.PRIVATE, TransferType.EXECUTIVE).forEach(tipo -> {
                     b.setTransferType(tipo);
-                    b.priceServices(em);
+                    b.priceServices(em, new ArrayList<>());
                     if (b.getTotalValue() > 0) {
                         AvailableTransfer t = new AvailableTransfer();
                         t.setType("" + b.getTransferType());
@@ -183,10 +181,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 TransferBooking b = buildBookingFromKey(em, key);
 
-                b.priceServices(em);
-
-                b.createCharges(em);
-                b.summarize(em);
+                b.price(em);
 
                 if (b.getBikes() != 0) {
                     Remark r;

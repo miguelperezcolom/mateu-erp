@@ -64,6 +64,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
     public static Resort pmi;
     public static TransferPoint apt;
     public static TransferPoint hotelEnAlcudia;
+    public static TransferPoint hotelEnAlcudia2;
     public static Hotel hotel;
     public static Excursion excursion;
     public static Account banco;
@@ -966,6 +967,12 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 hotelEnAlcudia.setOffice(office);
                 em.persist(hotelEnAlcudia);
 
+                resort.getTransferPoints().add(hotelEnAlcudia2 = new TransferPoint());
+                hotelEnAlcudia2.setResort(alcudia);
+                hotelEnAlcudia2.setName("Hotel Port d'Alcudia");
+                hotelEnAlcudia2.setType(TransferPointType.HOTEL);
+                hotelEnAlcudia2.setOffice(office);
+                em.persist(hotelEnAlcudia2);
 
                 RoomType r = new RoomType();
                 r.setCode("DBL");

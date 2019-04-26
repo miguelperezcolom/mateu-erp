@@ -108,7 +108,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                             for (Variant var : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
                                 b.setVariant(var);
-                                b.priceServices(em);
+                                b.price(em);
 
                                 if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
 
@@ -231,18 +231,23 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 e.getVariants().forEach(v -> {
 
                     b.setVariant(v);
-                    b.priceServices(em);
+                    try {
+                        b.price(em);
 
-                    double p = Helper.roundEuros(b.getTotalValue());
+                        double p = Helper.roundEuros(b.getTotalValue());
 
-                    if (p != 0) {
-                        ActivityVariant av;
-                        rs.getVariants().add(av = new ActivityVariant());
-                        av.setKey("" + v.getId());
-                        if (v.getName() != null) av.setName(v.getName().get(language));
-                        if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
-                        av.setBestDeal(new BestDeal());
-                        av.getBestDeal().setRetailPrice(new Amount("EUR", p));
+                        if (p != 0) {
+                            ActivityVariant av;
+                            rs.getVariants().add(av = new ActivityVariant());
+                            av.setKey("" + v.getId());
+                            if (v.getName() != null) av.setName(v.getName().get(language));
+                            if (v.getDescription() != null) av.setDescription(v.getDescription().get(language));
+                            av.setBestDeal(new BestDeal());
+                            av.getBestDeal().setRetailPrice(new Amount("EUR", p));
+                        }
+
+                    } catch (Throwable throwable) {
+                        throwable.printStackTrace();
                     }
 
                 });
@@ -377,7 +382,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
             b.setShift(em.find(ExcursionShift.class, Long.parseLong(shift)));
-            b.priceServices(em);
+            b.price(em);
 
             rs.setAvailable(b.getTotalValue() > 0);
             rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant, shift, pickup, activityLanguage));
@@ -480,8 +485,6 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                 }
 
-                b.createCharges(em);
-                b.summarize(em);
 
                 if (true) {
                     Remark r;

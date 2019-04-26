@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking.parts;
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.config.AppConfig;
@@ -23,6 +24,7 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -97,36 +99,10 @@ public class FreeTextBooking extends Booking {
     }
 
     @Override
-    public String getChargeSubject() {
-        return serviceDescription;
-    }
-
-    @Override
-    public void priceServices(EntityManager em) throws Throwable {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable {
         throw new Exception("Free text needs price to be overrided");
     }
 
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        getServiceCharges().clear();
-
-        BookingCharge c;
-        getServiceCharges().add(c = new BookingCharge());
-        c.setAudit(new Audit(MDD.getCurrentUser()));
-        c.setTotal(getTotalValue());
-        c.setCurrency(getCurrency());
-
-        c.setText(getDescription());
-
-        c.setAgency(getAgency());
-
-        c.setType(ChargeType.SALE);
-        c.setBooking(this);
-
-        c.setInvoice(null);
-
-        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer());
-    }
 
     @Override
     protected void completeSignature(Map<String, Object> m) {

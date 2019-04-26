@@ -5,6 +5,7 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
@@ -16,7 +17,6 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
@@ -123,7 +123,7 @@ public class GenericBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
         Map<Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getGenericContracts().stream().filter(c ->
                 ContractType.SALE.equals(c.getType())
@@ -158,21 +158,11 @@ public class GenericBooking extends Booking {
         prices.keySet().stream().min((v0, v1) -> prices.get(v0).compareTo(prices.get(v1))).ifPresent(v -> {
             setTotalValue(Helper.roundEuros(prices.get(v)));
             setContract(v);
+
+            breakdown.add(new PriceBreakdownItem(contract.getBillingConcept(), getChargeSubject(), getTotalValue()));
         });
     }
 
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        BookingCharge c;
-        getServiceCharges().add(c = new BookingCharge(this));
-        c.setTotal(getTotalValue());
-        c.setCurrency(getCurrency());
-        c.setText(getChargeSubject());
-        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForOthers());
-        c.setAgency(getAgency());
-    }
-
-    @Override
     public String getChargeSubject() {
         return "" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch";
     }

@@ -505,10 +505,16 @@ public class PurchaseOrder {
     private void updateStatusFromTasks(EntityManager em) {
         if (sendingTasks.size() > 0) {
             SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
-            if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
-                if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
-                setSentTime(t.getFinished());
-                setSent(true);
+            if (t.getSignature() != null && t.getSignature().equals(t.createSignature())) {
+                if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
+                    if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
+                    setSentTime(t.getFinished());
+                    setSent(true);
+                }
+            } else {
+                setStatus(PurchaseOrderStatus.PENDING);
+                setSent(false);
+                setSentTime(null);
             }
         }
     }

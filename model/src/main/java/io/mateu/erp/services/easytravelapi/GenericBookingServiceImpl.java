@@ -14,8 +14,6 @@ import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
-import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
-import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
@@ -103,7 +101,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
                             for (Variant v : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
                                 b.setVariant(v);
-                                b.priceServices(em);
+                                b.price(em);
 
                                 if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
 
@@ -219,23 +217,27 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             e.getVariants().forEach(v -> {
 
                 b.setVariant(v);
-                b.priceServices(em);
+                try {
+                    b.price(em);
 
-                if (b.getTotalValue() != 0) {
-                    org.easytravelapi.generic.GenericVariant xv;
-                    rs.getVariants().add(xv = new org.easytravelapi.generic.GenericVariant());
+                    if (b.getTotalValue() != 0) {
+                        org.easytravelapi.generic.GenericVariant xv;
+                        rs.getVariants().add(xv = new org.easytravelapi.generic.GenericVariant());
 
 
 
-                    BestDeal bd;
-                    xv.setBestDeal(bd = new BestDeal());
-                    bd.setRetailPrice(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
-                    xv.setDescription(v.getDescription().get(language));
-                    xv.setKey("gen-" + e.getId() + "-" + v.getId());
-                    xv.setName(v.getName().get(language));
-                    xv.setPricePer("--");
+                        BestDeal bd;
+                        xv.setBestDeal(bd = new BestDeal());
+                        bd.setRetailPrice(new Amount("EUR", Helper.roundEuros(b.getTotalValue())));
+                        xv.setDescription(v.getDescription().get(language));
+                        xv.setKey("gen-" + e.getId() + "-" + v.getId());
+                        xv.setName(v.getName().get(language));
+                        xv.setPricePer("--");
+                    }
+
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
                 }
-
 
             });
 
@@ -263,7 +265,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
             GenericBooking b = buildBookingFromKey(em, key);
 
-            b.priceServices(em);
+            b.price(em);
 
             rs.setAvailable(true);
             rs.setKey(key);
@@ -319,10 +321,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
                 // todo: meter todo esto en el priceFromServices de TransferBooking
 
-                b.priceServices(em);
-
-                b.createCharges(em);
-                b.summarize(em);
+                b.price(em);
 
                 if (true) {
                     Remark r;

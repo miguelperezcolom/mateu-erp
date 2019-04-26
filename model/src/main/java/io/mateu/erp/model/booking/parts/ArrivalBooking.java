@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.Position;
@@ -86,7 +87,7 @@ public class ArrivalBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
     }
 

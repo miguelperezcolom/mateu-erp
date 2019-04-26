@@ -57,6 +57,19 @@ public class TransferService extends Service {
     @KPI
     private int pax;
 
+
+    private int bigLuggages;
+
+    @SameLine
+    private int golf;
+
+    @SameLine
+    private int bikes;
+
+    @SameLine
+    private int wheelChairs;
+
+
     @KPI
     @SearchFilter
     @ListColumn
@@ -122,6 +135,7 @@ public class TransferService extends Service {
 
     @Section("Pickup info")
     @ListColumn
+    @Output
     private LocalDateTime pickupTime;
     @Output
     private LocalDateTime importedPickupTime;
@@ -266,9 +280,16 @@ public class TransferService extends Service {
             m.put("leadName", this.getBooking().getLeadName());
             m.put("flightTime", (getFlightTime() != null)?getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")):"");
             m.put("flightNumber", getFlightNumber());
+            m.put("flightOriginOrDestination", getFlightOriginOrDestination());
             m.put("pax", getPax());
+            m.put("bigLuggages", getBigLuggages());
+            m.put("bikes", getBikes());
+            m.put("golf", getGolf());
+            m.put("wheelChairs", getWheelChairs());
             m.put("pickup", "" + getEffectivePickup());
+            m.put("pickupText", getPickupText());
             m.put("dropoff", "" + getEffectiveDropoff());
+            m.put("dropoffText", getDropoffText());
             m.put("transferType", getTransferType());
             m.put("preferredVehicle", "" + getPreferredVehicle());
             m.put("preferredProvider", "" + getPreferredProvider());

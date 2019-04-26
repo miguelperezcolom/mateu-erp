@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.HotelServiceLine;
@@ -117,7 +118,7 @@ public class HotelBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
         setTotalValue(0);
 
         boolean sale = true;
@@ -241,6 +242,10 @@ public class HotelBooking extends Booking {
 
         }
 
+        for (HotelBookingLine l : getLines()) {
+            breakdown.add(new PriceBreakdownItem(l.getContract() != null?l.getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForHotel(), l.toSimpleString(), l.getValue()));
+        }
+
     }
 
     @Override
@@ -256,41 +261,6 @@ public class HotelBooking extends Booking {
         super.pre();
     }
     */
-
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        getServiceCharges().clear();
-        for (HotelBookingLine l : lines) {
-            BookingCharge c;
-            getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(MDD.getCurrentUser()));
-            c.setTotal(l.getValue());
-            c.setCurrency(getCurrency());
-
-            c.setText(l.toSimpleString());
-
-            c.setAgency(getAgency());
-
-            c.setType(ChargeType.SALE);
-            c.setBooking(this);
-
-            c.setInvoice(null);
-
-            c.setBillingConcept(l.getContract() != null?l.getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForHotel());
-        }
-    }
-
-
-    @Override
-    public String getChargeSubject() {
-        String s = "" + getHotel().getName() + ": ";
-        boolean primera = true;
-        for (HotelBookingLine l : lines) {
-            if (primera) primera = false; else s += " and ";
-            s += l.toSimpleString();
-        }
-        return s;
-    }
 
     public void updateData() {
         LocalDate d0 = null;

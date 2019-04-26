@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.thirdParties.Integration;
@@ -116,7 +117,7 @@ public class ThirdPartyHotelBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
     }
 

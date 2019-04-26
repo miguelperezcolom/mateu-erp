@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
@@ -79,7 +80,7 @@ public class CircuitBooking extends TourBooking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
         Map<io.mateu.erp.model.product.tour.Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getTourContracts().stream().filter(c ->
                 ContractType.SALE.equals(c.getType())

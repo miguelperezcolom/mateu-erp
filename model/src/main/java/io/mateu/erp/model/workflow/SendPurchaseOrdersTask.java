@@ -11,6 +11,7 @@ import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +45,9 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
     @Output
     private String postscript;
 
+    @Ignored
+    private String signature;
+
     public SendPurchaseOrdersTask() {
 
     }
@@ -66,6 +70,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
                 break;
                 default:throw new Throwable("Unknown method: " + getMethod());
         }
+        setSignature(createSignature());
     }
 
 
@@ -139,4 +144,9 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
     }
 
 
+    public String createSignature() {
+        String s = "";
+        for (PurchaseOrder po : getPurchaseOrders()) s += po.createSignature();
+        return s;
+    }
 }

@@ -1405,6 +1405,8 @@ public abstract class Booking {
 
         System.out.println("Booking " + getId() + ".price()");
 
+        List<PriceBreakdownItem> breakdown = new ArrayList<>();
+
         if (isValueOverrided()) {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
             setTotalValue(overridedValue);
@@ -1412,8 +1414,9 @@ public abstract class Booking {
             services.forEach(s -> {
                 s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
             });
+            breakdown.add(new PriceBreakdownItem(overridedBillingConcept, getDescription(), overridedValue));
         } else {
-            priceServices(em);
+            priceServices(em, breakdown);
             services.forEach(s -> s.rateSale(em));
             boolean v = getServices().size() > 0;
             if (v) for (Service service : getServices()) v &= service.isSaleValued();
@@ -1436,7 +1439,7 @@ public abstract class Booking {
             setCostValued(v);
         }
 
-        updateCharges(em);
+        updateCharges(em, breakdown);
 
         updateTotals(em);
 
@@ -1586,21 +1589,21 @@ public abstract class Booking {
         }
     }
 
-    public abstract void priceServices(EntityManager em) throws Throwable;
+    public abstract void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable;
 
 
-    public void updateCharges(EntityManager em) throws Throwable {
+    public void updateCharges(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable {
         getServiceCharges().clear();
 
-        if (isValueOverrided()) {
+        for (PriceBreakdownItem i : breakdown) {
+
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(getAudit().getModifiedBy()));
-
-            c.setTotal(getOverridedValue());
+            c.setAudit(new Audit(MDD.getCurrentUser()));
+            c.setTotal(i.getValue());
             c.setCurrency(getCurrency());
 
-            c.setText(getChargeSubject());
+            c.setText(i.getText());
 
             c.setAgency(getAgency());
 
@@ -1609,22 +1612,9 @@ public abstract class Booking {
 
             c.setInvoice(null);
 
+            c.setBillingConcept(i.getConcept());
 
-            c.setBillingConcept(getOverridedBillingConcept());
-
-        } else {
-            createCharges(em);
         }
-
-    }
-
-    public String getChargeSubject() {
-        return "Booking " + getId();
-    }
-
-    public void createCharges(EntityManager em) throws Throwable {
-
-
 
     }
 
