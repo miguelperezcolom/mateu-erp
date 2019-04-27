@@ -482,11 +482,11 @@ public class TransferBooking extends Booking {
         if (getArrivalFlightTime() != null) h += "Arrival: " + getArrivalFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getArrivalFlightNumber() + " - " + getArrivalFlightOrigin() + " \n";
         if (getDepartureFlightTime() != null) h += "Departure: " + getDepartureFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getDepartureFlightNumber() + " - " + getDepartureFlightDestination() + " \n";
 
-        h += "Adults: " + getAdults() + " \n";
+        h += "Adults: " + getAdults() + "    ";
         h += "Children: " + getChildren() + " \n";
-        h += "Bikes: " + getBikes() + " \n";
-        h += "Golf: " + getGolf() + " \n";
-        h += "Wheel chairs: " + getWheelChairs() + " \n";
+        h += "Bikes: " + getBikes() + "  ";
+        h += "Golf: " + getGolf() + "  ";
+        h += "Wheel chairs: " + getWheelChairs() + "  ";
         h += "Big luggages: " + getBigLuggages() + " \n";
 
         if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";

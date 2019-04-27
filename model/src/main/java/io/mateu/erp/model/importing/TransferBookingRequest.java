@@ -236,6 +236,9 @@ public class TransferBookingRequest {
     @ListColumn
     private String result;
 
+    @Output
+    private boolean removed;
+
 
     //formato dd/MM/yyyy
     private String checkDayFormat(String day) {
@@ -491,7 +494,10 @@ public class TransferBookingRequest {
 
                 //Si ok, actualizamos la reserva...
                 TransferBooking b = (TransferBooking) getBooking();
-                if (b == null) b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+                if (b == null) {
+                    b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+                    if (b != null) setBooking(b);
+                }
                 ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
                 if (b==null)//Crear reserva nueva
                 {
@@ -767,7 +773,7 @@ public class TransferBookingRequest {
     {
         try {
             String jpql = "select x from " + TransferBookingRequest.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + agency.getId() + " order by x.when desc";
+                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + agency.getId() + " and x.removed = false order by x.when desc";
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<TransferBookingRequest> l = q.getResultList();
             TransferBookingRequest b = (l.size() > 0)?l.get(0):null;
@@ -817,7 +823,7 @@ public class TransferBookingRequest {
         try {
             Helper.transact(em -> {
 
-                ((List<TransferBookingRequest>)em.createQuery("select x from " + TransferBookingRequest.class.getName() + " x where x.result = 'Unmapped'").getResultList()).forEach(t -> {
+                ((List<TransferBookingRequest>)em.createQuery("select x from " + TransferBookingRequest.class.getName() + " x where x.result = 'Unmapped' and x.removed = false").getResultList()).forEach(t -> {
                     t.updateBooking(em);
                 });
 

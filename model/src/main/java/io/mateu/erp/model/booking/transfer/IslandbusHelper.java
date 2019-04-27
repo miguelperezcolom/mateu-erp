@@ -110,6 +110,12 @@ public class IslandbusHelper {
                         else if (!"".equals(c)) c += " / ";
                         c += s.getOperationsComment();
                     }
+                    if (s.isFlightChecked()) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += "FLIGHT CHECKED";
+                    }
+
                     punto.setAttribute("Observaciones", "" + (TransferDirection.INBOUND.equals(firstService.getDirection())?"LLEGADA":"SALIDA") + ". " + ((c != null)?c:""));
 
                     //Vuelos
@@ -215,6 +221,11 @@ public class IslandbusHelper {
                         if (c == null) c = "";
                         else if (!"".equals(c)) c += " / ";
                         c += s.getOperationsComment();
+                    }
+                    if (s.isFlightChecked()) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += "FLIGHT CHECKED";
                     }
 
                     shut.addContent(new Element("observaciones").setText((c != null)?c:""));

@@ -57,16 +57,20 @@ public class TransferService extends Service {
     @KPI
     private int pax;
 
-
+    @Section("Extras")
+    @Output
     private int bigLuggages;
 
     @SameLine
+    @Output
     private int golf;
 
     @SameLine
+    @Output
     private int bikes;
 
     @SameLine
+    @Output
     private int wheelChairs;
 
 
@@ -132,6 +136,8 @@ public class TransferService extends Service {
     private LocalDateTime flightTime;
     @Output
     private String flightOriginOrDestination;
+    @Output
+    private boolean flightChecked;
 
     @Section("Pickup info")
     @ListColumn
@@ -750,6 +756,7 @@ public class TransferService extends Service {
         xml.setAttribute("flightTime", getFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         if (getFlightNumber() != null) xml.setAttribute("flightNumber", getFlightNumber());
         if (getFlightOriginOrDestination() != null) xml.setAttribute("flightOriginOrDestination", getFlightOriginOrDestination());
+        if (isFlightChecked()) xml.setAttribute("flightChecked", "");
 
         xml.setAttribute("pax", "" + getPax());
 
