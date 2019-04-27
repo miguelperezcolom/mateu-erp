@@ -60,6 +60,10 @@ public class PurchaseOrder {
     @SearchFilter
     private long id;
 
+    @Version
+    private int version;
+
+
     private String reference;
 
     @Embedded

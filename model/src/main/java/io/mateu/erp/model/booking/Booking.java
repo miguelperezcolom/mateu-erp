@@ -70,6 +70,9 @@ public abstract class Booking {
     @ListColumn
     private long id;
 
+    @Version
+    private int version;
+
 
     @Section("Service")
     @Embedded

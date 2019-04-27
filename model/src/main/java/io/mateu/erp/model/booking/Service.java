@@ -59,6 +59,10 @@ public abstract class Service {
     @SearchFilter
     private long id;
 
+    @Version
+    private int version;
+
+
     @Section("Service")
     @Embedded
     @Output
