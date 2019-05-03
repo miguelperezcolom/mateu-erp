@@ -367,63 +367,24 @@ public abstract class Service {
     }
 
     @Action
-    public static void sendToProvider(EntityManager em, Set<Service> selection, Provider provider, String email, @TextArea String postscript) {
-        Set services = selection.stream().map(s -> em.merge(s)).collect(Collectors.toSet());
-        for (Service s : selection) {
+    public static void sendToProvider(EntityManager em, Set<Service> selection, Provider provider, String email, @TextArea String postscript) throws Throwable {
+        Set<Service> services = selection.stream().map(s -> em.find(Service.class, s.getId())).collect(Collectors.toSet());
+        for (Service s : services) {
             s.setAlreadyPurchased(false);
             if (provider != null) s.setPreferredProvider(provider);
             try {
                 s.checkPurchase(em);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
+            } catch (Throwable t) {
+                if (!"Nothing changed. No need to purchase again".equals(t.getMessage())) throw(t);
             }
         }
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
         User u = MDD.getCurrentUser();
-        for (Service s : selection) {
+        for (Service s : services) {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
                 for (PurchaseOrder po : s.getPurchaseOrders()) if (po.isActive()) {
-
-                    if (false && po.getProvider().isAutomaticOrderSending()) {
-                        po.setSent(false);
-                    } else {
-                        po.setSignature(po.createSignature());
-                        SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                        if (t == null) {
-                            if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
-                        /*
-                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
-                        em.persist(t);
-                        t.setOffice(s.getOffice());
-                        t.setProvider(po.getProvider());
-                        t.setStatus(TaskStatus.PENDING);
-                        t.setAudit(new Audit(u));
-                        ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
-                        t.setPostscript(postscript);
-                        */
-                            } else { // email
-                                taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
-                                em.persist(t);
-                                t.setOffice(s.getOffice());
-                                t.setProvider(po.getProvider());
-                                t.setStatus(TaskStatus.PENDING);
-                                t.setAudit(new Audit(u));
-                                if (!Strings.isNullOrEmpty(email)) {
-                                    t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                                    ((SendPurchaseOrdersByEmailTask) t).setTo(email);
-                                } else {
-                                    t.setMethod((po.getProvider().getOrdersSendingMethod() != null) ? po.getProvider().getOrdersSendingMethod() : PurchaseOrderSendingMethod.EMAIL);
-                                    ((SendPurchaseOrdersByEmailTask) t).setTo(po.getProvider().getSendOrdersTo());
-                                }
-                                ((SendPurchaseOrdersByEmailTask) t).setCc(s.getOffice().getEmailCC());
-                                t.setPostscript(postscript);
-                            }
-                        }
-                        t.getPurchaseOrders().add(po);
-                        po.getSendingTasks().add(t);
-                        po.setSent(true);
-                    }
+                    po.send(em, MDD.getCurrentUser());
                 }
             }
         }
@@ -438,7 +399,7 @@ public abstract class Service {
         try {
             checkPurchase(em);
         } catch (Throwable t) {
-            t.printStackTrace();
+            if (!"Nothing changed. No need to purchase again".equals(t.getMessage())) throw(t);
         }
 
         Map<Provider, SendPurchaseOrdersTask> taskPerProvider = new HashMap<>();
@@ -449,46 +410,7 @@ public abstract class Service {
                 if (provider != null) s.setPreferredProvider(provider);
                 for (PurchaseOrder po : s.getPurchaseOrders())
                     if (po.isActive()) {
-
-                        if (false && po.getProvider().isAutomaticOrderSending()) {
-                            po.setSent(false);
-                        } else {
-                            po.setSignature(po.createSignature());
-                            SendPurchaseOrdersTask t = taskPerProvider.get(po.getProvider());
-                            if (t == null) {
-                                if (po.getProvider() != null && PurchaseOrderSendingMethod.QUOONAGENT.equals(po.getProvider().getOrdersSendingMethod())) {
-                        /*
-                        taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersToAgentTask());
-                        em.persist(t);
-                        t.setOffice(s.getOffice());
-                        t.setProvider(po.getProvider());
-                        t.setStatus(TaskStatus.PENDING);
-                        t.setAudit(new Audit(u));
-                        ((SendPurchaseOrdersToAgentTask)t).setAgent(provider.getAgent());
-                        t.setPostscript(postscript);
-                        */
-                                } else { // email
-                                    taskPerProvider.put(po.getProvider(), t = new SendPurchaseOrdersByEmailTask());
-                                    em.persist(t);
-                                    t.setOffice(s.getOffice());
-                                    t.setProvider(po.getProvider());
-                                    t.setStatus(TaskStatus.PENDING);
-                                    t.setAudit(new Audit(u));
-                                    if (!Strings.isNullOrEmpty(email)) {
-                                        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-                                        ((SendPurchaseOrdersByEmailTask) t).setTo(email);
-                                    } else {
-                                        t.setMethod((po.getProvider().getOrdersSendingMethod() != null) ? po.getProvider().getOrdersSendingMethod() : PurchaseOrderSendingMethod.EMAIL);
-                                        ((SendPurchaseOrdersByEmailTask) t).setTo(po.getProvider().getSendOrdersTo());
-                                    }
-                                    ((SendPurchaseOrdersByEmailTask) t).setCc(s.getOffice().getEmailCC());
-                                    t.setPostscript(postscript);
-                                }
-                            }
-                            t.getPurchaseOrders().add(po);
-                            po.getSendingTasks().add(t);
-                            po.setSent(true);
-                        }
+                        po.send(em, MDD.getCurrentUser());
                     }
             }
         }
@@ -499,7 +421,6 @@ public abstract class Service {
 
     public void checkPurchase(EntityManager em, User u) throws Throwable {
         if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
-            setSignature(createSignature());
             setProcessingStatus(ProcessingStatus.INITIAL);
             refreshPurchaseOrders(em, u);
         } else {
@@ -553,6 +474,7 @@ public abstract class Service {
             ps += po.getProvider().getName();
         }
         setProviders(ps);
+        setSignature(createSignature());
     }
 
 
@@ -1003,7 +925,7 @@ public abstract class Service {
         xml.setAttribute("status", isActive()?"OK":"CANCELLED");
         xml.setAttribute("header", getDescription());
         try {
-            if (getOffice().getCompany().getLogo() != null) xml.setAttribute("urllogo", getOffice().getCompany().getLogo().toFileLocator().getTmpPath());
+            if (getOffice().getCompany().getLogo() != null) xml.setAttribute("urllogo", "file:" +getOffice().getCompany().getLogo().toFileLocator().getTmpPath());
         } catch (Exception e) {
             e.printStackTrace();
         }

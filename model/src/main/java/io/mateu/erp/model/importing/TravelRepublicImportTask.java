@@ -94,8 +94,13 @@ public class TravelRepublicImportTask extends TransferImportTask {
                         //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
                         TransferBookingRequest rq = rellenarTransferBookingRequest(cabecera, l);
                         TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), getCustomer());
-                        if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                        if (last == null || !last.getSavedSignature().equals(rq.getSignature())) {
+                            rq.setSavedSignature(rq.getSignature());
                             em.persist(rq);
+                            System.out.println("grabando rq");
+                            em.persist(rq);
+                        } else {
+                            System.out.println("rq no grabada. Ya existe y la firma no ha cambiado");
                         }
                         //vamos guardando el resultado junto con la refAge para crear el informe final
                         if (res.length() > 0)//hay errores

@@ -868,7 +868,7 @@ public abstract class Booking {
 
         Document xml = new Document(new Element("services"));
 
-        if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
         services.stream().filter(s -> s.isActive()).forEach(s -> {
             xml.getRootElement().addContent(s.toXml(true));
@@ -976,60 +976,22 @@ public abstract class Booking {
     */
 
 
-    @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE, saveAfter = true)
     @NotWhenCreating
     public void cancel(EntityManager em) {
-        cancel(em, MDD.getCurrentUser());
-    }
-
-    public void cancel(EntityManager em, User u) {
-
-        services.forEach(s -> s.cancel(em, u));
-
         setActive(false);
-
-        if (getFile() != null) {
-            boolean allCancelled = true;
-            for (Booking b : getFile().getBookings()) if (b.isActive()) {
-                allCancelled = false;
-                break;
-            }
-            if (allCancelled) {
-                getFile().setActive(false);
-                em.merge(getFile());
-            }
-        }
-
-        em.merge(this);
     }
+
 
     public boolean isCancelVisible() {
         return isActive();
     }
 
 
-    @Action(order = 7, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK, saveAfter = true)
     @NotWhenCreating
     public void uncancel(EntityManager em) throws Exception {
-        User u = em.find(User.class, MDD.getUserData().getLogin());
-
-        if (services.size() > 0) throw new Exception("Sorry. At this moment You can not uncancel a booking with cancelled services.");
-
-        setActive(false);
-
-        if (getFile() != null) {
-            boolean allCancelled = true;
-            for (Booking b : getFile().getBookings()) if (b.isActive()) {
-                allCancelled = false;
-                break;
-            }
-            if (allCancelled) {
-                getFile().setActive(false);
-                em.merge(getFile());
-            }
-        }
-
-        em.merge(this);
+        setActive(true);
     }
 
     public boolean isUncancelVisible() {
@@ -1275,6 +1237,7 @@ public abstract class Booking {
                             if (somethingHappened) {
                                 b.getAgency().setUpdatePending(true);
                                 b.getPos().setUpdatePending(true);
+                                if (b.getFile() != null) b.getFile().setUpdateRqTime(LocalDateTime.now());
                             }
 
                             b.summarize(em);
@@ -1402,7 +1365,7 @@ public abstract class Booking {
     public abstract void generateServices(EntityManager em);
 
 
-    //@Action(order = 7, icon = VaadinIcons.EURO)
+    @Action(order = 7, icon = VaadinIcons.EURO)
     @NotWhenCreating
     public void price(EntityManager em) throws Throwable {
 
@@ -1419,11 +1382,19 @@ public abstract class Booking {
             });
             breakdown.add(new PriceBreakdownItem(overridedBillingConcept, getDescription(), overridedValue));
         } else {
+            setValued(false);
+            setTotalValue(0);
+            setTotalNetValue(0);
             priceServices(em, breakdown);
-            services.forEach(s -> s.rateSale(em));
-            boolean v = getServices().size() > 0;
-            if (v) for (Service service : getServices()) v &= service.isSaleValued();
-            setValued(v);
+            if (!isValued()) {
+                services.forEach(s -> s.rateSale(em));
+                boolean v = getServices().size() > 0;
+                if (v) for (Service service : getServices()) v &= service.isSaleValued();
+                double t = 0;
+                if (v) for (Service service : getServices()) t += service.getTotalSale();
+                setValued(v);
+                setTotalValue(Helper.roundEuros(t));
+            }
         }
 
         if (isCostOverrided()) {

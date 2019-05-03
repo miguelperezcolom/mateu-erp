@@ -143,9 +143,13 @@ public class TransferService extends Service {
     @ListColumn
     @Output
     private LocalDateTime pickupTime;
-    @Output
+
     private LocalDateTime importedPickupTime;
 
+    public void setImportedPickupTime(LocalDateTime importedPickupTime) {
+        this.importedPickupTime = importedPickupTime;
+        pickupTime = importedPickupTime;
+    }
 
     @Output
     private LocalDateTime pickupConfirmedByTelephone;
@@ -513,20 +517,22 @@ public class TransferService extends Service {
 
         d.put("pickup", "" + getPickup().getName());
         d.put("pickupResort", "" + getPickup().getResort().getName());
-        if (getEffectivePickup() != null) {
+        if (getEffectivePickup() != null && !getEffectivePickup().equals(getPickup())) {
             d.put("effectivePickup", "" + getEffectivePickup().getName());
             d.put("effectivePickupResort", "" + getEffectivePickup().getResort().getName());
         }
         d.put("dropoff", "" + getDropoff().getName());
         d.put("dropoffResort", "" + getDropoff().getResort().getName());
-        if (getEffectiveDropoff() != null) {
+        if (getEffectiveDropoff() != null && !getEffectiveDropoff().equals(getDropoff())) {
             d.put("effectiveDropoff", "" + getEffectiveDropoff().getName());
             d.put("effectiveDropoffResort", "" + getEffectiveDropoff().getResort().getName());
         }
         d.put("providers", getProviders());
-        d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
-        d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
-        d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
+        if (!TransferType.SHUTTLE.equals(getTransferType())) {
+            d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
+            d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
+            d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
+        }
         d.put("transferType", "" + getTransferType());
         d.put("flight", getFlightNumber());
         d.put("flightDate", getFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MMM-dd")));
@@ -589,7 +595,7 @@ public class TransferService extends Service {
     public static void informPickupTimeBatch(UserData user, EntityManager em, Set<TransferService> selection) throws Throwable {
         for (TransferService s : selection) {
 
-            s.informPickupTime(user, em);
+            s.informPickupTime(em);
 
         }
     }
@@ -605,48 +611,17 @@ public class TransferService extends Service {
     }
 
     @Action("Inform pickup time")
-    public void informPickupTime(UserData user, EntityManager em) throws Throwable {
+    public void informPickupTime(EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
-            long tel = 0;
-            try {
-                tel = Long.parseLong(this.getBooking().getTelephone().replaceAll("[\\(\\)\\+]", ""));
-            } catch (Exception e) {
-
-            }
-            if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
-                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
-                getTasks().add(t);
-                t.getServices().add(this);
-                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
-                //t.run(em, em.find(User.class, user.getLogin()));
-                setPickupConfirmedBySMS(LocalDateTime.now());
-                em.persist(t);
-            }
-
-            if (getEffectivePickup() != null && !Strings.isNullOrEmpty(getEffectivePickup().getEmail())) {
-                TransferPoint p = getEffectivePickup();
-                if (p.getAlternatePointForShuttle() != null && !TransferType.EXECUTIVE.equals(getTransferType()) && (TransferType.SHUTTLE.equals(getTransferType()) || p.isAlternatePointForNonExecutive())) {
-                    p = p.getAlternatePointForShuttle();
-                }
-                SendEmailTask t = new SendEmailTask();
-                t.setOffice(getOffice());
-                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
-                t.setCc(getOffice().getEmailCC());
-                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
-                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
-                t.setTo(getEffectivePickup().getEmail());
-                //t.run(em, em.find(User.class, user.getLogin()));
-                getTasks().add(t);
-                t.getServices().add(this);
-                em.persist(t);
-                setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            }
+            sendSMS(em);
+            sendEmailToHotel(em);
         }
     }
 
     @Action(value = "Send email to hotel", saveBefore = true)
-    public void sendEmailToHotel(UserData user, EntityManager em) throws Throwable {
+    public void sendEmailToHotel(EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
+            boolean sent = false;
 
             if (getPickup() != null && !Strings.isNullOrEmpty(getPickup().getEmail())) {
                 SendEmailTask t = new SendEmailTask();
@@ -661,12 +636,31 @@ public class TransferService extends Service {
                 t.getServices().add(this);
                 em.persist(t);
                 setPickupConfirmedByEmailToHotel(LocalDateTime.now());
-            } else throw new Exception("No pickup or missing email for it. Please set before sending the email");
+                sent = true;
+            }
+
+            if (!Strings.isNullOrEmpty(getBooking().getEmail())) {
+                SendEmailTask t = new SendEmailTask();
+                t.setOffice(getOffice());
+                t.setAudit(new Audit(MDD.getCurrentUser()));
+                t.setCc(getOffice().getEmailCC());
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
+                t.setTo(getBooking().getEmail());
+                //t.run(em, em.find(User.class, user.getLogin()));
+                getTasks().add(t);
+                t.getServices().add(this);
+                em.persist(t);
+                setPickupConfirmedByEmailToHotel(LocalDateTime.now());
+                sent = true;
+            }
+
+            if (!sent) throw new Exception("No pickup or missing email for it. Please set before sending the email");
         } else throw new Exception("No pickup time. Please set before sending the email");
     }
 
     @Action(value = "Send SMS", saveBefore = true)
-    public void sendSMS(UserData user, EntityManager em) throws Throwable {
+    public void sendSMS(EntityManager em) throws Throwable {
         if (getPickupTime() != null) {
             long tel = 0;
             try {
@@ -677,7 +671,7 @@ public class TransferService extends Service {
             if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
                 SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
                 getTasks().add(t);
-                t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
+                t.setAudit(new Audit(MDD.getCurrentUser()));
                 //t.run(em, em.find(User.class, user.getLogin()));
                 setPickupConfirmedBySMS(LocalDateTime.now());
                 em.persist(t);

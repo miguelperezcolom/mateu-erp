@@ -516,7 +516,7 @@ public class QuotationRequest {
         xml.setAttribute("paid", nf.format(Helper.roundEuros(total + balance)));
         xml.setAttribute("pending", nf.format(Helper.roundEuros(-1d * balance)));
 
-        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
 
         if (getAgency().getCompany().getFinancialAgent() != null) {
@@ -612,8 +612,8 @@ public class QuotationRequest {
         if (getDueDate() != null) xml.setAttribute("dueDate", getDueDate().format(df));
         */
 
-        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
-        if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", "file:" + AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
 
 
         if (getAgency().getCompany().getFinancialAgent() != null) {

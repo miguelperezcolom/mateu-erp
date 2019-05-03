@@ -89,7 +89,13 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
                 if (!po.isActive()) ds.put("status", "CANCELLED");
 
                 ds.put("po", po.getId());
-                if (po.isConfirmationNeeded()) ds.put("confirmationUrl", (MDD.getApp() != null?MDD.getApp().getBaseUrl().replaceAll("/app", ""):"") + "/poconfirmation/" + getId());
+                if (po.isConfirmationNeeded()) {
+                    String u = (MDD.getApp() != null?MDD.getApp().getBaseUrl():"");
+                    if (!u.endsWith("/")) u += "/";
+                    if (u.endsWith("/app/")) u = u.replaceAll("\\/app\\/", "/");
+                    u +=  "poconfirmation/" + getId();
+                    ds.put("confirmationUrl", u);
+                }
 
                 if (s instanceof TransferService) {
                     ds.put("orderby", ((TransferService) s).getFlightTime().format(DateTimeFormatter.ISO_DATE_TIME));

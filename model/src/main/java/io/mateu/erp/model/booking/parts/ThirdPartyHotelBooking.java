@@ -89,7 +89,7 @@ public class ThirdPartyHotelBooking extends Booking {
         if (s == null) {
             getServices().add(s = new FreeTextService());
             s.setBooking(this);
-            s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+            s.setAudit(new Audit(MDD.getCurrentUser()));
         }
         s.setOffice(integration.getOffice());
         s.setFinish(getEnd());

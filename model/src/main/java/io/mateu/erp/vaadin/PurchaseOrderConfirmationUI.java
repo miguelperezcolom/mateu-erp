@@ -151,7 +151,7 @@ public class PurchaseOrderConfirmationUI extends UI {
                                     try {
                                         Helper.transact(emx -> {
 
-                                            SendPurchaseOrdersTask tx = em.find(SendPurchaseOrdersTask.class, finalPoId);
+                                            SendPurchaseOrdersTask tx = emx.find(SendPurchaseOrdersTask.class, finalPoId);
 
                                             tx.getPurchaseOrders().get(0).setStatus(PurchaseOrderStatus.CONFIRMED);
                                             if (!Strings.isNullOrEmpty(ta.getValue())) {
@@ -199,7 +199,7 @@ public class PurchaseOrderConfirmationUI extends UI {
                                     try {
                                         Helper.transact(emx -> {
 
-                                            SendPurchaseOrdersTask tx = em.find(SendPurchaseOrdersTask.class, finalPoId);
+                                            SendPurchaseOrdersTask tx = emx.find(SendPurchaseOrdersTask.class, finalPoId);
 
                                             tx.getPurchaseOrders().get(0).setStatus(PurchaseOrderStatus.REJECTED);
                                             if (!Strings.isNullOrEmpty(ta.getValue())) {

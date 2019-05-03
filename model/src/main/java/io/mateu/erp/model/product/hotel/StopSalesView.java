@@ -53,7 +53,7 @@ public class StopSalesView implements RpcCrudView<StopSalesView, StopSalesMonth,
         o.setStopSales(getHotel().getStopSales());
         em.persist(o);
         o.setCreated(LocalDateTime.now());
-        o.setCreatedBy(em.find(ERPUser.class, MDD.getUserData().getLogin()));
+        o.setCreatedBy(MDD.getCurrentUser());
         o.setAction(action);
         o.getAgencies().addAll(agencies);
         o.getRooms().addAll(rooms);

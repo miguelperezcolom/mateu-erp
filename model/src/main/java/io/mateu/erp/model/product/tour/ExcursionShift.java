@@ -13,7 +13,9 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -59,7 +61,7 @@ public class ExcursionShift {
 
     @OneToMany
     @UseCheckboxes
-    private List<ExcursionLanguage> languages = new ArrayList<>();
+    private Set<ExcursionLanguage> languages = new HashSet<>();
 
 
     @Tab("Pickup times")

@@ -248,11 +248,6 @@ public class HotelBooking extends Booking {
 
     }
 
-    @Override
-    public void cancel(EntityManager em, User u) {
-        for (HotelBookingLine l : lines) l.setActive(false);
-        super.cancel(em, u);
-    }
 
     /*
     @PrePersist

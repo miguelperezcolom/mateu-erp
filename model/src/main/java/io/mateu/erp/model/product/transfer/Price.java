@@ -69,12 +69,13 @@ public class Price {
 
     @Override
     public String toString() {
-        return "From " + origin.getName() + " to " + destination.getName() + " in " + vehicle.getName() + " (" + fromPax + "-" + toPax + ") " + pricePer.name() + " = " + price + "/" + returnPrice;
+        return "From " + (origin != null?origin.getName():"--") + " to " + (destination != null?destination.getName():"---") + " in " + (vehicle != null?vehicle.getName():"---") + " (" + fromPax + "-" + toPax + ") " + pricePer.name() + " = " + price + "/" + returnPrice;
     }
 
     public Price clone(EntityManager em, ERPUser u) {
         Price p = new Price();
         p.setPrice(getPrice());
+        p.setTransferType(getTransferType());
         p.setDestination(getDestination());
         p.setOrigin(getOrigin());
         p.setPricePer(getPricePer());

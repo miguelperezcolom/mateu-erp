@@ -14,7 +14,7 @@
 
                 <!-- A4 size -->
                 <fo:simple-page-master master-name="dinA4" page-height="29.7cm" page-width="21cm" margin="2mm 20mm 35mm 20mm">
-                    <fo:region-body margin-top="31mm"/>
+                    <fo:region-body margin-top="41mm"/>
                     <fo:region-before display-align="after"/>
                     <fo:region-after display-align="after"/>
                 </fo:simple-page-master>
@@ -31,7 +31,7 @@
                         <fo:table-body>
                             <fo:table-row>
                                 <fo:table-cell text-align="left"  font-size="8pt">
-                                    <fo:block><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
+                                    <fo:block><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" height="20mm"/></fo:block>
                                     <fo:block><xsl:value-of select="issuer/@businessName"/> - NIF: <xsl:value-of select="issuer/@vatid"/></fo:block>
                                     <fo:block><xsl:value-of select="issuer/@address"/> - <xsl:value-of select="issuer/@zip"/> <xsl:value-of select="issuer/@resort"/></fo:block>
                                     <fo:block><xsl:value-of select="issuer/@email"/> - t. <xsl:value-of select="issuer/@telephone"/> - f. <xsl:value-of select="issuer/@fax"/></fo:block>

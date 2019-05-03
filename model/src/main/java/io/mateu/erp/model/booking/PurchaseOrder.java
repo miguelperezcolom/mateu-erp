@@ -217,27 +217,6 @@ public class PurchaseOrder {
         send(em, em.find(ERPUser.class, user.getLogin()));
     }
 
-    @Action("Send")
-    public static void sendFromList(EntityManager em, Set<PurchaseOrder> selection, String email) throws Exception {
-        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
-        t.setStatus(TaskStatus.PENDING);
-        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        t.setAudit(new Audit(em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN)));
-        String a = email;
-        for (PurchaseOrder po : selection) {
-            t.getPurchaseOrders().add(po);
-            po.getSendingTasks().add(t);
-            if (Strings.isNullOrEmpty(a)) a = po.getProvider().getSendOrdersTo();
-        }
-        t.setTo(a);
-        if (!Strings.isNullOrEmpty(a)) em.persist(t);
-        t.execute(em, em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN));
-    }
-
-
-
-
-
     public String createSignature() {
         String s = "error when serializing";
         try {
@@ -294,7 +273,13 @@ public class PurchaseOrder {
         d.put("sent", isSent());
         d.put("sentTime", getSentTime());
         d.put("valued", isValued());
-        if (isConfirmationNeeded()) d.put("confirmationUrl", (MDD.getApp() != null?MDD.getApp().getBaseUrl():"") + "/poconfirmation/" + getId());
+        if (isConfirmationNeeded()) {
+            String u = (MDD.getApp() != null?MDD.getApp().getBaseUrl():"");
+            if (!u.endsWith("/")) u += "/";
+            if (u.endsWith("/app/")) u = u.replaceAll("\\/app\\/", "/");
+            u +=  "poconfirmation/" + getId();
+            d.put("confirmationUrl", u);
+        }
         d.put("total", getTotal());
         d.put("currency", getCurrency().getIsoCode());
 
@@ -462,7 +447,7 @@ public class PurchaseOrder {
                         @Override
                         public void run(EntityManager em) throws Throwable {
 
-                            PurchaseOrder po = em.merge(PurchaseOrder.this);
+                            PurchaseOrder po = em.find(PurchaseOrder.class, getId());
 
                             boolean somethingHappened = false;
                             if (po.getPriceUpdateRqTime() != null) {

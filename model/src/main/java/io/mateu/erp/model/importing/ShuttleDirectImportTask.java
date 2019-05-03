@@ -31,9 +31,11 @@ import java.util.List;
 @Getter@Setter
 public class ShuttleDirectImportTask extends TransferImportTask {
 
+    private Agency expedia;
+
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public ShuttleDirectImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept, Agency expedia)
     {
        this.setCustomer(customer);
 
@@ -52,11 +54,8 @@ public class ShuttleDirectImportTask extends TransferImportTask {
        setPointOfSale(pos);
 
        setBillingConcept(billingConcept);
-    }
 
-    public ShuttleDirectImportTask(ERPUser user, Agency customer, String xml, Office office, PointOfSale pos, BillingConcept billingConcept)
-    {
-        this("ShuttleDirect", user, customer,xml, office, pos, billingConcept);//guardamos el xml en el campo del html
+       this.expedia = expedia;
     }
 
     @Override
@@ -84,11 +83,18 @@ public class ShuttleDirectImportTask extends TransferImportTask {
                 this.increaseTotal();
                 try {
                     aux = "\nRef. " + tr.getChildText("barcode") + ": ";
+                    String pn = tr.getChildText("passengername");
                     //por cada uno rellena un "transferBookingRequest" y llama a updatebooking()
-                    TransferBookingRequest rq = rellenarTransferBookingRequest(tr, em, getCustomer());
-                    TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), getCustomer());
-                    if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                    Agency agencia = expedia != null && pn.toLowerCase().contains("(expedia)") ? getExpedia() : getCustomer();
+                    TransferBookingRequest rq = rellenarTransferBookingRequest(tr, em, agencia);
+                    TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), agencia);
+                    if (last == null || !last.getSavedSignature().equals(rq.getSignature())) {
+                        rq.setSavedSignature(rq.getSignature());
                         em.persist(rq);
+                        System.out.println("grabando rq");
+                        em.persist(rq);
+                    } else {
+                        System.out.println("rq no grabada. Ya existe y la firma no ha cambiado");
                     }
                     //res = rq.updateBooking(em);
                     //vamos guardando el resultado junto con la refAge para crear el informe final
@@ -135,7 +141,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         if (Strings.isNullOrEmpty(type)) type = tr.getChildText("vehicleType");
         if (type.toUpperCase().contains("SHUTTLE"))
             rq.setServiceType(TransferType.SHUTTLE);
-        else if (type.toUpperCase().contains("EXECUTIVE"))
+        else if (type.toUpperCase().contains("EXECUTIVE") || type.toUpperCase().contains("LUXURY"))
             rq.setServiceType(TransferType.EXECUTIVE);
         else
             rq.setServiceType(TransferType.PRIVATE);

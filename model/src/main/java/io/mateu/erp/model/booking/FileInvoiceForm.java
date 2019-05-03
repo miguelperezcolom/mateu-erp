@@ -23,6 +23,7 @@ import org.jdom2.output.XMLOutputter;
 
 import javax.mail.internet.InternetAddress;
 import javax.persistence.EntityManager;
+import javax.validation.constraints.NotEmpty;
 import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
@@ -37,77 +38,41 @@ import java.util.stream.Collectors;
 public class FileInvoiceForm {
 
     @Ignored
-    private final java.io.File temp;
+    private java.io.File temp;
 
-    @Output
+    @Ignored
     private File file;
 
-    private String email;
-
-    @TextArea
-    private String postscript;
-
-    @IFrame
+    @IFrame@FullWidth
     private URL proforma;
 
 
     public FileInvoiceForm(File file) throws Throwable {
         this.file = file;
 
+        Helper.notransact(em -> {
 
-        Document xml = new Document(new Element("invoices"));
-
-        List<BookingCharge> charges = new ArrayList<>();
-        for (Booking b : file.getBookings()) charges.addAll(b.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
-
-        Booking firstBooking = file.getBookings().size() > 0?file.getBookings().get(0):null;
+            java.io.File temp = file.buildProforma(em);
 
 
-        if (firstBooking != null) Helper.notransact(em -> xml.getRootElement().addContent(new IssuedInvoice(em.find(ERPUser.class, MDD.getUserData().getLogin()), charges, true, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null).toXml(em)));
+            String baseUrl = System.getProperty("tmpurl");
+            if (baseUrl == null) {
+                proforma = temp.toURI().toURL();
+            }
+            proforma = new URL(baseUrl + "/" + temp.getName());
 
-        System.out.println(Helper.toString(xml.getRootElement()));
+        });
 
-
-        String archivo = UUID.randomUUID().toString();
-
-        temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
-
-
-        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
-        System.out.println("Temp file : " + temp.getAbsolutePath());
-
-        FileOutputStream fileOut = new FileOutputStream(temp);
-        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
-        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
-        System.out.println("xml=" + sxml);
-        Helper.transact(em -> fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForIssuedInvoice())), new StreamSource(new StringReader(sxml)))));
-        fileOut.close();
-
-
-        String baseUrl = System.getProperty("tmpurl");
-        if (baseUrl == null) {
-            proforma = temp.toURI().toURL();
-        }
-        proforma = new URL(baseUrl + "/" + temp.getName());
 
     }
 
 
     @Action(icon = VaadinIcons.ENVELOPE, order = 1)
-    public void sendProforma(EntityManager em) throws Throwable {
+    public void sendProforma(EntityManager em, String overrideEmail, @TextArea String postscript) throws Throwable {
 
-        String to = email;
-        //todo: una factura por agencia
-        /*
-        if (Strings.isNullOrEmpty(to)) {
-            to = file.getEmail();
-        }
-        if (Strings.isNullOrEmpty(to)) {
-            to = file.getAgency().getEmail();
-        }
-        */
+        String to = overrideEmail;
+        if (Strings.isNullOrEmpty(to)) to = file.getAgency().getEmail();
         if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address.");
-
 
 
         AppConfig appconfig = AppConfig.get(em);
@@ -150,7 +115,9 @@ public class FileInvoiceForm {
     }
 
     @Action(icon = VaadinIcons.INVOICE, order = 2)
-    public void createInvoice() throws Throwable {
+    public List<IssuedInvoice> createInvoice() throws Throwable {
+
+        List<IssuedInvoice> l = new ArrayList<>();
 
         Helper.transact(em -> {
 
@@ -161,19 +128,26 @@ public class FileInvoiceForm {
 
             if (firstBooking != null) {
 
-                Invoice i = new IssuedInvoice(em.find(ERPUser.class, MDD.getUserData().getLogin()), charges, false, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null);
+                IssuedInvoice i = new IssuedInvoice(MDD.getCurrentUser(), charges, false, firstBooking.getAgency().getCompany().getFinancialAgent(), firstBooking.getAgency().getFinancialAgent(), null);
                 ((IssuedInvoice) i).setAgency(file.getAgency());
                 i.setNumber(((IssuedInvoice) i).getAgency().getCompany().getBillingSerial().createInvoiceNumber());
                 em.persist(i);
 
                 charges.forEach(c -> em.merge(c));
 
+                l.add(i);
+
             }
 
 
         });
 
-        MDDUI.get().getNavegador().goBack();
+        return l;
     }
 
+
+    @Override
+    public String toString() {
+        return "Proforma for file " + file;
+    }
 }

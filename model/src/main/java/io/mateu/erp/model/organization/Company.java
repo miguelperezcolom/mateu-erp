@@ -65,7 +65,7 @@ public class Company {
         xml.setAttribute("name", getName());
         if (getLogo() != null) {
             try {
-                xml.setAttribute("logo", getLogo().toFileLocator().getTmpPath());
+                xml.setAttribute("logo", "file:" + getLogo().toFileLocator().getTmpPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }

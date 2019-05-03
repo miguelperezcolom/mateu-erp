@@ -44,6 +44,8 @@ public class PointOfSale {
     @ManyToOne
     private FinancialAgent financialAgent;
 
+    private String email;
+
 
     @KPI
     private double totalSales;

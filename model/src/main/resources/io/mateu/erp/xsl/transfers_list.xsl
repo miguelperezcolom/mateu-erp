@@ -258,7 +258,7 @@
 
                         <!-- FIN -->
 
-                        <fo:block id="end"></fo:block>
+                        <xsl:if test="position() = count(/root/group)"> <fo:block id="end"></fo:block></xsl:if>
                     </fo:flow>
                 </fo:page-sequence>
 

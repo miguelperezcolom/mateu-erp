@@ -263,7 +263,7 @@ public class TransferBooking extends Booking {
             s.setFlightOriginOrDestination(departureFlightDestination);
             s.setFlightTime(departureFlightTime);
 
-            if (overridePickupTime != null) s.setPickupTime(overridePickupTime);
+            if (overridePickupTime != null && s.getImportedPickupTime() == null) s.setPickupTime(overridePickupTime);
 
             s.setActive(isActive());
 
@@ -318,11 +318,14 @@ public class TransferBooking extends Booking {
 
             if (contratoOk) {
 
+                boolean contratoConPrecio = false;
+
                 for (Price p : c.getPrices()) {
 
-                    boolean precioOk = p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getResorts().contains(getOrigin().getResort());
+                    boolean zonasOk = (p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getResorts().contains(getOrigin().getResort())) && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getResorts().contains(getDestination().getResort()));
+                    if (!zonasOk) zonasOk = (p.getOrigin().getPoints().contains(getDestination()) || p.getOrigin().getResorts().contains(getDestination().getResort())) && (p.getDestination().getPoints().contains(getOrigin()) || p.getDestination().getResorts().contains(getOrigin().getResort()));
 
-                    precioOk = precioOk && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getResorts().contains(getDestination().getResort()));
+                    boolean precioOk = zonasOk;
 
                     precioOk = precioOk && p.getTransferType().equals(getTransferType());
 
@@ -341,6 +344,7 @@ public class TransferBooking extends Booking {
                         else if (getArrivalFlightTime() == null && getDepartureFlightTime() == null) valor = 0;
 
                         setTotalValue(Helper.roundEuros(valor));
+                        setValued(true);
 
                         String desc = ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " TRANSFER WITH " + p.getVehicle().getName() + " FROM " + p.getOrigin().getName() + " TO " + p.getDestination().getName() + " FOR ";
                         if (PricePer.PAX.equals(p.getPricePer())) {
@@ -352,9 +356,15 @@ public class TransferBooking extends Booking {
 
 
                         breakdown.add(new PriceBreakdownItem(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer(), desc, Helper.roundEuros(valor)));
+
+                        contratoConPrecio = true;
+
+                        break;
                     }
 
                 }
+
+                if (contratoConPrecio) break;
 
             }
 

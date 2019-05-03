@@ -52,7 +52,7 @@ public class IslandbusHelper {
                 root.addContent(xmlParte);
 
                 //Parte1 NoParte="2896" Shuttle="si" Garaje="CENTRAL" Cliente="SHUTTLE" TTOO="URBIS" CodigoServicio="CUEVAS" Fecha="220411" Guia="" ZonaTrabajo="SUR" HoraInicio="20:35" LugarPresentacion="" Observaciones=""
-                xmlParte.setAttribute("NoParte", "" + po.getId());
+                xmlParte.setAttribute("NoParte", "2019" + po.getId());
 
                 xmlParte.setAttribute("TTOO","SHUPOINT");
                 xmlParte.setAttribute("Cliente","VIAJESIBIZA");
@@ -83,7 +83,8 @@ public class IslandbusHelper {
                     numBooking++;
                     xmlLineas.addContent(punto);
 
-                    TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
+                    TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getDropoff():s.getPickup();
+                    //TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
 
                     punto.setAttribute("PuntoRecogida", "" + tp.getId());
                     punto.setAttribute("NombrePunto", tp.getName());
@@ -116,7 +117,7 @@ public class IslandbusHelper {
                         c += "FLIGHT CHECKED";
                     }
 
-                    punto.setAttribute("Observaciones", "" + (TransferDirection.INBOUND.equals(firstService.getDirection())?"LLEGADA":"SALIDA") + ". " + ((c != null)?c:""));
+                    punto.setAttribute("Observaciones", "" + (TransferDirection.INBOUND.equals(firstService.getDirection())?"LLEGADA":"SALIDA") + ". " + ((c != null)?c.replaceAll("\n", ""):""));
 
                     //Vuelos
                     //<Vuelo1 Fecha="220411" RefVuelo="" Hora="" TTOO="JUMBOSH" FechaLlegadaVuelo="220411" EntSal="E"/>
@@ -192,7 +193,7 @@ public class IslandbusHelper {
 
                     shut.addContent(new Element("codigoTTOO").setText(touroperador));
                     shut.addContent(new Element("nombreTTOO").setText(touroperador));
-                    shut.addContent(new Element("numero").setText("" + po.getId()));
+                    shut.addContent(new Element("numero").setText("2019" + po.getId()));
                     shut.addContent(new Element("tipo").setText(TransferDirection.INBOUND.equals(firstService.getDirection())?"ENTRADA":"SALIDA"));
                     shut.addContent(new Element("fecha").setText(s.getFlightTime().format(dfx)));
                     shut.addContent(new Element("vuelo").setText(formatFlight(s.getFlightNumber())));
@@ -204,7 +205,8 @@ public class IslandbusHelper {
                     shut.addContent(new Element("bebes").setText("" + 0));
 
 
-                    TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
+                    TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getDropoff():s.getPickup();
+                    TransferPoint etp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
 
                     shut.addContent(new Element("codigoHotel").setText("" + tp.getId()));
 
@@ -228,7 +230,7 @@ public class IslandbusHelper {
                         c += "FLIGHT CHECKED";
                     }
 
-                    shut.addContent(new Element("observaciones").setText((c != null)?c:""));
+                    shut.addContent(new Element("observaciones").setText((c != null)?c.replaceAll("\n", ""):""));
 
                     shut.addContent(new Element("accion").setText("ALTA"));
 

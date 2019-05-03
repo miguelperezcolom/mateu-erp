@@ -18,15 +18,15 @@
                 <td width="30%" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">AGENCIA</span><br><span style="color: black;">${agency!}</span></td>
             </tr>
             <tr>
-                <td width="33%" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">RECOGIDA · PICK-UP</span><br><span style="color: black;">${pickupDate} ${pickupTime!} h</span></td>
-                <td colspan="3" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">LUGAR · PICK-UP POINT</span><br><span style="color: black;">${effectivePickup!} - ${effectivePickupResort!}</span></td>
+                <td width="33%" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">RECOGIDA · PICK-UP</span><br><span style="color: black;">${pickupDate!} ${pickupTime!} h</span></td>
+                <td colspan="3" style="background-color: rgb(242,242,242);padding: 10px;"><span style="font-size: 11px;line-height: 20px;">LUGAR · PICK-UP POINT</span><br><span style="color: black;">${pickup!} - ${pickupResort!} <#if effectivePickup??> (${effectivePickup!} - ${effectivePickupResort!})</#if></span></td>
             </tr>
         </table>
     </td></tr><tr><td style="padding: 0px;">
         <br/><br/>
         Estimado cliente<br/>
         Confirmamos su traslado de salida para el dia <b><span>${flightDate!} con vuelo ${flight!} a las ${flightTime!} horas</span>.</b>
-        Recogida dia <b><span>${pickupDate} a las ${pickupTime!} horas</span></b> - lugar <b><span>${effectivePickup!} - ${effectivePickupResort!}</span></b>
+        Recogida dia <b><span>${pickupDate!} a las ${pickupTime!} horas</span></b> - lugar <b><span>${pickup!} - ${pickupResort!} <#if effectivePickup??> (${effectivePickup!} - ${effectivePickupResort!})</#if></span></b>
     </td></tr><tr><td style="padding: 0px;">
         Si su alojamiento no tiene un punto general de recogida debe estar esperando fuera del hotel, nunca dentro, y en un lugar bien
         visible. Por favor estén listos 5/10 minutos antes de la hora acordado en el lugar avisado.<br/>
@@ -34,7 +34,7 @@
 
         <i><br/><br/>Dear client<br/>
             We confirm your departure transfer for day <b><span>${flightDate!} with flight ${flight!} at ${flightTime!} hrs</span></b>.
-            Pick-up day <b><span>${pickupDate} at ${pickupTime!} hrs</span></b> - pick up point <b><span>${effectivePickup!} - ${effectivePickupResort!}</span></b>
+            Pick-up day <b><span>${pickupDate!} at ${pickupTime!} hrs</span></b> - pick up point <b><span>${pickup!} - ${pickupResort!} <#if effectivePickup??> (${effectivePickup!} - ${effectivePickupResort!})</#if></span></b>
     </td></tr><tr><td style="padding: 0px;">
         If your accommodation doesn’t have a general pick-up point you will have to wait outside the reception, never inside, at a visible point for the
         driver. Please be ready 5/10 minutes before the informed pick-up time at the advised place.</i><br/><br/><br/>
