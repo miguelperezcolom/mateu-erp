@@ -281,6 +281,9 @@ public abstract class Service {
     private String commentsForDelivering;
 
     @Output
+    private String deliveringInfo;
+
+    @Output
     private String deliveringComments;
 
 
