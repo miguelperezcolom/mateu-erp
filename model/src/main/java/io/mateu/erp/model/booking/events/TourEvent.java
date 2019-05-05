@@ -2,7 +2,8 @@ package io.mateu.erp.model.booking.events;
 
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.product.tour.Tour;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionShift;
+import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,11 +17,13 @@ public class TourEvent extends ManagedEvent {
 
     @ManyToOne
     @NotNull
+    @SearchFilter
     private Tour tour;
 
     @ManyToOne
     @NotNull
-    private TourShift shift;
+    @SearchFilter
+    private ExcursionShift shift;
 
     private int totalPax;
 

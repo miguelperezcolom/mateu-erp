@@ -3,15 +3,19 @@ package io.mateu.erp.model.importing;
 import com.google.common.base.Strings;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceConfirmationStatus;
 import io.mateu.erp.model.booking.parts.TransferBooking;
+import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
+import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
@@ -56,7 +60,6 @@ public class TransferBookingRequest {
     private Agency customer;
 
     @SearchFilter
-    @Output
     @ListColumn
     private String agencyReference;
 
@@ -68,7 +71,6 @@ public class TransferBookingRequest {
     @Output
     private String currency;
 
-    @Output
     private double value;
 
     @Transient
@@ -77,140 +79,112 @@ public class TransferBookingRequest {
 
     //public enum SERVICETYPE {SHUTTLE, PRIVATE};//Shuttle, Private, se pueden agregar mas...
     @ListColumn
-    @Output
     private TransferType serviceType; //Shuttle, Private, Executive
     @ListColumn
-    @Output
     private String vehicle; //Si es un privado (taxi, minibus, etc)
 
     @SearchFilter
-    @Output
     @ListColumn
     private String passengerName;
-    @Output
     private String phone;
-    @Output
     private String email;
-    @Output
-    private int adults=0;
-    @Output
-    private int children=0;
-    @Output
-    private int babies=0;
-    @Output
-    private int extras=0;
-    @Output
+    private int adults = 0;
+    private int children = 0;
+    private int babies = 0;
+    private int extras = 0;
     private String comments;
 
-    public enum TRANSFERSERVICES {ARRIVAL, DEPARTURE, BOTH};
+    public enum TRANSFERSERVICES {ARRIVAL, DEPARTURE, BOTH}
+
+    ;
     @ListColumn
-    @Output
     private TRANSFERSERVICES transferServices;
 
-    public enum STATUS {OK, CANCELLED};
+    public enum STATUS {OK, CANCELLED}
+
+    ;
 
 
     @Section("ArrivalBooking")
-    @Output
     private STATUS arrivalStatus;
-    @Output
     private String arrivalAirport;
-    @Output
     private String arrivalResort;
-    @Output
     private String arrivalAddress;
     @Output
-    private boolean arrivalConfirmed=false;
+    private boolean arrivalConfirmed = false;
 
-    @Output
     private String arrivalFlightDate;//formato dd/MM/yyyy
-    public void setArrivalFlightDate(String day)
-    {
-        arrivalFlightDate=checkDayFormat(day);
+
+    public void setArrivalFlightDate(String day) {
+        arrivalFlightDate = checkDayFormat(day);
     }
 
-    @Output
     private String arrivalFlightTime;//formato HH:mm
-    public void setArrivalFlightTime(String time)
-    {
-        arrivalFlightTime= checkTimeFormat(time);
+
+    public void setArrivalFlightTime(String time) {
+        arrivalFlightTime = checkTimeFormat(time);
     }
-    @Output
+
     private String arrivalFlightNumber;
-    @Output
     private String arrivalFlightCompany;
-    @Output
     private String arrivalOriginAirport;
-    @Output
     private String arrivalComments;
-    @Output
     private String arrivalPickupDate;//formato dd/MM/yyyy
-    public void setArrivalPickupDate(String day)
-    {
-        arrivalPickupDate= checkDayFormat(day);
+
+    public void setArrivalPickupDate(String day) {
+        arrivalPickupDate = checkDayFormat(day);
     }
-    @Output
+
     private String arrivalPickupTime;//formato HH:mm
-    public void setArrivalPickupTime(String time)
-    {
-        arrivalPickupTime= checkTimeFormat(time);
+
+    public void setArrivalPickupTime(String time) {
+        arrivalPickupTime = checkTimeFormat(time);
     }
 
     @Section("Departure")
-    @Output
     private STATUS departureStatus;
-    @Output
     private String departureAirport;
-    @Output
     private String departureResort;
 
     public void setDepartureResort(String departureResort) {
-        this.departureResort = (departureResort != null)?departureResort.replaceAll("\\n", "_").replaceAll("\\r", "_"):departureResort;
+        this.departureResort = (departureResort != null) ? departureResort.replaceAll("\\n", "_").replaceAll("\\r", "_") : departureResort;
     }
 
-    @Output
     private String departureAddress;
 
     public void setDepartureAddress(String departureAddress) {
-        this.departureAddress = (departureAddress != null)?departureAddress.replaceAll("\\n", "_").replaceAll("\\r", "_"):departureAddress;
+        this.departureAddress = (departureAddress != null) ? departureAddress.replaceAll("\\n", "_").replaceAll("\\r", "_") : departureAddress;
     }
 
-    @Output
-    private boolean departureConfirmed=false;
-    @Output
+    private boolean departureConfirmed = false;
     private String departureFlightDate;//formato dd/MM/yyyy
-    public void setDepartureFlightDate(String day)
-    {
-        departureFlightDate=checkDayFormat(day);
-    }
-    @Output
-    private String departureFlightTime;//formato HH:mm
-    public void setDepartureFlightTime(String time)
-    {
-        departureFlightTime= checkTimeFormat(time);
+
+    public void setDepartureFlightDate(String day) {
+        departureFlightDate = checkDayFormat(day);
     }
 
-    @Output
+    private String departureFlightTime;//formato HH:mm
+
+    public void setDepartureFlightTime(String time) {
+        departureFlightTime = checkTimeFormat(time);
+    }
+
     private String departureFlightNumber;
-    @Output
     @SameLine
     private String departureFlightCompany;
-    @Output
     private String departureDestinationAirport;
-    @Output
     @SameLine
     private String departureComments;
-    @Output
     private String departurePickupDate; //formato dd/MM/yyyy
-    public void setDeparturePickupDate(String day)
-    {
-        departurePickupDate= checkDayFormat(day);
+
+    public void setDeparturePickupDate(String day) {
+        departurePickupDate = checkDayFormat(day);
     }
-    @Output
+
     private String departurePickupTime;//formato HH:mm
-    public void setDeparturePickupTime(String time)
-    {
-        departurePickupTime= checkTimeFormat(time);
+
+    public void setDeparturePickupTime(String time) {
+        departurePickupTime = checkTimeFormat(time);
     }
 
     @Section("Others")
@@ -236,6 +210,15 @@ public class TransferBookingRequest {
     @ListColumn
     private String result;
 
+    @Output
+    private boolean removed;
+
+    @Output
+    private String savedSignature;
+
+    public String getSavedSignature() {
+        return savedSignature != null?savedSignature:getSignature();
+    }
 
     //formato dd/MM/yyyy
     private String checkDayFormat(String day) {
@@ -245,12 +228,13 @@ public class TransferBookingRequest {
         return df.format(d);
         //LocalDateTime.parse(s, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
+
     //formato HH:mm
     private String checkTimeFormat(String time) {
         if (Strings.isNullOrEmpty(time)) return null;
         DateTimeFormatter dh = DateTimeFormatter.ofPattern("HH:mm");
-         try {
-            return dh.format(LocalDateTime.parse("01/01/2015 " +time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        try {
+            return dh.format(LocalDateTime.parse("01/01/2015 " + time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
         } catch (Exception e1) {
             try {
                 return dh.format(LocalDateTime.parse("01/01/2015 " + time, DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
@@ -260,34 +244,31 @@ public class TransferBookingRequest {
         }
     }
 
-    private String validate()
-    {
-        String err="";
-        if (agencyReference==null || agencyReference.isEmpty()) err += "Missing agencyReference\n";
-        if (customer==null ) err += "Missing customer\n";
-        if (serviceType==null) err += "Missing serviceType\n";
-        if (vehicle==null || vehicle.isEmpty()) err += "Missing vehicle\n";
-        if (passengerName==null || passengerName.isEmpty()) err += "Missing passengerName\n";
-        if (adults+children<=0) err += "Missing number of paxes\n";
-        if (transferServices ==null) err += "Missing transferType\n";
+    private String validate() {
+        String err = "";
+        if (agencyReference == null || agencyReference.isEmpty()) err += "Missing agencyReference\n";
+        if (customer == null) err += "Missing customer\n";
+        if (serviceType == null) err += "Missing serviceType\n";
+        if (vehicle == null || vehicle.isEmpty()) err += "Missing vehicle\n";
+        if (passengerName == null || passengerName.isEmpty()) err += "Missing passengerName\n";
+        if (adults + children <= 0) err += "Missing number of paxes\n";
+        if (transferServices == null) err += "Missing transferType\n";
 
-        if (transferServices !=null && (transferServices.equals(TRANSFERSERVICES.ARRIVAL) || transferServices.equals(TRANSFERSERVICES.BOTH)))
-        {
-            if (arrivalStatus==null ) err += "Missing arrivalStatus\n";
-            if (arrivalAirport==null || arrivalAirport.isEmpty()) err += "Missing arrivalAirport\n";
-            if (arrivalResort==null || arrivalResort.isEmpty()) err += "Missing arrivalResort\n";
-            if (arrivalAddress==null || arrivalAddress.isEmpty()) err += "Missing arrivalAddress\n";
-            if (arrivalFlightDate==null || arrivalFlightDate.isEmpty()) err += "Missing arrivalFlightDate\n";
-            if (arrivalFlightTime==null || arrivalFlightTime.isEmpty()) err += "Missing arrivalFlightTime\n";
+        if (transferServices != null && (transferServices.equals(TRANSFERSERVICES.ARRIVAL) || transferServices.equals(TRANSFERSERVICES.BOTH))) {
+            if (arrivalStatus == null) err += "Missing arrivalStatus\n";
+            if (arrivalAirport == null || arrivalAirport.isEmpty()) err += "Missing arrivalAirport\n";
+            if (arrivalResort == null || arrivalResort.isEmpty()) err += "Missing arrivalResort\n";
+            if (arrivalAddress == null || arrivalAddress.isEmpty()) err += "Missing arrivalAddress\n";
+            if (arrivalFlightDate == null || arrivalFlightDate.isEmpty()) err += "Missing arrivalFlightDate\n";
+            if (arrivalFlightTime == null || arrivalFlightTime.isEmpty()) err += "Missing arrivalFlightTime\n";
         }
-        if (transferServices !=null && (transferServices.equals(TRANSFERSERVICES.DEPARTURE) || transferServices.equals(TRANSFERSERVICES.BOTH)))
-        {
-            if (departureStatus==null ) err += "Missing departureStatus\n";
-            if (departureAirport==null || departureAirport.isEmpty()) err += "Missing departureAirport\n";
-            if (departureResort==null || departureResort.isEmpty()) err += "Missing departureResort\n";
-            if (departureAddress==null ||departureAddress.isEmpty()) err += "Missing departureAddress\n";
-            if (departureFlightDate==null || departureFlightDate.isEmpty()) err += "Missing departureFlightDate\n";
-            if (departureFlightTime==null || departureFlightTime.isEmpty()) err += "Missing departureFlightTime\n";
+        if (transferServices != null && (transferServices.equals(TRANSFERSERVICES.DEPARTURE) || transferServices.equals(TRANSFERSERVICES.BOTH))) {
+            if (departureStatus == null) err += "Missing departureStatus\n";
+            if (departureAirport == null || departureAirport.isEmpty()) err += "Missing departureAirport\n";
+            if (departureResort == null || departureResort.isEmpty()) err += "Missing departureResort\n";
+            if (departureAddress == null || departureAddress.isEmpty()) err += "Missing departureAddress\n";
+            if (departureFlightDate == null || departureFlightDate.isEmpty()) err += "Missing departureFlightDate\n";
+            if (departureFlightTime == null || departureFlightTime.isEmpty()) err += "Missing departureFlightTime\n";
         }
 
         return err;
@@ -348,7 +329,7 @@ public class TransferBookingRequest {
 
         s += "|";
 
-        s += arrivalStatus != null?arrivalStatus.name():"-";
+        s += arrivalStatus != null ? arrivalStatus.name() : "-";
 
         s += "|";
 
@@ -400,7 +381,7 @@ public class TransferBookingRequest {
 
         s += "|";
 
-        s += departureStatus != null?departureStatus.name():"-";
+        s += departureStatus != null ? departureStatus.name() : "-";
 
         s += "|";
 
@@ -454,132 +435,154 @@ public class TransferBookingRequest {
         return s;
     }
 
+    @Action(saveAfter = true)
+    public void forceUpdate(EntityManager em) {
+        updateBooking(em, true);
+    }
 
-    @Action
-    public String updateBooking(EntityManager em)
+    public String updateBooking(EntityManager em) {
+        return updateBooking(em, false);
+    }
+
+    public String updateBooking(EntityManager em, boolean force)
     {
         String _result="";
         try {
 
-            //Validamos y si no va bien salimos devolviendo el error
-            _result = validate();
-            if (_result.length() > 0) {
-                this.result = _result;
-                return _result;
-            }
+            if (removed) {
 
-            _result = "";
-
-            effectiveValue = value;
-
-            if ((TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices))) {
-                setAirport(TransferPointMapping.getTransferPoint(em, "" + arrivalAirport, this));
-                setDestination(TransferPointMapping.getTransferPoint(em, "" + arrivalResort + " (" + arrivalAddress + ")", this));
-            } else {
-                setAirport(TransferPointMapping.getTransferPoint(em, "" + departureAirport, this));
-                setDestination(TransferPointMapping.getTransferPoint(em, "" + departureResort + " (" + departureAddress + ")", this));
-            }
-
-
-            if (airport == null || destination == null) {
-
-                _result = "Unmapped";
+                _result = "RQ is cancelled / removed";
 
             } else {
 
-                boolean hayCambios=false;
+                //Validamos y si no va bien salimos devolviendo el error
+                _result = validate();
+                if (_result.length() > 0) {
+                    this.result = _result;
+                    return _result;
+                }
 
-                //Si ok, actualizamos la reserva...
-                TransferBooking b = (TransferBooking) getBooking();
-                if (b == null) b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
-                ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
-                if (b==null)//Crear reserva nueva
-                {
-                    b = new TransferBooking();
-                    b.setAudit(new Audit(u));
+                _result = "";
 
-                    b.setPos(getTask().getPointOfSale());
-                    b.setAgencyReference(agencyReference);
-                    b.setAgency(customer);
-                    b.setLeadName(passengerName);
-                    b.setTelephone(phone);
-                    b.setEmail(email);
-                    if (comments!=null) b.setSpecialRequests(comments);
-                    b.setConfirmed(true);
-                    this.getTask().increaseAdditions();
+                effectiveValue = value;
 
-                    hayCambios = true;
+                if ((TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices))) {
+                    setAirport(TransferPointMapping.getTransferPoint(em, "" + arrivalAirport, this));
+                    setDestination(TransferPointMapping.getTransferPoint(em, "" + arrivalResort + " (" + arrivalAddress + ")", this));
+                } else {
+                    setAirport(TransferPointMapping.getTransferPoint(em, "" + departureAirport, this));
+                    setDestination(TransferPointMapping.getTransferPoint(em, "" + departureResort + " (" + departureAddress + ")", this));
+                }
+
+
+                if (airport == null || destination == null) {
+
+                    _result = "Unmapped";
 
                 } else {
-                    hayCambios = b.getTransferBookingRequest() == null || !b.getTransferBookingRequest().getSignature().equals(getSignature());
-                }
-                //else //reserva ya existente --> actualizar
-                if (hayCambios) {
 
-                    boolean hayBloqueos = b.isLocked();
+                    boolean hayCambios=false;
 
-                    TransferBookingRequest lastRequest = b.getTransferBookingRequest();
-
-                    if (!hayBloqueos) {
-
-                        if (!passengerName.equals(b.getLeadName()) && (lastRequest == null || !passengerName.equals(lastRequest.getPassengerName()))) {
-                            b.setLeadName(passengerName);
-                            hayCambios=true;
-                        }
-                        if (phone!=null && !phone.equals(b.getTelephone()) && (lastRequest == null || !phone.equals(lastRequest.getPhone()))) {
-                            b.setTelephone(phone);
-                            hayCambios=true;
-                        }
-                        if (email!=null && !email.equals(b.getEmail()) && (lastRequest == null || !email.equals(lastRequest.getEmail())))
-                        {
-                            b.setEmail(email);
-                            hayCambios=true;
-                        }
-                        if (comments!=null && !b.getSpecialRequests().contains(comments) && (lastRequest == null || !comments.equals(lastRequest.getComments())))
-                        {
-                            b.setSpecialRequests(b.getSpecialRequests() + "--" + comments);
-                            hayCambios=true;
-                        }
-
+                    //Si ok, actualizamos la reserva...
+                    TransferBooking b = (TransferBooking) getBooking();
+                    if (b == null) {
+                        b = (TransferBooking) Booking.getByAgencyRef(em, agencyReference, customer);//buscamos la reserva
+                        if (b != null) setBooking(b);
                     }
+                    ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
+                    if (b==null)//Crear reserva nueva
+                    {
+                        b = new TransferBooking();
+                        b.setAudit(new Audit(u));
 
-
-
-                    if (TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
-
-                        fillArrival(b);
-
-                    }
-
-                    if (TRANSFERSERVICES.DEPARTURE.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
-
-                        fillDeparture(b);
-
-                    }
-
-                    if (getValue() != 0 && (lastRequest == null || getValue() != lastRequest.getValue())) {
-                        b.setOverridedValue(Helper.roundEuros(effectiveValue));
-                        b.setCurrency(b.getAgency().getCurrency());
-                        b.setOverridedBillingConcept(task.getBillingConcept());
-                        b.setValueOverrided(true);
-                        effectiveValue = 0;
-                    }
-
-                    b.setTransferBookingRequest(this);
-
-                    if (hayCambios) {
-                        b.getAudit().touch(u);
-                        this.setBooking(b);
-                        b.setTransferBookingRequest(this);
+                        b.setPos(getTask().getPointOfSale());
+                        b.setAgencyReference(agencyReference);
+                        b.setAgency(customer);
+                        b.setLeadName(passengerName);
+                        b.setTelephone(phone);
+                        b.setEmail(email);
+                        if (comments!=null) b.setSpecialRequests(comments);
+                        b.setConfirmed(true);
                         this.getTask().increaseAdditions();
+
+                        hayCambios = true;
+
+                    } else {
+                        hayCambios = b.getTransferBookingRequest() == null || !b.getTransferBookingRequest().getSignature().equals(getSignature());
+                    }
+                    //else //reserva ya existente --> actualizar
+                    if (hayCambios || force) {
+
+                        boolean hayBloqueos = b.isLocked();
+
+                        if (hayBloqueos) avisarModificacionBloqueo(b);
+
+                        TransferBookingRequest lastRequest = force?null:b.getTransferBookingRequest();
+
+                        if (!hayBloqueos) {
+
+                            if (!passengerName.equals(b.getLeadName()) && (lastRequest == null || !passengerName.equals(lastRequest.getPassengerName()))) {
+                                b.setLeadName(passengerName);
+                                hayCambios=true;
+                            }
+                            if (phone!=null && !phone.equals(b.getTelephone()) && (lastRequest == null || !phone.equals(lastRequest.getPhone()))) {
+                                b.setTelephone(phone);
+                                hayCambios=true;
+                            }
+                            if (email!=null && !email.equals(b.getEmail()) && (lastRequest == null || !email.equals(lastRequest.getEmail())))
+                            {
+                                b.setEmail(email);
+                                hayCambios=true;
+                            }
+                            if (comments!=null && !b.getSpecialRequests().contains(comments) && (lastRequest == null || !comments.equals(lastRequest.getComments())))
+                            {
+                                b.setSpecialRequests(b.getSpecialRequests() + "--" + comments);
+                                hayCambios=true;
+                            }
+
+                        }
+
+
+
+                        if (TRANSFERSERVICES.ARRIVAL.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
+
+                            fillArrival(b, lastRequest);
+
+                        }
+
+                        if (TRANSFERSERVICES.DEPARTURE.equals(transferServices) || TRANSFERSERVICES.BOTH.equals(transferServices)) {
+
+                            fillDeparture(b, lastRequest);
+
+                        }
+
+                        if (getValue() != 0 && (lastRequest == null || getValue() != lastRequest.getValue())) {
+                            b.setOverridedValue(Helper.roundEuros(effectiveValue));
+                            b.setCurrency(b.getAgency().getCurrency());
+                            b.setOverridedBillingConcept(task.getBillingConcept());
+                            b.setValueOverrided(true);
+                            effectiveValue = 0;
+                        }
+
+                        b.setTransferBookingRequest(this);
+
+                        if (hayCambios) {
+                            b.getAudit().touch(u);
+                            this.setBooking(b);
+                            b.setTransferBookingRequest(this);
+                            this.getTask().increaseAdditions();
+                        }
+
+                    } else {
+                        //sin cambios
+                        this.getTask().increaseUnmodified();
                     }
 
-                } else {
-                    //sin cambios
-                    this.getTask().increaseUnmodified();
                 }
 
+
             }
+
 
 
         } catch (Throwable ex) {
@@ -614,21 +617,34 @@ public class TransferBookingRequest {
         return _result;
     }
 
-
-    private void fillArrival(TransferBooking s) {
-
-        TransferBookingRequest lastRequest = s.getTransferBookingRequest();
-
-        if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setActive(!arrivalStatus.equals(STATUS.CANCELLED));
-
-        /*
-        if (lastRequest == null || !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()) || !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime())) {
-            if (arrivalPickupDate!=null && arrivalPickupTime!=null)
-                s.setImportedPickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
-            else
-                s.setImportedPickupTime(null);
+    private void avisarModificacionBloqueo(TransferBooking b) {
+        if (!Strings.isNullOrEmpty(b.getPos().getEmail())) {
+            try {
+                EmailHelper.sendEmail(b.getPos().getEmail(), "RECEIVED MODIFICATIONS FOR LOCKED BOOKING " + b.getAgencyReference(), "Hi, we have received an update for booking " + b.getId() + " / " + b.getAgencyReference() + " from " + (getCustomer() != null?getCustomer().getName():"--") + ". Please check ;)", false);
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
         }
-        */
+    }
+
+
+    private void fillArrival(TransferBooking s, TransferBookingRequest lastRequest) {
+
+         if (lastRequest == null || !arrivalStatus.equals(lastRequest.getArrivalStatus())) s.setActive(!arrivalStatus.equals(STATUS.CANCELLED));
+
+
+        if (lastRequest == null
+                || (arrivalPickupDate != null && !arrivalPickupDate.equals(lastRequest.getArrivalPickupDate()))
+                || (arrivalPickupDate == null && lastRequest.getArrivalPickupDate() != null)
+                || (arrivalPickupTime != null && !arrivalPickupTime.equals(lastRequest.getArrivalPickupTime()))
+                || (arrivalPickupTime == null && lastRequest.getArrivalPickupTime() != null)
+                ) {
+            if (!TransferType.SHUTTLE.equals(serviceType) && arrivalPickupDate!=null && arrivalPickupTime!=null)
+                s.setOverridePickupTime(getTime(arrivalPickupDate + " " + arrivalPickupTime));
+            else
+                s.setOverridePickupTime(null);
+        } else s.setOverridePickupTime(null);
+
 
         //todo: se ha movido a la reserva
         /*
@@ -640,9 +656,22 @@ public class TransferBookingRequest {
         */
 
         if (lastRequest == null || !destination.equals(lastRequest.getDestination())) s.setDestination(destination);
-        if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setArrivalFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
-        if (lastRequest == null || !arrivalOriginAirport.equals(lastRequest.getArrivalOriginAirport())) s.setArrivalFlightOrigin("" + arrivalOriginAirport);
-        if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setArrivalFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
+        boolean vuelosYaChequeados = false;
+        if (s.getServices().size() > 0) {
+            TransferService llegada = null;
+            for (Service service : s.getServices()) {
+                if (service instanceof TransferService && TransferDirection.INBOUND.equals(((TransferService) service).getDirection())) llegada = (TransferService) service;
+            }
+            for (Service service : s.getServices()) {
+                if (service instanceof TransferService && TransferDirection.INBOUND.equals(((TransferService) service).getDirection()) && service.isActive()) llegada = (TransferService) service;
+            }
+            vuelosYaChequeados = llegada != null && llegada.isFlightChecked();
+        }
+        if (!vuelosYaChequeados) {
+            if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setArrivalFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
+            if (lastRequest == null || !arrivalOriginAirport.equals(lastRequest.getArrivalOriginAirport())) s.setArrivalFlightOrigin("" + arrivalOriginAirport);
+            if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setArrivalFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
+        }
         if (lastRequest == null || adults != lastRequest.getAdults()) s.setAdults(adults);
         if (lastRequest == null || children != lastRequest.getChildren()) s.setChildren(children);
 
@@ -678,19 +707,23 @@ public class TransferBookingRequest {
     }
 
 
-    private void fillDeparture(TransferBooking s) {
-        TransferBookingRequest lastRequest = s.getTransferBookingRequest();
+    private void fillDeparture(TransferBooking s, TransferBookingRequest lastRequest) {
 
         if (lastRequest == null || !departureStatus.equals(lastRequest.getDepartureStatus())) s.setActive(!departureStatus.equals(STATUS.CANCELLED));
 
-        /*
-        if (lastRequest == null || !departurePickupDate.equals(lastRequest.getDeparturePickupDate()) || !departurePickupTime.equals(lastRequest.getDeparturePickupTime())) {
-            if (departurePickupDate!=null && departurePickupTime!=null)
-                s.setImportedPickupTime(getTime(departurePickupDate + " " + departurePickupTime));
+
+        if (lastRequest == null
+                || (departurePickupDate != null && !departurePickupDate.equals(lastRequest.getDeparturePickupDate()))
+                || (departurePickupDate == null && lastRequest.getDeparturePickupDate() != null)
+                || (departurePickupTime != null && !departurePickupTime.equals(lastRequest.getDeparturePickupTime()))
+                || (departurePickupTime == null && lastRequest.getDeparturePickupTime() != null)
+                ) {
+            if (!TransferType.SHUTTLE.equals(serviceType) && departurePickupDate!=null && departurePickupTime!=null)
+                s.setOverridePickupTime(getTime(departurePickupDate + " " + departurePickupTime));
             else
-                s.setImportedPickupTime(null);
-        }
-        */
+                s.setOverridePickupTime(null);
+        } else s.setOverridePickupTime(null);
+
 
         if (lastRequest == null || departureConfirmed != lastRequest.isDepartureConfirmed()) {
             ServiceConfirmationStatus a = ServiceConfirmationStatus.PENDING;
@@ -699,14 +732,36 @@ public class TransferBookingRequest {
             //s.setAnswer(a);
         }
 
-        if (lastRequest == null || !destination.equals(lastRequest.getDestination())) s.setDestination(destination);
-        if (lastRequest == null || !departureFlightCompany.equals(lastRequest.getDepartureFlightCompany()) || !departureFlightNumber.equals(lastRequest.getDepartureFlightNumber())) s.setDepartureFlightNumber("" + departureFlightCompany + departureFlightNumber);
-        if (lastRequest == null || !departureDestinationAirport.equals(lastRequest.getDepartureDestinationAirport())) s.setDepartureFlightDestination("" + departureDestinationAirport);
-        if (lastRequest == null || !departureFlightDate.equals(lastRequest.getDepartureFlightDate()) || !departureFlightTime.equals(lastRequest.getDepartureFlightTime())) s.setDepartureFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
+        if (lastRequest == null || !destination.equals(lastRequest.getDestination())) {
+            if (s.getArrivalFlightTime() != null) s.setDestination(destination);
+            else s.setOrigin(destination);
+        }
+        boolean vuelosYaChequeados = false;
+        if (s.getServices().size() > 0) {
+            TransferService salida = null;
+            for (Service service : s.getServices()) {
+                if (service instanceof TransferService && TransferDirection.OUTBOUND.equals(((TransferService) service).getDirection())) salida = (TransferService) service;
+            }
+            for (Service service : s.getServices()) {
+                if (service instanceof TransferService && TransferDirection.OUTBOUND.equals(((TransferService) service).getDirection()) && service.isActive()) salida = (TransferService) service;
+            }
+            vuelosYaChequeados = salida != null && salida.isFlightChecked();
+        }
+        if (!vuelosYaChequeados) {
+            if (lastRequest == null || !departureFlightCompany.equals(lastRequest.getDepartureFlightCompany()) || !departureFlightNumber.equals(lastRequest.getDepartureFlightNumber()))
+                s.setDepartureFlightNumber("" + departureFlightCompany + departureFlightNumber);
+            if (lastRequest == null || !departureDestinationAirport.equals(lastRequest.getDepartureDestinationAirport()))
+                s.setDepartureFlightDestination("" + departureDestinationAirport);
+            if (lastRequest == null || !departureFlightDate.equals(lastRequest.getDepartureFlightDate()) || !departureFlightTime.equals(lastRequest.getDepartureFlightTime()))
+                s.setDepartureFlightTime(getTime(departureFlightDate + " " + departureFlightTime));
+        }
         if (lastRequest == null || adults != lastRequest.getAdults()) s.setAdults(adults);
         if (lastRequest == null || children != lastRequest.getChildren()) s.setChildren(children);
 
-        if (lastRequest == null || !airport.equals(lastRequest.getAirport())) s.setOrigin(airport);
+        if (lastRequest == null || !airport.equals(lastRequest.getAirport())) {
+            if (s.getArrivalFlightTime() != null) s.setOrigin(airport);
+            else s.setDestination(airport);
+        }
 
         if (lastRequest == null || !serviceType.equals(lastRequest.getServiceType())) s.setTransferType(serviceType);
 
@@ -761,7 +816,7 @@ public class TransferBookingRequest {
     {
         try {
             String jpql = "select x from " + TransferBookingRequest.class.getName() + " x" +
-                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + agency.getId() + " order by x.when desc";
+                    " where x.agencyReference='" + agencyRef + "' and x.customer.id= " + agency.getId() + " and x.removed = false order by x.when desc";
             Query q = em.createQuery(jpql).setFlushMode(FlushModeType.COMMIT);
             List<TransferBookingRequest> l = q.getResultList();
             TransferBookingRequest b = (l.size() > 0)?l.get(0):null;
@@ -796,7 +851,7 @@ public class TransferBookingRequest {
         WorkflowEngine.add(() -> {
             try {
                 Helper.transact(em -> {
-                    TransferBookingRequest r = em.merge(this);
+                    TransferBookingRequest r = em.find(TransferBookingRequest.class, getId());
                     r.updateBooking(em);
                 });
             } catch (Throwable throwable) {
@@ -811,7 +866,7 @@ public class TransferBookingRequest {
         try {
             Helper.transact(em -> {
 
-                ((List<TransferBookingRequest>)em.createQuery("select x from " + TransferBookingRequest.class.getName() + " x where x.result = 'Unmapped'").getResultList()).forEach(t -> {
+                ((List<TransferBookingRequest>)em.createQuery("select x from " + TransferBookingRequest.class.getName() + " x where x.result = 'Unmapped' and x.removed = false").getResultList()).forEach(t -> {
                     t.updateBooking(em);
                 });
 

@@ -5,6 +5,7 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,7 +51,7 @@ public abstract class TransferAutoImport {
     private PointOfSale pointOfSale;
 
     @ElementCollection
-    @Output
+    @UseLinkToListView
     private List<String> historial = new ArrayList<String>();
 
     protected void addHistory(String txt)

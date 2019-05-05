@@ -24,6 +24,7 @@ class MyApplication : ResourceConfig() {
         register(HotelBookingServiceImpl::class.java)
         register(CircuitBookingServiceImpl::class.java)
         register(GenericBookingServiceImpl::class.java)
+        register(AgentAccessServiceImpl::class.java)
         register(StatsResource::class.java)
         register(CMSServiceImpl::class.java)
         register(JacksonFeature::class.java)

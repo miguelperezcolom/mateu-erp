@@ -10,6 +10,7 @@ import io.mateu.erp.model.product.DataSheet;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.util.Helper;
@@ -62,7 +63,6 @@ public class Hotel extends AbstractProduct implements IHotel {
 
     @ManyToOne
     private HotelChain hotelChain;
-
 
     /**
      * inclusive

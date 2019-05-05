@@ -47,7 +47,7 @@ public class IssueInvoicesShowProformaPage implements WizardPage {
 
 
             Document xml = new Document(new Element("invoices"));
-            User u = em.find(User.class, MDD.getUserData().getLogin());
+            User u = MDD.getCurrentUser();
             chargesByPartner.keySet().forEach(p -> {
                     try {
                         xml.getRootElement().addContent(new IssuedInvoice(u, chargesByPartner.get(p), true, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), null).toXml(em));

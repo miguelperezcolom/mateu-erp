@@ -1,25 +1,40 @@
 package io.mateu.erp.model.booking;
 
+import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.booking.parts.TourBooking;
+import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.organization.Office;
+import io.mateu.erp.model.organization.PointOfSaleSettlementFormLine;
+import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.Tour;
-import io.mateu.erp.model.product.tour.TourShift;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Help;
-import io.mateu.mdd.core.annotations.Output;
-import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.erp.model.product.tour.ExcursionShift;
+import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.config.Template;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.xml.sax.SAXException;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Entity
 @Getter@Setter
@@ -31,19 +46,28 @@ public class ManagedEvent {
 
     @ManyToOne
     @NotNull
+    @Output
+    @SearchFilter
     private Office office;
 
 
     @ManyToOne
     @NotNull
+    @Output
+    @SearchFilter
     private Tour tour;
 
 
+    @Output
+    @SearchFilter
+    @Order
     private LocalDate date;
 
 
     @ManyToOne
-    private TourShift shift;
+    @Output
+    @SearchFilter
+    private ExcursionShift shift;
 
     public boolean isShiftVisible() {
         return tour != null && tour instanceof Excursion;
@@ -63,18 +87,41 @@ public class ManagedEvent {
 
 
     @OneToMany(mappedBy = "managedEvent")
+    @UseLinkToListView
     private List<TourBooking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "managedEvent")
+    @UseLinkToListView
     private List<Service> services = new ArrayList<>();
 
 
-    @PrePersist@PreUpdate
-    public void pre() {
-        int bkd = 0;
-        for (TourBooking b : bookings) bkd += b.getAdults() + b.getChildren();
-        unitsBooked = bkd;
-        unitsLeft = maxUnits - unitsBooked;
+    @Ignored
+    private boolean updatePending;
+
+    @PostPersist@PostUpdate
+    public void post() {
+        if (updatePending) {
+
+            WorkflowEngine.add(() -> {
+                try {
+                    Helper.transact(em -> {
+
+                        ManagedEvent e = em.find(ManagedEvent.class, getId());
+
+                        int bkd = 0;
+                        for (TourBooking b : e.getBookings()) bkd += b.getAdults() + b.getChildren();
+                        e.setUnitsBooked(bkd);
+                        e.setUnitsLeft(e.getMaxUnits() - e.getUnitsBooked());
+
+                        e.setUpdatePending(false);
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            });
+
+        }
     }
 
 
@@ -86,10 +133,124 @@ public class ManagedEvent {
 
 
     @Action(order = 2)
-    public URL manifest() {
-        return null;
+    public URL manifest() throws Throwable {
+        String archivo = UUID.randomUUID().toString();
+
+        File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+        System.out.println("Temp file : " + temp.getAbsolutePath());
+
+        Helper.transact(em -> {
+            crearPdf(em, temp);
+        });
+
+        String baseUrl = System.getProperty("tmpurl");
+        URL url;
+        if (baseUrl == null) {
+            url = temp.toURI().toURL();
+        } else url = new URL(baseUrl + "/" + temp.getName());
+
+
+        return url;
     }
 
+
+    public void crearPdf(EntityManager em, File file) throws IOException, SAXException {
+        Document xml = new Document(toXml());
+
+
+        System.out.println(Helper.toString(xml.getRootElement()));
+
+        FileOutputStream fileOut = new FileOutputStream(file);
+        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+        System.out.println("xml=" + sxml);
+        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForEventManifest())), new StreamSource(new StringReader(sxml))));
+        fileOut.close();
+
+    }
+
+    public void crearReport(EntityManager em, File file) throws IOException, SAXException {
+        Document xml = new Document(toXml());
+
+
+        System.out.println(Helper.toString(xml.getRootElement()));
+
+        FileOutputStream fileOut = new FileOutputStream(file);
+        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+        System.out.println("xml=" + sxml);
+        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForEventReport())), new StreamSource(new StringReader(sxml))));
+        fileOut.close();
+
+    }
+
+    private Element toXml() {
+        Element xml = new Element("event");
+
+        DecimalFormat pf = new DecimalFormat("#####0.00");
+        DecimalFormat nf = new DecimalFormat("##,###,###,###,##0.00");
+
+
+        if (date != null) xml.setAttribute("eventDate", date.format(DateTimeFormatter.ISO_DATE));
+
+        xml.setAttribute("date", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        if (MDD.getCurrentUser() != null) xml.setAttribute("user", MDD.getCurrentUser().getLogin());
+
+        xml.setAttribute("bookings", "" + bookings.size());
+        /*
+        xml.setAttribute("totalValue", nf.format(totalValue));
+        xml.setAttribute("totalCash", nf.format(totalCash));
+        xml.setAttribute("totalCommission", nf.format(totalCommission));
+        xml.setAttribute("totalToPay", nf.format(Helper.roundEuros(totalCash - totalCommission)));
+        */
+
+
+        Element els;
+        xml.addContent(els = new Element("bookings"));
+
+        int ads = 0;
+        int chs = 0;
+
+        double ts = 0;
+        double tc = 0;
+
+        for (Booking b : bookings) {
+            Element el;
+            els.addContent(el = new Element("booking"));
+
+            ExcursionBooking eb = (ExcursionBooking) b;
+
+            el.setAttribute("id", "" + b.getId());
+            if (b.getLeadName() != null) el.setAttribute("leadName", b.getLeadName());
+            el.setAttribute("adults", "" + b.getAdults());
+            el.setAttribute("children", "" + b.getChildren());
+            String s = "";
+            s += eb.getTelephone();
+            el.setAttribute("data", s);
+            if (b.getSpecialRequests() != null) el.setAttribute("comments", b.getSpecialRequests());
+
+            ads += b.getAdults();
+            chs += b.getChildren();
+
+            ts += b.getTotalValue();
+            tc += b.getTotalCost();
+        }
+
+
+        xml.setAttribute("adults", "" + ads);
+        xml.setAttribute("children", "" + chs);
+
+        xml.setAttribute("totalSale", nf.format(Helper.roundEuros(ts)));
+        xml.setAttribute("totalCost", nf.format(Helper.roundEuros(tc)));
+        xml.setAttribute("totalMarkup", nf.format(Helper.roundEuros(ts - tc)));
+
+        return xml;
+    }
+
+    /*
 
     @Action(order = 3)
     public URL pickups() {
@@ -102,11 +263,32 @@ public class ManagedEvent {
         return null;
     }
 
-    @Action(order = 5)
-    public URL report() {
-        return null;
-    }
 
+    */
+
+    @Action(order = 5)
+    public URL report() throws Throwable {
+        String archivo = UUID.randomUUID().toString();
+
+        File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+        System.out.println("Temp file : " + temp.getAbsolutePath());
+
+        Helper.transact(em -> {
+            crearReport(em, temp);
+        });
+
+        String baseUrl = System.getProperty("tmpurl");
+        URL url;
+        if (baseUrl == null) {
+            url = temp.toURI().toURL();
+        } else url = new URL(baseUrl + "/" + temp.getName());
+
+
+        return url;
+    }
 
     @Action
     public static void close(EntityManager em, Set<ManagedEvent> sel) {
@@ -130,4 +312,9 @@ public class ManagedEvent {
 
     }
 
+
+    @Override
+    public String toString() {
+        return "Managed event " + id;
+    }
 }

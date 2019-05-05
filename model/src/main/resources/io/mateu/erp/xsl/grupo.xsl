@@ -14,7 +14,7 @@
 
                 <!-- A4 size -->
                 <fo:simple-page-master master-name="dinA4" page-height="29.7cm" page-width="21cm" margin="2mm 20mm 35mm 20mm">
-                    <fo:region-body margin-top="31mm"/>
+                    <fo:region-body margin-top="41mm"/>
                     <fo:region-before display-align="after"/>
                     <fo:region-after display-align="after"/>
                 </fo:simple-page-master>
@@ -31,7 +31,7 @@
                         <fo:table-body>
                             <fo:table-row>
                                 <fo:table-cell text-align="left"  font-size="8pt">
-                                    <fo:block><fo:external-graphic src="url('{@urllogo}')" content-width="scale-to-fit" width="40mm"/></fo:block>
+                                    <fo:block><fo:external-graphic src="url('{quotationRequests/quotationRequest/@urllogo}')" content-width="scale-to-fit" height="20mm"/></fo:block>
                                     <fo:block><xsl:value-of select="quotationRequests/quotationRequest/issuer/@businessName"/> - NIF: <xsl:value-of select="quotationRequests/quotationRequest/issuer/@vatid"/></fo:block>
                                     <fo:block><xsl:value-of select="quotationRequests/quotationRequest/issuer/@address"/> - <xsl:value-of select="quotationRequests/quotationRequest/issuer/@zip"/> <xsl:value-of select="quotationRequests/quotationRequest/issuer/@resort"/></fo:block>
                                     <fo:block><xsl:value-of select="quotationRequests/quotationRequest/issuer/@email"/> - t. <xsl:value-of select="quotationRequests/quotationRequest/issuer/@telephone"/> - f. <xsl:value-of select="quotationRequests/quotationRequest/issuer/@fax"/></fo:block>
@@ -105,9 +105,8 @@
                         <fo:table table-layout="fixed" width="174mm" font-family="Liberation Sans Narrow" font-size="8pt" border-collapse="collapse">
 
                             <fo:table-column column-width="30mm"></fo:table-column>
-                            <fo:table-column column-width="30mm"></fo:table-column>
-                            <fo:table-column column-width="34mm"></fo:table-column>
-                            <fo:table-column column-width="30mm"></fo:table-column>
+                            <fo:table-column column-width="44mm"></fo:table-column>
+                            <fo:table-column column-width="50mm"></fo:table-column>
                             <fo:table-column column-width="10mm"></fo:table-column>
                             <fo:table-column column-width="10mm"></fo:table-column>
                             <fo:table-column column-width="10mm"></fo:table-column>
@@ -136,12 +135,22 @@
                                         </fo:table-cell>
                                     </fo:table-row>
 
+                                    <xsl:for-each select="line">
+
+                                    <fo:table-row>
+                                        <fo:table-cell padding="1mm" number-columns-spanned="7">
+                                            <fo:block font-weight="700" font-size="9pt"><xsl:value-of select="@hotel"/>
+                                                <fo:inline space-start="5mm" font-size="7pt" font-style="italic" font-weight="normal">First service: <xsl:value-of
+                                                        select="@firstService"/></fo:inline>
+                                                <fo:inline font-size="7pt" font-style="italic" font-weight="normal">, last service: <xsl:value-of
+                                                        select="@lastService"/></fo:inline>
+                                            </fo:block>
+                                        </fo:table-cell>
+                                    </fo:table-row>
+
                                     <fo:table-row>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
                                             <fo:block>fechas</fo:block>
-                                        </fo:table-cell>
-                                        <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
-                                            <fo:block>hotel</fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell padding="1mm" font-weight="bold" border-bottom-style="solid" border-bottom-width="0.2px">
                                             <fo:block>habitación</fo:block>
@@ -163,7 +172,7 @@
                                         </fo:table-cell>
                                     </fo:table-row>
 
-                                    <xsl:for-each select="line">
+                                    <xsl:for-each select="lines/line">
 
                                         <fo:table-row>
                                             <fo:table-cell
@@ -171,12 +180,6 @@
                                                     border-right-style="solid"
                                                     border-right-width="0.2px">
                                                 <fo:block><xsl:value-of select="@start"/> to <xsl:value-of select="@end"/></fo:block>
-                                            </fo:table-cell>
-                                            <fo:table-cell
-                                                    padding="1mm"
-                                                    border-right-style="solid"
-                                                    border-right-width="0.2px">
-                                                <fo:block><xsl:value-of select="@hotel"/></fo:block>
                                             </fo:table-cell>
                                             <fo:table-cell
                                                     padding="1mm"
@@ -222,38 +225,62 @@
                                     </xsl:for-each>
 
 
-                                    <!--
-                                                                        <fo:table-row>
-                                                                            <fo:table-cell
-                                                                                    padding="1mm"
-                                                                                    border-right-style="solid"
-                                                                                    border-right-width="0.2px">
-                                                                                <fo:block></fo:block>
-                                                                            </fo:table-cell>
-                                                                            <fo:table-cell
-                                                                                    padding="1mm"
-                                                                                    border-right-style="solid"
-                                                                                    border-right-width="0.2px">
-                                                                                <fo:block></fo:block>
-                                                                            </fo:table-cell>
-                                                                            <fo:table-cell
-                                                                                    padding="1mm"
-                                                                                    border-right-style="solid"
-                                                                                    border-right-width="0.2px">
-                                                                                <fo:block></fo:block>
-                                                                            </fo:table-cell>
-                                                                            <fo:table-cell
-                                                                                    padding="1mm"
-                                                                                    border-right-style="solid"
-                                                                                    border-right-width="0.2px">
-                                                                                <fo:block></fo:block>
-                                                                            </fo:table-cell>
+                                    <fo:table-row>
+                                        <fo:table-cell padding="1mm" number-columns-spanned="7">
+                                            <fo:block><xsl:value-of select="@specialRequests"/></fo:block>
+                                        </fo:table-cell>
+                                    </fo:table-row>
+
+
+
+
+                                        <xsl:if test="@adultTaxPerNight or @childTaxPerNight">
+                                            <fo:table-row>
+                                                <fo:table-cell
+                                                        text-align="right"
+                                                        padding="1mm"
+                                                        border-right-style="solid"
+                                                        border-right-width="0.2px" number-columns-spanned="6">
+                                                    <fo:block text-align="right">Adult taxes (<xsl:value-of select="@adultTaxPerNight"/> x pax x night)</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell
+                                                        text-align="right"
+                                                        padding="1mm"
+                                                        border-right-style="solid"
+                                                        border-right-width="0.2px">
+                                                    <fo:block text-align="right"><xsl:value-of select="@totalAdTax"/> €</fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+                                        </xsl:if>
+
+
+                                        <xsl:if test="@childTaxPerNight">
+                                            <fo:table-row>
+                                                <fo:table-cell
+                                                        text-align="right"
+                                                        padding="1mm"
+                                                        border-right-style="solid"
+                                                        border-right-width="0.2px" number-columns-spanned="6">
+                                                    <fo:block text-align="right">Child taxes (<xsl:value-of select="@childTaxPerNight"/> x pax x night)</fo:block>
+                                                </fo:table-cell>
+                                                <fo:table-cell
+                                                        text-align="right"
+                                                        padding="1mm"
+                                                        border-right-style="solid"
+                                                        border-right-width="0.2px">
+                                                    <fo:block text-align="right"><xsl:value-of select="@totalChTax"/> €</fo:block>
+                                                </fo:table-cell>
+                                            </fo:table-row>
+                                        </xsl:if>
+
+                                        <fo:table-row>
                                                                             <fo:table-cell
                                                                                     text-align="right"
                                                                                     padding="1mm"
                                                                                     border-right-style="solid"
-                                                                                    border-right-width="0.2px">
-                                                                                <fo:block text-align="right">Total servicio:</fo:block>
+                                                                                    border-right-width="0.2px" number-columns-spanned="6">
+                                                                                <fo:block text-align="right">Total hotel <xsl:value-of
+                                                                                        select="@hotel"/></fo:block>
                                                                             </fo:table-cell>
                                                                             <fo:table-cell
                                                                                     text-align="right"
@@ -263,7 +290,8 @@
                                                                                 <fo:block text-align="right"><xsl:value-of select="@total"/> €</fo:block>
                                                                             </fo:table-cell>
                                                                         </fo:table-row>
-                                    -->
+
+                                    </xsl:for-each>
                                 </fo:table-body>
                             </xsl:for-each>
 

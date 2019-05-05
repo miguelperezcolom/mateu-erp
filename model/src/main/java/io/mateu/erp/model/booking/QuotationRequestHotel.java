@@ -1,15 +1,13 @@
 package io.mateu.erp.model.booking;
 
 
-import com.vaadin.data.provider.DataProvider;
-import com.vaadin.data.provider.ListDataProvider;
+import com.google.common.base.Strings;
 import io.mateu.erp.dispo.Helper;
-import io.mateu.erp.model.product.hotel.Board;
-import io.mateu.erp.model.product.hotel.BoardType;
 import io.mateu.erp.model.product.hotel.Hotel;
-import io.mateu.erp.model.product.hotel.Room;
-import io.mateu.mdd.core.annotations.DependsOn;
+import io.mateu.mdd.core.annotations.NotInlineEditable;
 import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.TextArea;
+import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
@@ -17,10 +15,8 @@ import org.jdom2.Element;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -41,147 +37,50 @@ public class QuotationRequestHotel {
     @ManyToOne
     private Hotel hotel;
 
-    @Column(name = "_start")
-    @NotNull
-    private LocalDate start;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "hotel")@NotInlineEditable
+    private List<QuotationRequestHotelLine> lines = new ArrayList<>();
 
-    @Column(name = "_end")
-    @NotNull
-    private LocalDate end;
+    public String getLinesHtml() {
+        String h = "<div class='lines'>";
+        for (QuotationRequestHotelLine l : lines) {
+            h += "<div class='line" + (l.isActive() ? "" : " cancelled") + "'>";
+            h += l.toHtml();
+            h += "</div>";
+        }
+        h += "</div>";
 
-    @ManyToOne@NotNull
-    private Room room;
-
-    public DataProvider getRoomDataProvider() {
-        return new ListDataProvider(hotel != null?hotel.getRooms():new ArrayList());
+        return h;
     }
 
-    @ManyToOne@NotNull
-    private Board board;
+    private double adultTaxPerNight;
 
-    public DataProvider getBoardDataProvider() {
-        return new ListDataProvider(hotel != null?hotel.getBoards():new ArrayList());
-    }
-
-
-    private int numberOfRooms;
-
-    public void setNumberOfRooms(int numberOfRooms) {
-        this.numberOfRooms = numberOfRooms;
+    public void setAdultTaxPerNight(double adultTaxPerNight) {
+        this.adultTaxPerNight = adultTaxPerNight;
         updateTotal();
     }
 
-    private int adultsPerRoom;
-
-    public void setAdultsPerRoom(int adultsPerRoom) {
-        this.adultsPerRoom = adultsPerRoom;
+    public void setChildTaxPerNight(double childTaxPerNight) {
+        this.childTaxPerNight = childTaxPerNight;
         updateTotal();
     }
 
-    private int childrenPerRoom;
+    private double childTaxPerNight;
 
-    public void setChildrenPerRoom(int childrenPerRoom) {
-        this.childrenPerRoom = childrenPerRoom;
-        updateTotal();
-    }
+    private HotelMeal firstService;
 
-    private int[] ages;
+    private HotelMeal lastService;
 
-    private boolean saleOverrided;
-
-    public void setSaleOverrided(boolean saleOverrided) {
-        this.saleOverrided = saleOverrided;
-        updateTotal();
-    }
-
-    private double pricePerRoom;
-
-    public void setPricePerRoom(double pricePerRoom) {
-        this.pricePerRoom = pricePerRoom;
-        updateTotal();
-    }
-
-    @DependsOn("saleOverrided")
-    public boolean isPricePerRoomVisible() {
-        return saleOverrided;
-    }
-
-    private double pricePerAdult;
-
-    public void setPricePerAdult(double pricePerAdult) {
-        this.pricePerAdult = pricePerAdult;
-        updateTotal();
-    }
-
-    @DependsOn("saleOverrided")
-    public boolean isPricePerAdultVisible() {
-        return saleOverrided;
-    }
-
-    private double pricePerChild;
-
-    public void setPricePerChild(double pricePerChild) {
-        this.pricePerChild = pricePerChild;
-        updateTotal();
-    }
-
-    @DependsOn("saleOverrided")
-    public boolean isPricePerChildVisible() {
-        return saleOverrided;
-    }
+    @TextArea
+    private String specialRequests;
 
     @Output
     private double totalSale;
 
-
-    private boolean costOverrided;
-
-    public void setCostOverrided(boolean costOverrided) {
-        this.costOverrided = costOverrided;
-        updateTotal();
-    }
-
-    private double costPerRoom;
-
-    public void setCostPerRoom(double costPerRoom) {
-        this.costPerRoom = costPerRoom;
-        updateTotal();
-    }
-
-    @DependsOn("costOverrided")
-    public boolean isCostPerRoomVisible() {
-        return saleOverrided;
-    }
-
-
-    private double costPerAdult;
-
-    public void setCostPerAdult(double costPerAdult) {
-        this.costPerAdult = costPerAdult;
-        updateTotal();
-    }
-
-    @DependsOn("costOverrided")
-    public boolean isCostPerAdultVisible() {
-        return saleOverrided;
-    }
-
-    private double costPerChild;
-
-    public void setCostPerChild(double costPerChild) {
-        this.costPerChild = costPerChild;
-        updateTotal();
-    }
-
-    @DependsOn("costOverrided")
-    public boolean isCostPerChildVisible() {
-        return saleOverrided;
-    }
-
-
     @Output
     private double totalCost;
 
+    @Output
+    private double totalTax;
 
     public void setTotalSale(double totalSale) {
         this.totalSale = totalSale;
@@ -198,33 +97,62 @@ public class QuotationRequestHotel {
     }
 
 
-    private void updateTotal() {
-        if (isSaleOverrided()) setTotalSale(Helper.roundEuros(getNumNights() * (numberOfRooms * pricePerRoom + (numberOfRooms * adultsPerRoom) * pricePerAdult) + (numberOfRooms * childrenPerRoom) * pricePerChild));
-        if (isCostOverrided()) setTotalCost(Helper.roundEuros(getNumNights() * (numberOfRooms * costPerRoom + (numberOfRooms * adultsPerRoom) * costPerAdult) + (numberOfRooms * childrenPerRoom) * costPerChild));
+    public void updateTotal() {
+        double v = 0;
+        double c = 0;
+
+        int totalPax = 0;
+        int totalAds = 0;
+        int totalChs = 0;
+        int totalAdNights = 0;
+        int totalChNights = 0;
+
+        for (QuotationRequestHotelLine line : lines) if (line.isActive()) {
+            v += line.getTotalSale();
+            c += line.getTotalCost();
+
+            int n = line.getStart() != null && line.getEnd() != null?(int) (DAYS.between(line.getStart(), line.getEnd()) -1):0;
+
+            totalAds += line.getNumberOfRooms() * line.getAdultsPerRoom();
+            totalChs += line.getNumberOfRooms() * line.getChildrenPerRoom();
+            totalAdNights += line.getNumberOfRooms() * line.getAdultsPerRoom() * n;
+            totalChNights += line.getNumberOfRooms() * line.getChildrenPerRoom() * n;
+            totalPax = totalAds + totalChs;
+        }
+
+        double t = Helper.roundEuros(adultTaxPerNight * totalAdNights + childTaxPerNight * totalChNights);
+
+        v += t;
+        c += t;
+
+        setTotalSale(Helper.roundEuros(v));
+        setTotalCost(Helper.roundEuros(c));
+        setTotalTax(t);
     }
 
-    private int getNumNights() {
-        int n = 1;
-        if (start != null && end != null) {
-            n = (int) DAYS.between(start, end);
-            if (n < 1) n = 1;
-        }
-        return n;
-    }
 
 
     public String toHtml() {
         String h = "<table style='border-spacing: 0px; border-top: 1px dashed grey; border-bottom: 1px dashed grey;'>";
-        h += "<tr><th width='150px'>Dates:</th><td>From " + start + " to " + end + "</td></tr>";
         if (hotel != null) h += "<tr><th>Hotel:</th><td>" + hotel.getName() + "</td></tr>";
-        h += "<tr><th>Nr of rooms:</th><td>" + numberOfRooms + "</td></tr>";
-        if (room != null) h += "<tr><th>Room:</th><td>" + room.getName() + "</td></tr>";
-        if (board != null) h += "<tr><th>Board:</th><td>" + board.getName() + "</td></tr>";
-        h += "<tr><th>Adults per room:</th><td>" + adultsPerRoom + "</td></tr>";
-        h += "<tr><th>Children per room:</th><td>" + childrenPerRoom + "</td></tr>";
-        h += "<tr><th>Total sale:</th><td>" + totalSale + "</td></tr>";
-        h += "<tr><th>Total cost:</th><td>" + totalCost + "</td></tr>";
-        h += "<tr><th>Total markup:</th><td>" + Helper.roundEuros(totalSale - totalCost) + "</td></tr>";
+        h += "<tr><th></th><td>Taxes: " + adultTaxPerNight + "/" + childTaxPerNight + " per night, " + (firstService != null?firstService.name():"..") + " - " + (lastService != null?lastService.name():"..") + "</td></tr>";
+        if (!Strings.isNullOrEmpty(specialRequests)) h += "<tr><th></th><td>" + specialRequests + "</td></tr>";
+        int totalPax = 0;
+        int totalAds = 0;
+        int totalChs = 0;
+        int pos = 1;
+        for (QuotationRequestHotelLine line : lines) {
+            h += "<tr><th width='150px'>Line " + pos++ + ":</th><td>From " + line.getStart() + " to " + line.getEnd() + "</td></tr>";
+            h += "<tr><th></th><td>" + line.getNumberOfRooms();
+            if (line.getRoom() != null) h += " x " + line.getRoom().getName() + "";
+            h +=  "</td></tr>";
+            if (line.getBoard() != null) h += "<tr><th></th><td>" + line.getBoard().getName() + "</td></tr>";
+            h += "<tr><th></th><td>" + line.getAdultsPerRoom() + " ad  + " + line.getChildrenPerRoom() + " ch per room</td></tr>";
+            totalAds += line.getNumberOfRooms() * line.getAdultsPerRoom();
+            totalChs += line.getNumberOfRooms() * line.getChildrenPerRoom();
+            totalPax = totalAds + totalChs;
+        }
+        h += "<tr><th>Totals:</th><td>Pax: " + totalPax + " (" + totalAds + " ads + " + totalChs + " chs), Tax: " + totalTax + ", Sale: " + totalSale + ", Cost: " + totalCost + ", Markup: " + Helper.roundEuros(totalSale - totalCost) + "</td></tr>";
         h += "</table>";
         return h;
     }
@@ -259,16 +187,43 @@ public class QuotationRequestHotel {
         if (active) el.setAttribute("active", "");
 
         el.setAttribute("hotel", hotel.getName() != null?hotel.getName():"--");
-        el.setAttribute("room", room.getName() != null?room.getName():"--");
-        el.setAttribute("board", board.getName() != null?board.getName():"--");
 
-        if (start != null) el.setAttribute("start", start.format(DateTimeFormatter.ISO_DATE));
-        if (end != null) el.setAttribute("end", end.format(DateTimeFormatter.ISO_DATE));
+        if (firstService != null) el.setAttribute("firstService", firstService.name());
+        if (lastService != null) el.setAttribute("lastService", lastService.name());
 
-        el.setAttribute("rooms", "" + numberOfRooms);
-        el.setAttribute("adultsPerRoom", "" + adultsPerRoom);
-        el.setAttribute("childrenPerRoom", "" + childrenPerRoom);
-        if (ages != null) el.setAttribute("ages", Arrays.toString(ages));
+        if (adultTaxPerNight != 0) el.setAttribute("adultTaxPerNight", nf.format(adultTaxPerNight));
+        if (childTaxPerNight != 0) el.setAttribute("childTaxPerNight", nf.format(childTaxPerNight));
+
+        if (!Strings.isNullOrEmpty(specialRequests)) el.setAttribute("specialRequests", specialRequests);
+
+
+        Element els;
+        el.addContent(els = new Element("lines"));
+
+        int totalPax = 0;
+        int totalAds = 0;
+        int totalChs = 0;
+        int totalAdNights = 0;
+        int totalChNights = 0;
+        for (QuotationRequestHotelLine line : lines) if (line.isActive()) {
+            els.addContent(line.toXml());
+
+            int n = line.getStart() != null && line.getEnd() != null?(int) (DAYS.between(line.getStart(), line.getEnd()) -1):0;
+
+            totalAds += line.getNumberOfRooms() * line.getAdultsPerRoom();
+            totalChs += line.getNumberOfRooms() * line.getChildrenPerRoom();
+            totalAdNights += line.getNumberOfRooms() * line.getAdultsPerRoom() * n;
+            totalChNights += line.getNumberOfRooms() * line.getChildrenPerRoom() * n;
+            totalPax = totalAds + totalChs;
+        }
+
+        el.setAttribute("totalAds", "" + totalAds);
+        el.setAttribute("totalChs", "" + totalChs);
+        el.setAttribute("totalAdNights", "" + totalAdNights);
+        el.setAttribute("totalChNights", "" + totalChNights);
+        el.setAttribute("totalAdTax", nf.format(Helper.roundEuros(adultTaxPerNight * totalAdNights)));
+        el.setAttribute("totalChTax", nf.format(Helper.roundEuros(childTaxPerNight * totalChNights)));
+        el.setAttribute("totalTax", nf.format(totalTax));
 
         el.setAttribute("total", nf.format(totalSale));
 

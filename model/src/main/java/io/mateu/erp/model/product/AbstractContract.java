@@ -255,7 +255,7 @@ public abstract class AbstractContract {
         if (c.getBusinessName() != null) xml.setAttribute("bussinessName", c.getBusinessName());
         if (c.getLogo() != null) {
             try {
-                xml.setAttribute("logo", "" + c.getLogo().toFileLocator().getTmpPath());
+                xml.setAttribute("logo", "file:" + c.getLogo().toFileLocator().getTmpPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -408,7 +408,7 @@ public abstract class AbstractContract {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof  AbstractContract && id == ((AbstractContract)obj).id);
+        return this == obj || (id > 0 && obj != null && obj instanceof  AbstractContract && id == ((AbstractContract)obj).id);
     }
 
 
@@ -430,15 +430,38 @@ public abstract class AbstractContract {
     @PrePersist
     public void prePersist() {
         pre();
-        if (this instanceof Contract) Accessor.get(Helper.getEMFromThreadLocal()).getGenericContracts().add((Contract) this);
-        else if (this instanceof io.mateu.erp.model.product.transfer.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTransferContracts().add((io.mateu.erp.model.product.transfer.Contract) this);
-        else if (this instanceof io.mateu.erp.model.product.tour.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTourContracts().add((io.mateu.erp.model.product.tour.Contract) this);
+
+        EntityManager em = Helper.getEMFromThreadLocal();
+        Accessor acc = Accessor.get(em);
+
+        if (this instanceof Contract) {
+            acc.getGenericContracts().add((Contract) this);
+            em.merge(acc);
+        } else if (this instanceof io.mateu.erp.model.product.transfer.Contract) {
+            acc.getTransferContracts().add((io.mateu.erp.model.product.transfer.Contract) this);
+            em.merge(acc);
+        }
+        else if (this instanceof io.mateu.erp.model.product.tour.Contract) {
+            acc.getTourContracts().add((io.mateu.erp.model.product.tour.Contract) this);
+            em.merge(acc);
+        }
     }
 
     @PreRemove
     public void preRemove() {
-        if (this instanceof Contract) Accessor.get(Helper.getEMFromThreadLocal()).getGenericContracts().remove((Contract) this);
-        else if (this instanceof io.mateu.erp.model.product.transfer.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTransferContracts().remove((io.mateu.erp.model.product.transfer.Contract) this);
-        else if (this instanceof io.mateu.erp.model.product.tour.Contract) Accessor.get(Helper.getEMFromThreadLocal()).getTourContracts().remove((io.mateu.erp.model.product.tour.Contract) this);
+
+        EntityManager em = Helper.getEMFromThreadLocal();
+        Accessor acc = Accessor.get(em);
+
+        if (this instanceof Contract) {
+            acc.getGenericContracts().remove((Contract) this);
+            em.merge(acc);
+        } else if (this instanceof io.mateu.erp.model.product.transfer.Contract) {
+            acc.getTransferContracts().remove((io.mateu.erp.model.product.transfer.Contract) this);
+            em.merge(acc);
+        } else if (this instanceof io.mateu.erp.model.product.tour.Contract) {
+            acc.getTourContracts().remove((io.mateu.erp.model.product.tour.Contract) this);
+            em.merge(acc);
+        }
     }
 }

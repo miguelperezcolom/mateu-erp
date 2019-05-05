@@ -10,7 +10,7 @@ import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.TourPrice;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionShift;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public class ExcursionService extends Service {
     private Variant variant;
 
     @ManyToOne@NotNull@Output
-    private TourShift shift;
+    private ExcursionShift shift;
 
 
     private int units;

@@ -57,7 +57,7 @@ public class Importer {
                     else if (hora == null) pw.println("<span style='color: red;'>line " + nofila + ": missing pickup time</span>");
                     else {
 
-                        long id = Long.parseLong(ref.replaceAll("[^0-9.]", ""));
+                        long id = Long.parseLong(ref.replaceAll("[^0-9.]", "").replaceFirst("2019", ""));
                         PurchaseOrder po = em.find(PurchaseOrder.class, id);
 
                         if (po != null) {
@@ -70,7 +70,7 @@ public class Importer {
                                 if (pud.getYear() < 1000) pud = pud.plusYears(2000);
                                 LocalDateTime put = Helper.toLocalDateTime(hora);
 
-                                s.setPickupTime(LocalDateTime.of(pud.getYear(), pud.getMonth(), pud.getDayOfMonth(), put.getHour(), put.getMinute()));
+                                s.setImportedPickupTime(LocalDateTime.of(pud.getYear(), pud.getMonth(), pud.getDayOfMonth(), put.getHour(), put.getMinute()));
 
                                 pw.println("line " + nofila + ": pickup time for service id " + id + " (" + s.getBooking().getLeadName() + ") setted to " + s.getPickupTime().format(dtf));
                             } else {

@@ -47,7 +47,7 @@ public class VoucherPDFTester {
 
                 Document xml = new Document(new Element("services"));
 
-                if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+                if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
 
                 for (Service s : b.getServices()) {

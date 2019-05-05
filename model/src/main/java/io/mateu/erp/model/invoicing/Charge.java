@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.organization.Office;
@@ -49,26 +50,34 @@ public class Charge {
 
     private double total;
 
-    @ManyToOne@NotNull
-    private Currency currency;
-
-    @KPI
-    private double currencyExchange;
-
-    @KPI
-    private double valueInNucs;
-
-
     public void setTotal(double total) {
         this.total = total;
         totalChanged();
     }
 
-    public void totalChanged() {
+    @ManyToOne@NotNull
+    private Currency currency;
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+        if (currency != null) setCurrencyExchange(currency.getExchangeRateToNucs());
     }
 
+    @KPI
+    private double currencyExchange;
 
-    private double nucs;
+    public void setCurrencyExchange(double currencyExchange) {
+        this.currencyExchange = currencyExchange;
+        totalChanged();
+    }
+
+    @KPI
+    private double valueInNucs;
+
+    public void totalChanged() {
+        setValueInNucs(Helper.roundEuros(total * currencyExchange));
+    }
+
 
     @ManyToOne
     @Output

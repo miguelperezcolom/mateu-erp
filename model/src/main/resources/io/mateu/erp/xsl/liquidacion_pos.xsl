@@ -208,8 +208,13 @@
 
                                          -->
 
-
                                         <fo:block space-after="3pt" color="white">x</fo:block>
+
+                                        <xsl:for-each select="commissions/line">
+                                            <fo:block space-after="3pt"><xsl:value-of select="@agent"></xsl:value-of></fo:block>
+                                        </xsl:for-each>
+
+
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
@@ -217,6 +222,7 @@
                                         <fo:block space-after="3pt">Total sale</fo:block>
                                         <fo:block space-after="3pt" font-weight="bold">Total cash</fo:block>
                                         <fo:block space-after="3pt" font-weight="bold">Total commissions</fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold">Total to pay</fo:block>
 
                                     </fo:table-cell>
                                     <fo:table-cell
@@ -226,12 +232,17 @@
                                             border-right-width="0.2px">
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
+                                        <xsl:for-each select="commissions/line">
+                                            <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0; €</fo:block>
+                                        </xsl:for-each>
+
                                         <fo:block space-after="3pt" color="white">x</fo:block>
 
                                         <fo:block space-after="3pt"><xsl:value-of select="@bookings"/>&#x00A0; €</fo:block>
                                         <fo:block space-after="3pt"><xsl:value-of select="@totalValue"/>&#x00A0; €</fo:block>
                                         <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalCash"/>&#x00A0; €</fo:block>
                                         <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalCommission"/>&#x00A0; €</fo:block>
+                                        <fo:block space-after="3pt" font-weight="bold"><xsl:value-of select="@totalToPay"/>&#x00A0; €</fo:block>
                                     </fo:table-cell>
                                 </fo:table-row>
                             </fo:table-body>

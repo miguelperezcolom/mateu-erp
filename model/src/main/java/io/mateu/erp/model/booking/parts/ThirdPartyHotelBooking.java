@@ -2,7 +2,9 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
@@ -87,7 +89,7 @@ public class ThirdPartyHotelBooking extends Booking {
         if (s == null) {
             getServices().add(s = new FreeTextService());
             s.setBooking(this);
-            s.setAudit(new Audit(em.find(User.class, MDD.getUserData().getLogin())));
+            s.setAudit(new Audit(MDD.getCurrentUser()));
         }
         s.setOffice(integration.getOffice());
         s.setFinish(getEnd());
@@ -97,6 +99,11 @@ public class ThirdPartyHotelBooking extends Booking {
         s.setReturnDate(getEnd());
         em.merge(s);
 
+    }
+
+    @Override
+    protected ProductLine getEffectiveProductLine() {
+        return getIntegration().getProductLine();
     }
 
     public String getDescription() {
@@ -110,7 +117,7 @@ public class ThirdPartyHotelBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
     }
 

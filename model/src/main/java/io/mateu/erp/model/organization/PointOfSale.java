@@ -1,9 +1,16 @@
 package io.mateu.erp.model.organization;
 
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,6 +44,8 @@ public class PointOfSale {
     @ManyToOne
     private FinancialAgent financialAgent;
 
+    private String email;
+
 
     @KPI
     private double totalSales;
@@ -47,10 +56,14 @@ public class PointOfSale {
     @KPI
     private LocalDate lastSettlement;
 
+    @Ignored
+    private boolean updatePending;
+
+
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof PointOfSale && id == ((PointOfSale) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof PointOfSale && id == ((PointOfSale) obj).getId());
     }
 
     @Override
@@ -64,5 +77,43 @@ public class PointOfSale {
         return new PointOfSaleSettlementForm(this);
     }
 
+
+    @PostUpdate@PostPersist
+    public void post() {
+
+        if (updatePending) {
+
+            WorkflowEngine.add(() -> {
+
+                System.out.println("PointOfSale " + getId() + ".post().run()");
+                try {
+                    Helper.transact(em -> {
+                        PointOfSale b = em.find(PointOfSale.class, getId());
+                        if (b.isUpdatePending()) {
+
+
+                            Object[] l = (Object[]) em.createQuery("select sum(x.valueInNucs),  sum(x.valueInNucs) from " + BookingCharge.class.getName() + " x where x.booking.pos.id = " + b.getId() + " and x.pointOfSaleSettlement is null").getSingleResult();
+
+                            if (l != null) {
+                                b.setTotalSales(l[0] != null?Helper.roundEuros((Double) l[0]):0);
+                                b.setCash(l[1] != null?Helper.roundEuros((Double) l[1]):0);
+                            } else {
+                                b.setTotalSales(0);
+                                b.setCash(0);
+                            }
+
+                            b.setUpdatePending(false);
+                        }
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+
+        }
+
+    }
 
 }

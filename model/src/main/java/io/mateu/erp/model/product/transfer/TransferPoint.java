@@ -96,7 +96,7 @@ public class TransferPoint {
         return isAirport();
     }
 
-    private boolean isAirport() {
+    public boolean isAirport() {
         return TransferPointType.AIRPORT.equals(getType()) || TransferPointType.PORT.equals(getType()) || TransferPointType.TRAINSTATION.equals(getType());
     }
 

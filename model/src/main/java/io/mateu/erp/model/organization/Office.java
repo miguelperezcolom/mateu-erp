@@ -1,12 +1,19 @@
 package io.mateu.erp.model.organization;
 
+import com.google.common.base.Strings;
+import com.vaadin.ui.Button;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.world.Resort;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.NotInList;
 import io.mateu.mdd.core.annotations.Section;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.mail.DefaultAuthenticator;
+import org.apache.commons.mail.HtmlEmail;
 
+import javax.mail.internet.InternetAddress;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
@@ -50,6 +57,8 @@ public class Office {
 
     private String address;
 
+    private String pickupConfirmationTelephone;
+
 
     /*
     @NotNull
@@ -65,6 +74,10 @@ public class Office {
     @NotInList
     private int emailPort;
     @NotInList
+    private boolean emailStartTLS;
+    @NotInList
+    private boolean emailSSLOnConnect;
+    @NotInList
     private String emailUsuario;
     @NotInList
     private String emailPassword;
@@ -72,6 +85,36 @@ public class Office {
     private String emailFrom;
     @NotInList
     private String emailCC;
+
+
+    @Transient
+    private Button check = new Button("Test", e -> {
+
+        try {
+
+            HtmlEmail email = new HtmlEmail();
+            email.setHostName(emailHost);
+            email.setSmtpPort(emailPort);
+            email.setAuthenticator(new DefaultAuthenticator(emailUsuario, emailPassword));
+            email.setSSLOnConnect(emailSSLOnConnect);
+            email.setStartTLSEnabled(emailStartTLS);
+            email.setFrom(emailFrom);
+            if (!Strings.isNullOrEmpty(emailCC)) email.getCcAddresses().add(new InternetAddress(emailCC));
+
+            email.setSubject("Test email");
+            email.setHtmlMsg("This is a test email");
+            email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):"miguelperezcolom@gmail.com");
+
+            EmailHelper.send(email);
+
+
+            MDD.info("Email sent OK");
+
+        } catch (Exception ex) {
+            MDD.alert(ex);
+        }
+
+    });
 
 
     @Override

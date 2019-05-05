@@ -6,7 +6,7 @@ import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Excursion;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionShift;
 import io.mateu.mdd.core.annotations.DependsOn;
 import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
@@ -48,7 +48,7 @@ public class QuotationRequestExcursion {
 
     @NotNull
     @ManyToOne
-    private TourShift shift;
+    private ExcursionShift shift;
 
     public DataProvider getShiftDataProvider() {
         return new ListDataProvider(excursion != null?excursion.getShifts():new ArrayList());

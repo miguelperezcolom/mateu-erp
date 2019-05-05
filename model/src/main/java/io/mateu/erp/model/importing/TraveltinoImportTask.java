@@ -134,7 +134,9 @@ public class TraveltinoImportTask extends TransferImportTask {
                             TransferBookingRequest rq = rellenarRq(em, l, cabecera, traveltino);
 
                             TransferBookingRequest last = TransferBookingRequest.getByAgencyRef(em, rq.getAgencyReference(), traveltino);
-                            if (last == null || !last.getSignature().equals(rq.getSignature())) {
+                            if (last == null || !last.getSavedSignature().equals(rq.getSignature())) {
+                                rq.setSavedSignature(rq.getSignature());
+                                em.persist(rq);
                                 System.out.println("grabando rq");
                                 em.persist(rq);
                             } else {

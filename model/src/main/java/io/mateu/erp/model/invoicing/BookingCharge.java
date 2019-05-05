@@ -2,14 +2,17 @@ package io.mateu.erp.model.invoicing;
 
 
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.organization.PointOfSaleSettlement;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.annotations.Output;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter@Setter
@@ -27,6 +30,10 @@ public class BookingCharge extends Charge {
 
     @KPI
     private boolean extra = false;
+
+    @ManyToOne@Output
+    private PointOfSaleSettlement pointOfSaleSettlement;
+
 
     public void setBooking(Booking booking) {
         this.booking = booking;
@@ -57,7 +64,7 @@ public class BookingCharge extends Charge {
     @Override
     public void setTotal(double total) {
         super.setTotal(total);
-        if (booking != null) booking.setUpdatePending(true);
+        if (booking != null) booking.setUpdateRqTime(LocalDateTime.now());
     }
 
     public BookingCharge() {
@@ -71,7 +78,8 @@ public class BookingCharge extends Charge {
 
     @Override
     public void totalChanged() {
-        if (booking != null) booking.setUpdatePending(true);
+        super.totalChanged();
+        if (booking != null) booking.setUpdateRqTime(LocalDateTime.now());
     }
 
 }

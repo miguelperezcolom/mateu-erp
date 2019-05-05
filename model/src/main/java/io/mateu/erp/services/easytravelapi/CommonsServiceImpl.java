@@ -686,7 +686,7 @@ case: 'latitude': --> latitud
 
                 File b = em.find(File.class, Long.parseLong(bookingId));
 
-                b.cancel(em, b.getAudit().getModifiedBy());
+                b.cancel(em);
 
                 rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
                 rs.setStatusCode(200);

@@ -47,6 +47,7 @@ public class Company {
     private String bankAddress;
     private String recipient;
     private String accountNumber;
+    private String iban;
     private String swift;
 
 
@@ -64,7 +65,7 @@ public class Company {
         xml.setAttribute("name", getName());
         if (getLogo() != null) {
             try {
-                xml.setAttribute("logo", getLogo().toFileLocator().getTmpPath());
+                xml.setAttribute("logo", "file:" + getLogo().toFileLocator().getTmpPath());
             } catch (Exception e) {
                 e.printStackTrace();
             }

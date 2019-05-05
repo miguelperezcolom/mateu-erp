@@ -1,19 +1,20 @@
 package io.mateu.erp.model.config;
 
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.CommissionTerms;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.product.DataSheet;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.annotations.TextArea;
 import io.mateu.mdd.core.model.common.Resource;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by miguel on 19/3/17.
@@ -58,6 +59,12 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @TextArea
     private String xslfoForPurchaseOrder;
+
+    @TextArea
+    private String xslfoForEventManifest;
+
+    @TextArea
+    private String xslfoForEventReport;
 
     @TextArea
     private String purchaseOrderTemplate;
@@ -125,6 +132,10 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
 
     @ManyToOne
     private DataSheet incomingDataSheet;
+
+
+    @OneToMany@Ignored
+    private List<CommissionTerms> commissionTerms = new ArrayList<>();
 
 
     //@Tab("Currency exchange")

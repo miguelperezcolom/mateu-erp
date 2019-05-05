@@ -2,6 +2,7 @@ package io.mateu.erp.model.workflow;
 
 import com.google.common.net.UrlEscapers;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,7 +47,15 @@ text
 
         String u = "https://platform.clickatell.com/messages/http/send?apiKey=" + UrlEscapers.urlFormParameterEscaper().escape(AppConfig.get(em).getClickatellApiKey()) + "&to=" + getTelephoneNumber() + "&content=" + UrlEscapers.urlFormParameterEscaper().escape(getContent());
 
-        setAnswer(Helper.httpGet(u));
+        System.out.println(u);
+
+        if (EmailHelper.isTesting()) {
+            System.out.println("************************************");
+            System.out.println("Mail not sent as we are TESTING");
+            System.out.println("************************************");
+        } else {
+            setAnswer(Helper.httpGet(u));
+        }
 
 
     }

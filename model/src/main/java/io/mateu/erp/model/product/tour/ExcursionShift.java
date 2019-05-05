@@ -4,6 +4,7 @@ import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.UseCheckboxes;
 import io.mateu.mdd.core.annotations.WeekDays;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,12 +13,14 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
 @Setter
-public class TourShift {
+public class ExcursionShift {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,10 +59,9 @@ public class TourShift {
      */
     private int release;
 
-    /**
-     * lista de idiomas separados por coma
-     */
-    private String languages;
+    @OneToMany
+    @UseCheckboxes
+    private Set<ExcursionLanguage> languages = new HashSet<>();
 
 
     @Tab("Pickup times")

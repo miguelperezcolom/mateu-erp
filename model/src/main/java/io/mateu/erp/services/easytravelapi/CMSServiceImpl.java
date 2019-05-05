@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.model.authentication.ERPUser;
+import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.booking.parts.TourBooking;
@@ -14,7 +15,7 @@ import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.product.tour.ExcursionShift;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
@@ -596,7 +597,7 @@ public class CMSServiceImpl implements CMSService {
 
                     boolean happens = false;
 
-                    for (TourShift s : e.getShifts()) {
+                    for (ExcursionShift s : e.getShifts()) {
                         if ((s.getStart() == null || !d.isBefore(s.getStart()))
                                 && (s.getEnd() == null || !d.isAfter(s.getEnd()))
                                 && s.getWeekdays()[d.getDayOfWeek().getValue()]
@@ -656,8 +657,8 @@ public class CMSServiceImpl implements CMSService {
                 rs.getEvent().add(i = new EventCheckItem());
 
                 i.setActivityId(activityId);
-                i.setId("" + i.getId());
-                i.setName(i.getName());
+                i.setId("" + ev.getId());
+                i.setName("" + ev.getDate().format(DateTimeFormatter.ISO_DATE) + " " + ev.getShift().getName());
 
             });
 
@@ -698,7 +699,7 @@ public class CMSServiceImpl implements CMSService {
                 t.setId("" + b.getId());
                 t.setLeadname(b.getLeadName());
                 t.setPax(b.getAdults() + b.getChildren());
-                t.setQrcode("" + b.getId());
+                t.setQrcode(Strings.isNullOrEmpty(b.getQrCode())?"" + b.getId():b.getQrCode());
 
                 totalPax += t.getPax();
                 totalBookings ++;
@@ -736,39 +737,57 @@ public class CMSServiceImpl implements CMSService {
         rs.setStatusCode(200);
         rs.setMsg("");
 
-        Helper.transact(em -> {
+        try {
 
-            TourBooking b = em.find(TourBooking.class, Long.parseLong(qrcode));
-            ManagedEvent e = em.find(ManagedEvent.class, Long.parseLong(eventId));
+            Helper.transact(em -> {
 
-            if (b == null) {
-                rs.setStatusCode(404);
-                rs.setMsg("Booking " + qrcode + " not found");
-                rs.setValidationMessage(rs.getMsg());
-            } else if (e == null) {
-                rs.setStatusCode(404);
-                rs.setMsg("Event " + eventId + " not found");
-                rs.setValidationMessage(rs.getMsg());
-            } else if (!b.getManagedEvent().equals(e)) {
-                rs.setStatusCode(503);
-                rs.setMsg("Booking " + qrcode + " not valid for event " + eventId + "");
-                rs.setValidationMessage(rs.getMsg());
-            } else {
-                TicketCheckItem t;
-                rs.setTicket(t = new TicketCheckItem());
+                TourBooking b = null;
+                ManagedEvent e = em.find(ManagedEvent.class, Long.parseLong(eventId));
+                for (Booking bx : e.getBookings()) {
+                    if (qrcode.equals(bx.getQrCode())) b = (TourBooking) bx;
+                }
 
-                b.setCheckTime(LocalDateTime.now());
+                if (b == null) {
+                    rs.setStatusCode(404);
+                    rs.setMsg("Booking " + qrcode + " not found");
+                    rs.setValidationMessage(rs.getMsg());
+                } else if (e == null) {
+                    rs.setStatusCode(404);
+                    rs.setMsg("Event " + eventId + " not found");
+                    rs.setValidationMessage(rs.getMsg());
+                } else if (!b.getManagedEvent().equals(e)) {
+                    rs.setStatusCode(503);
+                    rs.setMsg("Booking " + qrcode + " not valid for event " + eventId + "");
+                    rs.setValidationMessage(rs.getMsg());
+                } else if (b.getCheckTime() != null) {
+                    rs.setStatusCode(503);
+                    rs.setMsg("Booking " + qrcode + " already checked at " + b.getCheckTime().format(DateTimeFormatter.ISO_DATE_TIME) + "");
+                    rs.setValidationMessage(rs.getMsg());
+                } else {
+                    TicketCheckItem t;
+                    rs.setTicket(t = new TicketCheckItem());
 
-                t.setComments(b.getSpecialRequests());
-                t.setId("" + b.getId());
-                t.setLeadname(b.getLeadName());
-                t.setPax(b.getAdults() + b.getChildren());
-                t.setQrcode("" + b.getId());
+                    b.setCheckTime(LocalDateTime.now());
 
-                rs.setValidationMessage("Ok");
-            }
+                    t.setComments(b.getSpecialRequests());
+                    t.setId("" + b.getId());
+                    t.setLeadname(b.getLeadName());
+                    t.setPax(b.getAdults() + b.getChildren());
+                    t.setQrcode(Strings.isNullOrEmpty(b.getQrCode())?"" + b.getId():b.getQrCode());
 
-        });
+                    rs.setValid(true);
+                    rs.setValidationMessage("Ok");
+
+                }
+
+            });
+
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            rs.setStatusCode(500);
+            rs.setMsg("ERROR " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+            rs.setValidationMessage(rs.getMsg());
+        }
 
         return rs;
     }
@@ -794,7 +813,7 @@ public class CMSServiceImpl implements CMSService {
                     rs.setMsg("User " + rq.getUser() + " not found");
                 } else {
                     if (u.checkPassword(rq.getPassword())) {
-                        rs.setAuthUser(rq.getUser());
+                        rs.setAuthUser(u.getLogin());
                         rs.setLogged(true);
                         rs.setMessage("Hello " + u.getName());
                     } else {
@@ -826,11 +845,12 @@ public class CMSServiceImpl implements CMSService {
 
                     LocalDate d = LocalDate.now();
 
+                    boolean happens = false;
+
                     for (int deltaDias = 0; deltaDias < 7; deltaDias++) {
 
-                        boolean happens = false;
 
-                        for (TourShift s : e.getShifts()) {
+                        for (ExcursionShift s : e.getShifts()) {
                             if ((s.getStart() == null || !d.isBefore(s.getStart()))
                                     && (s.getEnd() == null || !d.isAfter(s.getEnd()))
                                     && s.getWeekdays()[d.getDayOfWeek().getValue()]
@@ -839,6 +859,7 @@ public class CMSServiceImpl implements CMSService {
                                 break;
                             }
                         }
+                    }
 
 
                         if (happens) {
@@ -875,7 +896,7 @@ public class CMSServiceImpl implements CMSService {
                                 TicketListItem tli;
                                 rs.getTicketList().add(tli = new TicketListItem());
 
-                                tli.setEventId("" + e.getId());
+                                tli.setEventId("" + me.getId());
 
                                 int totalPax = 0;
                                 int totalBookings = 0;
@@ -923,8 +944,6 @@ public class CMSServiceImpl implements CMSService {
 
 
                         }
-
-                    }
 
 
                 }

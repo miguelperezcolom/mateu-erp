@@ -331,7 +331,6 @@ public class Importer {
                 p.setEmail(ea.getAttributeValue("email"));
                 p.setCurrency(eur);
                 p.setStatus(ea.getAttribute("active") != null?AgencyStatus.ACTIVE:AgencyStatus.INACTIVE);
-                p.setOneLinePerBooking(ea.getAttribute("oneLinePerBooking") != null);
                 p.setFullAddress(ea.getAttributeValue("address"));
                 if (ea.getAttribute("market") != null) p.setMarket(mercados.get(ea.getAttributeValue("market")));
                 em.persist(p);

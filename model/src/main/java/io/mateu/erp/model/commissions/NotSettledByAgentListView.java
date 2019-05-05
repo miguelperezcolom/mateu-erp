@@ -2,6 +2,7 @@ package io.mateu.erp.model.commissions;
 
 import com.vaadin.data.provider.QuerySortOrder;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.BookingCommission;
 import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Action;
@@ -41,8 +42,6 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
 
         private double total;
 
-        private double commission;
-
         @Ignored
         private LocalDate from;
 
@@ -63,28 +62,28 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
     public Query buildQuery(EntityManager em, List<QuerySortOrder> sortOrders, boolean forCount) throws Throwable {
         String ql = "";
 
-        ql += " select l.commissionAgent.id, l.commissionAgent.name, sum(l.totalValue) as total, sum(l.totalCommission) as commission " +
-                " from " + Booking.class.getName() + " l ";
+        ql += " select l.agent.id, l.agent.name, sum(l.total) as total " +
+                " from " + BookingCommission.class.getName() + " l ";
 
         Map<String, Object> params = new HashMap<>();
         String w = "";
 
-        w += " l.commissionSettlement = null ";
+        w += " l.settlement = null ";
 
         if (from != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.serviceDate >= :s";
+            w += " l.booking.serviceDate >= :s";
             params.put("s", from);
         }
-        if (from != null) {
+        if (to != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.serviceDate <= :t";
+            w += " l.booking.serviceDate <= :t";
             params.put("t", from);
         }
 
         if (commissionAgent != null) {
             if (!"".equals(w)) w += " and ";
-            w += " l.commissionAgent.id = :h";
+            w += " l.agent.id = :h";
             params.put("h", commissionAgent.getId());
         }
 
@@ -93,7 +92,7 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
 
 
 
-        ql += " group by l.commissionAgent.id, l.commissionAgent.name ";
+        ql += " group by l.agent.id, l.agent.name ";
         ql += " order by total ";
 
 
@@ -108,15 +107,60 @@ public class NotSettledByAgentListView extends AbstractJPQLListView<NotSettledBy
     }
 
 
-    @Action
-    public static CommissionSettlement settle(EntityManager em, Set<Row> selection) {
-        CommissionSettlement result = new CommissionSettlement();
-        result.setAudit(new Audit(MDD.getCurrentUser()));
-        for (Row r : selection) {
+    public static List<BookingCommission> getCommissions(EntityManager em, Row row) {
+        String ql = "";
 
+        ql += " select l from " + BookingCommission.class.getName() + " l ";
+
+        Map<String, Object> params = new HashMap<>();
+        String w = "";
+
+        w += " l.settlement = null ";
+
+        if (row.getFrom() != null) {
+            if (!"".equals(w)) w += " and ";
+            w += " l.booking.serviceDate >= :s";
+            params.put("s", row.getFrom());
         }
-        em.persist(result);
-        return result;
+        if (row.getTo() != null) {
+            if (!"".equals(w)) w += " and ";
+            w += " l.booking.serviceDate <= :t";
+            params.put("t", row.getTo());
+        }
+
+        if (row.getAgentId() > 0) {
+            if (!"".equals(w)) w += " and ";
+            w += " l.agent.id = :h";
+            params.put("h", row.getAgentId());
+        }
+
+
+        if (!"".equals(w)) ql += " where " + w + " ";
+
+
+        ql += " order by l.id ";
+
+
+        Query q = em.createQuery(ql);
+        params.keySet().forEach(k -> q.setParameter(k, params.get(k)));
+
+        return q.getResultList();
+    }
+
+
+    @Action
+    public static void settle(EntityManager em, Set<Row> selection) {
+        for (Row r : selection) {
+            CommissionSettlement s = new CommissionSettlement();
+            s.setAudit(new Audit(MDD.getCurrentUser()));
+            s.setAgent(em.find(CommissionAgent.class, r.getAgentId()));
+            s.setLines(getCommissions(em, r));
+            for (BookingCommission l : s.getLines()) {
+                l.setSettlement(s);
+            }
+            s.setUpdatePending(true);
+            em.persist(s);
+        }
     }
 
 }

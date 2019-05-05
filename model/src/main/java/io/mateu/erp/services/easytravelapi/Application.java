@@ -23,6 +23,7 @@ public class Application  extends javax.ws.rs.core.Application {
         s.add(TransferBookingServiceImpl.class);
         s.add(CircuitBookingServiceImpl.class);
         s.add(GenericBookingServiceImpl.class);
+        s.add(AgentAccessServiceImpl.class);
 
         return s;
     }

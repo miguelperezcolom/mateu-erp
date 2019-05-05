@@ -62,6 +62,9 @@ public class Contract extends AbstractContract {
         c.setValidFrom(getValidFrom());
         c.setValidTo(getValidTo());
         c.setVATIncluded(isVATIncluded());
+        c.setCurrency(getCurrency());
+        c.setProductLine(getProductLine());
+        c.setOffice(getOffice());
 
         for (Price p0 : getPrices()) {
             Price p = p0.clone(em, u);

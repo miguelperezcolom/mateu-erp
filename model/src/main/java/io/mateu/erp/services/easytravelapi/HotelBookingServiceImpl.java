@@ -627,8 +627,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     x.setRetailPrice(new Amount("EUR", s.getValue()));
                 });
 
-                hb.createCharges(em);
-                hb.summarize(em);
+
 
                 {
                     Remark rmk;

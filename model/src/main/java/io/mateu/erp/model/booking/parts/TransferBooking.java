@@ -3,8 +3,8 @@ package io.mateu.erp.model.booking.parts;
 import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.Service;
-import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.importing.TransferBookingRequest;
@@ -13,6 +13,7 @@ import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.transfer.*;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.Position;
@@ -31,7 +32,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -174,6 +174,14 @@ public class TransferBooking extends Booking {
 
         //el primer servicio siempre
         if (arrivalFlightTime != null) {
+
+            if (destination.isAirport() && !origin.isAirport()) { // invertimos. Lo normal es llegar a un aeropuerto
+                TransferPoint aux = origin;
+                setOrigin(destination);
+                setDestination(aux);
+            }
+
+
             TransferService s = null;
             if (availableServices.size() > 0) s = (TransferService) availableServices.remove(0);
             if (s == null) {
@@ -187,12 +195,18 @@ public class TransferBooking extends Booking {
             s.setTransferType(transferType);
 
             s.setPax(getAdults() + getChildren());
+            s.setBigLuggages(getBigLuggages());
+            s.setGolf(getGolf());
+            s.setBikes(getBikes());
+            s.setWheelChairs(getWheelChairs());
 
             //todo: falta maletas, palos de golf, etc. OJO GRATUIDADES
             //todo: faltan extras?
 
             s.setPickup(origin);
+            s.setPickupText(originAddress);
             s.setDropoff(destination);
+            s.setDropoffText(destinationAddress);
             s.setFlightNumber(arrivalFlightNumber);
             s.setFlightOriginOrDestination(arrivalFlightOrigin);
             s.setFlightTime(arrivalFlightTime);
@@ -217,17 +231,39 @@ public class TransferBooking extends Booking {
             s.setTransferType(transferType);
 
             s.setPax(getAdults() + getChildren());
+            s.setBigLuggages(getBigLuggages());
+            s.setGolf(getGolf());
+            s.setBikes(getBikes());
+            s.setWheelChairs(getWheelChairs());
 
             //todo: falta maletas, palos de golf, etc. OJO GRATUIDADES
             //todo: faltan extras?
 
-            s.setPickup(destination);
-            s.setDropoff(origin);
+            if (arrivalFlightTime != null) { // es una vuelta
+                s.setPickup(destination);
+                s.setPickupText(destinationAddress);
+                s.setDropoff(origin);
+                s.setDropoffText(originAddress);
+            } else {
+                if (!destination.isAirport() && origin.isAirport()) { // invertimos. Lo normal es salir a un aeropuerto
+                    TransferPoint aux = origin;
+                    String auxText = originAddress;
+                    setOrigin(destination);
+                    setOriginAddress(destinationAddress);
+                    setDestination(aux);
+                    setDestinationAddress(auxText);
+                }
+
+                s.setPickup(origin);
+                s.setPickupText(originAddress);
+                s.setDropoff(destination);
+                s.setDropoffText(destinationAddress);
+            }
             s.setFlightNumber(departureFlightNumber);
             s.setFlightOriginOrDestination(departureFlightDestination);
             s.setFlightTime(departureFlightTime);
 
-            if (overridePickupTime != null) s.setPickupTime(overridePickupTime);
+            if (overridePickupTime != null && s.getImportedPickupTime() == null) s.setPickupTime(overridePickupTime);
 
             s.setActive(isActive());
 
@@ -241,7 +277,12 @@ public class TransferBooking extends Booking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    protected ProductLine getEffectiveProductLine() {
+        return null;
+    }
+
+    @Override
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
         setTotalValue(0);
 
@@ -277,11 +318,14 @@ public class TransferBooking extends Booking {
 
             if (contratoOk) {
 
+                boolean contratoConPrecio = false;
+
                 for (Price p : c.getPrices()) {
 
-                    boolean precioOk = p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getResorts().contains(getOrigin().getResort());
+                    boolean zonasOk = (p.getOrigin().getPoints().contains(getOrigin()) || p.getOrigin().getResorts().contains(getOrigin().getResort())) && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getResorts().contains(getDestination().getResort()));
+                    if (!zonasOk) zonasOk = (p.getOrigin().getPoints().contains(getDestination()) || p.getOrigin().getResorts().contains(getDestination().getResort())) && (p.getDestination().getPoints().contains(getOrigin()) || p.getDestination().getResorts().contains(getOrigin().getResort()));
 
-                    precioOk = precioOk && (p.getDestination().getPoints().contains(getDestination()) || p.getDestination().getResorts().contains(getDestination().getResort()));
+                    boolean precioOk = zonasOk;
 
                     precioOk = precioOk && p.getTransferType().equals(getTransferType());
 
@@ -294,15 +338,35 @@ public class TransferBooking extends Booking {
                         setPriceFromPriceLine(p);
 
                         double valor = p.getPrice();
-                        if (PricePer.PAX.equals(p.getPricePer())) valor = valor * (getAdults() + getChildren());
+                        int pax = (getAdults() + getChildren());
+                        if (c.getMinPaxPerBooking() > pax) pax = c.getMinPaxPerBooking();
+                        if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
 
                         if (getArrivalFlightTime() != null && getDepartureFlightTime() != null) valor *= 2;
                         else if (getArrivalFlightTime() == null && getDepartureFlightTime() == null) valor = 0;
 
                         setTotalValue(Helper.roundEuros(valor));
+                        setValued(true);
+
+                        String desc = ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " TRANSFER WITH " + p.getVehicle().getName() + " FROM " + p.getOrigin().getName() + " TO " + p.getDestination().getName() + " FOR ";
+                        if (PricePer.PAX.equals(p.getPricePer())) {
+                            desc += (getAdults() + getChildren()) + " PAX";
+                        } else {
+                            desc += "SERVICE";
+                        }
+                        desc += " " + p.getPrice();
+
+
+                        breakdown.add(new PriceBreakdownItem(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer(), desc, Helper.roundEuros(valor)));
+
+                        contratoConPrecio = true;
+
+                        break;
                     }
 
                 }
+
+                if (contratoConPrecio) break;
 
             }
 
@@ -310,96 +374,68 @@ public class TransferBooking extends Booking {
 
     }
 
-    @Override
-    public void createCharges(EntityManager em) throws Throwable {
-        getServiceCharges().clear();
-
-            BookingCharge c;
-            getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(MDD.getCurrentUser()));
-            c.setTotal(getTotalValue());
-            c.setCurrency(getCurrency());
-
-            c.setText(getChargeSubject());
-
-            c.setAgency(getAgency());
-
-            c.setType(ChargeType.SALE);
-            c.setBooking(this);
-
-            c.setInvoice(null);
-
-        c.setBillingConcept(getContract() != null?getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForTransfer());
-    }
-
-
-    @Override
-    public String getChargeSubject() {
-        return ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " transfer from " + getOrigin().getName() + " to " + getDestination().getName() + (getPriceForVehicle() != null?" in " + getPriceForVehicle().getName():"") + " for " + (getAdults() + getChildren()) + " pax";
-    }
-
     public void setBigLuggages(int bigLuggages) {
-        if (this.bigLuggages != bigLuggages) setUpdatePending(true);
+        if (this.bigLuggages != bigLuggages) setUpdateRqTime(LocalDateTime.now());
         this.bigLuggages = bigLuggages;
     }
 
     public void setGolf(int golf) {
-        if (this.golf != golf) setUpdatePending(true);
+        if (this.golf != golf) setUpdateRqTime(LocalDateTime.now());
         this.golf = golf;
     }
 
     public void setBikes(int bikes) {
-        if (this.bikes != bikes) setUpdatePending(true);
+        if (this.bikes != bikes) setUpdateRqTime(LocalDateTime.now());
         this.bikes = bikes;
     }
 
     public void setWheelChairs(int wheelChairs) {
-        if (this.wheelChairs != wheelChairs) setUpdatePending(true);
+        if (this.wheelChairs != wheelChairs) setUpdateRqTime(LocalDateTime.now());
         this.wheelChairs = wheelChairs;
     }
 
     public void setOrigin(TransferPoint origin) {
-        if (!Helper.equals(this.origin, origin)) setUpdatePending(true);
+        if (!Helper.equals(this.origin, origin)) setUpdateRqTime(LocalDateTime.now());
         this.origin = origin;
     }
 
     public void setOriginAddress(String originAddress) {
-        if (!Helper.equals(this.originAddress, originAddress)) setUpdatePending(true);
+        if (!Helper.equals(this.originAddress, originAddress)) setUpdateRqTime(LocalDateTime.now());
         this.originAddress = originAddress;
     }
 
     public void setDestination(TransferPoint destination) {
-        if (!Helper.equals(this.destination, destination)) setUpdatePending(true);
+        if (!Helper.equals(this.destination, destination)) setUpdateRqTime(LocalDateTime.now());
         this.destination = destination;
     }
 
     public void setDestinationAddress(String destinationAddress) {
-        if (!Helper.equals(this.destinationAddress, destinationAddress)) setUpdatePending(true);
+        if (!Helper.equals(this.destinationAddress, destinationAddress)) setUpdateRqTime(LocalDateTime.now());
         this.destinationAddress = destinationAddress;
     }
 
     public void setTransferType(TransferType transferType) {
-        if (!Helper.equals(this.transferType, transferType)) setUpdatePending(true);
+        if (!Helper.equals(this.transferType, transferType)) setUpdateRqTime(LocalDateTime.now());
         this.transferType = transferType;
     }
 
     public void setArrivalFlightNumber(String arrivalFlightNumber) {
-        if (!Helper.equals(this.arrivalFlightNumber, arrivalFlightNumber)) setUpdatePending(true);
+        if (!Helper.equals(this.arrivalFlightNumber, arrivalFlightNumber)) setUpdateRqTime(LocalDateTime.now());
         this.arrivalFlightNumber = arrivalFlightNumber;
     }
 
     public void setArrivalFlightOrigin(String arrivalFlightOrigin) {
-        if (!Helper.equals(this.arrivalFlightOrigin, arrivalFlightOrigin)) setUpdatePending(true);
+        if (!Helper.equals(this.arrivalFlightOrigin, arrivalFlightOrigin)) setUpdateRqTime(LocalDateTime.now());
         this.arrivalFlightOrigin = arrivalFlightOrigin;
     }
 
     public void setDepartureFlightNumber(String departureFlightNumber) {
-        if (!Helper.equals(this.departureFlightNumber, departureFlightNumber)) setUpdatePending(true);
+        if (!Helper.equals(this.departureFlightNumber, departureFlightNumber)) setUpdateRqTime(LocalDateTime.now());
         this.departureFlightNumber = departureFlightNumber;
     }
 
     public void setDepartureFlightDestination(String departureFlightDestination) {
-        if (!Helper.equals(this.departureFlightDestination, departureFlightDestination)) setUpdatePending(true);
+        if (!Helper.equals(this.departureFlightDestination, departureFlightDestination)) setUpdateRqTime(LocalDateTime.now());
         this.departureFlightDestination = departureFlightDestination;
     }
 
@@ -407,9 +443,11 @@ public class TransferBooking extends Booking {
     @Override
     protected void completeSignature(Map<String, Object> m) {
         if (getTransferType() != null) m.put("transferType", getTransferType().name());
+        m.put("pickupAddress", getOriginAddress());
         m.put("pickup", getOrigin().getName());
         m.put("pickupResort", getOrigin().getResort().getName());
         if (getOverridePickupTime() != null) m.put("pickupTime", getOverridePickupTime().format(DateTimeFormatter.ISO_DATE_TIME));
+        m.put("dropoffAddress", getDestinationAddress());
         m.put("dropoff", getDestination().getName());
         m.put("dropoffResort", getDestination().getResort().getName());
         if (getDepartureFlightTime() != null) {
@@ -424,6 +462,12 @@ public class TransferBooking extends Booking {
             m.put("arrivalFlightTime", getArrivalFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             m.put("arrivalFlightOriginOrDestination", getArrivalFlightOrigin());
         }
+        m.put("adults", getAdults());
+        m.put("children", getChildren());
+        m.put("bigLuggages", getBigLuggages());
+        m.put("bikes", getBikes());
+        m.put("golf", getGolf());
+        m.put("wheelChairs", getWheelChairs());
         m.put("agencyReference", getAgencyReference());
         m.put("comments", getSpecialRequests());
         m.put("direction", getArrivalFlightTime() != null?"INBOUND":"OUTBOUND");
@@ -450,11 +494,11 @@ public class TransferBooking extends Booking {
         if (getArrivalFlightTime() != null) h += "Arrival: " + getArrivalFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getArrivalFlightNumber() + " - " + getArrivalFlightOrigin() + " \n";
         if (getDepartureFlightTime() != null) h += "Departure: " + getDepartureFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getDepartureFlightNumber() + " - " + getDepartureFlightDestination() + " \n";
 
-        h += "Adults: " + getAdults() + " \n";
+        h += "Adults: " + getAdults() + "    ";
         h += "Children: " + getChildren() + " \n";
-        h += "Bikes: " + getBikes() + " \n";
-        h += "Golf: " + getGolf() + " \n";
-        h += "Wheel chairs: " + getWheelChairs() + " \n";
+        h += "Bikes: " + getBikes() + "  ";
+        h += "Golf: " + getGolf() + "  ";
+        h += "Wheel chairs: " + getWheelChairs() + "  ";
         h += "Big luggages: " + getBigLuggages() + " \n";
 
         if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";

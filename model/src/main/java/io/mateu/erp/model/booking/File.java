@@ -5,10 +5,11 @@ import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.invoicing.BookingCharge;
+import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.*;
 import io.mateu.mdd.core.MDD;
@@ -37,7 +38,9 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.FileOutputStream;
 import java.io.StringReader;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * holder for file. Basically a file locator associated with a customer, under which we will
@@ -91,18 +94,22 @@ public class File {
 
     @KPI
     @ListColumn
+    @Money
     private double totalValue;
 
     @KPI
     @ListColumn
+    @Money
     private double totalNetValue;
 
     @KPI
     @SameLine
+    @Money
     private double totalCost;
 
     @KPI
     @SameLine
+    @Money
     private double balance;
 
     @KPI
@@ -140,7 +147,7 @@ public class File {
 
 
     @Ignored
-    private boolean forcePre = false;
+    private LocalDateTime updateRqTime = null;
 
 
     @Override
@@ -154,15 +161,17 @@ public class File {
         setAlreadyCancelled(!isActive());
     }
 
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
+
+
     @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this file?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void cancel(EntityManager em) {
-        cancel(em, em.find(User.class, MDD.getUserData().getLogin()));
-    }
-
-    public void cancel(EntityManager em, User u) {
         for (Booking s : getBookings()) {
-            s.cancel(em, u);
+            s.cancel(em);
         }
     }
 
@@ -357,7 +366,7 @@ public class File {
     }
 
 
-    private void updateTotals(EntityManager em) {
+    public void updateTotals() {
 
         double total = 0;
         double totalNeto = 0;
@@ -403,9 +412,12 @@ public class File {
 
                     File f = em.find(File.class, getId());
 
-                    f.updateTotals(em);
+                    if (f.getUpdateRqTime() != null) {
+                        f.updateTotals();
 
-                    if (f.isForcePre()) f.setForcePre(false);
+                        f.setUpdateRqTime(null);
+                    }
+
 
                 });
             } catch (Throwable throwable) {
@@ -416,4 +428,37 @@ public class File {
 
     }
 
+    public java.io.File buildProforma(EntityManager em) throws Throwable {
+        String archivo = UUID.randomUUID().toString();
+
+        java.io.File temp = (System.getProperty("tmpdir") == null)? java.io.File.createTempFile(archivo, ".pdf"):new java.io.File(new java.io.File(System.getProperty("tmpdir")), archivo + ".pdf");
+
+
+        System.out.println("java.io.tmpdir=" + System.getProperty("java.io.tmpdir"));
+
+        buildProforma(em, temp);
+
+        return temp;
+    }
+
+    public void buildProforma(EntityManager em, java.io.File temp) throws Throwable {
+        System.out.println("Temp file : " + temp.getAbsolutePath());
+        Document xml = new Document(new Element("invoices"));
+
+        List<BookingCharge> charges = new ArrayList<>();
+        for (Booking b : getBookings()) charges.addAll(b.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
+
+        xml.getRootElement().addContent(new IssuedInvoice(MDD.getCurrentUser(), charges, true, getAgency().getCompany().getFinancialAgent(), getAgency().getFinancialAgent(), null).toXml(em));
+
+        System.out.println(Helper.toString(xml.getRootElement()));
+
+
+        FileOutputStream fileOut = new FileOutputStream(temp);
+        //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+        String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+        System.out.println("xml=" + sxml);
+        fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForIssuedInvoice())), new StreamSource(new StringReader(sxml))));
+        fileOut.close();
+
+    }
 }

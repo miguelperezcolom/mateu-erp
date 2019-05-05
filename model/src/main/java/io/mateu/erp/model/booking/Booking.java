@@ -7,7 +7,6 @@ import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
-import io.mateu.erp.model.commissions.CommissionSettlement;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
@@ -15,14 +14,13 @@ import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.ExtraBookingCharge;
-import io.mateu.erp.model.mdd.ValidCellStyleGenerator;
 import io.mateu.erp.model.organization.PointOfSale;
-import io.mateu.erp.model.organization.PointOfSaleSettlement;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.AbstractContract;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
 import io.mateu.erp.model.tpv.TPVTransaction;
@@ -71,6 +69,9 @@ public abstract class Booking {
     @Order(desc = true, priority = 10)
     @ListColumn
     private long id;
+
+    @Version
+    private int version;
 
 
     @Section("Service")
@@ -166,6 +167,11 @@ public abstract class Booking {
     @TextArea
     private String specialRequests;
 
+
+    @TextArea
+    private String commentsForProvider;
+
+
     @Section("Sale")
     @TextArea
     @SameLine
@@ -184,6 +190,7 @@ public abstract class Booking {
     @ManyToOne
     @NotNull
     @ListColumn
+    @SearchFilter
     @ColumnWidth(156)
     private PointOfSale pos;
 
@@ -202,36 +209,48 @@ public abstract class Booking {
 
     @KPI
     @ListColumn
+    @Money
     @Sum
     private double totalValue;
 
     @KPI
     @ListColumn
+    @Money
     @Sum
     private double totalNetValue;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalCost;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalCommission;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalMarkup;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double totalPaid;
 
     @KPI
     @SameLine
+    @ListColumn
+    @Money
     @Sum
     private double balance;
 
@@ -301,10 +320,10 @@ public abstract class Booking {
     @Output
     private String priceReport;
 
-    @ListColumn
-    @CellStyleGenerator(ValidCellStyleGenerator.class)
+    //@ListColumn
+    //@CellStyleGenerator(ValidCellStyleGenerator.class)
     @Output
-    @ColumnWidth(120)
+    //@ColumnWidth(120)
     private ValidationStatus validationStatus = ValidationStatus.VALID;
 
     @Output
@@ -356,15 +375,10 @@ public abstract class Booking {
 
 
     @ManyToOne
+    @SearchFilter
     private CommissionAgent commissionAgent;
 
     private boolean nonCommissionable;
-
-    @ManyToOne@Output
-    private PointOfSaleSettlement pointOfSaleSettlement;
-
-    @ManyToOne@Output
-    private CommissionSettlement commissionSettlement;
 
     @Embedded
     private BookingInvoiceData invoiceData;
@@ -389,6 +403,11 @@ public abstract class Booking {
     private List<BookingChange> changes = new ArrayList<>();
 
 
+    @UseLinkToListView
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @NotWhenCreating
+    private List<BookingCommission> commissions = new ArrayList<>();
+
 
     @Ignored
     private String signature;
@@ -403,16 +422,19 @@ public abstract class Booking {
     private String docSignature;
 
     @Ignored
-    private boolean changeRecordPending = true;
+    private LocalDateTime changeRecordRqTime = LocalDateTime.now();
 
     @Ignored
-    private boolean updatePending = true;
+    private LocalDateTime updateRqTime = LocalDateTime.now();
 
     @Ignored
-    private boolean priceUpdatePending = true;
+    private LocalDateTime priceUpdateRqTime = LocalDateTime.now();
 
     @Ignored
     private boolean forcePre = false;
+
+    @Ignored
+    private String qrCode;
 
     public String createChangeControlSignature() {
         try {
@@ -709,6 +731,11 @@ public abstract class Booking {
 
     }
 
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
+
     @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
     public void sendBooked(EntityManager em, String changeEmail, String postscript) throws Throwable {
@@ -841,7 +868,7 @@ public abstract class Booking {
 
         Document xml = new Document(new Element("services"));
 
-        if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.getRootElement().setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
         services.stream().filter(s -> s.isActive()).forEach(s -> {
             xml.getRootElement().addContent(s.toXml(true));
@@ -949,60 +976,22 @@ public abstract class Booking {
     */
 
 
-    @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to cancel this booking?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE, saveAfter = true)
     @NotWhenCreating
     public void cancel(EntityManager em) {
-        cancel(em, MDD.getCurrentUser());
-    }
-
-    public void cancel(EntityManager em, User u) {
-
-        services.forEach(s -> s.cancel(em, u));
-
         setActive(false);
-
-        if (getFile() != null) {
-            boolean allCancelled = true;
-            for (Booking b : getFile().getBookings()) if (b.isActive()) {
-                allCancelled = false;
-                break;
-            }
-            if (allCancelled) {
-                getFile().setActive(false);
-                em.merge(getFile());
-            }
-        }
-
-        em.merge(this);
     }
+
 
     public boolean isCancelVisible() {
         return isActive();
     }
 
 
-    @Action(order = 7, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
+    @Action(order = 7, confirmationMessage = "Are you sure you want to uncancel this booking?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK, saveAfter = true)
     @NotWhenCreating
     public void uncancel(EntityManager em) throws Exception {
-        User u = em.find(User.class, MDD.getUserData().getLogin());
-
-        if (services.size() > 0) throw new Exception("Sorry. At this moment You can not uncancel a booking with cancelled services.");
-
-        setActive(false);
-
-        if (getFile() != null) {
-            boolean allCancelled = true;
-            for (Booking b : getFile().getBookings()) if (b.isActive()) {
-                allCancelled = false;
-                break;
-            }
-            if (allCancelled) {
-                getFile().setActive(false);
-                em.merge(getFile());
-            }
-        }
-
-        em.merge(this);
+        setActive(true);
     }
 
     public boolean isUncancelVisible() {
@@ -1142,7 +1131,7 @@ public abstract class Booking {
 
 
             if (getChangesControlSignature() != null && !getChangesControlSignature().equals(createChangeControlSignature())) {
-                setChangeRecordPending(true);
+                setChangeRecordRqTime(LocalDateTime.now());
                 System.out.println("change control signature changed from ");
                 System.out.println("" + getChangesControlSignature());
                 System.out.println("to ");
@@ -1151,7 +1140,7 @@ public abstract class Booking {
             }
 
             if (isConfirmed() && (getSignature() == null || !getSignature().equals(createSignature()))) {
-                setUpdatePending(true);
+                setUpdateRqTime(LocalDateTime.now());
                 System.out.println("service signature changed from ");
                 System.out.println("" + getSignature());
                 System.out.println("to ");
@@ -1160,7 +1149,7 @@ public abstract class Booking {
             }
 
             if (getPriceSignature() == null || !getPriceSignature().equals(createPriceSignature())) {
-                setPriceUpdatePending(true);
+                setPriceUpdateRqTime(LocalDateTime.now());
                 System.out.println("price signature changed from ");
                 System.out.println("" + getPriceSignature());
                 System.out.println("to ");
@@ -1216,48 +1205,49 @@ public abstract class Booking {
 
     @PostPersist@PostUpdate
     public void post() {
-        System.out.println("Booking " + getId() + ".post(" + changeRecordPending + "," + updatePending + "," + priceUpdatePending + ")");
-        if (changeRecordPending || updatePending || priceUpdatePending) WorkflowEngine.add(new Runnable() {
+        System.out.println("Booking " + getId() + ".post(" + changeRecordRqTime + "," + updateRqTime + "," + priceUpdateRqTime + ")");
+        if (changeRecordRqTime != null || updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Booking " + getId() + ".post(" + changeRecordPending + "," + updatePending + "," + priceUpdatePending + ").run()");
-                if (changeRecordPending || updatePending || priceUpdatePending) {
+                System.out.println("Booking " + getId() + ".post(" + changeRecordRqTime + "," + updateRqTime + "," + priceUpdateRqTime + ").run()");
+                if (changeRecordRqTime != null || updateRqTime != null || priceUpdateRqTime != null) {
                     try {
                         Helper.transact(em -> {
                             Booking b = em.find(Booking.class, getId());
 
                             boolean somethingHappened = false;
-                            if (b.isUpdatePending()) {
+                            if (b.getUpdateRqTime() != null) {
 
                                 b.build(em);
 
                                 b.setSignature(b.createSignature());
-                                b.setUpdatePending(false);
+                                b.setUpdateRqTime(null);
 
                                 somethingHappened = true;
                             }
-                            if (b.isPriceUpdatePending()) {
+                            if (b.getPriceUpdateRqTime() != null) {
 
                                 b.price(em);
 
                                 b.setPriceSignature(b.createPriceSignature());
-                                b.setPriceUpdatePending(false);
+                                b.setPriceUpdateRqTime(null);
 
                                 somethingHappened = true;
                             }
-                            if (b.isUpdatePending() || somethingHappened) {
+                            if (somethingHappened) {
                                 b.getAgency().setUpdatePending(true);
-                                somethingHappened = true;
+                                b.getPos().setUpdatePending(true);
+                                if (b.getFile() != null) b.getFile().setUpdateRqTime(LocalDateTime.now());
                             }
 
                             b.summarize(em);
 
-                            if (b.isChangeRecordPending() || somethingHappened) {
+                            if (b.getChangeRecordRqTime() != null || somethingHappened) {
                                 if (b.getChangesControlSignature() != null && !b.getChangesControlSignature().equals(b.createChangeControlSignature())) {
                                     b.recordChanges();
                                 }
                                 b.setChangesControlSignature(createChangeControlSignature());
-                                b.setChangeRecordPending(false);
+                                b.setChangeRecordRqTime(null);
                             }
 
                             if (b.getPos().getTpv() != null && b.getTPVTransactions().size() == 0) {
@@ -1338,8 +1328,7 @@ public abstract class Booking {
                     if (end == null || end.isBefore(x.getFinish())) end = x.getFinish();
                 }
 
-                if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
-                else x.setServiceDateForInvoicing(x.getStart());
+                x.setServiceDateForInvoicing(x.getStart());
                 if (!x.isAvailable()) allAvailable = false;
             }
             setAvailable(allAvailable);
@@ -1360,10 +1349,12 @@ public abstract class Booking {
         if (confirmed) {
             generateServices(em);
             services.forEach(s -> {
-                s.setAlreadyPurchased(alreadyPurchased);
-                if (s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() == null) s.setAlreadyPurchasedDate(LocalDateTime.now());
-                else if (!s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() != null) s.setAlreadyPurchasedDate(null);
-                if (!s.isUpdatePending() && (s.getSignature() == null || !s.getSignature().equals(s.createSignature()))) s.setUpdatePending(true);
+                if (s.isAlreadyPurchasedBefore() != s.isAlreadyPurchased()) {
+                    s.setAlreadyPurchased(alreadyPurchased);
+                    if (s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() == null) s.setAlreadyPurchasedDate(LocalDateTime.now());
+                    else if (!s.isAlreadyPurchased() && s.getAlreadyPurchasedDate() != null) s.setAlreadyPurchasedDate(null);
+                }
+                if (s.getSignature() == null || !s.getSignature().equals(s.createSignature())) s.setUpdateRqTime(LocalDateTime.now());
             });
         }
     }
@@ -1373,11 +1364,13 @@ public abstract class Booking {
     public abstract void generateServices(EntityManager em);
 
 
-    //@Action(order = 7, icon = VaadinIcons.EURO)
+    @Action(order = 7, icon = VaadinIcons.EURO)
     @NotWhenCreating
     public void price(EntityManager em) throws Throwable {
 
         System.out.println("Booking " + getId() + ".price()");
+
+        List<PriceBreakdownItem> breakdown = new ArrayList<>();
 
         if (isValueOverrided()) {
             if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
@@ -1386,12 +1379,21 @@ public abstract class Booking {
             services.forEach(s -> {
                 s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
             });
+            breakdown.add(new PriceBreakdownItem(overridedBillingConcept, getDescription(), overridedValue));
         } else {
-            priceServices(em);
-            services.forEach(s -> s.rateSale(em));
-            boolean v = getServices().size() > 0;
-            if (v) for (Service service : getServices()) v &= service.isSaleValued();
-            setValued(v);
+            setValued(false);
+            setTotalValue(0);
+            setTotalNetValue(0);
+            priceServices(em, breakdown);
+            if (!isValued()) {
+                services.forEach(s -> s.rateSale(em));
+                boolean v = getServices().size() > 0;
+                if (v) for (Service service : getServices()) v &= service.isSaleValued();
+                double t = 0;
+                if (v) for (Service service : getServices()) t += service.getTotalSale();
+                setValued(v);
+                setTotalValue(Helper.roundEuros(t));
+            }
         }
 
         if (isCostOverrided()) {
@@ -1410,10 +1412,40 @@ public abstract class Booking {
             setCostValued(v);
         }
 
-        updateCharges(em);
+        updateCharges(em, breakdown);
 
         updateTotals(em);
+
+        updateCommissions(em);
     }
+
+    private void updateCommissions(EntityManager em) {
+        boolean settled = false;
+        double tc = 0;
+        for (BookingCommission c : commissions) if (c.getSettlement() != null) settled = true;
+        if (!settled) {
+            commissions.clear();
+            if (commissionAgent != null && isValued() && isCostValued() && totalValue != 0) {
+                List<CommissionTerms> lx = AppConfig.get(em).getCommissionTerms();
+                if (lx.size() > 0) {
+                    CommissionTerms t = lx.get(0);
+                    for (CommissionTermsLine l : t.getLines()) {
+                        if (l.getAgent().equals(getCommissionAgent()) && l.getProductLine().equals(getEffectiveProductLine())) {
+                            BookingCommission com;
+                            commissions.add(com = new BookingCommission());
+                            com.setBooking(this);
+                            com.setAgent(commissionAgent);
+                            com.setTotal(Helper.roundEuros((totalValue - totalCost) * l.getPercent() / 100d));
+                            tc += com.getTotal();
+                        }
+                    }
+                }
+            }
+        }
+        setTotalCommission(Helper.roundEuros(tc));
+    }
+
+    protected abstract ProductLine getEffectiveProductLine();
 
 
     public List<BookingCharge> getCharges() {
@@ -1425,10 +1457,10 @@ public abstract class Booking {
 
 
     public synchronized void askForUpdate() {
-        updatePending = true;
+        updateRqTime = LocalDateTime.now();
     }
 
-    private void updateTotals(EntityManager em) {
+    public void updateTotals(EntityManager em) {
 
         double total = 0;
         double totalNeto = 0;
@@ -1476,6 +1508,9 @@ public abstract class Booking {
         updateDueDates(em);
 
         getAgency().setUpdatePending(true);
+        getPos().setUpdatePending(true);
+
+        if (getFile() != null) getFile().updateTotals();
 
     }
 
@@ -1527,21 +1562,21 @@ public abstract class Booking {
         }
     }
 
-    public abstract void priceServices(EntityManager em) throws Throwable;
+    public abstract void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable;
 
 
-    public void updateCharges(EntityManager em) throws Throwable {
+    public void updateCharges(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable {
         getServiceCharges().clear();
 
-        if (isValueOverrided()) {
+        for (PriceBreakdownItem i : breakdown) {
+
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
-            c.setAudit(new Audit(getAudit().getModifiedBy()));
-
-            c.setTotal(getOverridedValue());
+            c.setAudit(new Audit(MDD.getCurrentUser()));
+            c.setTotal(i.getValue());
             c.setCurrency(getCurrency());
 
-            c.setText(getChargeSubject());
+            c.setText(i.getText());
 
             c.setAgency(getAgency());
 
@@ -1550,22 +1585,9 @@ public abstract class Booking {
 
             c.setInvoice(null);
 
+            c.setBillingConcept(i.getConcept());
 
-            c.setBillingConcept(getOverridedBillingConcept());
-
-        } else {
-            createCharges(em);
         }
-
-    }
-
-    public String getChargeSubject() {
-        return "Booking " + getId();
-    }
-
-    public void createCharges(EntityManager em) throws Throwable {
-
-
 
     }
 
@@ -1621,7 +1643,7 @@ public abstract class Booking {
 
     @PostLoad
     public void postload() {
-        setChangesControlSignature(createChangeControlSignature());
+        //setChangesControlSignature(createChangeControlSignature());
     }
 
     public void createDueDates(EntityManager em) {

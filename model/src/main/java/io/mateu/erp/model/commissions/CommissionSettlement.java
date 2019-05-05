@@ -2,6 +2,7 @@ package io.mateu.erp.model.commissions;
 
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.BookingCommission;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.organization.PointOfSaleSettlement;
 import io.mateu.erp.model.partners.CommissionAgent;
@@ -28,17 +29,17 @@ public class CommissionSettlement {
     @Embedded@Output
     private Audit audit;
 
-    @ManyToOne@NotNull
+    @ManyToOne@NotNull@Output
     private CommissionAgent agent;
-
-    @Output
-    private double totalSale;
 
     @Output
     private double totalCommission;
 
-    @OneToMany(mappedBy = "commissionSettlement")@UseLinkToListView
-    private List<Booking> bookings = new ArrayList<>();
+    @Output
+    private double totalPaid;
+
+    @OneToMany(mappedBy = "settlement")@UseLinkToListView
+    private List<BookingCommission> lines = new ArrayList<>();
 
     @OneToMany(mappedBy = "commissionSettlement")
     @OrderColumn(name = "id")
@@ -46,7 +47,7 @@ public class CommissionSettlement {
     private List<CommissionSettlementPaymentAllocation> payments = new ArrayList<>();
 
     @Ignored
-    private boolean updatePending;
+    private boolean updatePending = true;
 
     @Action(order = 5, icon = VaadinIcons.EURO, saveBefore = true, saveAfter = true)
     @NotWhenCreating
@@ -86,10 +87,17 @@ public class CommissionSettlement {
             try {
                 Helper.transact(em -> {
 
-                    PointOfSaleSettlement s = em.find(PointOfSaleSettlement.class, getId());
+                    CommissionSettlement s = em.find(CommissionSettlement.class, getId());
+
+                    double totalCom = 0;
+
+                    for (BookingCommission l : s.getLines()) {
+                        totalCom += l.getTotal();
+                    }
+                    s.setTotalCommission(Helper.roundEuros(totalCom));
 
                     double totalPagado = 0;
-                    for (CommissionSettlementPaymentAllocation pa : getPayments()) {
+                    for (CommissionSettlementPaymentAllocation pa : s.getPayments()) {
                         totalPagado += pa.getValue();
                     }
                     s.setTotalPaid(Helper.roundEuros(totalPagado));

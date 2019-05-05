@@ -41,6 +41,9 @@ public class PaymentLine {
 
     private double transactionCost;
 
+    private String transactionId;
+
+
     @Output
     private double currencyExchange;
 

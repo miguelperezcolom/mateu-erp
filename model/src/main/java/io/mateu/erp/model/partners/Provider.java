@@ -81,14 +81,17 @@ public class Provider {
 
     @ListColumn
     @KPI
+    @Money
     private double orders;
 
     @ListColumn
     @KPI
+    @Money
     private double received;
 
     @ListColumn
     @KPI
+    @Money
     private double balance;
 
     // ... hasta aquí

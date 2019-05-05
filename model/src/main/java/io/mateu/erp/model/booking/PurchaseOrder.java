@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.authentication.ERPUser;
@@ -16,6 +17,7 @@ import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
+import io.mateu.erp.model.workflow.TaskResult;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
@@ -58,6 +60,10 @@ public class PurchaseOrder {
     @SearchFilter
     private long id;
 
+    @Version
+    private int version;
+
+
     private String reference;
 
     @Embedded
@@ -90,6 +96,10 @@ public class PurchaseOrder {
     @CellStyleGenerator(CancelledCellStyleGenerator.class)
     @ColumnWidth(100)
     private boolean active = true;
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     @TextArea
     private String comment;
@@ -128,6 +138,8 @@ public class PurchaseOrder {
     @ColumnWidth(150)
     private PurchaseOrderStatus status;
 
+
+    private boolean confirmationNeeded;
 
     @ListColumn
     private String providerComment;
@@ -182,41 +194,28 @@ public class PurchaseOrder {
     private List<PurchaseCharge> charges = new ArrayList<>();
 
     @Ignored
-    private boolean updatePending = true;
+    private LocalDateTime updateRqTime = LocalDateTime.now();
+
+    public void setUpdateRqTime(LocalDateTime updateRqTime) {
+        this.updateRqTime = updateRqTime;
+    }
 
     @Ignored
-    private boolean priceUpdatePending = true;
+    private LocalDateTime priceUpdateRqTime = LocalDateTime.now();
 
     @Ignored
     private transient String servicesUpdateSignature;
 
 
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
 
     @Action("Send")
     public void sendFromEditor(UserData user, EntityManager em) throws Throwable {
         send(em, em.find(ERPUser.class, user.getLogin()));
     }
-
-    @Action("Send")
-    public static void sendFromList(EntityManager em, Set<PurchaseOrder> selection, String email) throws Exception {
-        SendPurchaseOrdersByEmailTask t = new SendPurchaseOrdersByEmailTask();
-        t.setStatus(TaskStatus.PENDING);
-        t.setMethod(PurchaseOrderSendingMethod.EMAIL);
-        t.setAudit(new Audit(em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN)));
-        String a = email;
-        for (PurchaseOrder po : selection) {
-            t.getPurchaseOrders().add(po);
-            po.getSendingTasks().add(t);
-            if (Strings.isNullOrEmpty(a)) a = po.getProvider().getSendOrdersTo();
-        }
-        t.setTo(a);
-        if (!Strings.isNullOrEmpty(a)) em.persist(t);
-        t.execute(em, em.find(ERPUser.class, Constants.SYSTEM_USER_LOGIN));
-    }
-
-
-
-
 
     public String createSignature() {
         String s = "error when serializing";
@@ -274,6 +273,13 @@ public class PurchaseOrder {
         d.put("sent", isSent());
         d.put("sentTime", getSentTime());
         d.put("valued", isValued());
+        if (isConfirmationNeeded()) {
+            String u = (MDD.getApp() != null?MDD.getApp().getBaseUrl():"");
+            if (!u.endsWith("/")) u += "/";
+            if (u.endsWith("/app/")) u = u.replaceAll("\\/app\\/", "/");
+            u +=  "poconfirmation/" + Base64.getEncoder().encodeToString(("" + getId()).getBytes());
+            d.put("confirmationUrl", u);
+        }
         d.put("total", getTotal());
         d.put("currency", getCurrency().getIsoCode());
 
@@ -382,13 +388,18 @@ public class PurchaseOrder {
 
         setValueInNucs(total * currencyExchange);
 
+        setConfirmationNeeded(getProvider() != null && !getProvider().isAutomaticOrderConfirmation());
 
-        if (getSignature() == null || !getSignature().equals(createSignature()) || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
-            setUpdatePending(true);
+
+        if (getSignature() == null || !getSignature().equals(createSignature()) || getServicesUpdateSignature() ==null || !getServicesUpdateSignature().equals(createServicesUpdateSignature())) {
+            setUpdateRqTime(LocalDateTime.now());
+            if (getSignature() == null || !getSignature().equals(createSignature())) {
+                setStatus(PurchaseOrderStatus.PENDING);
+            }
         }
 
         if (getPriceSignature() == null || !getPriceSignature().equals(createPriceSignature())) {
-            setPriceUpdatePending(true);
+            setPriceUpdateRqTime(LocalDateTime.now());
         }
 
     }
@@ -421,13 +432,13 @@ public class PurchaseOrder {
     }
 
     public void markServicesForUpdate() {
-        getServices().forEach(s -> s.setUpdatePending(true));
+        getServices().forEach(s -> s.setUpdateRqTime(LocalDateTime.now()));
     }
 
     @PostPersist@PostUpdate
     public void post() throws Exception, Throwable {
 
-        if (updatePending || priceUpdatePending) WorkflowEngine.add(new Runnable() {
+        if (updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Runnable() {
             @Override
             public void run() {
 
@@ -436,23 +447,24 @@ public class PurchaseOrder {
                         @Override
                         public void run(EntityManager em) throws Throwable {
 
-                            PurchaseOrder po = em.merge(PurchaseOrder.this);
+                            PurchaseOrder po = em.find(PurchaseOrder.class, getId());
 
                             boolean somethingHappened = false;
-                            if (po.isPriceUpdatePending()) {
+                            if (po.getPriceUpdateRqTime() != null) {
                                 po.updateCharges(em);
                                 po.setPriceSignature(createPriceSignature());
-                                po.setPriceUpdatePending(false);
+                                po.setPriceUpdateRqTime(null);
                                 somethingHappened = true;
                             }
 
-                            if (po.isUpdatePending()) {
+                            if (po.getUpdateRqTime() != null) {
                                 po.summarize(em);
 
                                 po.markServicesForUpdate();
 
                                 po.setSignature(po.createSignature());
-                                po.setUpdatePending(false);
+                                po.setServicesUpdateSignature(po.createServicesUpdateSignature());
+                                po.setUpdateRqTime(null);
 
                                 somethingHappened = true;
                             }
@@ -482,10 +494,16 @@ public class PurchaseOrder {
     private void updateStatusFromTasks(EntityManager em) {
         if (sendingTasks.size() > 0) {
             SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
-            if (TaskStatus.FINISHED.equals(t.getStatus())) {
-                if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
-                setSentTime(t.getFinished());
-                setSent(true);
+            if (t.getSignature() != null && t.getSignature().equals(t.createSignature())) {
+                if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
+                    if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
+                    setSentTime(t.getFinished());
+                    setSent(true);
+                }
+            } else {
+                setStatus(PurchaseOrderStatus.PENDING);
+                setSent(false);
+                setSentTime(null);
             }
         }
     }

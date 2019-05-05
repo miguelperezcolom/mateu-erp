@@ -4,11 +4,12 @@ import com.google.common.base.Strings;
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Circuit;
-import io.mateu.erp.model.product.tour.TourShift;
+import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
@@ -32,14 +33,18 @@ public class CircuitBooking extends TourBooking {
 
     @ManyToOne
     @NotNull
-    @Position(13)
+    @Position(18)
     private Circuit circuit;
 
 
     @ManyToOne
     @NotNull
-    @Position(14)
+    @Position(19)
     private Variant variant;
+
+
+
+
 
     public DataProvider getVariantDataProvider() {
         return new ListDataProvider(circuit != null?circuit.getVariants():new ArrayList());
@@ -70,7 +75,12 @@ public class CircuitBooking extends TourBooking {
     }
 
     @Override
-    public void priceServices(EntityManager em) {
+    protected ProductLine getEffectiveProductLine() {
+        return getCircuit().getProductLine();
+    }
+
+    @Override
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
         Map<io.mateu.erp.model.product.tour.Contract, Double> prices = new HashMap<>();
         Accessor.get(em).getTourContracts().stream().filter(c ->
                 ContractType.SALE.equals(c.getType())

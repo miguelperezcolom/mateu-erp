@@ -1,6 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.parts.FreeTextBooking;
@@ -291,8 +292,8 @@ public abstract class Invoice {
         if (getDueDate() != null) xml.setAttribute("dueDate", getDueDate().format(df));
 
         if (this instanceof IssuedInvoice) {
-            if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
-            if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
+            if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+            if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", "file:" + AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
         }
 
 
@@ -450,10 +451,16 @@ public abstract class Invoice {
 
     @Action(order = 2, icon = VaadinIcons.FILE)
     public URL pdf() throws Throwable {
-        return createPdf(Lists.newArrayList(this));
+        return createPdf(Sets.newHashSet(this));
     }
 
-    public static URL createPdf(List<? extends Invoice> invoices) throws Throwable {
+    @Action(order = 2, icon = VaadinIcons.FILE)
+    public static URL pdf(Set<Invoice> selection) throws Throwable {
+        return createPdf(selection);
+    }
+
+
+    public static URL createPdf(Collection<? extends Invoice> invoices) throws Throwable {
         URL[] url = new URL[1];
 
         Helper.transact(new JPATransaction() {
@@ -481,7 +488,7 @@ public abstract class Invoice {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
-                        fileOut.write(Helper.fop(new StreamSource(new StringReader(invoices.get(0).getXslfo(em))), new StreamSource(new StringReader(sxml))));
+                        fileOut.write(Helper.fop(new StreamSource(new StringReader(invoices.iterator().next().getXslfo(em))), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 
                         String baseUrl = System.getProperty("tmpurl");

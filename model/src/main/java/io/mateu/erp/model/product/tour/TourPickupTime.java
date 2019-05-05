@@ -19,7 +19,7 @@ public class TourPickupTime {
 
     @ManyToOne
     @NotNull
-    private TourShift shift;
+    private ExcursionShift shift;
 
     @ManyToOne
     @NotNull

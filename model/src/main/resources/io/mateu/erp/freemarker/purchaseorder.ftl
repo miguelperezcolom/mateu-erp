@@ -58,6 +58,8 @@
                     <th>Ref.</th><td>${s.po!}</td>
                 </tr><tr>
                 <th>Status</th><td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
+            </tr><tr>
+                <th>Hotel</th><td>${s.hotel!}</td>
             </tr></table>
 
         </td>
@@ -68,8 +70,6 @@
                 <th>Agency</th><td>${s.agency!}</td>
             </tr><tr>
                 <th>Lead name</th><td>${s.leadName!} / ${s.agencyReference!}</td>
-            </tr><tr>
-                <th>Comments</th><td>${s.comments!}</td>
             </tr></table>
 
 
@@ -85,6 +85,19 @@
                         </#if>
 
 </table>
+
+                        <#if s.comments??>
+                    <br/>
+                        <b>Comments:</b>
+                        <pre>${s.comments}</pre>
+                        </#if>
+
+
+                                                <#if s.confirmationUrl??>
+                    <br/>
+
+                        <a href="${s.confirmationUrl}">Please confirm this service</a>
+                        </#if>
 
 <hr/>
                     </#list>
@@ -151,6 +164,12 @@
     </tr>
 </table>
 
+        <#if s.confirmationUrl??>
+                    <br/>
+
+                        <a href="${s.confirmationUrl}">Please confirm this service</a>
+        </#if>
+
 <hr/>
     </#list>
 
@@ -192,6 +211,13 @@
     </#list>
 </table>
 
+    <#if s.confirmationUrl??>
+                    <br/>
+
+                        <a href="${s.confirmationUrl}">Please confirm this service</a>
+    </#if>
+
+
 </#if>
 
 
@@ -221,7 +247,20 @@
 </#list>
 </table>
 
+                    <#if s.confirmationUrl??>
+                    <br/>
+
+                        <a href="${s.confirmationUrl}">Please confirm this service</a>
+                    </#if>
+
                 </#if>
+
+
+
+
+
+
+
 
 
     <p>Thanks and best regards,</p>

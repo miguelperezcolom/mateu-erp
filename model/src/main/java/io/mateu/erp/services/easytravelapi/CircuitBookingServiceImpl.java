@@ -6,15 +6,12 @@ import com.google.common.io.BaseEncoding;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.CircuitBooking;
-import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
-import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
-import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
@@ -88,7 +85,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                         for (Variant var : e.getVariants().size() > 0?e.getVariants():Lists.newArrayList((Variant) null)) {
                             b.setVariant(var);
-                            b.priceServices(em);
+                            b.priceServices(em, new ArrayList<>());
 
                             if (min == 0 || min > b.getTotalValue()) min = Helper.roundEuros(b.getTotalValue());
 
@@ -210,7 +207,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                 e.getVariants().forEach(v -> {
 
                     b.setVariant(v);
-                    b.priceServices(em);
+                    b.priceServices(em, new ArrayList<>());
 
                     ActivityVariant av;
                     rs.getVariants().add(av = new ActivityVariant());
@@ -277,7 +274,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
             b.setChildren(children);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
-            b.priceServices(em);
+            b.priceServices(em, new ArrayList<>());
 
             rs.setAvailable(b.getTotalValue() > 0);
             rs.setKey(getKey(token, "" + e.getId(), date, language, adults, children, variant));
@@ -379,7 +376,6 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                 }
 
-                b.createCharges(em);
                 b.summarize(em);
 
                 if (true) {

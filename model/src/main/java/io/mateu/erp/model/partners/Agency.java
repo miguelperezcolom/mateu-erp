@@ -75,14 +75,17 @@ public class Agency {
 
     @ListColumn
     @KPI
+    @Money
     private double bookings;
 
     @ListColumn
     @KPI
+    @Money
     private double invoiced;
 
     @ListColumn
     @KPI
+    @Money
     private double balance;
 
     // ... hasta aquí
@@ -115,7 +118,6 @@ public class Agency {
     private boolean exportableToinvoicingApp;
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;
-    private boolean oneLinePerBooking;
 
 
 
@@ -199,7 +201,7 @@ public class Agency {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof Agency && id == ((Agency) obj).getId());
+        return this == obj || (id != 0 && obj != null && obj instanceof Agency && id == ((Agency) obj).getId());
     }
 
 }

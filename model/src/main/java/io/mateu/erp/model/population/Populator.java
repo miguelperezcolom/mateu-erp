@@ -32,11 +32,8 @@ import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.MDD;
-import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.Permission;
-import io.mateu.mdd.core.model.authentication.USER_STATUS;
+import io.mateu.mdd.core.model.authentication.*;
 import io.mateu.mdd.core.model.common.Resource;
-import io.mateu.mdd.core.model.config.AppConfig;
 import io.mateu.mdd.core.model.config.TemplateUseCase;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.model.util.Constants;
@@ -67,6 +64,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
     public static Resort pmi;
     public static TransferPoint apt;
     public static TransferPoint hotelEnAlcudia;
+    public static TransferPoint hotelEnAlcudia2;
     public static Hotel hotel;
     public static Excursion excursion;
     public static Account banco;
@@ -415,8 +413,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             excursion.setName("Excursión Isla Saona");
             excursion.setActive(true);
             excursion.setDuration(TourDuration.WHOLEDAY);
-            TourShift s;
-            excursion.getShifts().add(s = new TourShift());
+            ExcursionShift s;
+            excursion.getShifts().add(s = new ExcursionShift());
             s.setTour(excursion);
             s.setName("Turno único");
             s.setWeekdays(new boolean[] {true, true, true, true, true, true, true});
@@ -616,24 +614,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 em.persist(eur);
             }
 
-            {
-                usd = new Currency();
-                usd.setIsoCode("USD");
-                usd.setIsoNumericCode(117);
-                usd.setName("US dollar");
-                usd.setExchangeRateToNucs(0.875);
-                em.persist(usd);
-            }
-
-            {
-                gbp = new Currency();
-                gbp.setIsoCode("GBP");
-                gbp.setIsoNumericCode(875);
-                gbp.setName("GB pound");
-                gbp.setExchangeRateToNucs(1.423);
-                em.persist(gbp);
-            }
-
             io.mateu.erp.model.config.AppConfig c = (io.mateu.erp.model.config.AppConfig) appConfigClass.newInstance();
             c.setId(1);
 
@@ -644,6 +624,8 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setXslfoForWorld(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/world.xsl"), Charsets.UTF_8));
             c.setXslfoForList(Resources.toString(Resources.getResource(Populator.class, "/xsl/listing.xsl"), Charsets.UTF_8));
             c.setXslfoForPOSSettlement(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/liquidacion_pos.xsl"), Charsets.UTF_8));
+            c.setXslfoForEventManifest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/event_manifest.xsl"), Charsets.UTF_8));
+            c.setXslfoForEventReport(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/event_report.xsl"), Charsets.UTF_8));
             c.setXslfoForQuotationRequest(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/grupo.xsl"), Charsets.UTF_8));
             c.setXslfoForIssuedInvoice(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
             c.setXslfoForPurchaseOrder(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/please_book.xsl"), Charsets.UTF_8));
@@ -736,7 +718,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(USER_ADMIN);
                 u.setName("Admin");
                 //u.setPassword(Helper.md5("1"));
@@ -754,7 +736,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(Constants.SYSTEM_USER_LOGIN);
                 u.setName("System");
                 //u.setPassword(Helper.md5("1"));
@@ -772,7 +754,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
             {
                 // create user admin
-                ERPUser u = new ERPUser();
+                User u = new AdminUser();
                 u.setLogin(Constants.IMPORTING_USER_LOGIN);
                 u.setName("Importing User");
                 //u.setPassword(Helper.md5("1"));
@@ -838,7 +820,26 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
         try {
             Helper.transact(em -> {
 
-                Currency eur = em.find(Currency.class, "EUR");
+                eur = em.find(Currency.class, "EUR");
+
+                {
+                    usd = new Currency();
+                    usd.setIsoCode("USD");
+                    usd.setIsoNumericCode(117);
+                    usd.setName("US dollar");
+                    usd.setExchangeRateToNucs(0.875);
+                    em.persist(usd);
+                }
+
+                {
+                    gbp = new Currency();
+                    gbp.setIsoCode("GBP");
+                    gbp.setIsoNumericCode(875);
+                    gbp.setName("GB pound");
+                    gbp.setExchangeRateToNucs(1.423);
+                    em.persist(gbp);
+                }
+
 
                 banco = new Account();
                 banco.setCurrency(eur);
@@ -966,6 +967,12 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 hotelEnAlcudia.setOffice(office);
                 em.persist(hotelEnAlcudia);
 
+                resort.getTransferPoints().add(hotelEnAlcudia2 = new TransferPoint());
+                hotelEnAlcudia2.setResort(alcudia);
+                hotelEnAlcudia2.setName("Hotel Port d'Alcudia");
+                hotelEnAlcudia2.setType(TransferPointType.HOTEL);
+                hotelEnAlcudia2.setOffice(office);
+                em.persist(hotelEnAlcudia2);
 
                 RoomType r = new RoomType();
                 r.setCode("DBL");

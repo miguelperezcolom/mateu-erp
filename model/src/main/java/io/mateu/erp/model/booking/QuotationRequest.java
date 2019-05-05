@@ -45,6 +45,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 @Entity
 @Getter
 @Setter
@@ -72,10 +74,10 @@ public class QuotationRequest {
     @ManyToOne@NotNull
     private PointOfSale pos;
 
-    @ListColumn@KPI
+    @ListColumn@KPI@ColumnWidth(70)
     private boolean active = true;
 
-    @ListColumn@KPI
+    @ListColumn@KPI@ColumnWidth(95)
     private boolean confirmed;
 
     @ListColumn
@@ -86,22 +88,27 @@ public class QuotationRequest {
 
     @NotNull
     @ListColumn
+    @ColumnWidth(90)
     private Currency currency;
 
     @KPI
     @ListColumn
+    @Money
     private double total;
 
     @KPI
     @ListColumn
+    @Money
     private double totalCost;
 
     @KPI
     @ListColumn
+    @Money
     private double totalMarkup;
 
     @KPI
     @ListColumn
+    @Money
     private double balance;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
@@ -191,7 +198,7 @@ public class QuotationRequest {
     private LocalDate date;
 
     @ListColumn
-    private LocalDate expiryDate;
+    private LocalDate optionDate;
 
     @TextArea
     private String text;
@@ -407,6 +414,11 @@ public class QuotationRequest {
         });
 
     }
+    @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
+    public BookingMap map() {
+        return new BookingMap(this);
+    }
+
 
     @Action(icon = VaadinIcons.FILE, order = 50)
     public URL proforma(EntityManager em) throws Exception {
@@ -500,14 +512,14 @@ public class QuotationRequest {
         if (title != null) xml.setAttribute("title", title);
         if (date != null) xml.setAttribute("date", date.format(DateTimeFormatter.ISO_DATE));
         else if (audit != null && audit.getModified() != null) xml.setAttribute("date", audit.getModified().format(DateTimeFormatter.ISO_DATE));
-        if (expiryDate != null) xml.setAttribute("expiryDate", expiryDate.format(DateTimeFormatter.ISO_DATE));
+        if (optionDate != null) xml.setAttribute("optionDate", optionDate.format(DateTimeFormatter.ISO_DATE));
         if (text != null) xml.setAttribute("text", text);
 
         xml.setAttribute("total", nf.format(total));
         xml.setAttribute("paid", nf.format(Helper.roundEuros(total + balance)));
         xml.setAttribute("pending", nf.format(Helper.roundEuros(-1d * balance)));
 
-        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
 
 
         if (getAgency().getCompany().getFinancialAgent() != null) {
@@ -603,8 +615,8 @@ public class QuotationRequest {
         if (getDueDate() != null) xml.setAttribute("dueDate", getDueDate().format(df));
         */
 
-        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
-        if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getLogo() != null) xml.setAttribute("urllogo", "file:" + AppConfig.get(em).getLogo().toFileLocator().getTmpPath());
+        if (AppConfig.get(em).getInvoiceWatermark() != null) xml.setAttribute("watermark", "file:" + AppConfig.get(em).getInvoiceWatermark().toFileLocator().getTmpPath());
 
 
         if (getAgency().getCompany().getFinancialAgent() != null) {
@@ -751,6 +763,8 @@ public class QuotationRequest {
 
     private void build(EntityManager em) {
 
+        DecimalFormat nf = new DecimalFormat("##,###,###,###,##0.00");
+
         if (getFile() == null) {
 
             AppConfig c = AppConfig.get(em);
@@ -785,18 +799,72 @@ public class QuotationRequest {
                 b.setTelephone(getTelephone());
 
                 b.setHotel(qrl.getHotel());
-                HotelBookingLine hbl;
-                b.getLines().add(hbl = new HotelBookingLine());
-                hbl.setBooking(b);
-                hbl.setRoom(qrl.getRoom());
-                hbl.setBoard(qrl.getBoard());
-                hbl.setStart(qrl.getStart());
-                hbl.setEnd(qrl.getEnd());
-                hbl.setRooms(qrl.getNumberOfRooms());
-                hbl.setActive(qrl.isActive());
-                hbl.setAdultsPerRoom(qrl.getAdultsPerRoom());
-                hbl.setChildrenPerRoom(qrl.getChildrenPerRoom());
-                hbl.setAges(qrl.getAges());
+
+                String s = "";
+
+                int pos = 1;
+                for (QuotationRequestHotelLine hl : qrl.getLines()) {
+                    int n = hl.getStart() != null && hl.getEnd() != null?(int) (DAYS.between(hl.getStart(), hl.getEnd()) -1):0;
+
+                    HotelBookingLine hbl;
+                    b.getLines().add(hbl = new HotelBookingLine());
+                    hbl.setBooking(b);
+                    hbl.setRoom(hl.getRoom());
+                    hbl.setBoard(hl.getBoard());
+                    hbl.setStart(hl.getStart());
+                    hbl.setEnd(hl.getEnd());
+                    hbl.setRooms(hl.getNumberOfRooms());
+                    hbl.setActive(hl.isActive());
+                    hbl.setAdultsPerRoom(hl.getAdultsPerRoom());
+                    hbl.setChildrenPerRoom(hl.getChildrenPerRoom());
+                    hbl.setAges(hl.getAges());
+
+                    if (!"".equals(s)) s += "\n";
+                    s += "Line " + pos++ + ": ";
+                    if (hl.isCostOverrided()) {
+                        String x = "";
+                        if (hl.getCostPerRoom() != 0) {
+                            if (!"".equals(x)) x += ", ";
+                            x += hl.getCostPerRoom() + " per room";
+                        }
+                        if (hl.getCostPerAdult() != 0) {
+                            if (!"".equals(x)) x += ", ";
+                            x += hl.getCostPerAdult() + " per adult";
+                        }
+                        if (hl.getCostPerChild() != 0) {
+                            if (!"".equals(x)) x += ", ";
+                            x += hl.getCostPerChild() + " per child";
+                        }
+                        x += ". Nights: " + n + ". Total: " + nf.format(hl.getTotalCost()) + "";
+                        s += x;
+                    } else {
+                        s += "Prices as per contract";
+                    }
+
+                }
+
+                if (qrl.getAdultTaxPerNight() != 0) {
+                    if (!"".equals(s)) s += "\n";
+                    s += nf.format(qrl.getAdultTaxPerNight()) + " per adult tax";
+                }
+                if (qrl.getChildTaxPerNight() != 0) {
+                    if (!"".equals(s)) s += "\n";
+                    s += nf.format(qrl.getChildTaxPerNight()) + " per child tax";
+                }
+                if (qrl.getTotalTax() != 0) {
+                    if (!"".equals(s)) s += "\n";
+                    s += "Total TAX: " + nf.format(qrl.getAdultTaxPerNight());
+                    if (!"".equals(s)) s += "\n";
+                    s += "TOTAL COST BEFORE TAX: " + nf.format(Helper.roundEuros(qrl.getTotalCost() - qrl.getTotalTax()));
+                }
+
+                if (!"".equals(s)) s += "\n";
+                s += "TOTAL COST: " + nf.format(qrl.getTotalCost());
+
+                b.setCommentsForProvider(s);
+
+                b.setSpecialRequests(qrl.getSpecialRequests());
+
                 em.persist(b);
             }
             for (QuotationRequestTransfer qrl : getTransfers()) {
