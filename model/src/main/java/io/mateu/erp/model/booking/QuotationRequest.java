@@ -81,6 +81,9 @@ public class QuotationRequest {
     @ListColumn
     private String title;
 
+    @NotNull@ManyToOne
+    private Activity activity;
+
     @NotNull
     @ListColumn
     private Currency currency;
