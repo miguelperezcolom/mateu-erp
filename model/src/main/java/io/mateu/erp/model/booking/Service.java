@@ -278,6 +278,8 @@ public abstract class Service {
     @Output
     private LocalDateTime delivered;
 
+    private String commentsForDelivering;
+
     @Output
     private String deliveringComments;
 
