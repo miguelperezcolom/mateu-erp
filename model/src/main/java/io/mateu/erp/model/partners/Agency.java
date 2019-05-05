@@ -118,7 +118,6 @@ public class Agency {
     private boolean exportableToinvoicingApp;
     private String idInInvoicingApp;
     private boolean shuttleTransfersInOwnInvoice;
-    private boolean oneLinePerBooking;
 
 
 

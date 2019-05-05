@@ -303,7 +303,7 @@ public class TransferService extends Service {
             m.put("transferType", getTransferType());
             m.put("preferredVehicle", "" + getPreferredVehicle());
             m.put("preferredProvider", "" + getPreferredProvider());
-            m.put("pickupTime", getPickupTime());
+            if (!TransferType.SHUTTLE.equals(getTransferType())) m.put("pickupTime", getPickupTime());
             m.put("opsComment", "" + getOperationsComment());
             m.put("comment", "" + getBooking().getSpecialRequests());
             //m.put("held", "" + isHeld());
@@ -499,6 +499,10 @@ public class TransferService extends Service {
     }
 
     public Map<String,Object> getData() {
+        return getData(false);
+    }
+
+    public Map<String,Object> getData(boolean forcePickupTime) {
         Map<String, Object> d = super.getData();
 
         d.put("id", getId());
@@ -528,7 +532,7 @@ public class TransferService extends Service {
             d.put("effectiveDropoffResort", "" + getEffectiveDropoff().getResort().getName());
         }
         d.put("providers", getProviders());
-        if (!TransferType.SHUTTLE.equals(getTransferType())) {
+        if (forcePickupTime || !TransferType.SHUTTLE.equals(getTransferType())) {
             d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
             d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
             d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");
@@ -611,10 +615,18 @@ public class TransferService extends Service {
     }
 
     @Action("Inform pickup time")
-    public void informPickupTime(EntityManager em) throws Throwable {
+    public void informPickupTime(EntityManager em) {
         if (getPickupTime() != null) {
-            sendSMS(em);
-            sendEmailToHotel(em);
+            try {
+                sendSMS(em);
+            } catch (Throwable throwable) {
+                System.out.println("" + throwable.getMessage());
+            }
+            try {
+                sendEmailToHotel(em);
+            } catch (Throwable throwable) {
+                System.out.println("" + throwable.getMessage());
+            }
         }
     }
 
@@ -628,7 +640,7 @@ public class TransferService extends Service {
                 t.setOffice(getOffice());
                 t.setAudit(new Audit(MDD.getCurrentUser()));
                 t.setCc(getOffice().getEmailCC());
-                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData(true)));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
                 t.setTo(getPickup().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
@@ -644,7 +656,7 @@ public class TransferService extends Service {
                 t.setOffice(getOffice());
                 t.setAudit(new Audit(MDD.getCurrentUser()));
                 t.setCc(getOffice().getEmailCC());
-                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData(true)));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
                 t.setTo(getBooking().getEmail());
                 //t.run(em, em.find(User.class, user.getLogin()));
@@ -669,7 +681,7 @@ public class TransferService extends Service {
 
             }
             if (tel > 0 && AppConfig.get(em).isClickatellEnabled() && !Strings.isNullOrEmpty(AppConfig.get(em).getClickatellApiKey())) {
-                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData()));
+                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupSmsTemplate(), getData(true)));
                 getTasks().add(t);
                 t.setAudit(new Audit(MDD.getCurrentUser()));
                 //t.run(em, em.find(User.class, user.getLogin()));
@@ -694,7 +706,7 @@ public class TransferService extends Service {
                 t.setOffice(getOffice());
                 t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));
                 t.setCc(getOffice().getEmailCC());
-                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                t.setMessage(Helper.freemark(AppConfig.get(em).getPickupEmailTemplate(), getData(true)));
                 t.setSubject("TRANSFER PICKUP INFORMATION FOR " + this.getBooking().getLeadName());
                 t.setTo(email);
                 //t.run(em, em.find(User.class, user.getLogin()));
@@ -719,7 +731,7 @@ public class TransferService extends Service {
 
             }
             if (tel > 0 && !Strings.isNullOrEmpty(appconfig.getClickatellApiKey())) {
-                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData()));
+                SMSTask t = new SMSTask(tel, Helper.freemark((("" + tel).startsWith("34"))?AppConfig.get(em).getPickupSmsTemplateEs():AppConfig.get(em).getPickupEmailTemplate(), getData(true)));
                 getTasks().add(t);
                 t.getServices().add(this);
                 t.setAudit(new Audit(em.find(ERPUser.class, user.getLogin())));

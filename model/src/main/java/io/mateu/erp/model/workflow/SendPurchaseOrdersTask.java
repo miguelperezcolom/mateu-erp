@@ -93,7 +93,7 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
                     String u = (MDD.getApp() != null?MDD.getApp().getBaseUrl():"");
                     if (!u.endsWith("/")) u += "/";
                     if (u.endsWith("/app/")) u = u.replaceAll("\\/app\\/", "/");
-                    u +=  "poconfirmation/" + getId();
+                    u +=  "poconfirmation/" + Base64.getEncoder().encodeToString(("" + getId()).getBytes());
                     ds.put("confirmationUrl", u);
                 }
 

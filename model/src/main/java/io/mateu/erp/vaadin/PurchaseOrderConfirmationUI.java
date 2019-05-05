@@ -20,6 +20,7 @@ import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.util.Helper;
 
 import java.net.URL;
+import java.util.Base64;
 import java.util.Map;
 
 @Theme("mytheme")
@@ -64,7 +65,7 @@ public class PurchaseOrderConfirmationUI extends UI {
 
                 String[] ts = uri.split("/");
 
-                if (ts.length > 1 && "poconfirmation".equalsIgnoreCase(ts[ts.length - 2])) poId = Long.parseLong(ts[ts.length - 1]);
+                if (ts.length > 1 && "poconfirmation".equalsIgnoreCase(ts[ts.length - 2])) poId = Long.parseLong(new String(Base64.getDecoder().decode(ts[ts.length - 1])));
 
             }
 

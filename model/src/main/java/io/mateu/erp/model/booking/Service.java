@@ -173,6 +173,7 @@ public abstract class Service {
 
     public void setAlreadyPurchased(boolean alreadyPurchased) {
         this.alreadyPurchased = alreadyPurchased;
+        setSignature(createSignature());
         if (alreadyPurchased) setProcessingStatus(ProcessingStatus.CONFIRMED);
     }
 

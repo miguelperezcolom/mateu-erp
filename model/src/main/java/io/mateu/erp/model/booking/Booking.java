@@ -1328,8 +1328,7 @@ public abstract class Booking {
                     if (end == null || end.isBefore(x.getFinish())) end = x.getFinish();
                 }
 
-                if (agency.isOneLinePerBooking()) x.setServiceDateForInvoicing(end);
-                else x.setServiceDateForInvoicing(x.getStart());
+                x.setServiceDateForInvoicing(x.getStart());
                 if (!x.isAvailable()) allAvailable = false;
             }
             setAvailable(allAvailable);

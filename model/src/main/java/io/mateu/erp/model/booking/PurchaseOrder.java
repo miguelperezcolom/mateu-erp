@@ -277,7 +277,7 @@ public class PurchaseOrder {
             String u = (MDD.getApp() != null?MDD.getApp().getBaseUrl():"");
             if (!u.endsWith("/")) u += "/";
             if (u.endsWith("/app/")) u = u.replaceAll("\\/app\\/", "/");
-            u +=  "poconfirmation/" + getId();
+            u +=  "poconfirmation/" + Base64.getEncoder().encodeToString(("" + getId()).getBytes());
             d.put("confirmationUrl", u);
         }
         d.put("total", getTotal());

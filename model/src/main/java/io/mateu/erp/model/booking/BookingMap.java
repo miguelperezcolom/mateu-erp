@@ -7,6 +7,7 @@ import com.vaadin.ui.HorizontalLayout;
 import io.mateu.erp.model.invoicing.Invoice;
 import io.mateu.erp.model.workflow.AbstractTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.vaadinport.vaadin.MDDUI;
 
 import java.util.HashMap;
@@ -81,17 +82,7 @@ public class BookingMap extends HorizontalLayout {
             Object p = reverseMap.get(n);
 
             if (p != null) {
-                if (p instanceof QuotationRequest) {
-                    MDDUI.get().getNavegador().goTo("private/sales/booking/groups/" + ((QuotationRequest) p).getId());
-                } else if (p instanceof File) {
-                    MDDUI.get().getNavegador().goTo("private/sales/booking/files/" + ((File) p).getId());
-                } else if (p instanceof Booking) {
-                    MDDUI.get().getNavegador().goTo("private/sales/booking/bookings/" + ((Booking) p).getId());
-                } else if (p instanceof Service) {
-                } else if (p instanceof PurchaseOrder) {
-                } else if (p instanceof AbstractTask) {
-                }
-
+                MDD.edit(p);
             } else {
                 System.out.println("no reverse for " + n.getId());
             }

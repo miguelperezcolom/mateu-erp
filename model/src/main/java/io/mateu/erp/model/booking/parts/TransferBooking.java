@@ -338,7 +338,9 @@ public class TransferBooking extends Booking {
                         setPriceFromPriceLine(p);
 
                         double valor = p.getPrice();
-                        if (PricePer.PAX.equals(p.getPricePer())) valor = valor * (getAdults() + getChildren());
+                        int pax = (getAdults() + getChildren());
+                        if (c.getMinPaxPerBooking() > pax) pax = c.getMinPaxPerBooking();
+                        if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
 
                         if (getArrivalFlightTime() != null && getDepartureFlightTime() != null) valor *= 2;
                         else if (getArrivalFlightTime() == null && getDepartureFlightTime() == null) valor = 0;
