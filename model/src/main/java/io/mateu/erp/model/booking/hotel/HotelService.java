@@ -523,6 +523,9 @@ public class HotelService extends Service {
                     if (p != null) break;
                 }
             }
+            if (p == null) {
+                p = hotel.getProvidedBy();
+            }
 
             return p;
         }

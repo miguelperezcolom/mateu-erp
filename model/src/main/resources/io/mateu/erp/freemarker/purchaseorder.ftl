@@ -180,6 +180,7 @@
 <#if generics??>
 
 <h2>Other services</h2>
+<#list generics as s>
 <table style="border-collapse:collapse;" border="1" cellpadding="5">
     <thead style="background-color: lightsteelblue;">
     <th>Ref.</th>
@@ -194,7 +195,6 @@
     <th>Lead name</th>
     <th>Comments</th>
     </thead>
-<#list generics as s>
   <tr>
       <td>${s.po!}</td>
       <td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
@@ -208,7 +208,6 @@
       <td>${s.leadName!} / ${s.agencyReference!}</td>
       <td>${s.comments!}</td>
   </tr>
-    </#list>
 </table>
 
     <#if s.confirmationUrl??>
@@ -217,6 +216,9 @@
                         <a href="${s.confirmationUrl}">Please confirm this service</a>
     </#if>
 
+    </#list>
+
+
 
 </#if>
 
@@ -224,6 +226,7 @@
                 <#if freetexts??>
 
 <h2>Other services</h2>
+<#list freetexts as s>
 <table style="border-collapse:collapse;" border="1" cellpadding="5">
     <thead style="background-color: lightsteelblue;">
     <th>Ref.</th>
@@ -234,7 +237,6 @@
     <th>Lead name</th>
     <th>Comments</th>
     </thead>
-<#list freetexts as s>
   <tr>
       <td>${s.po!}</td>
       <td <#if s.status == 'CANCELLED'> style="background-color: indianred;"</#if><#if s.status == 'ACTIVE'> style="background-color: lightgreen;"</#if>>${s.status!}</td>
@@ -244,7 +246,6 @@
       <td>${s.leadName!} / ${s.agencyReference!}</td>
       <td>${s.comments!}</td>
   </tr>
-</#list>
 </table>
 
                     <#if s.confirmationUrl??>
@@ -253,6 +254,7 @@
                         <a href="${s.confirmationUrl}">Please confirm this service</a>
                     </#if>
 
+</#list>
                 </#if>
 
 

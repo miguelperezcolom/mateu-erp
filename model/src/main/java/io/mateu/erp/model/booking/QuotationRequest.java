@@ -282,7 +282,7 @@ public class QuotationRequest {
         for (QuotationRequestPaymentAllocation a : payments) {
             p += a.getValue();
         }
-        setBalance(Helper.roundEuros(p - t));
+        setBalance(Helper.roundEuros(p - (active?t:0)));
     }
 
     @Action(saveAfter = true, order = 1, confirmationMessage = "Are you sure you want to cancel this quotation?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
@@ -291,7 +291,7 @@ public class QuotationRequest {
     }
 
     public boolean isCancelVisible() {
-        return isActive() && !isConfirmed();
+        return isActive();
     }
 
     @Action(saveAfter = true, order = 2, confirmationMessage = "Are you sure you want to confirm this quotation?", style = ValoTheme.BUTTON_FRIENDLY, icon = VaadinIcons.CHECK)
@@ -734,7 +734,7 @@ public class QuotationRequest {
 
     @PrePersist@PreUpdate
     public void pre() {
-        if (alreadyConfirmed) throw new Error("This quotation request has already been related to a File. It can not be modified");
+        if (alreadyConfirmed && active) throw new Error("This quotation request has already been related to a File. It can not be modified");
     }
 
     @PostUpdate@PostPersist
@@ -751,6 +751,8 @@ public class QuotationRequest {
 
                         if (r.isConfirmed()) {
                             r.build(em);
+                        } else {
+                            if (getFile() != null && getFile().isActive()) getFile().cancel(em);
                         }
 
                     });

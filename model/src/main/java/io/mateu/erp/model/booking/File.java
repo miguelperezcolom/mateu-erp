@@ -170,6 +170,7 @@ public class File {
     @Action(order = 6, confirmationMessage = "Are you sure you want to cancel this file?", style = ValoTheme.BUTTON_DANGER, icon = VaadinIcons.CLOSE)
     @NotWhenCreating
     public void cancel(EntityManager em) {
+        setActive(false);
         for (Booking s : getBookings()) {
             s.cancel(em);
         }
