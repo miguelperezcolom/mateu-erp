@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.tickets;
 
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.mdd.core.annotations.Action;
@@ -12,6 +13,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.Set;
@@ -49,6 +51,17 @@ public class TicketBook {
 
     @Output
     private boolean ticketsGenerated;
+
+    @ManyToOne
+    private PointOfSale deliveredTo;
+
+    public void setDeliveredTo(PointOfSale deliveredTo) {
+        if (this.deliveredTo == null || !this.deliveredTo.equals(deliveredTo)) delivered = LocalDateTime.now();
+        this.deliveredTo = deliveredTo;
+    }
+
+    @Output
+    private LocalDateTime delivered;
 
 
     @Override

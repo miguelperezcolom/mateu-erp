@@ -4,6 +4,7 @@ import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -65,6 +66,9 @@ public abstract class TransferImportTask {
 
     @ManyToOne
     private PointOfSale pointOfSale;
+
+    @ManyToOne
+    private Tariff tariff;
 
     @ManyToOne
     private BillingConcept billingConcept;

@@ -142,6 +142,8 @@ public class AgentAccessServiceImpl implements AgentAccessService {
             CommissionAgentUser u = em.find(CommissionAgentUser.class, rq.getUserId().toLowerCase().trim());
 
 
+            //rs.setCompanyData(cd);
+
             Currency eur = em.find(Currency.class, "EUR");
 
             for (CartList cartList : rq.getCartList()) {
@@ -152,7 +154,6 @@ public class AgentAccessServiceImpl implements AgentAccessService {
                 cd.setContactEmail("miguelperezcolom@gmail.com");
                 cd.setContactPhone("54646787979");
                 cd.setLegalText("Bla bla bla");
-                cartList.setCompanyData(cd);
 
 
                 File f = null;
@@ -185,15 +186,16 @@ public class AgentAccessServiceImpl implements AgentAccessService {
                     b.setManagedEvent(em.find(ManagedEvent.class, new Long(cart.getId())));
                     b.setExcursion((Excursion) b.getManagedEvent().getTour());
                     b.setVariant(b.getExcursion().getVariants().get(0));
-                    b.setAdults(1);
-                    b.setChildren(0);
+                    b.setPax(1);
 
 
-                    if (!Strings.isNullOrEmpty(cartList.getQrCode())) b.setQrCode(cartList.getQrCode());
+                    if (!Strings.isNullOrEmpty(cart.getQrCode())) b.setQrCode(cart.getQrCode());
+
 
                     //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
                     b.setShift(b.getManagedEvent().getShift());
+                    b.setLanguage(b.getShift().getLanguages().iterator().next());
                     //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
                     //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión
 

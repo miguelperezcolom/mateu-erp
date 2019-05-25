@@ -11,6 +11,7 @@ public class Credenciales {
 
     private String agentId;
     private String hotelId;
+    private String posId;
     private String login;
     private String pass;
     private String lan;
@@ -23,6 +24,7 @@ public class Credenciales {
         setPass((String) d.get("pass"));
         setLan((String) d.get("lan"));
         setHotelId((String) d.get("hotelId"));
+        setPosId((String) d.get("posId"));
     }
 
     public String getAgentId() {
@@ -63,5 +65,13 @@ public class Credenciales {
 
     public void setHotelId(String hotelId) {
         this.hotelId = hotelId;
+    }
+
+    public String getPosId() {
+        return posId;
+    }
+
+    public void setPosId(String posId) {
+        this.posId = posId;
     }
 }

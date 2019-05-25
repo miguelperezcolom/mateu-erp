@@ -244,4 +244,25 @@ public class QuotationRequestExcursion {
 
         return el;
     }
+
+    public QuotationRequestExcursion createDuplicate(QuotationRequest rq) {
+        QuotationRequestExcursion c = new QuotationRequestExcursion();
+        c.setRq(rq);
+        c.setActive(active);
+        c.setAdults(adults);
+        c.setChildren(children);
+        c.setCostOverrided(costOverrided);
+        c.setCostPerAdult(costPerAdult);
+        c.setCostPerChild(costPerChild);
+        c.setCostPerExcursion(costPerExcursion);
+        c.setDate(date);
+        c.setExcursion(excursion);
+        c.setPricePerAdult(pricePerAdult);
+        c.setPricePerChild(pricePerChild);
+        c.setPricePerExcursion(pricePerExcursion);
+        c.setSaleOverrided(saleOverrided);
+        c.setShift(shift);
+        c.setVariant(variant);
+        return c;
+    }
 }

@@ -44,6 +44,9 @@ public class IssuedInvoice extends Invoice {
     @KPI
     private boolean sent;
 
+    @OneToMany(mappedBy = "chargedTo")@Ignored
+    private List<PurchaseCharge> costs = new ArrayList<>();
+
 
     public IssuedInvoice() {
         super();

@@ -110,6 +110,9 @@ public class AppConfig extends io.mateu.mdd.core.model.config.AppConfig {
     @ManyToOne
     private BillingConcept billingConceptForOthers;
 
+    @ManyToOne
+    private BillingConcept billingConceptForLocalTaxes;
+
     @Section("Currency")
     @NotNull
     @ManyToOne

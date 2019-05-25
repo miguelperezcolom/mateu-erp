@@ -132,8 +132,8 @@ public class TestPopulator {
                     AuthToken t = new AuthToken();
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjM0IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiIn0");
                     t.setActive(true);
-                    t.setUser(em.find(ERPUser.class, "admin"));
-                    t.setAgency(em.find(Agency.class, 3l));
+                    //t.setUser(em.find(ERPUser.class, "admin"));
+                    //t.setAgency(em.find(Agency.class, 3l));
                     em.persist(t);
                 }
 
@@ -142,8 +142,8 @@ public class TestPopulator {
                     AuthToken t = new AuthToken();
                     t.setId("eyAiY3JlYXRlZCI6ICJXZWQgTm92IDA4IDEyOjE4OjQ3IENFVCAyMDE3IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhY3RvcklkIjogIjMiLCAiaG90ZWxJZCI6ICIxMiJ9");
                     t.setActive(true);
-                    t.setUser(em.find(ERPUser.class, "admin"));
-                    t.setAgency(em.find(Agency.class, 3l));
+                    //t.setUser(em.find(ERPUser.class, "admin"));
+                    //t.setAgency(em.find(Agency.class, 3l));
                     t.setHotel(em.find(Hotel.class, 12l));
                     em.persist(t);
                 }
@@ -292,7 +292,9 @@ public class TestPopulator {
 
                                 TransferPoint p = new TransferPoint();
                                 p.setName((String) dtp.get("name"));
-                                p.setInstructions("---");
+                                p.setArrivalInstructionsForPrivate(new Literal("--", "--"));
+                                p.setArrivalInstructionsForShuttle(new Literal("--", "--"));
+                                p.setDepartureInstructions(new Literal("--", "--"));
                                 p.setType(TransferPointType.valueOf((String) dtp.get("type")));
                                 l.getTransferPoints().add(p);
                                 p.setResort(l);

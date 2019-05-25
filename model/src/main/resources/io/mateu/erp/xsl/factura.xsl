@@ -2,13 +2,8 @@
 <xsl:stylesheet xmlns:fo="http://www.w3.org/1999/XSL/Format"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output indent="yes"/>
-    <xsl:template match="//invoice">
-        <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
-        <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
-        <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>
 
-
-
+    <xsl:template match="/">
         <fo:root>
             <fo:layout-master-set>
 
@@ -19,6 +14,17 @@
                     <fo:region-after display-align="after"/>
                 </fo:simple-page-master>
             </fo:layout-master-set>
+            <xsl:apply-templates></xsl:apply-templates>
+        </fo:root>
+    </xsl:template>
+
+    <xsl:template match="invoice">
+        <xsl:variable name="moneda"><xsl:value-of select="@moneda"/></xsl:variable>
+        <xsl:variable name="monedacontable"><xsl:value-of select="@monedacontable"/></xsl:variable>
+        <xsl:variable name="exchangerate"><xsl:value-of select="@exchangerate"/></xsl:variable>
+
+
+
             <fo:page-sequence master-reference="dinA4">
 
                 <!-- Header -->
@@ -416,10 +422,9 @@
 
                     </xsl:for-each>
 
-                    <fo:block id="end"></fo:block>
+                    <xsl:if test="position() = count(/invoices/invoice)"><fo:block id="end"></fo:block></xsl:if>
 
                 </fo:flow>
             </fo:page-sequence>
-        </fo:root>
     </xsl:template>
 </xsl:stylesheet>

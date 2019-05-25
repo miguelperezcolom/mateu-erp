@@ -4,21 +4,16 @@ import com.google.common.base.Strings;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
-import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.financials.BillingConcept;
-import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.mdd.*;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.transfer.TransferType;
-import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
-import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
-import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -145,6 +140,64 @@ public abstract class Service {
     private boolean held;
 
 
+    @KPI
+    private int pax;
+
+    @Output
+    private int infants;
+
+    @Output@SameLine
+    private int children;
+
+    @Output@SameLine
+    private int juniors;
+
+    @Output@SameLine
+    private int adults;
+
+    @Output@SameLine
+    private int seniors;
+
+    private int freeInfants;
+
+    @SameLine
+    private int freeChildren;
+
+    @SameLine
+    private int freeJuniors;
+
+    @SameLine
+    private int freeAdults;
+
+    @Output@SameLine
+    private int freeSeniors;
+
+    public void setInfants(int infants) {
+        this.infants = infants;
+        pax = infants + children + juniors + adults + seniors;
+    }
+
+    public void setChildren(int children) {
+        this.children = children;
+        pax = infants + children + juniors + adults + seniors;
+    }
+
+    public void setJuniors(int juniors) {
+        this.juniors = juniors;
+        pax = infants + children + juniors + adults + seniors;
+    }
+
+    public void setAdults(int adults) {
+        this.adults = adults;
+        pax = infants + children + juniors + adults + seniors;
+    }
+
+    public void setSeniors(int seniors) {
+        this.seniors = seniors;
+        pax = infants + children + juniors + adults + seniors;
+    }
+
+
     @Output
     private String specialRequests;
 
@@ -152,7 +205,9 @@ public abstract class Service {
     private String operationsComment;
 
     @TextArea
-    @SameLine
+    private String commentsForProvider;
+
+    @TextArea
     private String privateComment;
 
 
@@ -183,10 +238,18 @@ public abstract class Service {
     @Output
     @ListColumn
     @SearchFilter
-    private String providers;
+    private Provider provider;
 
     @Output
     private LocalDateTime sentToProvider;
+
+    public void setSentToProvider(LocalDateTime sentToProvider) {
+        this.sentToProvider = sentToProvider;
+        if (sentToProvider != null) everSentToProvider = true;
+    }
+
+    @Output
+    private boolean everSentToProvider;
 
     @NotInEditor
     @SearchFilter
@@ -353,6 +416,11 @@ public abstract class Service {
             else if (!"".equals(c)) c += " \n/\n ";
             c += getBooking().getCommentsForProvider();
         }
+        if (!Strings.isNullOrEmpty(getCommentsForProvider())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " \n/\n ";
+            c += getCommentsForProvider();
+        }
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
             else if (!"".equals(c)) c += " \n/\n ";
@@ -389,7 +457,7 @@ public abstract class Service {
         for (Service s : services) {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
-                for (PurchaseOrder po : s.getPurchaseOrders()) if (po.isActive()) {
+                for (PurchaseOrder po : s.getPurchaseOrders()) {
                     po.send(em, MDD.getCurrentUser());
                 }
             }
@@ -398,8 +466,11 @@ public abstract class Service {
     }
 
     @Action(saveBefore = true)
-    public void sendToProvider(EntityManager em, Provider provider, String email, @TextArea String postscript) throws Throwable {
-        
+    public SendToProviderForm sendToProvider() throws Throwable {
+        return new SendToProviderForm(this);
+    }
+
+    public void sendToProvider(EntityManager em, Provider provider, String email, String postscript) throws Throwable {
         setAlreadyPurchased(false);
         if (provider != null) setPreferredProvider(provider);
         try {
@@ -415,9 +486,7 @@ public abstract class Service {
             if (s.isActive() || s.getSentToProvider() != null) {
                 if (provider != null) s.setPreferredProvider(provider);
                 for (PurchaseOrder po : s.getPurchaseOrders())
-                    if (po.isActive()) {
-                        po.send(em, MDD.getCurrentUser());
-                    }
+                    po.send(em, MDD.getCurrentUser());
             }
         }
     }
@@ -437,7 +506,7 @@ public abstract class Service {
 
     public void price(EntityManager em) {
         try {
-            setTotalSale(rate(em, true));
+            setTotalSale(active?rate(em, true):0);
             setSaleValued(true);
         } catch (Throwable e) {
             setTotalCost(0);
@@ -445,7 +514,7 @@ public abstract class Service {
         }
 
         try {
-            setTotalCost(rate(em, false));
+            setTotalCost(active?rate(em, false):0);
             setCostValued(true);
         } catch (Throwable e) {
             setTotalCost(0);
@@ -474,12 +543,11 @@ public abstract class Service {
                 }
             }
         }
-        String ps = "";
+        Provider prov = null;
         for (PurchaseOrder po : getPurchaseOrders()) {
-            if (!"".equals(ps)) ps += ",";
-            ps += po.getProvider().getName();
+            prov = po.getProvider();
         }
-        setProviders(ps);
+        setProvider(prov);
         setSignature(createSignature());
     }
 
@@ -558,7 +626,7 @@ public abstract class Service {
                             }
                             es.setAttribute("dropoff", "" + ((s.getEffectiveDropoff() != null)?s.getEffectiveDropoff().getName():s.getDropoffText()));
                             if (s.getEffectiveDropoff() != null && s.getEffectiveDropoff().getResort().getName() != null) es.setAttribute("dropoffResort", s.getEffectiveDropoff().getResort().getName());
-                            if (s.getProviders() != null) es.setAttribute("providers", s.getProviders());
+                            if (s.getProvider() != null) es.setAttribute("providers", s.getProvider().getName());
                             if (s.getPickupTime() != null) es.setAttribute("pickupTime", s.getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                             es.setAttribute("transferType", "" + s.getTransferType());
                             if (s.getReturnTransfer() != null) {
@@ -730,6 +798,11 @@ public abstract class Service {
             else if (!"".equals(c)) c += "\n/\n";
             c += getBooking().getCommentsForProvider();
         }
+        if (!Strings.isNullOrEmpty(getCommentsForProvider())) {
+            if (c == null) c = "";
+            else if (!"".equals(c)) c += " \n/\n ";
+            c += getCommentsForProvider();
+        }
         if (!Strings.isNullOrEmpty(getOperationsComment())) {
             if (c == null) c = "";
             else if (!"".equals(c)) c += "\n/\n";
@@ -742,6 +815,12 @@ public abstract class Service {
         DateTimeFormatter f = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         d.put("serviceDates", "" + ((getStart() != null)?getStart().format(f):"..."));
         d.put("startddmmyyyy", getStart().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+
+        d.put("infants", infants);
+        d.put("children", children);
+        d.put("juniors", juniors);
+        d.put("adults", adults);
+        d.put("seniors", seniors);
 
         return d;
     }
@@ -778,14 +857,13 @@ public abstract class Service {
     @PrePersist@PreUpdate
     public void pre() {
         if (getSignature() == null || !getSignature().equals(createSignature())) {
-            setUpdateRqTime(LocalDateTime.now());
-            setAlreadyPurchased(false);
             System.out.println("service.signature changed from ");
             System.out.println("" + getSignature());
             System.out.println("to ");
             System.out.println("" + createSignature());
             System.out.println("====================== ");
-
+            setUpdateRqTime(LocalDateTime.now());
+            setAlreadyPurchased(false);
         }
     }
 
@@ -899,7 +977,7 @@ public abstract class Service {
         updateProcessingStatus(em);
         validate(em);
 
-        setVisibleInSummary(isActive() || (getSentToProvider() != null && !ProcessingStatus.CONFIRMED.equals(getProcessingStatus())));
+        setVisibleInSummary(isActive() || (isEverSentToProvider() && !ProcessingStatus.CONFIRMED.equals(getProcessingStatus())));
 
         booking.summarize(em);
 
@@ -957,6 +1035,13 @@ public abstract class Service {
         if (getStart() != null) xml.setAttribute("start", getStart().format(dtf));
         if (getFinish() != null) xml.setAttribute("finish", getFinish().format(dtf));
 
+        xml.setAttribute("infants", "" + infants);
+        xml.setAttribute("children", "" + children);
+        xml.setAttribute("juniors", "" + juniors);
+        xml.setAttribute("adults", "" + adults);
+        xml.setAttribute("seniors", "" + seniors);
+
+
         return xml;
     }
 
@@ -1013,7 +1098,7 @@ public abstract class Service {
     public void rateSale(EntityManager em) {
 
         try {
-            setTotalSale(rate(em, true));
+            setTotalSale(active?rate(em, true):0);
             setSaleValued(true);
         } catch (Throwable e) {
             setTotalCost(0);
@@ -1025,7 +1110,7 @@ public abstract class Service {
     public void rateCost(EntityManager em) {
 
         try {
-            setTotalCost(rate(em, false));
+            setTotalCost(active?rate(em, false):0);
             setCostValued(true);
         } catch (Throwable e) {
             setTotalCost(0);

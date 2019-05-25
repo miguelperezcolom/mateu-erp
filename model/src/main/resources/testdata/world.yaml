@@ -1,0 +1,264 @@
+paises: [
+{
+codigo: ES,
+nombre: Spain,
+destinos: [
+{
+nombre: Majorca,
+oficina: Mallorca,
+aeropuerto: {
+  codigo: PMI,
+  nombre: Son San Joan
+},
+zonas: [{
+    nombre: Palma de Mallorca,
+    hoteles: [
+      Hotel Gran Melia Victoria,
+      Hotel Palas Atenea,
+      Hotel NH Ciutat de Mallorca,
+      Hotel Abelux,
+      Hotel Abelay,
+      Hotel Catalonia Majorica,
+      Hotel Amic Horizonte,
+      Hotel Almudaina,
+      Hotel HM Jaime III,
+      Hotel Es Princep,
+      Hotel Colon Palma,
+      Hotel TRYP Bellver,
+      Hotel Born,
+      Castillo Hotel Son Vida,
+      Art Hotel Palma,
+      Hotel Ca Sa Padrina,
+      Calatrava Boutique Hotel,
+      Hotel Isla de Mallorca,
+      Urban Hostel Palma,
+      Sheraton Mallorca,
+      Hotel AC Ciutat de Palma,
+      Hotel Valparaiso,
+      Aparthotel Palma Suites,
+      Hotel Armadans,
+      Hotel Saratoga,
+      Hotel Palma Bay
+      ]
+      }, {
+    nombre: Cala millor,
+    hoteles: [
+      Apartamentos Rigo,
+      Hotel Tropicana,
+      Apartamentos Fortuna,
+      Aparthotel Garbi,
+      Apartamentos Marina Park,
+      Apartamentos Xaloc,
+      Apartamentos Vives,
+      Hotel Bikini,
+      Hotel Cala Millor Garden,
+      Hotel Hipocampo,
+      Hotel Mar Blau,
+      Apartamentos Midas,
+      Hotel Girasol,
+      Apartamentos Cala Millor Playa
+      ]
+      }, {
+    nombre: Alcudia,
+    hoteles: [
+      Alcudia Petit Hotel,
+      Hotel More,
+      Mariner Club,
+      Apartamentos Los Tamarindos,
+      Hotel Sant Jaume,
+      Apartamentos Carlos V,
+      Villa Alcanada,
+      Agroturismo Son Siurana,
+      Hotel Mac,
+      Hotel Som Far,
+      Hotel HSM President Golf & Spa,
+      Grupotel Los Principes & Spa,
+      Bellevue
+      ]
+      }]
+      }, {
+  nombre: Ibiza,
+  oficina: Ibiza,
+  aeropuerto: {
+    codigo: IBZ,
+    nombre: Ibiza Airport
+  },
+
+    zonas: [{
+    nombre: Ibiza,
+    hoteles: [
+      Ryans La Marina,
+      Hotel Simbad,
+      Ryans Pocket Hostel,
+      Hotel El Puerto,
+      Hotel La Ventana,
+      Hotel Lux Isla,
+      Ibiza Gran Hotel,
+      Hotel Mirador D'Alt Vila,
+      Hotel Pacha,
+      Hotel Tropicana Ibiza Coast
+      ]
+      }, {
+    nombre: San Antonio,
+    hoteles: [
+      Ibiza Rocks Hostal,
+      Hotel Marco Polo II,
+      Apartamentos Central City,
+      Aparthotel Reco Des Sol,
+      O'Brien Historic Hotel,
+      Villa Ca'n Faritzeo,
+      Hotel Tropical,
+      Azuline Hotel Llevant San Antonio,
+      Gran Sol Ibiza,
+      Azuline Hotel Pacific
+      ]
+      }]
+      }, {
+  nombre: Menorca,
+    zonas: [{
+    nombre: Ciutadella,
+    hoteles: [
+      Villa Ses Carpinyetes,
+      Syline Menorca,
+      Villas La Luna,
+      Hotel Geminis,
+      Hotel Balear,
+      Hotel Alfonso III,
+      HYB Sea Club,
+      Hotel Port Ciutadella,
+      Hotel Playa Grande,
+      Villas Sol
+      ]
+      }, {
+    nombre: Mahon,
+    hoteles: [
+      Hotel Catalonia Mirador D'Es Port,
+      Aparthotel HG Cala Llonga,
+      Grupotel Mar De Menorca,
+      Hostal La Isla,
+      Artiem Capri Spa & Wellness,
+      Hostal Jume,
+      Hotel San Miguel
+      ]
+      }]}, {
+  nombre: Tenerife,
+  zonas: [{
+    nombre: Playa De Las Americas,
+    hoteles: [
+      Aparthotel Coral Beach,
+      Gran Oasis Resort,
+      HD Parque Cristobal,
+      Hotel Gala,
+      Hotel Julio Cesar Palace,
+      Hotel Catalonia Oro Negro
+      ]
+      }, {
+    nombre: Santa Cruz De Tenerife,
+    hoteles: [
+      Hotel Adonis Capital,
+      Hotel Adonis Plaza,
+      Hotel Escuela Santa Cruz,
+      Hotel Principe Paz
+      ]
+      }, {
+    nombre: Costa Adeje,
+    hoteles: [
+      Allsun Los Hibiscos,
+      AH Club Atlantis,
+      Apartamentos Flamingo Suites,
+      Apartamentos Lagos De Fanabe,
+      Apartamentos Laguna Park I,
+      Apartamentos Laguna Park II,
+      Belive Experience La Niña,
+      CLC Paradise,
+      Hotel Iberostar Anthelia,
+      Hotel Iberostar Las Dalias,
+      Hotel Guayarmina Princess
+      ]
+      }]
+      }, {
+  nombre: Mainland,
+  aeropuerto: {
+    codigo: MAD,
+    nombre: Adolfo Suarez - Barajas
+  },
+  zonas: [{
+    nombre: Madrid,
+    hoteles: [
+      AC Cuzco,
+      AC Los Vascos,
+      AC Madrid Feria,
+      AC Palacio Del Retiro,
+      AC Recoletos,
+      CHH Hotel Ada Palace,
+      CHH Hotel Asturias,
+      CHH Hotel Maria Elena Palace,
+      CHH Hotel Osuna
+      ]
+      }, {
+    nombre: Jerez De La Frontera,
+    hoteles: [
+      Barcelo Forum,
+      Hotel Boutique Bellas Artes,
+      Hotel Casa Grande,
+      Hotel Doña Blanca,
+      ]
+      }]
+      }]
+} , {
+
+codigo: IT,
+nombre: Italy,
+oficina: Central,
+destinos: [{
+  nombre: Mainland,
+  zonas: [{
+    nombre: Roma,
+    hoteles: [
+      Abruzzi Hotel,
+      A Rivederci,
+      Abitart,
+      Artemide,
+      Aphrodite,
+      Hotel Orbis,
+      Hotel Pacific,
+      Hotel Romantica,
+      Hotel Rinascimento,
+      Hotel Verona Rome,
+      Hotel Trevi Collection
+      ]
+      }, {
+    nombre: Milan,
+    hoteles: [
+      Abacus,
+      AC Milano,
+      ADI Doria Grand Hotel,
+      Admiral,
+      Best Western Villa Appiani,
+      Best Western Hotel Mozart,
+      Best Western Goldenmille
+      ]
+      }]
+      }, {
+  nombre: Sicilia,
+  zonas: [{
+    nombre: Palermo,
+    hoteles: [
+      Astoria Palace,
+      Azzolini,
+      Excelsior Hilton Palermo,
+      Grand Garibaldi
+      ]
+      }, {
+    nombre: Catania,
+    hoteles: [
+      Best Western Hotel Mediterraneo,
+      Duomo Suite & Spa,
+      Catania International Aiport Hotel,
+      Romano Palace,
+      Manganelli Palace
+      ]
+      }]
+      }]
+}
+]

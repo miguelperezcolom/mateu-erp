@@ -1,5 +1,6 @@
 package io.mateu.erp.model.invoicing;
 
+import io.mateu.erp.model.taxes.VAT;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +21,8 @@ public class VATLine {
 
     private double percent;
 
-    private double vat;
+    @ManyToOne
+    private VAT vat;
 
     private double total;
 

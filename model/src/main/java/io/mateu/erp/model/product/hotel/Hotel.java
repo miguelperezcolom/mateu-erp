@@ -7,6 +7,8 @@ import io.mateu.erp.model.caval.CAVALClient;
 import io.mateu.erp.model.caval.CavalIdDataProvider;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.erp.model.product.DataSheet;
+import io.mateu.erp.model.product.Variant;
+import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.erp.model.product.transfer.TransferPoint;
@@ -97,39 +99,47 @@ public class Hotel extends AbstractProduct implements IHotel {
 
 
 
-    @Section("Related")
+    //@Section("Related")
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<Room> rooms = new ArrayList<>();
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<Board> boards = new ArrayList<>();
 
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<HotelExtra> extras = new ArrayList<>();
 
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @Output
+    //@Output
+    @Ignored
     private StopSales stopSales;
 
     @OneToMany(mappedBy = "hotel")
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<Inventory> inventories = new ArrayList<>();
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @Output
+    //@Output
+    @Ignored
     private Inventory realInventory;
 
     @OneToMany(mappedBy = "hotel")
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<HotelContract> contracts = new ArrayList<>();
 
     @OneToMany(mappedBy = "hotel")
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    //@UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @Ignored
     private List<AbstractHotelOffer> offers = new ArrayList<>();
 
 
@@ -165,13 +175,23 @@ public class Hotel extends AbstractProduct implements IHotel {
     @PostPersist@PostUpdate
     public void afterSet() throws Exception, Throwable {
 
-        if (getStopSales() == null) {
+        if (getStopSales() == null || getVariants().size() == 0) {
             WorkflowEngine.add((() -> {
                 try {
                     Helper.transact(em -> {
-                        Hotel h = em.merge(this);
-                        h.setStopSales(new StopSales());
-                        h.getStopSales().setHotel(this);
+                        Hotel h = em.find(Hotel.class, getId());
+                        if (h.getStopSales() == null) {
+                            h.setStopSales(new StopSales());
+                            h.getStopSales().setHotel(this);
+                        }
+
+                        if (h.getVariants().size() == 0) {
+                            Variant v;
+                            h.getVariants().add(v = new Variant());
+                            v.setProduct(h);
+                            v.setName(new Literal("Standard", "Estándar"));
+                        }
+
                     });
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();

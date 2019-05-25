@@ -151,4 +151,21 @@ public class QuotationRequestLine {
 
         return el;
     }
+
+    public QuotationRequestLine createDuplicate(QuotationRequest rq) {
+        QuotationRequestLine c = new QuotationRequestLine();
+        c.setRq(rq);
+        c.setOffice(office);
+        c.setBillingConcept(billingConcept);
+        c.setProductLine(productLine);
+        c.setUnits(units);
+        c.setProvider(provider);
+        c.setText(text);
+        c.setPrice(price);
+        c.setEnd(end);
+        c.setCost(cost);
+        c.setActive(active);
+        c.setStart(start);
+        return c;
+    }
 }

@@ -70,6 +70,23 @@ public class HotelServiceLine {
     @Column(name = "_ages")
     private int[] ages;
 
+    private boolean priceOverrided;
+
+    private double pricePerRoom;
+
+    private double pricePerAdult;
+
+    private double pricePerChild;
+
+
+    private boolean costOverrided;
+
+    private double costPerRoom;
+
+    private double costPerAdult;
+
+    private double costPerChild;
+
     @Output
     private String validationMessages;
 
@@ -144,6 +161,14 @@ public class HotelServiceLine {
         childrenPerRoom = l.getChildrenPerRoom();
         ages = l.getAges();
         active = l.isActive();
+        priceOverrided = l.isPriceOverrided();
+        pricePerRoom = l.getPricePerRoom();
+        pricePerAdult = l.getPricePerAdult();
+        pricePerChild = l.getPricePerChild();
+        costOverrided = l.isCostOverrided();
+        costPerRoom = l.getCostPerRoom();
+        costPerAdult = l.getCostPerAdult();
+        costPerChild = l.getCostPerChild();
     }
 
 

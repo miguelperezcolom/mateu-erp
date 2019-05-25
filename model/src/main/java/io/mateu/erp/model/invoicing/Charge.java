@@ -97,7 +97,7 @@ public class Charge {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof Charge && id == ((Charge) obj).getId());
+        return this == obj || (id > 0 && obj != null && obj instanceof Charge && id == ((Charge) obj).getId());
     }
 
     public String toChangeControlString() {

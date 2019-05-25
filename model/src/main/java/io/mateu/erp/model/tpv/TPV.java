@@ -45,6 +45,8 @@ public class TPV {
     @ManyToOne
     private Office office;
 
+    private boolean testing;
+
 
     @Override
     public String toString() {

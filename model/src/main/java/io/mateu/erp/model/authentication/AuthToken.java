@@ -32,25 +32,22 @@ public class AuthToken {
 
     private boolean active = true;
 
-    @ManyToOne
-    private User user;
+    @ManyToOne@NotNull
+    private AgencyUser user;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private PointOfSale pos;
-
-    @ManyToOne
-    private Agency agency;
 
     @ManyToOne
     private Hotel hotel;
 
-    public String createId(User u) {
+    public String createId(AgencyUser u) {
         Agency a = null;
         for (Permission p : u.getPermissions()) {
             //todo: relacionar con la agencia
         }
         //todo: utilizar jwt.io para encriptar
-        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((getAgency() != null)?", \"agencyId\": \"" + getAgency().getId() + "\"":"") + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId() + "\"":"") + "}").getBytes());
+        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + u.getLogin() + "\"" + ((u.getAgency() != null)?", \"agencyId\": \"" + u.getAgency().getId() + "\"":"") + ((getHotel() != null)?", \"hotelId\": \"" + getHotel().getId() + "\"":"") + "}").getBytes());
     }
 
     public AuthToken renew(EntityManager em) {
@@ -59,7 +56,6 @@ public class AuthToken {
         t.setActive(true);
         t.setUser(getUser());
         t.setPos(getPos());
-        t.setAgency(getAgency());
         t.setHotel(getHotel());
         em.persist(t);
 
@@ -70,9 +66,8 @@ public class AuthToken {
 
 
     @Action
-    public static void createToken(EntityManager em, @NotNull ERPUser user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @NotNull @Caption("Agency") Agency p, @Caption("Hotel") Hotel h) throws IOException {
+    public static void createToken(EntityManager em, @NotNull AgencyUser user, @NotNull @Caption("Point Of Sale") PointOfSale pos, @Caption("Hotel") Hotel h) throws IOException {
         AuthToken t = new AuthToken();
-        t.setAgency(p);
         t.setPos(pos);
         t.setHotel(h);
         t.setUser(user);
@@ -82,7 +77,7 @@ public class AuthToken {
         t.setId(t.createId(user));
         em.persist(t);
 
-        System.out.println("token creado para el usuario " + user.getLogin() + " y el partner " + p.getName() + ": " + t.getId());
+        System.out.println("token creado para el usuario " + user.getLogin() + " y el partner " + user.getAgency().getName() + ": " + t.getId());
     }
 
 }

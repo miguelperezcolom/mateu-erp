@@ -2,13 +2,13 @@ package io.mateu.erp.model.booking.parts;
 
 import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.HotelMeal;
 import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.hotel.HotelService;
 import io.mateu.erp.model.booking.hotel.HotelServiceLine;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.invoicing.BookingCharge;
-import io.mateu.erp.model.invoicing.ChargeType;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
@@ -17,7 +17,6 @@ import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +42,20 @@ public class HotelBooking extends Booking {
     @NotNull
     @Position(8)
     private Hotel hotel;
+
+    @Position(9)
+    private HotelMeal firstService;
+
+    @Position(10)
+    private HotelMeal lastService;
+
+    @Position(11)
+    private double adultTaxPerNight;
+
+    @Position(12)
+    private double childTaxPerNight;
+
+
 
     public boolean isStartVisible() {
         return false;
@@ -108,6 +121,8 @@ public class HotelBooking extends Booking {
         s.setFinish(getEnd());
         s.setStart(getStart());
         s.setHotel(hotel);
+        s.setAdultTaxPerNight(adultTaxPerNight);
+        s.setChildTaxPerNight(childTaxPerNight);
         for (HotelBookingLine e : getLines()) s.getLines().add(new HotelServiceLine(s, e));
         s.setSpecialRequests(getSpecialRequests());
     }
@@ -142,10 +157,12 @@ public class HotelBooking extends Booking {
 
         if (propietaryContracts.size() > 0) contracts = propietaryContracts;
 
+        double localTaxes = 0;
+
         for (HotelBookingLine o : getLines()) {
 
             int infants = 0;
-            int children = 0;
+            int children = o.getRooms() * o.getChildrenPerRoom();
             int juniors = 0;
             int adults = 0;
             if (o.getAges() != null) for (int i = 0; i < o.getAges().length; i++) {
@@ -162,90 +179,109 @@ public class HotelBooking extends Booking {
 
             adults = (o.getAdultsPerRoom() + o.getChildrenPerRoom()) - juniors - children - infants;
 
+            int nights = o.getStart() != null && o.getEnd() != null?new Long(DAYS.between(o.getStart(), o.getEnd())).intValue():0;
 
-            List<HotelContract> contratosValidos = new ArrayList<>();
-            for (HotelContract c : getHotel().getContracts()) {
-                if (c.isValidForSale(getAgency(), o.getStart(), o.getEnd())) {
-                    contratosValidos.add(c);
-                }
+            if (adultTaxPerNight != 0 || childTaxPerNight != 0) {
+                localTaxes += nights * o.getRooms() * (adults * adultTaxPerNight + (children + juniors) * childTaxPerNight);
             }
 
+            if (o.isPriceOverrided()) {
+                o.setValued(true);
+                o.setValue(Helper.roundEuros(nights * o.getRooms() * (o.getPricePerRoom() + o.getPricePerAdult() * adults + o.getPricePerChild() * (children + juniors))));
+            } else {
 
-            if (contratosValidos.size() > 0) {
-                if (o.getRoom().fits(adults + juniors, children, infants)) {
-
-                    if (o.getContract() != null) {
-                        try {
-                            o.check();
-                            if (o.isAvailable()) {
-
-                                o.price();
-
-                            }
-                        } catch (Throwable throwable) {
-                            //throwable.printStackTrace();
-                        }
-                    } else {
-
-                        Map<HotelContract, Double> valoraciones = new HashMap<>();
-
-                        Inventory oldInventory = o.getInventory();
+                List<HotelContract> contratosValidos = new ArrayList<>();
+                for (HotelContract c : getHotel().getContracts()) {
+                    if (c.isValidForSale(getAgency(), o.getStart(), o.getEnd())) {
+                        contratosValidos.add(c);
+                    }
+                }
 
 
-                        for (HotelContract c : contratosValidos) {
+                if (contratosValidos.size() > 0) {
+                    if (o.getRoom().fits(adults + juniors, children, infants)) {
 
-                            o.setContract(c);
-                            o.setInventory(c.getInventory());
-
+                        if (o.getContract() != null) {
                             try {
                                 o.check();
                                 if (o.isAvailable()) {
 
                                     o.price();
 
-                                    if (o.isValued()) {
-
-                                        valoraciones.put(c, o.getValue());
-                                    }
-
                                 }
                             } catch (Throwable throwable) {
                                 //throwable.printStackTrace();
                             }
-                        }
+                        } else {
 
-                        HotelContract bestContract = null;
-                        double min = 0;
-                        for (HotelContract c : valoraciones.keySet()) {
+                            Map<HotelContract, Double> valoraciones = new HashMap<>();
+
+                            Inventory oldInventory = o.getInventory();
+
+
+                            for (HotelContract c : contratosValidos) {
+
+                                o.setContract(c);
+                                o.setInventory(c.getInventory());
+
+                                try {
+                                    o.check();
+                                    if (o.isAvailable()) {
+
+                                        o.price();
+
+                                        if (o.isValued()) {
+
+                                            valoraciones.put(c, o.getValue());
+                                        }
+
+                                    }
+                                } catch (Throwable throwable) {
+                                    //throwable.printStackTrace();
+                                }
+                            }
+
+                            HotelContract bestContract = null;
+                            double min = 0;
+                            for (HotelContract c : valoraciones.keySet()) {
                                 if (valoraciones.get(c) > 0 && (min == 0 || min > valoraciones.get(c))) {
                                     bestContract = c;
                                     min = valoraciones.get(c);
                                 }
                             }
 
-                        if (min > 0) {
-                            o.setContract(bestContract);
-                            o.setInventory(bestContract.getInventory());
-                            o.setValued(true);
-                            o.setValue(min);
-                        } else {
-                            o.setContract(null);
-                            o.setInventory(oldInventory);
-                            o.setValued(false);
-                            o.setValue(0);
+                            if (min > 0) {
+                                o.setContract(bestContract);
+                                o.setInventory(bestContract.getInventory());
+                                o.setValued(true);
+                                o.setValue(min);
+                            } else {
+                                o.setContract(null);
+                                o.setInventory(oldInventory);
+                                o.setValued(false);
+                                o.setValue(0);
+                            }
+
                         }
 
                     }
-
                 }
             }
-
         }
 
         for (HotelBookingLine l : getLines()) {
             breakdown.add(new PriceBreakdownItem(l.getContract() != null?l.getContract().getBillingConcept():AppConfig.get(em).getBillingConceptForHotel(), l.toSimpleString(), l.getValue()));
         }
 
+        if (localTaxes != 0) {
+            breakdown.add(new PriceBreakdownItem(AppConfig.get(em).getBillingConceptForLocalTaxes(), "LOCAL TAXES", Helper.roundEuros(localTaxes)));
+        }
+
+    }
+
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForHotel();
     }
 
 

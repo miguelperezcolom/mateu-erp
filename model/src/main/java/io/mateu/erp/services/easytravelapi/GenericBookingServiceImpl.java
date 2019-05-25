@@ -9,9 +9,10 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
-import io.mateu.erp.model.product.ProductLabel;
+import io.mateu.erp.model.product.Tag;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.world.Country;
@@ -68,7 +69,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
-                Map<Long, ProductLabel> labels = new HashMap<>();
+                Map<Long, Tag> labels = new HashMap<>();
                 List<GenericProduct> excursions = new ArrayList<>();
 
                 for (String s : Splitter.on(',')
@@ -94,8 +95,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                     {
 
                         b.setProduct(e);
-                        b.setUnits(1);
-                        b.setAdults(1);
+                        b.setPax(1);
                         try {
                             double min = 0;
 
@@ -128,7 +128,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                                 a.setBestDeal(bd = new BestDeal());
                                 bd.setRetailPrice(new Amount("EUR", min));
 
-                                e.getDataSheet().getLabels().forEach(x -> {
+                                e.getDataSheet().getTags().forEach(x -> {
                                     labels.putIfAbsent(x.getId(), x);
                                     Label l;
                                     a.getLabels().add(l = new Label());
@@ -200,9 +200,6 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
             rs.setDateDependant(e.isDateDependant());
             rs.setDatesRangeDependant(e.isDatesRangeDependant());
-            rs.setAdultsDependant(e.isAdultsDependant());
-            rs.setChildrenDependant(e.isChildrenDependant());
-            rs.setUnitsDependant(e.isUnitsDependant());
             rs.setVariantDependant(e.getVariants().size() > 0);
 
 
@@ -211,8 +208,7 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             GenericBooking b = new GenericBooking();
             b.setAgency(em.find(Agency.class, finalIdAgencia));
             b.setProduct(e);
-            b.setUnits(1);
-            b.setAdults(1);
+            b.setPax(1);
 
             e.getVariants().forEach(v -> {
 
@@ -381,10 +377,12 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         long idAgencia = 0;
         long idHotel = 0;
+        long idPos = 0;
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
             if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
             if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
@@ -398,14 +396,15 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         b.setAudit(new Audit(user));
         b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
+        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setTariff(b.getPos().getTariff());
 
         b.setProduct(em.find(GenericProduct.class, new Long(String.valueOf(data.get("product")))));
         if (data.containsKey("variant") && !Strings.isNullOrEmpty((String) data.get("variant"))) {
             b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
         }
-        b.setUnits((Integer) data.get("units"));
-        b.setAdults((Integer) data.get("adults"));
-        b.setChildren((Integer) data.get("children"));
+
+        b.setPax((Integer) data.get("pax"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

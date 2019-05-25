@@ -10,6 +10,7 @@ import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.booking.generic.GenericServiceExtra;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.performance.Accessor;
@@ -40,9 +41,6 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Getter@Setter
 public class GenericBooking extends Booking {
 
-    @Position(13)
-    private int units;
-
     @NotNull
     @ManyToOne
     @Position(14)
@@ -59,6 +57,8 @@ public class GenericBooking extends Booking {
     public DataProvider getVariantDataProvider() {
         return new ListDataProvider(product != null?product.getVariants():new ArrayList());
     }
+
+    private int units;
 
 
 
@@ -78,7 +78,6 @@ public class GenericBooking extends Booking {
 
     @Override
     protected void completeChangeSignatureData(Map<String, String> data) {
-        data.put("Units", "" + units);
         if (office != null) data.put("Office", office.getName());
         if (product != null) data.put("Product", product.getName());
         if (variant != null) data.put("Variant", variant.getName().toString());
@@ -111,9 +110,13 @@ public class GenericBooking extends Booking {
         for (GenericBookingExtra e : getExtras()) s.getExtras().add(new GenericServiceExtra(s, e));
         s.setDeliveryDate(getStart());
         s.setReturnDate(getEnd());
-        s.setUnits(getUnits());
-        s.setAdults(getAdults());
+
+        s.setInfants(getInfants());
         s.setChildren(getChildren());
+        s.setJuniors(getJuniors());
+        s.setAdults(getAdults());
+        s.setSeniors(getSeniors());
+
         s.setActive(isActive());
     }
 
@@ -142,13 +145,17 @@ public class GenericBooking extends Booking {
                     .filter(p -> p.getProduct() == null || p.getProduct().equals(product))
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
                     .forEach(p -> {
-                v[0] += getUnits() * p.getPricePerUnit();
-                v[0] += getAdults() * p.getPricePerAdult();
-                v[0] += getChildren() * p.getPricePerChild();
 
-                v[0] += finalDias * getUnits() * p.getPricePerUnitAndDay();
-                v[0] += finalDias * getAdults() * p.getPricePerAdultAndDay();
-                v[0] += finalDias * getChildren() * p.getPricePerChildAndDay();
+                        v[0] += getInfants() * p.getInfantPrice();
+                        v[0] += getChildren() * p.getChildPrice();
+                        v[0] += getJuniors() * p.getJuniorPrice();
+                        v[0] += getAdults() * p.getAdultPrice();
+                        v[0] += getSeniors() * p.getSeniorPrice();
+                        v[0] += finalDias * getInfants() * p.getInfantPricePerDay();
+                        v[0] += finalDias * getChildren() * p.getChildPricePerDay();
+                        v[0] += finalDias * getJuniors() * p.getJuniorPricePerDay();
+                        v[0] += finalDias * getAdults() * p.getAdultPricePerDay();
+                        v[0] += finalDias * getSeniors() * p.getSeniorPricePerDay();
 
             });
             prices. put(c, v[0]);
@@ -163,8 +170,13 @@ public class GenericBooking extends Booking {
         });
     }
 
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForOthers();
+    }
+
     public String getChargeSubject() {
-        return "" + product.getName() + " from " + getStart().toString() + " to " + getEnd().toString() + " for " + getUnits() + "u/" + getAdults() + " ad/" + getChildren() + "ch";
+        return "" + (product != null?product.getName():"--") + " from " + (getStart() != null?getStart().toString():"--") + " to " + (getEnd() != null?getEnd().toString():"--");
     }
 
     @Override
@@ -179,34 +191,40 @@ public class GenericBooking extends Booking {
             x.put("units", e.getUnits());
         });
         if (extras.size() > 0) m.put("extras", extras);
-        m.put("units", getUnits());
-        m.put("adults", getAdults());
+
+        m.put("infants", getInfants());
         m.put("children", getChildren());
+        m.put("juniors", getJuniors());
+        m.put("adults", getAdults());
+        m.put("seniors", getSeniors());
+
         if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
         m.put("serviceCost", "" + getOverridedCost());
     }
 
     @Override
     public String getServiceDataHtml() {
-        String h = "<pre>";
+        final String[] h = {"<pre>"};
 
-        h += "GENERIC BOOKING \n";
+        h[0] += "GENERIC BOOKING \n";
 
-        h += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
-        h += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
-        h += "Product: " + getProduct().getName() + " \n";
-        if (getVariant() != null) h += "Variant: " + getVariant().getName() + " \n";
-        h += "Units: " + getUnits() + " \n";
-        h += "Adults: " + getAdults() + " \n";
-        h += "Children: " + getChildren() + " \n";
+        h[0] += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h[0] += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h[0] += "Product: " + getProduct().getName() + " \n";
+        if (getVariant() != null) h[0] += "Variant: " + getVariant().getName() + " \n";
+        if (getInfants() != 0) h[0] += getInfants() + " infants \n";
+        if (getChildren() != 0) h[0] += getChildren() + " children \n";
+        if (getJuniors() != 0) h[0] += getJuniors() + " juniors \n";
+        if (getAdults() != 0) h[0] += getAdults() + " adults \n";
+        if (getSeniors() != 0) h[0] += getSeniors() + " seniors \n";
 
         for (GenericBookingExtra e : getExtras()) {
-            h += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
+            h[0] += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
         }
 
-        if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
+        if (!Strings.isNullOrEmpty(getSpecialRequests())) h[0] += "Special requests: " + getSpecialRequests() + "\n";
 
-        h += "</pre>";
-        return h;
+        h[0] += "</pre>";
+        return h[0];
     }
 }

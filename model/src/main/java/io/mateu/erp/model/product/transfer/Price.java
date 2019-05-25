@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.transfer;
 
 import io.mateu.erp.model.authentication.ERPUser;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.SearchFilter;
 import lombok.Getter;
@@ -26,6 +27,9 @@ public class Price {
     @NotNull
     @SearchFilter
     private Contract contract;
+
+    @ManyToOne@NotNull
+    private Tariff tariff;
 
     @ManyToOne
     @NotNull

@@ -98,7 +98,7 @@ public class TPVTransaction {
 
             ApiMacSha256 apiMacSha256 = new ApiMacSha256();
 
-            apiMacSha256.setParameter("DS_MERCHANT_AMOUNT", getMerchantAmount(amount));
+            apiMacSha256.setParameter("DS_MERCHANT_AMOUNT", getMerchantAmount(getTpv().isTesting()?0.1:amount));
             apiMacSha256.setParameter("DS_MERCHANT_ORDER", "" + getId());
             apiMacSha256.setParameter("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
             apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency));
@@ -142,7 +142,7 @@ public class TPVTransaction {
             h.append("<input type='hidden' name=MERCHANTNUMBER value='" + getTpv().getMerchantCode() + "' />");
             h.append("<input type='hidden' name=OPERATION value='CREATE_ORDER' />");
             h.append("<input type='hidden' name=ORDERNUMBER value='" + getId() + "' />");
-            h.append("<input type='hidden' name=AMOUNT value='" + getMerchantAmount(amount) + "' />");
+            h.append("<input type='hidden' name=AMOUNT value='" + getMerchantAmount(getTpv().isTesting()?0.1:amount) + "' />");
             h.append("<input type='hidden' name=CURRENCY value='" + getMerchantCurrency(em, currency) + "' />");
             h.append("<input type='hidden' name=DEPOSITFLAG value='1' />");
             h.append("<input type='hidden' name=MERORDERNUM value='" + getId() + "' />");
@@ -163,7 +163,7 @@ public class TPVTransaction {
                     + "<input type='hidden' name='notify_url' value='" + getTpv().getNotificationUrl() + "'>"
                     + "<input type='hidden' name='item_number' value='" + getId() + "'>"
                     + "<input type='hidden' name='item_name' value='BOOKING NR " + bookingId + "'>"
-                    + "<input type='hidden' name='amount' value='" + Helper.roundOffEuros(amount) + "'>"
+                    + "<input type='hidden' name='amount' value='" + Helper.roundOffEuros(getTpv().isTesting()?0.1:amount) + "'>"
                     + "<input type='hidden' name='currency_code' value='" + currency + "'>"
                     + "<!-- Display the payment button. -->"
                     + "<input type='image' name='submit' border='0' src='https://www.paypalobjects.com/en_US/i/btn/btn_buynow_LG.gif' alt='PayPal - The safer, easier way to pay online'>"

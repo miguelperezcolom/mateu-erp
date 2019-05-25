@@ -1,7 +1,9 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.partners.Provider;
+import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
+import io.mateu.mdd.core.annotations.Section;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,8 +37,12 @@ public class TourExtra {
 
     private boolean internalUseOnly;
 
+    @Section("Associated cost")
     @ManyToOne
     private GenericProduct product;
+
+    @ManyToOne
+    private Variant variant;
 
     @ManyToOne
     private Provider provider;

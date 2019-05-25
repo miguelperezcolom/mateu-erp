@@ -5,8 +5,10 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.transfer.TransferDirection;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
@@ -35,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Entity
 @Getter@Setter
@@ -172,6 +176,28 @@ public class TransferBooking extends Booking {
         List<Service> usedServices = new ArrayList<>();
         List<Service> availableServices = new ArrayList<>(getServices());
 
+        TransferService llegada = null;
+        TransferService salida = null;
+
+        // corregimos direcciones
+        for (Service s : getServices()) {
+            if (s instanceof TransferService) {
+                TransferService ts = (TransferService) s;
+                if (ts.getPickup().isAirport()) ts.setDirection(TransferDirection.INBOUND);
+                else if (ts.getDropoff().isAirport() && !ts.getPickup().isAirport()) ts.setDirection(TransferDirection.OUTBOUND);
+                else ts.setDirection(TransferDirection.POINTTOPOINT);
+            }
+        }
+
+        // buscamos llegada y salida
+        for (Service s : getServices()) {
+            if (s instanceof TransferService) {
+                TransferService ts = (TransferService) s;
+                if (TransferDirection.INBOUND.equals(ts.getDirection())) llegada = ts;
+                if (TransferDirection.OUTBOUND.equals(ts.getDirection())) salida = ts;
+            }
+        }
+
         //el primer servicio siempre
         if (arrivalFlightTime != null) {
 
@@ -183,7 +209,8 @@ public class TransferBooking extends Booking {
 
 
             TransferService s = null;
-            if (availableServices.size() > 0) s = (TransferService) availableServices.remove(0);
+            if (llegada != null) availableServices.remove(s = llegada);
+            else if (availableServices.size() > 0) s = (TransferService) availableServices.remove(0);
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
@@ -194,7 +221,11 @@ public class TransferBooking extends Booking {
             s.setStart(getStart());
             s.setTransferType(transferType);
 
-            s.setPax(getAdults() + getChildren());
+            s.setInfants(getInfants());
+            s.setChildren(getChildren());
+            s.setJuniors(getJuniors());
+            s.setAdults(getAdults());
+            s.setSeniors(getSeniors());
             s.setBigLuggages(getBigLuggages());
             s.setGolf(getGolf());
             s.setBikes(getBikes());
@@ -219,7 +250,8 @@ public class TransferBooking extends Booking {
         // el segundo servicio quizás
         if (departureFlightTime != null) {
             TransferService s = null;
-            if (availableServices.size() > 0) s = (TransferService) availableServices.remove(0);
+            if (salida != null) availableServices.remove(s = salida);
+            else if (availableServices.size() > 0) s = (TransferService) availableServices.remove(0);
             if (s == null) {
                 getServices().add(s = new TransferService());
                 s.setBooking(this);
@@ -230,7 +262,11 @@ public class TransferBooking extends Booking {
             s.setStart(getEnd());
             s.setTransferType(transferType);
 
-            s.setPax(getAdults() + getChildren());
+            s.setInfants(getInfants());
+            s.setChildren(getChildren());
+            s.setJuniors(getJuniors());
+            s.setAdults(getAdults());
+            s.setSeniors(getSeniors());
             s.setBigLuggages(getBigLuggages());
             s.setGolf(getGolf());
             s.setBikes(getBikes());
@@ -283,10 +319,24 @@ public class TransferBooking extends Booking {
 
     @Override
     public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
+        priceServices(em, breakdown, false);
+    }
+
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForTransfer();
+    }
+
+    public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown, boolean dispo) {
 
         setTotalValue(0);
 
         boolean sale = true;
+
+        int release = 0;
+        if (getArrivalFlightTime() != null) release = (int) DAYS.between(LocalDate.now(), getArrivalFlightTime().toLocalDate());
+        else if (getDepartureFlightTime() != null) release = (int) DAYS.between(LocalDate.now(), getDepartureFlightTime().toLocalDate());
+
 
         // seleccionamos los contratos válidos
         List<Contract> contracts = new ArrayList<>();
@@ -294,12 +344,13 @@ public class TransferBooking extends Booking {
             boolean ok = true;
             ok &= (sale && ContractType.SALE.equals(c.getType())) || (!sale     && ContractType.PURCHASE.equals(c.getType()));
             ok &= c.getAgencies().size() == 0 || c.getAgencies().contains(getAgency());
-            ok &= getProvider() == null || getProvider().equals(c.getSupplier());
+            ok &= !ContractType.PURCHASE.equals(c.getType()) || getProvider() == null || getProvider().equals(c.getSupplier());
             ok &= c.getValidFrom().isBefore(getStart()) || c.getValidFrom().equals(getStart());
             ok &= c.getValidTo().isAfter(getEnd()) || c.getValidTo().equals(getEnd());
             LocalDate created = (getAudit() != null && getAudit().getCreated() != null)?getAudit().getCreated().toLocalDate():LocalDate.now();
             ok &= c.getBookingWindowFrom() == null || c.getBookingWindowFrom().isBefore(created) || c.getBookingWindowFrom().equals(created);
             ok &= c.getBookingWindowTo() == null || c.getBookingWindowTo().isAfter(created) || c.getBookingWindowTo().equals(created);
+            ok &= !dispo || c.getRelease() <= release;
             if (ok) contracts.add(c);
         }
 
@@ -329,7 +380,7 @@ public class TransferBooking extends Booking {
 
                     precioOk = precioOk && p.getTransferType().equals(getTransferType());
 
-                    precioOk = precioOk && p.getVehicle().getMinPax() <= getAdults() + getChildren() && p.getVehicle().getMaxPax() >= getAdults() + getChildren();
+                    precioOk = precioOk && p.getVehicle().getMinPax() <= getPax() && p.getVehicle().getMaxPax() >= getPax();
 
                     if (precioOk) {
 
@@ -338,7 +389,7 @@ public class TransferBooking extends Booking {
                         setPriceFromPriceLine(p);
 
                         double valor = p.getPrice();
-                        int pax = (getAdults() + getChildren());
+                        int pax = getPax();
                         if (c.getMinPaxPerBooking() > pax) pax = c.getMinPaxPerBooking();
                         if (PricePer.PAX.equals(p.getPricePer())) valor = valor * pax;
 
@@ -350,7 +401,7 @@ public class TransferBooking extends Booking {
 
                         String desc = ((getArrivalFlightTime() != null && getDepartureFlightTime() != null)?"RW":"OW") + " " + getTransferType().name() + " TRANSFER WITH " + p.getVehicle().getName() + " FROM " + p.getOrigin().getName() + " TO " + p.getDestination().getName() + " FOR ";
                         if (PricePer.PAX.equals(p.getPricePer())) {
-                            desc += (getAdults() + getChildren()) + " PAX";
+                            desc += getPax() + " PAX";
                         } else {
                             desc += "SERVICE";
                         }
@@ -462,8 +513,7 @@ public class TransferBooking extends Booking {
             m.put("arrivalFlightTime", getArrivalFlightTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             m.put("arrivalFlightOriginOrDestination", getArrivalFlightOrigin());
         }
-        m.put("adults", getAdults());
-        m.put("children", getChildren());
+        m.put("pax", getPax());
         m.put("bigLuggages", getBigLuggages());
         m.put("bikes", getBikes());
         m.put("golf", getGolf());
@@ -494,8 +544,7 @@ public class TransferBooking extends Booking {
         if (getArrivalFlightTime() != null) h += "Arrival: " + getArrivalFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getArrivalFlightNumber() + " - " + getArrivalFlightOrigin() + " \n";
         if (getDepartureFlightTime() != null) h += "Departure: " + getDepartureFlightTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  - " + getDepartureFlightNumber() + " - " + getDepartureFlightDestination() + " \n";
 
-        h += "Adults: " + getAdults() + "    ";
-        h += "Children: " + getChildren() + " \n";
+        h += "Pax: " + getPax() + " \n";
         h += "Bikes: " + getBikes() + "  ";
         h += "Golf: " + getGolf() + "  ";
         h += "Wheel chairs: " + getWheelChairs() + "  ";
@@ -503,8 +552,16 @@ public class TransferBooking extends Booking {
 
         if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
 
-        if (getArrivalFlightTime() != null) h += "Arrival instructions:\n" + (Strings.isNullOrEmpty(getOrigin().getInstructions())?"--":getOrigin().getInstructions()) + "\n";
-        if (getDepartureFlightTime() != null) h += "Departure instructions:\n" + (Strings.isNullOrEmpty(getDestination().getInstructions())?"--":getDestination().getInstructions()) + "\n";
+        if (getArrivalFlightTime() != null) {
+            String i = "";
+            if (TransferType.SHUTTLE.equals(getTransferType())) i = getOrigin().getArrivalInstructionsForShuttle() != null?getOrigin().getArrivalInstructionsForShuttle().getEs():"";
+            else i = getOrigin().getArrivalInstructionsForPrivate() != null?getOrigin().getArrivalInstructionsForPrivate().getEs():"";
+            h += "Arrival instructions:\n" + (Strings.isNullOrEmpty(i)?"--":i) + "\n";
+        }
+        if (getDepartureFlightTime() != null) {
+            String i = getDestination().getDepartureInstructions() != null?getDestination().getDepartureInstructions().getEs():"";
+            h += "Departure instructions:\n" + (Strings.isNullOrEmpty(i)?"--":i) + "\n";
+        }
 
 
         h += "</pre>";

@@ -109,7 +109,7 @@ public class ManagedEvent {
                         ManagedEvent e = em.find(ManagedEvent.class, getId());
 
                         int bkd = 0;
-                        for (TourBooking b : e.getBookings()) bkd += b.getAdults() + b.getChildren();
+                        for (TourBooking b : e.getBookings()) bkd += b.getPax();
                         e.setUnitsBooked(bkd);
                         e.setUnitsLeft(e.getMaxUnits() - e.getUnitsBooked());
 
@@ -211,8 +211,7 @@ public class ManagedEvent {
         Element els;
         xml.addContent(els = new Element("bookings"));
 
-        int ads = 0;
-        int chs = 0;
+        int pax = 0;
 
         double ts = 0;
         double tc = 0;
@@ -225,23 +224,20 @@ public class ManagedEvent {
 
             el.setAttribute("id", "" + b.getId());
             if (b.getLeadName() != null) el.setAttribute("leadName", b.getLeadName());
-            el.setAttribute("adults", "" + b.getAdults());
-            el.setAttribute("children", "" + b.getChildren());
+            el.setAttribute("pax", "" + b.getPax());
             String s = "";
             s += eb.getTelephone();
             el.setAttribute("data", s);
             if (b.getSpecialRequests() != null) el.setAttribute("comments", b.getSpecialRequests());
 
-            ads += b.getAdults();
-            chs += b.getChildren();
+            pax += b.getPax();
 
             ts += b.getTotalValue();
             tc += b.getTotalCost();
         }
 
 
-        xml.setAttribute("adults", "" + ads);
-        xml.setAttribute("children", "" + chs);
+        xml.setAttribute("pax", "" + pax);
 
         xml.setAttribute("totalSale", nf.format(Helper.roundEuros(ts)));
         xml.setAttribute("totalCost", nf.format(Helper.roundEuros(tc)));

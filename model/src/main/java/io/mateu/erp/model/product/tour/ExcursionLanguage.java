@@ -1,5 +1,6 @@
 package io.mateu.erp.model.product.tour;
 
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.multilanguage.Literal;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,4 +19,14 @@ public class ExcursionLanguage {
     @ManyToOne(cascade = CascadeType.ALL)
     private Literal name;
 
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (code != null && obj != null && obj instanceof ExcursionLanguage && code.equals(((ExcursionLanguage) obj).getCode()));
+    }
+
+    @Override
+    public String toString() {
+        return code;
+    }
 }

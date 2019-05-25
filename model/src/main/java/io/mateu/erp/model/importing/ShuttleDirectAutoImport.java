@@ -68,7 +68,7 @@ public class ShuttleDirectAutoImport extends TransferAutoImport {
                     if (xml!=null && xml.length()>0)
                     {
                         ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
-                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),xml, getOffice(), getPointOfSale(), em.find(BillingConcept.class, "TRA"), expedia);
+                        ShuttleDirectImportTask t = new ShuttleDirectImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),xml, getOffice(), getTariff(), getPointOfSale(), em.find(BillingConcept.class, "TRA"), expedia);
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }

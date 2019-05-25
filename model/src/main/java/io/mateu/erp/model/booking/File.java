@@ -76,7 +76,9 @@ public class File {
     @NotEmpty
     private String leadName;
 
+    private String email;
 
+    private String telephone;
 
     @Ignored
     @SearchFilter
@@ -122,6 +124,12 @@ public class File {
     @KPI
     private boolean active = true;
 
+
+    @Output
+    private boolean specialRegime;
+
+    @Output
+    private boolean hotelOrTransportIncluded;
 
     @Transient
     @Ignored

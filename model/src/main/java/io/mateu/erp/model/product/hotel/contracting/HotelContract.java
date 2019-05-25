@@ -12,6 +12,7 @@ import io.mateu.erp.model.payments.DueDateType;
 import io.mateu.erp.model.payments.HotelContractDueDate;
 import io.mateu.erp.model.product.AbstractContract;
 import io.mateu.erp.model.product.ContractType;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.hotel.*;
 import io.mateu.erp.model.product.hotel.offer.AbstractHotelOffer;
 import io.mateu.mdd.core.annotations.*;
@@ -63,6 +64,9 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
     @ListColumn
     @NoChart
     private Hotel hotel;
+
+    @ManyToOne@NotNull
+    private Tariff tariff;
 
     @ManyToOne
     @NotNull@Position(4)

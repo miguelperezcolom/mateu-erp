@@ -21,6 +21,7 @@ import org.easytravelapi.CommonsService;
 import org.easytravelapi.common.*;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -95,7 +96,7 @@ public class CommonsServiceImpl implements CommonsService {
                                 //r.setLatitude(p.getLat());
                                 //r.setLongitude(p.getLon());
                                 r.setType("transferpoint");
-                                r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+                                if (p.getArrivalInstructionsForShuttle() != null) r.setDescription(new MultilingualText("es", p.getArrivalInstructionsForShuttle().getEs(), "en", p.getArrivalInstructionsForShuttle().getEn()));
 
                                 totalRecursos.getAndSet(totalRecursos.get() + 1);
                             }
@@ -684,7 +685,7 @@ case: 'latitude': --> latitud
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                File b = em.find(File.class, Long.parseLong(bookingId));
+                io.mateu.erp.model.booking.Booking b = em.find(io.mateu.erp.model.booking.Booking.class, Long.parseLong(bookingId));
 
                 b.cancel(em);
 
@@ -758,7 +759,10 @@ case: 'latitude': --> latitud
 
         Helper.notransact(em -> {
 
-            ((List<TransferPoint>)em.createQuery("select x from " + TransferPoint.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+            Query q = em.createQuery("select x from " + TransferPoint.class.getName() + " x order by x.name");
+            if (!Strings.isNullOrEmpty(query)) q = em.createQuery("select x from " + TransferPoint.class.getName() + " x where lower(x.name) like :s order by x.name").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%");
+
+            ((List<TransferPoint>)q.getResultList()).forEach(h -> {
                 Match m;
                 rs.getMatches().add(m = new Match());
                 m.setName(h.getName());

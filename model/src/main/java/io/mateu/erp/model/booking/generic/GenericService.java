@@ -13,10 +13,7 @@ import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.generic.Price;
-import io.mateu.mdd.core.annotations.Indelible;
-import io.mateu.mdd.core.annotations.ListColumn;
-import io.mateu.mdd.core.annotations.NewNotAllowed;
-import io.mateu.mdd.core.annotations.Tab;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,26 +45,23 @@ public class GenericService extends Service {
     @Tab("Service")
     @NotNull
     @ManyToOne
-    @ListColumn
+    @ListColumn@Output
     private GenericProduct product;
 
     @ManyToOne
-    @ListColumn
+    @ListColumn@Output
     private Variant variant;
 
     @OneToMany(mappedBy = "service", cascade = CascadeType.ALL)
+    @Output
     private List<GenericServiceExtra> extras = new ArrayList<>();
 
-    private int units;
 
-    private int adults;
 
-    private int children;
-
-    @NotNull
+    @NotNull@Output
     private LocalDate deliveryDate;
 
-    @NotNull
+    @NotNull@Output
     private LocalDate returnDate;
 
 
@@ -102,9 +96,12 @@ public class GenericService extends Service {
                 x.put("units", l.getUnits());
             }
 
-            m.put("units", getUnits());
-            m.put("adults", getAdults());
+            m.put("infants", getInfants());
             m.put("children", getChildren());
+            m.put("juniors", getJuniors());
+            m.put("adults", getAdults());
+            m.put("seniors", getSeniors());
+
             m.put("cancelled", "" + !isActive());
             m.put("opsComment", "" + getOperationsComment());
             m.put("comment", "" + getBooking().getSpecialRequests());
@@ -141,13 +138,17 @@ public class GenericService extends Service {
                     .filter(p -> p.getProduct() == null || p.getProduct().equals(product))
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
                     .forEach(p -> {
-                        v[0] += getUnits() * p.getPricePerUnit();
-                        v[0] += getAdults() * p.getPricePerAdult();
-                        v[0] += getChildren() * p.getPricePerChild();
 
-                        v[0] += finalDias * getUnits() * p.getPricePerUnitAndDay();
-                        v[0] += finalDias * getAdults() * p.getPricePerAdultAndDay();
-                        v[0] += finalDias * getChildren() * p.getPricePerChildAndDay();
+                        v[0] += getInfants() * p.getInfantPrice();
+                        v[0] += getChildren() * p.getChildPrice();
+                        v[0] += getJuniors() * p.getJuniorPrice();
+                        v[0] += getAdults() * p.getAdultPrice();
+                        v[0] += getSeniors() * p.getSeniorPrice();
+                        v[0] += finalDias * getInfants() * p.getInfantPricePerDay();
+                        v[0] += finalDias * getChildren() * p.getChildPricePerDay();
+                        v[0] += finalDias * getJuniors() * p.getJuniorPricePerDay();
+                        v[0] += finalDias * getAdults() * p.getAdultPricePerDay();
+                        v[0] += finalDias * getSeniors() * p.getSeniorPricePerDay();
 
                     });
             prices. put(c, v[0]);
@@ -193,9 +194,18 @@ public class GenericService extends Service {
         long noches = DAYS.between(getStart(), getFinish());
         for (Price p : prices) {
             double v = 0;
-            v += getUnits() * (p.getPricePerUnit() + noches * p.getPricePerUnitAndDay());
-            v += getAdults() * (p.getPricePerAdult() + noches * p.getPricePerAdultAndDay());
-            v += getChildren() * (p.getPricePerChild() + noches * p.getPricePerChildAndDay());
+
+            v += getInfants() * p.getInfantPrice();
+            v += getChildren() * p.getChildPrice();
+            v += getJuniors() * p.getJuniorPrice();
+            v += getAdults() * p.getAdultPrice();
+            v += getSeniors() * p.getSeniorPrice();
+            v += noches * getInfants() * p.getInfantPricePerDay();
+            v += noches * getChildren() * p.getChildPricePerDay();
+            v += noches * getJuniors() * p.getJuniorPricePerDay();
+            v += noches * getAdults() * p.getAdultPricePerDay();
+            v += noches * getSeniors() * p.getSeniorPricePerDay();
+
             if (v < value) {
                 value = v;
                 provider = p.getContract().getSupplier();
@@ -229,10 +239,6 @@ public class GenericService extends Service {
 
         d.put("product", getProduct().getName());
         d.put("variant", getVariant().getName().getEs());
-
-        d.put("units", getUnits());
-        d.put("adults", getAdults());
-        d.put("children", getChildren());
 
         return d;
     }
@@ -268,30 +274,19 @@ public class GenericService extends Service {
 
         if (getProduct() != null) xml.setAttribute("product", getProduct().getName());
         if (getVariant() != null) xml.setAttribute("variant", getVariant().getName().getEs());
-        String s = "";
+        final String[] s = {""};
         if (getProduct().isDateDependant()) {
-            if (!"".equalsIgnoreCase(s)) s += " / ";
-            s += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            if (!"".equalsIgnoreCase(s[0])) s[0] += " / ";
+            s[0] += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
         if (getProduct().isDatesRangeDependant()) {
-            if (!"".equalsIgnoreCase(s)) s += " / ";
-            s += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            s += " - ";
-            s += getFinish().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            if (!"".equalsIgnoreCase(s[0])) s[0] += " / ";
+            s[0] += getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            s[0] += " - ";
+            s[0] += getFinish().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
-        if (getProduct().isUnitsDependant()) {
-            if (!"".equalsIgnoreCase(s)) s += " / ";
-            s += getUnits() + " uds";
-        }
-        if (getProduct().isAdultsDependant()) {
-            if (!"".equalsIgnoreCase(s)) s += " / ";
-            s += getAdults() + " ads";
-        }
-        if (getProduct().isChildrenDependant()) {
-            if (!"".equalsIgnoreCase(s)) s += " / ";
-            s += getChildren() + " chdn";
-        }
-        xml.setAttribute("units", s);
+
+        xml.setAttribute("units", s[0]);
 
         return xml;
     }

@@ -9,9 +9,10 @@ import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
-import io.mateu.erp.model.product.ProductLabel;
+import io.mateu.erp.model.product.Tag;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.erp.model.world.Country;
@@ -73,7 +74,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
-                Map<Long, ProductLabel> labels = new HashMap<>();
+                Map<Long, Tag> labels = new HashMap<>();
                 List<Excursion> excursions = new ArrayList<>();
 
                 for (String s : Splitter.on(',')
@@ -102,7 +103,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                             b.setExcursion(e);
                             b.setStart(io.mateu.erp.dispo.Helper.toDate(start));
                             b.setEnd(io.mateu.erp.dispo.Helper.toDate(start));
-                            b.setAdults(1);
+                            b.setPax(1);
 
                             double min = 0;
 
@@ -135,7 +136,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                                 a.setBestDeal(bd = new BestDeal());
                                 bd.setRetailPrice(new Amount("EUR", min));
 
-                                e.getDataSheet().getLabels().forEach(x -> {
+                                e.getDataSheet().getTags().forEach(x -> {
                                     labels.putIfAbsent(x.getId(), x);
                                     Label l;
                                     a.getLabels().add(l = new Label());
@@ -224,7 +225,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                 b.setExcursion(e);
                 b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
                 b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-                b.setAdults(1);
+                b.setPax(1);
 
 
                 rs.setVariants(new ArrayList<>());
@@ -377,8 +378,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
             b.setExcursion(e);
             b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
             b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-            b.setAdults(adults);
-            b.setChildren(children);
+            b.setPax(adults + children);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
             b.setShift(em.find(ExcursionShift.class, Long.parseLong(shift)));
@@ -470,7 +470,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                             if (precioOk) {
 
-                                double valor = Helper.roundEuros(p.getPricePerAdult() * b.getAdults() + p.getPricePerChild() * b.getChildren());
+                                double valor = Helper.roundEuros(p.getAdultPrice() * b.getPax());
                                 if (valor != 0) {
                                     rs.setTotal(new BestDeal());
                                     rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
@@ -537,10 +537,12 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         long idAgencia = 0;
         long idHotel = 0;
+        long idPos = 0;
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
             if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
             if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
@@ -566,10 +568,12 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         b.setAudit(new Audit(user));
         b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
+        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setTariff(b.getPos().getTariff());
+
 
         b.setExcursion(em.find(Excursion.class, new Long(String.valueOf(data.get("activity")))));
-        b.setAdults((Integer) data.get("adults"));
-        b.setChildren((Integer) data.get("children"));
+        b.setPax((Integer) data.get("pax"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

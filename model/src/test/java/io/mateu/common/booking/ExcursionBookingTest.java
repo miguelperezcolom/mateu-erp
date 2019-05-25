@@ -53,7 +53,7 @@ public class ExcursionBookingTest {
             b.setExcursion(Populator.excursion);
             b.setVariant(Populator.excursion.getVariants().get(0));
             b.setShift(Populator.excursion.getShifts().get(0));
-            b.setAdults(3);
+            b.setPax(3);
 
             em.persist(b);
         });

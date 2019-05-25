@@ -93,6 +93,24 @@ public class HotelBookingLine {
     }
 
 
+    private boolean priceOverrided;
+
+    private double pricePerRoom;
+
+    private double pricePerAdult;
+
+    private double pricePerChild;
+
+    private boolean costOverrided;
+
+    private double costPerRoom;
+
+    private double costPerAdult;
+
+    private double costPerChild;
+
+
+
     @Output
     private String validationMessages;
 
@@ -355,11 +373,19 @@ public class HotelBookingLine {
         appliedOffers = "";
         value = 0;
         valued = false;
-        if (start != null && end != null && room != null && board != null && contract != null && contract.getTerms() != null) {
+        if (priceOverrided) {
+
+            int noches = new Long(DAYS.between(start, end)).intValue();
+
+            value = Helper.roundEuros(noches * rooms * (pricePerRoom + adultsPerRoom * pricePerAdult + childrenPerRoom * pricePerChild));
+            offersValue = 0;
+            valued = true;
+
+        } else if (start != null && end != null && room != null && board != null && contract != null && contract.getTerms() != null) {
 
             LocalDate effectiveEnd = end != null?end.minusDays(1):null;
 
-            int noches = new Long(DAYS.between(start, end)).intValue();
+            int noches = new Long(DAYS.between(start, end) - 1).intValue();
 
             if (noches > 0) {
                 int paxPerRoom = adultsPerRoom + childrenPerRoom + 1;

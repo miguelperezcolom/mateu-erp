@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.organization.Office;
@@ -88,7 +89,6 @@ public class FreeTextBooking extends Booking {
         s.setReturnDate(getEnd());
         s.setPreferredProvider(getProvider());
         s.setOverridedCostValue(getOverridedCost());
-        s.setTotalCost(s.getOverridedCostValue());
         s.setCostOverrided(true);
         s.setActive(isActive());
     }
@@ -101,6 +101,11 @@ public class FreeTextBooking extends Booking {
     @Override
     public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable {
         throw new Exception("Free text needs price to be overrided");
+    }
+
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return getOverridedBillingConcept();
     }
 
 

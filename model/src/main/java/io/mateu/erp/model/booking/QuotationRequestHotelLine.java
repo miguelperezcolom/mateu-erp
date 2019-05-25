@@ -40,9 +40,19 @@ public class QuotationRequestHotelLine {
     @NotNull
     private LocalDate start;
 
+    public void setStart(LocalDate start) {
+        this.start = start;
+        updateTotal();
+    }
+
     @Column(name = "_end")
     @NotNull
     private LocalDate end;
+
+    public void setEnd(LocalDate end) {
+        this.end = end;
+        updateTotal();
+    }
 
     @ManyToOne@NotNull
     private Room room;
@@ -79,6 +89,7 @@ public class QuotationRequestHotelLine {
         this.childrenPerRoom = childrenPerRoom;
         updateTotal();
     }
+
 
     private int[] ages;
 
@@ -194,8 +205,8 @@ public class QuotationRequestHotelLine {
 
 
     private void updateTotal() {
-        if (isSaleOverrided()) setTotalSale(Helper.roundEuros(getNumNights() * (numberOfRooms * pricePerRoom + (numberOfRooms * adultsPerRoom) * pricePerAdult) + (numberOfRooms * childrenPerRoom) * pricePerChild));
-        if (isCostOverrided()) setTotalCost(Helper.roundEuros(getNumNights() * (numberOfRooms * costPerRoom + (numberOfRooms * adultsPerRoom) * costPerAdult) + (numberOfRooms * childrenPerRoom) * costPerChild));
+        if (isSaleOverrided()) setTotalSale(Helper.roundEuros(getNumNights() * numberOfRooms * (pricePerRoom + adultsPerRoom * pricePerAdult + childrenPerRoom * pricePerChild)));
+        if (isCostOverrided()) setTotalCost(Helper.roundEuros(getNumNights() * numberOfRooms * (costPerRoom + adultsPerRoom * costPerAdult + childrenPerRoom * costPerChild)));
     }
 
     private int getNumNights() {
@@ -263,4 +274,26 @@ public class QuotationRequestHotelLine {
         return this == obj || (id != 0 && obj != null && obj instanceof QuotationRequestLine && id == ((QuotationRequestLine) obj).getId());
     }
 
+    public QuotationRequestHotelLine createDuplicate(QuotationRequestHotel h) {
+        QuotationRequestHotelLine c = new QuotationRequestHotelLine();
+        c.setHotel(h);
+        c.setActive(active);
+        c.setAdultsPerRoom(adultsPerRoom);
+        c.setAges(ages);
+        c.setBoard(board);
+        c.setChildrenPerRoom(childrenPerRoom);
+        c.setCostOverrided(costOverrided);
+        c.setCostPerAdult(costPerAdult);
+        c.setCostPerChild(costPerChild);
+        c.setCostPerRoom(costPerRoom);
+        c.setEnd(end);
+        c.setNumberOfRooms(numberOfRooms);
+        c.setPricePerAdult(pricePerAdult);
+        c.setPricePerChild(pricePerChild);
+        c.setPricePerRoom(pricePerRoom);
+        c.setRoom(room);
+        c.setSaleOverrided(saleOverrided);
+        c.setStart(start);
+        return c;
+    }
 }

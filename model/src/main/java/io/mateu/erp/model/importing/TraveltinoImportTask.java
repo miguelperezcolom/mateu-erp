@@ -7,6 +7,7 @@ import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
@@ -35,7 +36,7 @@ public class TraveltinoImportTask extends TransferImportTask {
 
     public TraveltinoImportTask() {}
 
-    public TraveltinoImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept)
+    public TraveltinoImportTask(String name, ERPUser user, Agency customer, String html, Office office, Tariff tariff, PointOfSale pos, BillingConcept billingConcept)
     {
        this.setCustomer(customer);
 
@@ -50,6 +51,8 @@ public class TraveltinoImportTask extends TransferImportTask {
        this.setHtml(html);
 
        setOffice(office);
+
+       setTariff(tariff);
 
        setPointOfSale(pos);
 

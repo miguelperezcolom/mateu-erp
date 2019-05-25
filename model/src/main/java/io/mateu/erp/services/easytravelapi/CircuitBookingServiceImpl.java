@@ -7,9 +7,10 @@ import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.CircuitBooking;
 import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
-import io.mateu.erp.model.product.ProductLabel;
+import io.mateu.erp.model.product.Tag;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.*;
 import io.mateu.mdd.core.model.authentication.Audit;
@@ -64,7 +65,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
             Helper.notransact(em -> {
 
 
-                Map<Long, ProductLabel> labels = new HashMap<>();
+                Map<Long, Tag> labels = new HashMap<>();
 
                 List<Circuit> excursions = em.createQuery("select x from " + Circuit.class.getName() + " x order by x.name").getResultList();
 
@@ -78,7 +79,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                         b.setCircuit(e);
                         b.setStart(LocalDate.now());
                         b.setEnd(LocalDate.now());
-                        b.setAdults(1);
+                        b.setPax(1);
 
 
                         double min = 0;
@@ -108,14 +109,14 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                                     }
                                 }
 
-                                e.getDataSheet().getLabels().forEach(x -> {
+                                e.getDataSheet().getTags().forEach(x -> {
                                     labels.putIfAbsent(x.getId(), x);
                                 });
 
                             }
 
 
-                            e.getDataSheet().getLabels().forEach(x -> {
+                            e.getDataSheet().getTags().forEach(x -> {
                                 labels.putIfAbsent(x.getId(), x);
                                 Label l;
                                 a.getLabels().add(l = new Label());
@@ -200,7 +201,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                 b.setCircuit(e);
                 b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
                 b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-                b.setAdults(1);
+                b.setPax(1);
 
 
                 rs.setVariants(new ArrayList<>());
@@ -270,8 +271,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
             b.setCircuit(e);
             b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
             b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-            b.setAdults(adults);
-            b.setChildren(children);
+            b.setPax(adults);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
             b.priceServices(em, new ArrayList<>());
@@ -361,7 +361,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                             if (precioOk) {
 
-                                double valor = Helper.roundEuros(p.getPricePerAdult() * b.getAdults() + p.getPricePerChild() * b.getChildren());
+                                double valor = Helper.roundEuros(p.getAdultPrice() * b.getPax());
                                 if (valor != 0) {
                                     rs.setTotal(new BestDeal());
                                     rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
@@ -429,10 +429,12 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         long idAgencia = 0;
         long idHotel = 0;
+        long idPos = 0;
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
             if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
             if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
@@ -458,10 +460,11 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         b.setAudit(new Audit(user));
         b.setAgency(em.find(Agency.class, idAgencia));
         b.setCurrency(b.getAgency().getCurrency());
+        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setTariff(b.getPos().getTariff());
 
         b.setCircuit(em.find(Circuit.class, new Long(String.valueOf(data.get("activity")))));
-        b.setAdults((Integer) data.get("adults"));
-        b.setChildren((Integer) data.get("children"));
+        b.setPax((Integer) data.get("adults"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

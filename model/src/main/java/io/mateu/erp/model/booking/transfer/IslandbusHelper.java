@@ -111,6 +111,22 @@ public class IslandbusHelper {
                         else if (!"".equals(c)) c += " / ";
                         c += s.getOperationsComment();
                     }
+                    if (!Strings.isNullOrEmpty(s.getBooking().getCommentsForProvider())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getBooking().getCommentsForProvider();
+                    }
+                    if (!Strings.isNullOrEmpty(s.getCommentsForProvider())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getCommentsForProvider();
+                    }
+                    if (!Strings.isNullOrEmpty(s.getCommentsForProvider())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getCommentsForProvider();
+                    }
+
                     if (s.isFlightChecked()) {
                         if (c == null) c = "";
                         else if (!"".equals(c)) c += " / ";
@@ -224,6 +240,17 @@ public class IslandbusHelper {
                         else if (!"".equals(c)) c += " / ";
                         c += s.getOperationsComment();
                     }
+                    if (!Strings.isNullOrEmpty(s.getBooking().getCommentsForProvider())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getBooking().getCommentsForProvider();
+                    }
+                    if (!Strings.isNullOrEmpty(s.getCommentsForProvider())) {
+                        if (c == null) c = "";
+                        else if (!"".equals(c)) c += " / ";
+                        c += s.getCommentsForProvider();
+                    }
+
                     if (s.isFlightChecked()) {
                         if (c == null) c = "";
                         else if (!"".equals(c)) c += " / ";

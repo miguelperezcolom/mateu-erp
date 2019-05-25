@@ -1,6 +1,7 @@
 package io.mateu.erp.model.population;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -41,6 +42,7 @@ import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Map;
@@ -95,7 +97,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             genericProduct.setOffice(office);
             genericProduct.setName("Renault Megane");
             genericProduct.setActive(true);
-            genericProduct.setUnitsDependant(true);
             //genericProduct.setProvidedBy();
             em.persist(genericProduct);
 
@@ -124,7 +125,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setActive(true);
             p.setProduct(genericProduct);
             p.setDescription("Alquiler");
-            p.setPricePerUnitAndDay(50.2);
+            p.setUnitPricePerDay(50.2);
 
             em.persist(c);
 
@@ -154,7 +155,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setActive(true);
             p.setProduct(genericProduct);
             p.setDescription("Alquiler");
-            p.setPricePerUnitAndDay(30.1);
+            p.setUnitPricePerDay(30.1);
 
             em.persist(c);
 
@@ -415,7 +416,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             excursion.setDuration(TourDuration.WHOLEDAY);
             ExcursionShift s;
             excursion.getShifts().add(s = new ExcursionShift());
-            s.setTour(excursion);
+            s.setExcursion(excursion);
             s.setName("Turno único");
             s.setWeekdays(new boolean[] {true, true, true, true, true, true, true});
             //genericProduct.setProvidedBy();
@@ -437,7 +438,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setOffice(office);
             p.setName("Barco a Isla Saona (ida y vuelta)");
             p.setActive(true);
-            p.setAdultsDependant(true);
             //genericProduct.setProvidedBy();
             Variant vp;
             p.getVariants().add(vp = new Variant());
@@ -468,8 +468,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setOffice(office);
             p.setName("Comida en Isla Saona");
             p.setActive(true);
-            p.setAdultsDependant(true);
-            p.setChildrenDependant(true);
             p.setProvidedBy(proveedor);
             //genericProduct.setProvidedBy();
             p.getVariants().add(vp = new Variant());
@@ -499,7 +497,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setOffice(office);
             p.setName("Guía oficial");
             p.setActive(true);
-            p.setUnitsDependant(true);
             //genericProduct.setProvidedBy();
             p.getVariants().add(vp = new Variant());
             vp.setProduct(p);
@@ -547,7 +544,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             precio.setTour(excursion);
             precio.setVariant(excursion.getVariants().get(0));
             precio.setDescription("Precio único");
-            precio.setPricePerAdult(50.2);
+            precio.setAdultPrice(50.2);
 
             em.persist(c);
 
@@ -578,7 +575,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             precio.setTour(excursion);
             precio.setVariant(excursion.getVariants().get(0));
             precio.setDescription("Precio único");
-            precio.setPricePerAdult(30.1);
+            precio.setAdultPrice(30.1);
 
             em.persist(c);
 
@@ -810,9 +807,45 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
 
         // multilanguage
 
+        createViews();
 
         System.out.println("Database populated.");
 
+    }
+
+    private static void createViews() throws Throwable {
+        Helper.transact(em -> {
+            InputStream r = io.mateu.mdd.core.model.population.Populator.class.getResourceAsStream("/sql/vistas.sql");
+
+            if (r != null) {
+                String s = Helper.leerFichero(r);
+                if (s != null) {
+                    for (String t : s.split(";")) {
+                        t = t.trim();
+                        String sql = "";
+                        for (String l : t.split("\n")) {
+                            String lx = l.trim();
+                            if (!Strings.isNullOrEmpty(lx) && !lx.startsWith("--") && !lx.startsWith("#") && !lx.startsWith("//")) {
+                                try {
+                                    if ("".equals(sql)) sql += "\n";
+                                    sql += l;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                        if (!Strings.isNullOrEmpty(sql)) {
+                            try {
+                                System.out.println("executing sql:" + sql);
+                                em.createNativeQuery(sql).executeUpdate();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 
 

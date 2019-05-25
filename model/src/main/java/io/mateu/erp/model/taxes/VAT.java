@@ -29,7 +29,9 @@ public class VAT {
 
     private double specialRegimePercent;
 
-    @OneToMany(mappedBy = "vat")
+    private String specialRegimeText;
+
+    @OneToMany(mappedBy = "vat", cascade = CascadeType.ALL, orphanRemoval = true)
     @Ignored
     private List<VATPercent> percents = new ArrayList<>();
 

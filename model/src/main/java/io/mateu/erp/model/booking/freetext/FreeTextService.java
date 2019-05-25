@@ -82,12 +82,12 @@ public class FreeTextService extends Service {
 
     @Override
     public double rateSale(EntityManager em, PrintWriter report) throws Throwable {
-        return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedValue():0;
+        return isActive() && getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedValue():0;
     }
 
     @Override
     public double rateCost(EntityManager em, Provider supplier, PrintWriter report) throws Throwable {
-        return getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedCost():0;
+        return isActive() && getBooking() instanceof FreeTextBooking?((FreeTextBooking)getBooking()).getOverridedCost():0;
     }
 
     @Override
@@ -102,7 +102,7 @@ public class FreeTextService extends Service {
 
     @Override
     public BillingConcept getBillingConcept(EntityManager em) {
-        return AppConfig.get(em).getBillingConceptForOthers();
+        return getBooking() != null && getBooking().getOverridedBillingConcept() != null?getBooking().getOverridedBillingConcept():AppConfig.get(em).getBillingConceptForOthers();
     }
 
 

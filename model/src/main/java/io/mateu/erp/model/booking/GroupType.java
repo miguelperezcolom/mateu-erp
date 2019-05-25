@@ -10,7 +10,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 
 @Entity@Getter@Setter
-public class Activity {
+public class GroupType {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

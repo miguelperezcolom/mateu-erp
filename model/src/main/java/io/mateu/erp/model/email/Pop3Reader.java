@@ -13,6 +13,7 @@ import io.mateu.erp.model.importing.TraveltinoImportTask;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -82,7 +83,7 @@ public class Pop3Reader {
                         try {
                             Helper.transact(em -> {
                                 ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
-                                TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                                TraveltinoImportTask t = new TraveltinoImportTask("Traveltino", u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), em.find(Tariff.class, 1l), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                                 em.persist(t);
 
                             });
@@ -233,7 +234,7 @@ public class Pop3Reader {
                         new CSVPrinter(sw).println(csv);
 
                         ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
-                        TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
+                        TraveltinoImportTask t = new TraveltinoImportTask(m.getSubject(), u, (Agency) Helper.selectObjects("select x from Agency x where x.name = 'TRAVELTINO'").get(0),sw.toString(), (Office) Helper.selectObjects("select x from Office x where x.name = 'Ibiza'").get(0), em.find(Tariff.class, 1l), (PointOfSale) Helper.selectObjects("select x from PointOfSale x where x.name = 'Importación'").get(0), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
 
                     }

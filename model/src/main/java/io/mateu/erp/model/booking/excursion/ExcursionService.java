@@ -101,8 +101,13 @@ public class ExcursionService extends Service {
                     .filter(p -> p.getTour() == null || p.getTour().equals(excursion))
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(getVariant()))
                     .forEach(p -> {
-                        v[0] += getAdults() * p.getPricePerAdult();
-                        v[0] += getChildren() * p.getPricePerChild();
+
+                        v[0] += getInfants() * p.getInfantPrice();
+                        v[0] += getChildren() * p.getChildPrice();
+                        v[0] += getJuniors() * p.getJuniorPrice();
+                        v[0] += getAdults() * p.getAdultPrice();
+                        v[0] += getSeniors() * p.getSeniorPrice();
+
                     });
             prices. put(c, v[0]);
         });
@@ -135,8 +140,11 @@ public class ExcursionService extends Service {
                     .filter(p -> p.getTour() == null || p.getTour().equals(excursion))
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(getVariant()))
                     .forEach(p -> {
-                        v[0] += getAdults() * p.getPricePerAdult();
-                        v[0] += getChildren() * p.getPricePerChild();
+                        v[0] += getInfants() * p.getInfantPrice();
+                        v[0] += getChildren() * p.getChildPrice();
+                        v[0] += getJuniors() * p.getJuniorPrice();
+                        v[0] += getAdults() * p.getAdultPrice();
+                        v[0] += getSeniors() * p.getSeniorPrice();
                     });
             prices. put(c, v[0]);
         });
@@ -182,8 +190,13 @@ public class ExcursionService extends Service {
         long noches = DAYS.between(getStart(), getFinish());
         for (TourPrice p : prices) {
             double v = 0;
-            v += getAdults() * p.getPricePerAdult();
-            v += getChildren() * p.getPricePerChild();
+
+            v += getInfants() * p.getInfantPrice();
+            v += getChildren() * p.getChildPrice();
+            v += getJuniors() * p.getJuniorPrice();
+            v += getAdults() * p.getAdultPrice();
+            v += getSeniors() * p.getSeniorPrice();
+
             if (v < value) {
                 value = v;
                 provider = p.getContract().getSupplier();

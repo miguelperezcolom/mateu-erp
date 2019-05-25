@@ -1,9 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
-import io.mateu.erp.model.product.ProductLabel;
 import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.UseChips;
 import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;

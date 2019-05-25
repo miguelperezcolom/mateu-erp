@@ -49,7 +49,7 @@ public class DataSheet {
 
     @OneToMany
     @UseChips
-    private List<ProductLabel> labels = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
 
     @Override

@@ -1,17 +1,21 @@
 package io.mateu.erp.model.product.generic;
 
+import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Tour;
 import io.mateu.erp.model.product.tour.TourDuration;
-import io.mateu.erp.model.product.tour.TourPriceZone;
+import io.mateu.erp.model.product.tour.ExcursionPriceZone;
+import io.mateu.mdd.core.annotations.DependsOn;
+import io.mateu.mdd.core.annotations.Keep;
 import io.mateu.mdd.core.annotations.SameLine;
+import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Element;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +33,7 @@ public class Price implements Comparable<Price> {
     private long id;
 
     @ManyToOne
-    @NotNull
+    @NotNull@Keep
     private Contract contract;
 
     @ManyToOne
@@ -37,6 +41,13 @@ public class Price implements Comparable<Price> {
 
     @ManyToOne
     private Variant variant;
+
+    @DependsOn("product")
+    public DataProvider getVariantDataProvider() throws Throwable {
+        return new JPQLListDataProvider(
+                "select x from " + GenericProduct.class.getName() + " y inner join y.variants x " +
+                        ((getProduct() != null)?" where y.id = " + getProduct().getId():""));
+    }
 
     @ManyToOne
     private Extra extra;
@@ -46,6 +57,9 @@ public class Price implements Comparable<Price> {
 
     private boolean active = true;
 
+    @ManyToOne
+    private BillingConcept billingConcept;
+
     @Column(name = "_start")
     private LocalDate start;
 
@@ -53,10 +67,6 @@ public class Price implements Comparable<Price> {
     @SameLine
     private LocalDate end;
 
-    @ManyToOne
-    private BillingConcept billingConcept;
-
-    @NotEmpty
     private String description;
 
     private LocalDate bookingWindowStart;
@@ -64,28 +74,48 @@ public class Price implements Comparable<Price> {
     @SameLine
     private LocalDate bookingWindowEnd;
 
+    @ManyToOne@NotNull
+    private Tariff tariff;
+
+    private int minPax;
+
     private double percent;
 
-    private double pricePerUnit;
+    private double unitPrice;
     @SameLine
-    private double pricePerAdult;
+    private double paxPrice;
     @SameLine
-    private double pricePerChild;
-    private double pricePerUnitAndDay;
+    private double infantPrice;
     @SameLine
-    private double pricePerAdultAndDay;
+    private double childPrice;
     @SameLine
-    private double pricePerChildAndDay;
+    private double juniorPrice;
+    @SameLine
+    private double adultPrice;
+    @SameLine
+    private double seniorPrice;
+
+    private double unitPricePerDay;
+    @SameLine
+    private double paxPricePerDay;
+    @SameLine
+    private double infantPricePerDay;
+    @SameLine
+    private double childPricePerDay;
+    @SameLine
+    private double juniorPricePerDay;
+    @SameLine
+    private double adultPricePerDay;
+    @SameLine
+    private double seniorPricePerDay;
 
     private boolean finalPrice;
 
     @ManyToOne
     private Tour tour;
-    @SameLine
     private TourDuration tourDuration;
-    @SameLine
     @ManyToOne
-    private TourPriceZone tourPriceZone;
+    private ExcursionPriceZone tourPriceZone;
 
     private int fromTourPax;
     @SameLine
@@ -116,12 +146,20 @@ public class Price implements Comparable<Price> {
         if (bookingWindowEnd != null) e.setAttribute("bwend", bookingWindowEnd.format(dtf));
 
         e.setAttribute("percent", "" + percent);
-        e.setAttribute("pricePerUnit", "" + pricePerUnit);
-        e.setAttribute("pricePerAdult", "" + pricePerAdult);
-        e.setAttribute("pricePerChild", "" + pricePerChild);
-        e.setAttribute("pricePerUnitAndDay", "" + pricePerUnitAndDay);
-        e.setAttribute("pricePerAdultAndDay", "" + pricePerAdultAndDay);
-        e.setAttribute("pricePerChildAndDay", "" + pricePerChildAndDay);
+        if (tariff != null) e.setAttribute("tariff", "" + tariff);
+
+        e.setAttribute("unitPrice", "" + unitPrice);
+        e.setAttribute("infantPrice", "" + infantPrice);
+        e.setAttribute("childPrice", "" + childPrice);
+        e.setAttribute("juniorPrice", "" + juniorPrice);
+        e.setAttribute("adultPrice", "" + adultPrice);
+        e.setAttribute("seniorPrice", "" + seniorPrice);
+        e.setAttribute("unitPricePerDay", "" + unitPricePerDay);
+        e.setAttribute("infantPricePerDay", "" + infantPricePerDay);
+        e.setAttribute("childPricePerDay", "" + childPricePerDay);
+        e.setAttribute("juniorPricePerDay", "" + juniorPricePerDay);
+        e.setAttribute("adultPricePerDay", "" + adultPricePerDay);
+        e.setAttribute("seniorPricePerDay", "" + seniorPricePerDay);
 
 
         if (tour != null) e.addContent(new Element("tour").setAttribute("id", "" + tour.getId()).setAttribute("name", tour.getName()));
@@ -179,29 +217,55 @@ public class Price implements Comparable<Price> {
             if (!"".equals(s)) s += ", ";
             s += percent + "%";
         }
-        if (pricePerUnit != 0) {
+
+        if (unitPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerUnit + " per unit";
+            s += unitPrice + " per unit";
         }
-        if (pricePerAdult != 0) {
+        if (infantPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerAdult + " per adult";
+            s += infantPrice + " per infant";
         }
-        if (pricePerChild != 0) {
+        if (childPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerChild + " per child";
+            s += childPrice + " per child";
         }
-        if (pricePerUnitAndDay != 0) {
+        if (juniorPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerUnitAndDay + " per unit and day";
+            s += juniorPrice + " per junior";
         }
-        if (pricePerAdultAndDay != 0) {
+        if (adultPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerAdultAndDay + " per adult and day";
+            s += adultPrice + " per adult";
         }
-        if (pricePerChildAndDay != 0) {
+        if (seniorPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerChildAndDay + " per child and day";
+            s += seniorPrice + " per senior";
+        }
+
+        if (unitPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += unitPricePerDay + " per unit/day";
+        }
+        if (infantPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += infantPricePerDay + " per infant/day";
+        }
+        if (childPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += childPricePerDay + " per child/day";
+        }
+        if (juniorPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += juniorPricePerDay + " per junior/day";
+        }
+        if (adultPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += adultPricePerDay + " per adult/day";
+        }
+        if (seniorPricePerDay != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += seniorPricePerDay + " per senior/day";
         }
 
 

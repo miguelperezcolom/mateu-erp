@@ -6,6 +6,7 @@ import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
 import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
@@ -20,6 +21,7 @@ import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.AbstractContract;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.erp.model.tpv.TPVTRANSACTIONSTATUS;
@@ -30,7 +32,6 @@ import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
-import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.util.Helper;
@@ -84,6 +85,13 @@ public abstract class Booking {
     @NoChart@SearchFilter
     private File file;
 
+    //@ListColumn
+    @OneToOne(mappedBy = "booking")
+    //@ColumnWidth(100)
+    //@NoChart@SearchFilter
+    @NotInList
+    private Ticket ticket;
+
     @ManyToOne
     @NotNull
     @ListColumn
@@ -96,6 +104,11 @@ public abstract class Booking {
         this.agency = agency;
         setCurrency(agency.getCurrency());
     }
+
+    @ManyToOne
+    @ListColumn
+    @ColumnWidth(120)
+    private Tariff tariff;
 
     @NotNull
     @MainSearchFilter
@@ -110,6 +123,7 @@ public abstract class Booking {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
     @UseLinkToListView
+    @OrderColumn(name = "_orderInBooking")
     private List<Passenger> passengers = new ArrayList<>();
 
     private String email;
@@ -158,11 +172,62 @@ public abstract class Booking {
     @ColumnWidth(132)
     private LocalDate end;
 
-    private int adults;
+    @KPI
+    private int pax;
+
+    private int infants;
+
     @SameLine
     private int children;
+
     @SameLine
-    private int[] ages;
+    private int juniors;
+
+    @SameLine
+    private int adults;
+
+    @SameLine
+    private int seniors;
+
+    private int freeInfants;
+
+    @SameLine
+    private int freeChildren;
+
+    @SameLine
+    private int freeJuniors;
+
+    @SameLine
+    private int freeAdults;
+
+    @SameLine
+    private int freeSeniors;
+
+    public void setInfants(int infants) {
+        this.infants = infants;
+        setPax(getInfants() + getChildren() + getJuniors() + getAdults() + getSeniors());
+    }
+
+    public void setChildren(int children) {
+        this.children = children;
+        setPax(getInfants() + getChildren() + getJuniors() + getAdults() + getSeniors());
+    }
+
+    public void setJuniors(int juniors) {
+        this.juniors = juniors;
+        setPax(getInfants() + getChildren() + getJuniors() + getAdults() + getSeniors());
+    }
+
+    public void setAdults(int adults) {
+        this.adults = adults;
+        setPax(getInfants() + getChildren() + getJuniors() + getAdults() + getSeniors());
+    }
+
+    public void setSeniors(int seniors) {
+        this.seniors = seniors;
+        setPax(getInfants() + getChildren() + getJuniors() + getAdults() + getSeniors());
+    }
+
 
     @TextArea
     private String specialRequests;
@@ -203,6 +268,7 @@ public abstract class Booking {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking", orphanRemoval = true)
     @UseLinkToListView
+    @OrderColumn(name = "_orderInBooking")
     private List<BookingDueDate> dueDates = new ArrayList<>();
 
 
@@ -343,6 +409,12 @@ public abstract class Booking {
 
     private boolean alreadyPurchased;
 
+    @Output
+    private boolean specialRegime;
+
+    @Output
+    private boolean hotelOrTransportIncluded;
+
 
     @UseLinkToListView
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
@@ -351,26 +423,30 @@ public abstract class Booking {
     private List<Service> services = new ArrayList<>();
 
     @NotWhenCreating
-    @UseLinkToListView(fields = "text,nucs,invoice")
+    @UseLinkToListView(fields = "text,total,invoice")
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "_orderInBooking")
     private List<BookingCharge> serviceCharges = new ArrayList<>();
 
     @NotWhenCreating
-    @UseLinkToListView(fields = "text,nucs,invoice", addEnabled = true, deleteEnabled = true)
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @UseLinkToListView(fields = "text,total,invoice", addEnabled = true, deleteEnabled = true)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "_orderInBooking")
     private List<ExtraBookingCharge> extraCharges = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking")
-    @OrderColumn(name = "id")
     @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @OrderColumn(name = "_orderInBooking")
     private List<BookingPaymentAllocation> payments = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @UseLinkToListView
+    @OrderColumn(name = "_orderInBooking")
     private List<TPVTransaction> TPVTransactions = new ArrayList<>();
 
     @NotWhenCreating
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "_orderInBooking")
     private List<CancellationTerm> cancellationTerms = new ArrayList<>();
 
 
@@ -394,18 +470,21 @@ public abstract class Booking {
     @SearchFilter(field = "id")
     @Caption("Task Id")
     @UseLinkToListView
+    @OrderColumn(name = "_orderInBooking")
     private List<AbstractTask> tasks = new ArrayList<>();
 
 
     @UseLinkToListView
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
     @NotWhenCreating
+    @OrderColumn(name = "_orderInBooking")
     private List<BookingChange> changes = new ArrayList<>();
 
 
     @UseLinkToListView
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     @NotWhenCreating
+    @OrderColumn(name = "_orderInBooking")
     private List<BookingCommission> commissions = new ArrayList<>();
 
 
@@ -458,9 +537,11 @@ public abstract class Booking {
         data.put("Active", isActive()?"Yes":"No (Cancelled)");
         if (getStart() != null) data.put("Start", "" + getStart());
         if (getEnd() != null) data.put("End", "" + getEnd());
-        data.put("Adults", "" + getAdults());
-        data.put("Children", "" + getChildren());
-        if (getAges() != null) data.put("Ages", "" + Arrays.toString(getAges()));
+        data.put("Infants", "" + infants);
+        data.put("Children", "" + children);
+        data.put("Juniors", "" + juniors);
+        data.put("Adults", "" + adults);
+        data.put("Seniors", "" + seniors);
         if (getSpecialRequests() != null) data.put("Special reqs.", getSpecialRequests());
         if (getPrivateComments() != null) data.put("Private comms.", getPrivateComments());
         if (getPos() != null) data.put("POS", getPos().getName());
@@ -726,11 +807,6 @@ public abstract class Booking {
     }
 
 
-    @Action(order = 1)
-    public static void searchAvailable() {
-
-    }
-
     @Action(order = 0, icon = VaadinIcons.MAP_MARKER)
     public BookingMap map() {
         return new BookingMap(this);
@@ -738,118 +814,60 @@ public abstract class Booking {
 
     @Action(order = 1, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
     @NotWhenCreating
-    public void sendBooked(EntityManager em, String changeEmail, String postscript) throws Throwable {
+    public SendBookedForm sendBooked() throws Throwable {
+        return new SendBookedForm(this);
+    }
 
+    public void sendBooked(EntityManager em, String email, String postscript) throws Throwable {
         long t0 = new Date().getTime();
 
         AppConfig appconfig = AppConfig.get(em);
 
-        String to = changeEmail;
-        if (Strings.isNullOrEmpty(to)) {
-            if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
-                to = getEmail();
-            } else {
-                to = getAgency().getEmail();
-            }
-        }
-        if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
-
-
-        SendEmailTask t;
-        tasks.add(t = new SendEmailTask());
-
-        if (getPos() != null && getPos().getOffice() != null) {
-            t.setOffice(getPos().getOffice());
-        }
-        String status = "received";
-        if (isConfirmed()) status = "confirmed";
-        if (!isActive()) status = "cancelled";
-        t.setSubject("Booking " + getId() + " " + status);
-        t.setTo(to);
-        t.setAudit(new Audit(MDD.getCurrentUser()));
-        t.setDescription("Send booked email");
-        t.getBookings().add(this);
-
-        String msg = postscript;
-
-        String freemark = appconfig.getBookedEmailTemplate();
-
-        if (!Strings.isNullOrEmpty(freemark)) {
-            Map<String, Object> data = getData(em);
-            data.put("postscript", postscript);
-            msg = Helper.freemark(freemark, data);
-        }
-
-        t.setMessage(msg);
-
-        if (confirmed && active) {
-            adjuntarVouchers(em, t);
-        }
-
-        setDocumentationSent(true);
-
-    }
-
-    @Action(order = 2, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
-    @NotWhenCreating
-    public void sendVouchers(String changeEmail, String postscript) throws Throwable {
-
-
-        Helper.transact(em ->{
-
-            long t0 = new Date().getTime();
-
-            AppConfig appconfig = AppConfig.get(em);
-
-            String to = changeEmail;
-            if (Strings.isNullOrEmpty(to)) {
-                if (getAgency().getFinancialAgent() != null && getAgency().getFinancialAgent().isDirectSale()) {
-                    to = getEmail();
-                } else {
-                    to = getAgency().getEmail();
-                }
-            }
-            if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
-
-
+        if (Strings.isNullOrEmpty(email)) System.out.println("***************************************\nNo valid email address to send booking. Please fill.\n***************************************");
+        else {
             SendEmailTask t;
-            tasks.add(t = new SendEmailTask());
+            getTasks().add(t = new SendEmailTask());
 
             if (getPos() != null && getPos().getOffice() != null) {
                 t.setOffice(getPos().getOffice());
             }
-            t.setSubject("Vouchers for booking " + getId() + "");
-            t.setTo(to);
+            String status = "received";
+            if (isConfirmed()) status = "confirmed";
+            if (!isActive()) status = "cancelled";
+            t.setSubject("Booking " + getId() + " " + status);
+            t.setTo(email);
             t.setAudit(new Audit(MDD.getCurrentUser()));
-            t.setDescription("Send vouchers email");
+            t.setDescription("Send booked email");
             t.getBookings().add(this);
 
             String msg = postscript;
 
-            String freemark = appconfig.getVouchersEmailTemplate();
+            String freemark = appconfig.getBookedEmailTemplate();
 
             if (!Strings.isNullOrEmpty(freemark)) {
                 Map<String, Object> data = getData(em);
+                data.put("postscript", postscript);
                 msg = Helper.freemark(freemark, data);
             }
 
             t.setMessage(msg);
 
+            if (isCostValued() && isActive()) {
+                adjuntarVouchers(em, t);
+            }
 
-            adjuntarVouchers(em, t);
-
-
-            // fin crear vouchers
-
-            em.merge(this);
-
-
-        });
-
+            setDocumentationSent(true);
+        }
 
     }
 
-    private void adjuntarVouchers(EntityManager em, SendEmailTask t) throws Exception {
+    @Action(order = 2, icon = VaadinIcons.ENVELOPES, saveBefore = true, saveAfter = true)
+    @NotWhenCreating
+    public SendVouchersForm sendVouchers() throws Throwable {
+        return new SendVouchersForm(this);
+    }
+
+    public void adjuntarVouchers(EntityManager em, SendEmailTask t) throws Exception {
         // creamos vouchers
 
         if (getServices().stream().filter(s -> s.isActive()).count() > 0) {
@@ -1372,44 +1390,52 @@ public abstract class Booking {
 
         List<PriceBreakdownItem> breakdown = new ArrayList<>();
 
-        if (isValueOverrided()) {
-            if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
-            setTotalValue(overridedValue);
-            setValued(true);
-            services.forEach(s -> {
-                s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
-            });
-            breakdown.add(new PriceBreakdownItem(overridedBillingConcept, getDescription(), overridedValue));
-        } else {
-            setValued(false);
-            setTotalValue(0);
-            setTotalNetValue(0);
-            priceServices(em, breakdown);
-            if (!isValued()) {
-                services.forEach(s -> s.rateSale(em));
-                boolean v = getServices().size() > 0;
-                if (v) for (Service service : getServices()) v &= service.isSaleValued();
-                double t = 0;
-                if (v) for (Service service : getServices()) t += service.getTotalSale();
-                setValued(v);
-                setTotalValue(Helper.roundEuros(t));
+        if (active) {
+            if (isValueOverrided()) {
+                if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
+                setTotalValue(overridedValue);
+                setValued(true);
+                services.forEach(s -> {
+                    s.setTotalSale(Helper.roundEuros(getOverridedValue() / services.size()));
+                });
+                breakdown.add(new PriceBreakdownItem(overridedBillingConcept, getDescription(), overridedValue));
+            } else {
+                setValued(false);
+                setTotalValue(0);
+                setTotalNetValue(0);
+                priceServices(em, breakdown);
+                if (!isValued()) {
+                    services.forEach(s -> s.rateSale(em));
+                    boolean v = getServices().size() > 0;
+                    if (v) for (Service service : getServices()) v &= service.isSaleValued();
+                    double t = 0;
+                    if (v) for (Service service : getServices()) t += service.getTotalSale();
+                    setValued(v);
+                    setTotalValue(Helper.roundEuros(t));
+                }
             }
-        }
 
-        if (isCostOverrided()) {
-            if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
-            setTotalCost(overridedCost);
-            setCostValued(true);
-            services.forEach(s -> {
-                s.setCostOverrided(isCostOverrided());
-                s.setOverridedCostValue(Helper.roundEuros(getOverridedCost() / services.size()));
-                s.rateCost(em);
-            });
+            if (isCostOverrided()) {
+                if (overridedBillingConcept == null) throw new Exception("Billing concept is required. Please fill");
+                setTotalCost(overridedCost);
+                setCostValued(true);
+                services.forEach(s -> {
+                    s.setCostOverrided(isCostOverrided());
+                    s.setOverridedCostValue(Helper.roundEuros(getOverridedCost() / services.size()));
+                    s.rateCost(em);
+                });
+            } else {
+                services.forEach(s -> s.rateCost(em));
+                boolean v = getServices().size() > 0;
+                if (v) for (Service service : getServices()) v &= service.isCostValued();
+                setCostValued(v);
+            }
         } else {
-            services.forEach(s -> s.rateCost(em));
-            boolean v = getServices().size() > 0;
-            if (v) for (Service service : getServices()) v &= service.isCostValued();
-            setCostValued(v);
+            // cancelada, así que coste 0. Los costes de cancelación se añaden más adelante en updateCharges()
+            setTotalValue(0);
+            setValued(true);
+            setTotalCost(0);
+            setCostValued(true);
         }
 
         updateCharges(em, breakdown);
@@ -1417,6 +1443,7 @@ public abstract class Booking {
         updateTotals(em);
 
         updateCommissions(em);
+
     }
 
     private void updateCommissions(EntityManager em) {
@@ -1467,26 +1494,22 @@ public abstract class Booking {
         double totalCoste = 0;
         double totalPagado = 0;
 
-        for (Charge c : getCharges()) {
-            System.out.println("**************************updateTotalsxcharge");
-            if (ChargeType.SALE.equals(c.getType())) {
-                total += c.getTotal();
-                totalNeto += c.getTotal();
-            } else {
-                //totalCoste += c.getTotal().getValue();
-            }
+        for (Charge c : getServiceCharges()) {
+            total += c.getTotal();
+            totalNeto += c.getTotal();
         }
 
-        if (isCostOverrided()) {
-            totalCoste = getOverridedCost() * getOverridedCostCurrency().getExchangeRateToNucs() / getCurrency().getExchangeRateToNucs();
-        } else {
-            for (Service s : getServices()) {
-                totalCoste += s.getTotalCost();
-            }
+        for (Charge c : getCharges()) {
+            total += c.getTotal();
+            totalNeto += c.getTotal();
         }
 
         for (BookingPaymentAllocation pa : getPayments()) {
             totalPagado += pa.getValue();
+        }
+
+        for (Service service : getServices()) {
+            totalCoste += service.getTotalCost();
         }
 
 
@@ -1508,7 +1531,7 @@ public abstract class Booking {
         updateDueDates(em);
 
         getAgency().setUpdatePending(true);
-        getPos().setUpdatePending(true);
+        if (getPos() != null) getPos().setUpdatePending(true);
 
         if (getFile() != null) getFile().updateTotals();
 
@@ -1520,11 +1543,16 @@ public abstract class Booking {
             if (!RiskType.CREDIT.equals(agency.getFinancialAgent().getRiskType())) {
 
                 PaymentTerms pts = agency.getFinancialAgent().getCustomerPaymentTerms();
-                if (pts != null) for (PaymentTermsLine l : pts.getLines()) if (PaymentReferenceDate.ARRIVAL.equals(l.getReferenceDate())) {
+                if (pts != null) for (PaymentTermsLine l : pts.getLines()) {
                     BookingDueDate pl;
                     dueDates.add(pl = new BookingDueDate());
                     pl.setBooking(this);
-                    pl.setDate(start.minusDays(l.getRelease()));
+
+                    LocalDate refDate = start;
+                    if (PaymentReferenceDate.CONFIRMATION.equals(l.getReferenceDate())) refDate = getAudit().getCreated().toLocalDate();
+                    else if (PaymentReferenceDate.DEPARTURE.equals(l.getReferenceDate())) refDate = end;
+
+                    pl.setDate(refDate.minusDays(l.getRelease()));
                     pl.setAmount(Helper.roundEuros(totalValue * l.getPercent() / 100d));
                     pl.setAgent(agency.getFinancialAgent());
                     pl.setCurrency(agency.getCurrency());
@@ -1537,28 +1565,32 @@ public abstract class Booking {
 
     protected void updateCancellationTerms(EntityManager em) {
         cancellationTerms.clear();
-        if (agency.getCancellationRules() != null) {
-            for (CancellationRule r : agency.getCancellationRules().getRules()) {
+        List<CancellationRule> rules = new ArrayList<>();
+        if (getContract() != null && getContract().getCancellationRules() != null) {
+            rules.addAll(getContract().getCancellationRules().getRules());
+        } else if (agency.getCancellationRules() != null) {
+            rules.addAll(agency.getCancellationRules().getRules());
+        }
+        for (CancellationRule r : rules) {
+            if ((r.getStart() == null || !r.getStart().isAfter(end))
+                    && (r.getEnd() == null || !r.getEnd().isBefore(start))) {
+                CancellationTerm t;
+                cancellationTerms.add(t = new CancellationTerm());
+                t.setBooking(this);
 
-                if ((r.getStart() == null || !r.getStart().isAfter(end))
-                        && (r.getEnd() == null || !r.getEnd().isBefore(start))) {
-                    CancellationTerm t;
-                    cancellationTerms.add(t = new CancellationTerm());
-                    t.setBooking(this);
 
-                    t.setDate(start.minusDays(r.getRelease()));
+                t.setDate(start.minusDays(r.getRelease()));
 
-                    //todo: completar cálculos
-                    //todo: buscar en contrato y en compra
-                    double v = r.getPercent() * totalValue / 100d;
-                    v += r.getAmount();
-                    long de = DAYS.between(start, end) - 1;
-                    long noches = r.getFirstNights() < de?r.getFirstNights():de;
-                    v += noches * totalValue / de;
-                    t.setAmount(Helper.roundEuros(v));
-                }
-
+                //todo: completar cálculos
+                //todo: buscar en contrato y en compra
+                double v = r.getPercent() * totalValue / 100d;
+                v += r.getAmount();
+                long de = DAYS.between(start, end) - 1;
+                long noches = r.getFirstNights() < de?r.getFirstNights():de;
+                v += noches * totalValue / de;
+                t.setAmount(Helper.roundEuros(v));
             }
+
         }
     }
 
@@ -1566,10 +1598,47 @@ public abstract class Booking {
 
 
     public void updateCharges(EntityManager em, List<PriceBreakdownItem> breakdown) throws Throwable {
-        getServiceCharges().clear();
+        List<BookingCharge> remove = new ArrayList<>(getServiceCharges());
 
-        for (PriceBreakdownItem i : breakdown) {
+        // crear lista cargos que queremos dejar
+        if (!isActive()) {
+            breakdown.clear();
+            getCancellationTerms().forEach(t -> {
+                PriceBreakdownItem c;
+                breakdown.add(c = new PriceBreakdownItem(getDefaultBillingConcept(em), "CANCELLATION COST " + t.toString(), Helper.roundEuros(t.getAmount())));
+            });
+        }
 
+        // separar cargos existentes que coinciden y que sobran
+        List<PriceBreakdownItem> found = new ArrayList<>();
+        List<BookingCharge> used = new ArrayList<>();
+        for (PriceBreakdownItem i : breakdown) if (!found.contains(i)) for (BookingCharge c : getServiceCharges()) if (!used.contains(c) && match(i, c)) {
+            used.add(c);
+            found.add(i);
+        }
+
+        // añadir cargos existentes que coinciden
+        remove.removeAll(used);
+
+        // añadir cancelación cargos existentes que sobran pero que no podemos eliminar (facturados)
+        new ArrayList<BookingCharge>(remove).forEach(c -> {
+            if (c.getInvoice() != null) {
+                PriceBreakdownItem i;
+                breakdown.add(i = new PriceBreakdownItem(c.getBillingConcept(), "CANCELLATION OF " + c.getText(), Helper.roundEuros(-1d * c.getTotal())));
+            }
+        });
+
+        // separar cargos existentes que coinciden y que sobran
+        for (PriceBreakdownItem i : breakdown) if (!found.contains(i)) for (BookingCharge c : getServiceCharges()) if (!used.contains(c) && match(i, c)) {
+            used.add(c);
+            found.add(i);
+        }
+
+        // añadir cargos existentes que coinciden
+        remove.removeAll(used);
+
+        // añadir cargos que faltan
+        for (PriceBreakdownItem i : breakdown) if (!found.contains(i)) {
             BookingCharge c;
             getServiceCharges().add(c = new BookingCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
@@ -1586,10 +1655,21 @@ public abstract class Booking {
             c.setInvoice(null);
 
             c.setBillingConcept(i.getConcept());
-
         }
 
+        // eliminar cargos sobrantes
+        getServiceCharges().removeAll(remove);
+
     }
+
+    private boolean match(PriceBreakdownItem i, BookingCharge c) {
+        boolean ok = i.getConcept() != null && i.getConcept().equals(c.getBillingConcept());
+        ok = ok && i.getText() != null && i.getText().equals(c.getText());
+        ok = ok && i.getValue() == c.getTotal();
+        return  ok;
+    }
+
+    protected abstract BillingConcept getDefaultBillingConcept(EntityManager em);
 
     public static GridDecorator getGridDecorator() {
         return new GridDecorator() {
@@ -1686,6 +1766,7 @@ public abstract class Booking {
             if (getStart() != null) m.put("start", getStart().toString());
             if (getEnd() != null) m.put("end", getEnd().toString());
             if (getSpecialRequests() != null) m.put("specialRequests", getSpecialRequests());
+            if (getCommentsForProvider() != null) m.put("commentsForProvider", getCommentsForProvider());
             m.put("active", isActive());
             m.put("confirmed", isConfirmed());
             
@@ -1702,6 +1783,7 @@ public abstract class Booking {
         String s = "error when serializing";
         try {
             Map<String, Object> m = new LinkedHashMap<>();
+            m.put("active", isActive());
             m.put("priceOverrided", isValueOverrided());
             if (isValueOverrided()) {
                 m.put("overridedValue", getOverridedValue());

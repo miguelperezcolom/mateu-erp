@@ -7,6 +7,7 @@ import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
+import io.mateu.mdd.core.model.multilanguage.Literal;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import lombok.Getter;
@@ -66,8 +67,14 @@ public class TransferPoint {
 
     private boolean alternatePointForNonExecutive;
 
-    @TextArea
-    private String instructions;
+    @TextArea@ManyToOne(cascade = CascadeType.ALL)
+    private Literal arrivalInstructionsForPrivate;
+
+    @TextArea@SameLine@ManyToOne(cascade = CascadeType.ALL)
+    private Literal arrivalInstructionsForShuttle;
+
+    @TextArea@SameLine@ManyToOne(cascade = CascadeType.ALL)
+    private Literal departureInstructions;
 
     private String address;
 
@@ -105,10 +112,10 @@ public class TransferPoint {
     @Override
     public String toString() {
         String s = getName();
-        if (!Strings.isNullOrEmpty(getInstructions())) s += " / " + getInstructions();
+        //if (!Strings.isNullOrEmpty(getInstructions())) s += " / " + getInstructions();
         if (getAlternatePointForShuttle() != null) {
             s += " (" + ((isAlternatePointForNonExecutive())?"SHUTTLE":"NON EXECUTIVE") + ": " + getAlternatePointForShuttle().getName();
-            if (!Strings.isNullOrEmpty(getAlternatePointForShuttle().getInstructions())) s += " / " + getAlternatePointForShuttle().getInstructions();
+            //if (!Strings.isNullOrEmpty(getAlternatePointForShuttle().getInstructions())) s += " / " + getAlternatePointForShuttle().getInstructions();
             s += ")";
         }
         return s;
@@ -188,7 +195,7 @@ public class TransferPoint {
                             for (TransferPoint p : c.getTransferPoints()) {
                                 Element ep;
                                 ec.addContent(ep = new Element("transferpoint").setAttribute("type", "" + p.getType()).setAttribute("name", p.getName()));
-                                if (p.getInstructions() != null) ep.setAttribute("instructions", p.getInstructions());
+                                //if (p.getInstructions() != null) ep.setAttribute("instructions", p.getInstructions());
                                 if (p.getAlternatePointForShuttle() != null) ep.setAttribute("alternatepointforshuttle", p.getAlternatePointForShuttle().getName());
                                 if (p.isAlternatePointForNonExecutive()) ep.setAttribute("alternatepointfornonshuttle", p.getAlternatePointForShuttle().getName());
                             }

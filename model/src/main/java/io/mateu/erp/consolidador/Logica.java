@@ -25,7 +25,7 @@ public class Logica {
 
             // tenemos agencia
 
-            Agency actor = token.getAgency();
+            Agency actor = token.getUser().getAgency();
 
             if (actor == null) throw new Throwable("No actor for token " + rq.getToken() + "");
 

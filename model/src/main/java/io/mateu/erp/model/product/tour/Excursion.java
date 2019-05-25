@@ -2,15 +2,18 @@ package io.mateu.erp.model.product.tour;
 
 
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.product.Variant;
+import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.mdd.core.annotations.Action;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.UseLinkToListView;
+import io.mateu.mdd.core.model.multilanguage.Literal;
+import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,8 +30,8 @@ public class Excursion extends Tour {
     @NotNull
     private TourDuration duration;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tour")
-    @UseLinkToListView
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "excursion")
+    @Ignored
     private List<ExcursionShift> shifts = new ArrayList<>();
 
 
@@ -77,6 +80,41 @@ public class Excursion extends Tour {
             if (byShift == null) byDate.put(e.getDate(), byShift = new HashMap<>());
             byShift.put(e.getShift(), e);
         });
+    }
+
+
+    @PostPersist
+    public void postPersist() {
+        if (getVariants().size() == 0 || getShifts().size() == 0) {
+            WorkflowEngine.add(() -> {
+
+                try {
+                    Helper.transact(em -> {
+
+                        Excursion p = em.find(Excursion.class, getId());
+
+                        if (p.getVariants().size() == 0) {
+                            Variant v;
+                            p.getVariants().add(v = new Variant());
+                            v.setProduct(p);
+                            v.setName(new Literal("Standard", "Estándar"));
+                        }
+
+                        if (p.getShifts().size() == 0) {
+                            ExcursionShift v;
+                            p.getShifts().add(v = new ExcursionShift());
+                            v.setExcursion(p);
+                            v.setName("Único");
+                        }
+
+
+                    });
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+
+            });
+        }
     }
 
 }

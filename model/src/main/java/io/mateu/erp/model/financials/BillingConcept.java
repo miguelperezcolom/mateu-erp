@@ -30,20 +30,11 @@ public class BillingConcept {
     
     private boolean specialRegime;
 
-
-    private boolean hotel;
+    @SameLine
+    private boolean hotelIncluded;
 
     @SameLine
-    private boolean transfer;
-
-    @SameLine
-    private boolean generic;
-
-    @SameLine
-    private boolean commission;
-
-    @SameLine
-    private boolean handlingFee;
+    private boolean transportIncluded;
 
 
     @Override

@@ -3,6 +3,7 @@ package io.mateu.erp.model.importing;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.annotations.UseLinkToListView;
@@ -46,6 +47,9 @@ public abstract class TransferAutoImport {
 
     @ManyToOne
     private Office office;
+
+    @ManyToOne
+    private Tariff tariff;
 
     @ManyToOne
     private PointOfSale pointOfSale;

@@ -63,7 +63,7 @@ public class PurchaseOrder {
     @Version
     private int version;
 
-
+    @MainSearchFilter
     private String reference;
 
     @Embedded
@@ -73,7 +73,7 @@ public class PurchaseOrder {
     @NotNull
     private ServiceType serviceType;
 
-    @SearchFilter
+    @MainSearchFilter
     @ListColumn
     @Output
     private LocalDate start;
@@ -87,7 +87,7 @@ public class PurchaseOrder {
     @ManyToOne
     @NotNull
     @ListColumn
-    @SearchFilter
+    @MainSearchFilter
     @ColumnWidth(172)
     @NoChart
     private Provider provider;
@@ -236,19 +236,25 @@ public class PurchaseOrder {
     }
 
     public void send(EntityManager em, User u) throws Throwable {
+        send(em, u, "", "");
+    }
+
+    public void send(EntityManager em, User u, String email, String postscript) throws Throwable {
 
         if (isActive() || getSendingTasks().size() > 0) {
 
-            SendPurchaseOrdersTask t = null;
+            SendPurchaseOrdersByEmailTask t = null;
 
             t = getProvider().createTask(em, this);
+
+            if (!Strings.isNullOrEmpty(email)) t.setTo(email);
 
             t.setOffice(getOffice());
             t.setProvider(getProvider());
             t.setStatus(TaskStatus.PENDING);
             t.setAudit(new Audit(u));
 
-            t.setPostscript("");
+            t.setPostscript(postscript);
 
 
             t.getPurchaseOrders().add(this);
@@ -327,7 +333,7 @@ public class PurchaseOrder {
     }
 
     public void createCharges(EntityManager em) {
-        for (Service s : getServices()) {
+        for (Service s : getServices()) if (s.getTotalCost() != 0) {
             PurchaseCharge c;
             getCharges().add(c = new PurchaseCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
@@ -346,17 +352,6 @@ public class PurchaseOrder {
 
             c.setBillingConcept(s.getBillingConcept(em));
         }
-    }
-
-
-    private double rate(EntityManager em, PrintWriter report) throws Throwable {
-        double total = 0;
-        if (isActive()) for (Service s : getServices()) if (s.isActive()) {
-            double serviceCost = s.getOverridedCostValue();
-            if (!s.isCostOverrided()) serviceCost = s.rateCost(em, getProvider(), report);
-            total += serviceCost;
-        }
-        return Helper.roundEuros(total);
     }
 
 
@@ -494,16 +489,18 @@ public class PurchaseOrder {
     private void updateStatusFromTasks(EntityManager em) {
         if (sendingTasks.size() > 0) {
             SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
-            if (t.getSignature() != null && t.getSignature().equals(t.createSignature())) {
-                if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
-                    if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
-                    setSentTime(t.getFinished());
-                    setSent(true);
+            if (!TaskResult.CANCELLED.equals(t.getResult())) {
+                if (t.getSignature() != null && t.getSignature().equals(t.createSignature())) {
+                    if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
+                        if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
+                        setSentTime(t.getFinished());
+                        setSent(true);
+                    }
+                } else {
+                    setStatus(PurchaseOrderStatus.PENDING);
+                    setSent(false);
+                    setSentTime(null);
                 }
-            } else {
-                setStatus(PurchaseOrderStatus.PENDING);
-                setSent(false);
-                setSentTime(null);
             }
         }
     }

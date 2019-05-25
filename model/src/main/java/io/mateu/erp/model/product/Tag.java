@@ -8,7 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 
 @Entity@Getter@Setter
-public class ProductLabel {
+public class Tag {
 
     @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

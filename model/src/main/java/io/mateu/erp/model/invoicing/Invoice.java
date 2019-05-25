@@ -4,17 +4,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.parts.FreeTextBooking;
-import io.mateu.erp.model.booking.parts.HotelBooking;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.config.AppConfig;
-import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.financials.RebateSettlement;
 import io.mateu.erp.model.payments.InvoicePaymentAllocation;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
 import io.mateu.erp.model.taxes.VATSettlement;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -25,15 +24,20 @@ import lombok.Setter;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
@@ -183,6 +187,30 @@ public abstract class Invoice {
 
 
         double totalExento = 0;
+        Map<VAT, Double> totalRegimenEspecial = new HashMap<>();
+
+        Map<Booking, Boolean> specialRegimeValuesPerBooking = new HashMap<>();
+        Map<Booking, Boolean> includesHotelOrTransportPerBooking = new HashMap<>();
+        Map<Booking, Boolean> specialRegimeProvidersPerBooking = new HashMap<>();
+        for (BookingCharge c : charges) {
+            specialRegimeValuesPerBooking.put(c.getBooking(), specialRegimeValuesPerBooking.getOrDefault(c.getBooking(), c.getBooking().isSpecialRegime() || (c.getBooking().getFile() != null && c.getBooking().getFile().isSpecialRegime())) || c.getBillingConcept().isSpecialRegime());
+            includesHotelOrTransportPerBooking.put(c.getBooking(), includesHotelOrTransportPerBooking.getOrDefault(c.getBooking(), c.getBooking().isHotelOrTransportIncluded() || (c.getBooking().getFile() != null && c.getBooking().getFile().isHotelOrTransportIncluded())) || c.getBillingConcept().isHotelIncluded() || c.getBillingConcept().isTransportIncluded());
+        }
+        specialRegimeValuesPerBooking.keySet().forEach(b -> {
+            boolean hay = false;
+            Set<Service> services = Sets.newHashSet(b.getServices());
+            if (b.getFile() != null) b.getFile().getBookings().forEach(bx -> services.addAll(bx.getServices()));
+            for (Service service : services) {
+                if (service.getProvider() != null && service.getProvider().getFinancialAgent() != null) hay |= service.getProvider().getFinancialAgent().isSpecialRegime();
+                else hay = true;
+            }
+            specialRegimeProvidersPerBooking.put(b, hay);
+        });
+
+
+        includesHotelOrTransportPerBooking.keySet().forEach(b -> {
+            if (!specialRegimeValuesPerBooking.get(b)) specialRegimeValuesPerBooking.put(b, issuer.getVat() == null || specialRegimeProvidersPerBooking.get(b));
+        });
 
         for (BookingCharge c : charges) {
 
@@ -233,12 +261,29 @@ public abstract class Invoice {
             total += c.getTotal();
 
 
+            VAT vat = null;
+            if (LocalizationRule.CUSTOMER.equals(c.getBillingConcept().getLocalizationRule())) vat = recipient.getVat();
+            else if (LocalizationRule.SERVICE.equals(c.getBillingConcept().getLocalizationRule())) {
+                if (c.getBooking() instanceof HotelBooking) vat = getVatForResort(((HotelBooking) c.getBooking()).getHotel().getResort());
+                else if (c.getBooking() instanceof TransferBooking) vat = getVatForResort(((TransferBooking) c.getBooking()).getOrigin().getResort());
+                else if (c.getBooking() instanceof ExcursionBooking) vat = getVatForResort(((ExcursionBooking) c.getBooking()).getExcursion().getResort());
+                else if (c.getBooking() instanceof CircuitBooking) vat = getVatForResort(((CircuitBooking) c.getBooking()).getCircuit().getResort());
+                else if (c.getBooking() instanceof GenericBooking) vat = getVatForResort(((GenericBooking) c.getBooking()).getProduct().getResort());
+                else if (c.getBooking() instanceof FreeTextBooking) vat = getVatForResort(((FreeTextBooking) c.getBooking()).getOffice().getResort());
+                else vat = issuer.getVat();
+            } else vat = issuer.getVat();
+
             if (issuer.getVat() != null && vatPercents.containsKey(c.getBillingConcept())) {
-                Map<Double, Double> m = vats.get(issuer.getVat());
-                if (m == null) vats.put(issuer.getVat(), m = new HashMap<>());
-                double p = vatPercents.get(c.getBillingConcept());
-                double v = m.containsKey(p)?m.get(p):0;
-                m.put(p, v + c.getTotal());
+                if (specialRegimeValuesPerBooking.get(c.getBooking())) {
+                    double antes = totalRegimenEspecial.getOrDefault(issuer.getVat(), 0d);
+                    totalRegimenEspecial.put(issuer.getVat(), antes + c.getTotal());
+                } else {
+                    Map<Double, Double> m = vats.get(issuer.getVat());
+                    if (m == null) vats.put(issuer.getVat(), m = new HashMap<>());
+                    double p = vatPercents.get(c.getBillingConcept());
+                    double v = m.containsKey(p)?m.get(p):0;
+                    m.put(p, v + c.getTotal());
+                }
             } else {
                 totalExento += c.getTotal();
             }
@@ -251,34 +296,53 @@ public abstract class Invoice {
             for (double p : vats.get(v).keySet()) {
                 VATLine l;
                 getVATLines().add(l = new VATLine());
+
                 l.setInvoice(this);
                 l.setPercent(p);
                 l.setTotal(Helper.roundEuros(vats.get(v).get(p)));
                 l.setBase(Helper.roundEuros(100d * (l.getTotal() / (100d + p))));
-                l.setVat(Helper.roundEuros(l.getTotal() - l.getBase()));
+                l.setVat(v);
             }
 
         }
 
-        if (vats.size() > 0) {
-            totalExento = Helper.roundEuros(totalExento);
-            if (totalExento != 0) {
+        totalExento = Helper.roundEuros(totalExento);
+        if (totalExento != 0) {
+            VATLine l;
+            getVATLines().add(l = new VATLine());
+            l.setInvoice(this);
+            l.setPercent(0);
+            l.setTotal(0);
+            l.setBase(totalExento);
+            l.setVat(null);
+            l.setExempt(true);
+        }
+
+        tener en cuenta coste, derivado de las líneas de cargo de compra asociadas con esta factura
+
+        totalRegimenEspecial.keySet().forEach(v -> {
+            double t = Helper.roundEuros(totalRegimenEspecial.get(v));
+            if (t != 0) {
                 VATLine l;
                 getVATLines().add(l = new VATLine());
                 l.setInvoice(this);
                 l.setPercent(0);
-                l.setTotal(totalExento);
-                l.setBase(totalExento);
-                l.setVat(0);
-                l.setExempt(true);
+                l.setTotal(0);
+                l.setBase(t);
+                l.setVat(v);
+                l.setSpecialRegime(true);
             }
-        }
+        });
 
 
         setTotal(total);
 
         setRetainedPercent(0);
 
+    }
+
+    private VAT getVatForResort(Resort resort) {
+        return resort.getDestination().getVat() != null?resort.getDestination().getVat():resort.getDestination().getCountry().getVat();
     }
 
 
@@ -488,6 +552,24 @@ public abstract class Invoice {
                         //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
                         String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
                         System.out.println("xml=" + sxml);
+
+                        /*
+
+                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder builder = factory.newDocumentBuilder();
+                        Document document = builder.parse(new InputSource(new StringReader(sxml)));
+
+                        // Use a Transformer for output
+                        TransformerFactory tFactory = TransformerFactory.newInstance();
+                        StreamSource stylesource = new StreamSource(new StringReader(invoices.iterator().next().getXslfo(em)));
+                        Transformer transformer = tFactory.newTransformer(stylesource);
+
+                        DOMSource source = new DOMSource(document);
+                        StreamResult result = new StreamResult(System.out);
+                        transformer.transform(source, result);
+
+                        */
+
                         fileOut.write(Helper.fop(new StreamSource(new StringReader(invoices.iterator().next().getXslfo(em))), new StreamSource(new StringReader(sxml))));
                         fileOut.close();
 

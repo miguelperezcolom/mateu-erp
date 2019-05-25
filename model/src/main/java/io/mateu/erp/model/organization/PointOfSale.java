@@ -5,6 +5,7 @@ import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.tpv.TPV;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Ignored;
@@ -44,7 +45,12 @@ public class PointOfSale {
     @ManyToOne
     private FinancialAgent financialAgent;
 
+    @ManyToOne@NotNull
+    private Tariff tariff;
+
     private String email;
+
+    private int hoursForUnpaidCancellation;
 
 
     @KPI

@@ -30,6 +30,8 @@ public class Country {
     @Ignored
     private List<Destination> destinations = new ArrayList<>();
 
+    private boolean ue;
+
     @ManyToOne
     private VAT vat;
 

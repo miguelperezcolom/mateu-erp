@@ -5,10 +5,13 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.financials.PaymentTerms;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.organization.Company;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.revenue.HandlingFee;
 import io.mateu.erp.model.revenue.Markup;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
@@ -18,6 +21,8 @@ import org.jdom2.Element;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.Base64;
+import java.util.Date;
 
 @Entity@Getter@Setter
 public class Agency {
@@ -85,7 +90,7 @@ public class Agency {
 
     @ListColumn
     @KPI
-    @Money
+    @Money@Balance
     private double balance;
 
     // ... hasta aquí
@@ -120,6 +125,10 @@ public class Agency {
     private boolean shuttleTransfersInOwnInvoice;
 
 
+
+    public String createTempToken(PointOfSale pos) {
+        return Base64.getEncoder().encodeToString(("{ \"created\": \"" + new Date() + "\", \"userId\": \"" + MDD.getCurrentUser().getLogin() + "\"" + ", \"agencyId\": \"" + getId() + "\"" + ", \"posId\": \"" + pos.getId() + "\"" + "}").getBytes());
+    }
 
 
     @Override

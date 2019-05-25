@@ -252,4 +252,26 @@ public class QuotationRequestGeneric {
 
         return el;
     }
+
+    public QuotationRequestGeneric createDuplicate(QuotationRequest rq) {
+        QuotationRequestGeneric c = new QuotationRequestGeneric();
+        c.setRq(rq);
+        c.setActive(active);
+        c.setAdults(adults);
+        c.setChildren(children);
+        c.setCostOverrided(costOverrided);
+        c.setCostPerAdult(costPerAdult);
+        c.setCostPerChild(costPerChild);
+        c.setCostPerUnit(costPerUnit);
+        c.setEnd(end);
+        c.setPricePerAdult(pricePerAdult);
+        c.setPricePerChild(pricePerChild);
+        c.setPricePerUnit(pricePerUnit);
+        c.setProduct(product);
+        c.setSaleOverrided(saleOverrided);
+        c.setStart(start);
+        c.setUnits(units);
+        c.setVariant(variant);
+        return c;
+    }
 }

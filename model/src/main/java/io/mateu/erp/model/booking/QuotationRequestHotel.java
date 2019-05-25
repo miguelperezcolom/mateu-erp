@@ -17,6 +17,7 @@ import javax.validation.constraints.NotNull;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -96,6 +97,13 @@ public class QuotationRequestHotel {
         }
     }
 
+    public void setLines(List<QuotationRequestHotelLine> lines) {
+        this.lines = lines;
+        updateTotal();
+        if (rq != null) {
+            rq.updateTotal();
+        }
+    }
 
     public void updateTotal() {
         double v = 0;
@@ -111,7 +119,7 @@ public class QuotationRequestHotel {
             v += line.getTotalSale();
             c += line.getTotalCost();
 
-            int n = line.getStart() != null && line.getEnd() != null?(int) (DAYS.between(line.getStart(), line.getEnd()) -1):0;
+            int n = line.getStart() != null && line.getEnd() != null?(int) (DAYS.between(line.getStart(), line.getEnd())):0;
 
             totalAds += line.getNumberOfRooms() * line.getAdultsPerRoom();
             totalChs += line.getNumberOfRooms() * line.getChildrenPerRoom();
@@ -230,4 +238,17 @@ public class QuotationRequestHotel {
         return el;
     }
 
+    public QuotationRequestHotel createDuplicate(QuotationRequest rq) {
+        QuotationRequestHotel c = new QuotationRequestHotel();
+        c.setRq(rq);
+        c.setActive(active);
+        c.setAdultTaxPerNight(adultTaxPerNight);
+        c.setChildTaxPerNight(childTaxPerNight);
+        c.setFirstService(firstService);
+        c.setHotel(hotel);
+        c.setLastService(lastService);
+        c.setLines(lines.stream().map(l -> l.createDuplicate(c)).collect(Collectors.toList()));
+        c.setSpecialRequests(specialRequests);
+        return c;
+    }
 }

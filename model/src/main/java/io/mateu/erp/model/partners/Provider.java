@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
+import io.mateu.erp.model.financials.PaymentTerms;
 import io.mateu.erp.model.financials.PurchaseOrderSendingMethod;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.invoicing.ReceivedInvoice;
@@ -91,7 +92,7 @@ public class Provider {
 
     @ListColumn
     @KPI
-    @Money
+    @Money@Balance
     private double balance;
 
     // ... hasta aquí
@@ -101,7 +102,7 @@ public class Provider {
 
 
 
-    public SendPurchaseOrdersTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
+    public SendPurchaseOrdersByEmailTask createTask(EntityManager em, PurchaseOrder purchaseOrder) throws Throwable {
         return createTask(em, getSendOrdersTo(), purchaseOrder.getOffice().getEmailCC());
     }
 

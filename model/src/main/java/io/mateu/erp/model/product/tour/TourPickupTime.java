@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalTime;
 
 @Entity
 @Getter
@@ -28,7 +29,8 @@ public class TourPickupTime {
     /**
      * no se puede vender una excursión si no hay hora de recogida
      */
-    private int time;
+    @NotNull
+    private LocalTime time;
 
     @Column(name = "_order")
     private int order;

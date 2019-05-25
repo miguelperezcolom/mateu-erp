@@ -723,14 +723,14 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed");
 
-        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
-
         long idAgencia = 0;
+        long idPos = 0;
         final UserData u = new UserData();
         String login = "";
         try {
             Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
             idAgencia = Long.parseLong(creds.getAgentId());
+            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
             //rq.setLanguage(creds.getLan());
             login = creds.getLogin();
             u.setLogin(login);
@@ -763,6 +763,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 hb.setLeadName(rq.getLeadName());
                 hb.setPrivateComments(rq.getPrivateComments());
                 hb.setPos(em.find(AuthToken.class, token).getPos());
+                hb.setTariff(hb.getPos().getTariff());
                 hb.setConfirmed(hb.getAgency() != null && !hb.getAgency().getFinancialAgent().isDirectSale());
                 hb.setConfirmNow(false);
 

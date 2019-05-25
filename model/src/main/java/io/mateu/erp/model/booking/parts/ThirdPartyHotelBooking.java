@@ -4,6 +4,8 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.PriceBreakdownItem;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.erp.model.thirdParties.Integration;
 import io.mateu.mdd.core.MDD;
@@ -119,6 +121,11 @@ public class ThirdPartyHotelBooking extends Booking {
     @Override
     public void priceServices(EntityManager em, List<PriceBreakdownItem> breakdown) {
 
+    }
+
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForHotel();
     }
 
     @Override

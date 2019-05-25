@@ -3,6 +3,7 @@ package io.mateu.erp.model.invoicing;
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 
@@ -106,60 +107,18 @@ public class Invoicer {
 
         chargesByPartnerAndRegime.keySet().forEach(p -> {
 
+
             chargesByPartnerAndRegime.get(p).forEach(l -> {
 
                 // creamos factura y la añadimos a la lista
 
-                FinancialAgent a = p.getFinancialAgent();
-
-                IssuedInvoice i = new IssuedInvoice();
-
-                i.setAudit(new Audit(user));
-                i.setIssueDate(LocalDate.now());
-                i.setNumber(proforma?"PROFORMA":p.getCompany().getBillingSerial().createInvoiceNumber());
-                if (!proforma) i.setSerial(p.getCompany().getBillingSerial());
-                if (a.getCustomerPaymentTerms() != null) {
-                    LocalDate dd = null;
-
-                    i.setDueDate(dd);
-                }
-                i.setAgency(p);
-                i.setRecipient(a);
-                i.setIssuer(p.getCompany().getFinancialAgent());
-                i.setRetainedPercent(0);
-                i.setTaxDate(i.getIssueDate());
-                i.setDueDate(i.getIssueDate());
-                i.setType(InvoiceType.ISSUED);
-                i.setValid(true);
-
-                l.forEach(c -> {
-                    i.getLines().add(new ChargeInvoiceLine(i, c));
-                });
-
-                double t = 0;
-                for (AbstractInvoiceLine x : i.getLines()) {
-                    t += x.getTotal();
-                }
-                t = Helper.roundEuros(t);
-
-                VATLine vl;
-                i.getVATLines().add(vl = new VATLine());
-                vl.setInvoice(i);
-                vl.setBase(t);
-                vl.setTotal(t);
-                vl.setExempt(true);
-
                 try {
-                    i.setTotal(t);
-                    i.setCurrency(p.getCurrency());
-
+                    IssuedInvoice i = new IssuedInvoice(user, l, proforma, p.getCompany().getFinancialAgent(), p.getFinancialAgent(), proforma?"PROFORMA":p.getCompany().getBillingSerial().createInvoiceNumber());
+                    i.setAgency(p);
                     invoices.add(i);
-
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
-
-
 
             });
 

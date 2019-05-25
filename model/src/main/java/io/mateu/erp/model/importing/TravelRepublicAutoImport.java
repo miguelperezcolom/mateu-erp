@@ -105,7 +105,7 @@ public class TravelRepublicAutoImport extends TransferAutoImport {
                     if (csv!=null && csv.length()>0)
                     {
                         ERPUser u = em.find(ERPUser.class, Constants.IMPORTING_USER_LOGIN);
-                        TravelRepublicImportTask t = new TravelRepublicImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),csv, getOffice(), getPointOfSale(), em.find(BillingConcept.class, "TRA"));
+                        TravelRepublicImportTask t = new TravelRepublicImportTask(getName()+ " (" + fdesde + "-" + fhasta+")",u, getCustomer(),csv, getOffice(), getTariff(), getPointOfSale(), em.find(BillingConcept.class, "TRA"));
                         em.persist(t);
                         addHistory(LocalDateTime.now().format(dfh)+ " - Tarea creada");
                     }

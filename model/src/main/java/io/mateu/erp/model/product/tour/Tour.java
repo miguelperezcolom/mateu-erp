@@ -4,8 +4,8 @@ import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Ignored;
+import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.annotations.Section;
-import io.mateu.mdd.core.annotations.UseLinkToListView;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,6 +19,17 @@ import java.util.List;
 @Entity
 @Getter@Setter
 public class Tour extends AbstractProduct {
+
+    private int childFrom;
+
+    @SameLine
+    private int juniorFrom;
+
+    @SameLine
+    private int adultFrom;
+
+    @SameLine
+    private int seniorFrom;
 
 
     @Section("Purchase")
@@ -34,7 +45,7 @@ public class Tour extends AbstractProduct {
     private boolean freeSale;
 
     @OneToMany(mappedBy = "tour")
-    @UseLinkToListView
+    @Ignored
     private List<ManagedEvent> events = new ArrayList<>();
 
 

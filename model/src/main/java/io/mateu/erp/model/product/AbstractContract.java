@@ -79,6 +79,14 @@ public abstract class AbstractContract {
 
     private boolean mandatoryRates;
 
+    @SameLine
+    private double commissionPercent;
+
+    @SameLine
+    private double discountPercent;
+
+    @SameLine
+    private double reservationFee;
 
     @NotNull
     @ManyToOne

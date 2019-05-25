@@ -31,6 +31,8 @@ public class Contract extends AbstractContract {
     @Tab("Transfers")
     private int minPaxPerBooking;
 
+    private int release;
+
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
     @Ignored
     private List<Price> prices = new ArrayList<>();

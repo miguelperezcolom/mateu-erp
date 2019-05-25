@@ -67,7 +67,8 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
             email.setHostName(utilizarSmtpOficina?getOffice().getEmailHost():appconfig.getAdminEmailSmtpHost());
             email.setSmtpPort(utilizarSmtpOficina?getOffice().getEmailPort():appconfig.getAdminEmailSmtpPort());
             email.setAuthenticator(new DefaultAuthenticator(utilizarSmtpOficina?getOffice().getEmailUsuario():appconfig.getAdminEmailUser(), utilizarSmtpOficina?getOffice().getEmailPassword():appconfig.getAdminEmailPassword()));
-            //email.setSSLOnConnect(true);
+            email.setSSLOnConnect(utilizarSmtpOficina?getOffice().isEmailSSLOnConnect():appconfig.isAdminEmailSSLOnConnect());
+            email.setStartTLSEnabled(utilizarSmtpOficina?getOffice().isEmailStartTLS():appconfig.isAdminEmailStartTLS());
             email.setFrom(utilizarSmtpOficina?getOffice().getEmailFrom():appconfig.getAdminEmailFrom());
             if (!Strings.isNullOrEmpty(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC())) email.getCcAddresses().add(new InternetAddress(utilizarSmtpOficina?getOffice().getEmailCC():appconfig.getAdminEmailCC()));
 

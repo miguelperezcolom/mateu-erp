@@ -6,6 +6,7 @@ import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.Constants;
@@ -35,7 +36,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
     public ShuttleDirectImportTask() {}
 
-    public ShuttleDirectImportTask(String name, ERPUser user, Agency customer, String html, Office office, PointOfSale pos, BillingConcept billingConcept, Agency expedia)
+    public ShuttleDirectImportTask(String name, ERPUser user, Agency customer, String html, Office office, Tariff tariff, PointOfSale pos, BillingConcept billingConcept, Agency expedia)
     {
        this.setCustomer(customer);
 
@@ -51,12 +52,15 @@ public class ShuttleDirectImportTask extends TransferImportTask {
 
        setOffice(office);
 
+       setTariff(tariff);
+
        setPointOfSale(pos);
 
        setBillingConcept(billingConcept);
 
        this.expedia = expedia;
     }
+
 
     @Override
     public void execute(EntityManager em) {
@@ -141,7 +145,7 @@ public class ShuttleDirectImportTask extends TransferImportTask {
         if (Strings.isNullOrEmpty(type)) type = tr.getChildText("vehicleType");
         if (type.toUpperCase().contains("SHUTTLE"))
             rq.setServiceType(TransferType.SHUTTLE);
-        else if (type.toUpperCase().contains("EXECUTIVE") || type.toUpperCase().contains("LUXURY"))
+        else if (type.toUpperCase().contains("EXECUTIVE") || type.toUpperCase().contains("LUXURY") || type.toUpperCase().contains("BUSINESS"))
             rq.setServiceType(TransferType.EXECUTIVE);
         else
             rq.setServiceType(TransferType.PRIVATE);

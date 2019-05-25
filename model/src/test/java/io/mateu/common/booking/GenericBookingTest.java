@@ -55,7 +55,7 @@ public class GenericBookingTest {
             b.setOffice(Populator.office);
 
             b.setProduct(Populator.genericProduct);
-            b.setUnits(1);
+            b.setPax(1);
 
             em.persist(b);
         });

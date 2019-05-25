@@ -51,10 +51,13 @@ public class CommonsTester {
         EmailHelper.setTesting(true);
 
         String token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
+        token = "eyAiY3JlYXRlZCI6ICJUdWUgTWF5IDIxIDExOjMwOjIwIENFU1QgMjAxOSIsICJ1c2VySWQiOiAid2ViIiwgImFnZW5jeUlkIjogIjUzIn0=";
+
+        testPriceTransferBooking();
 
         //testBorrarDuplicados();
 
-        testEnvioServiciosGuitart();
+        //testEnvioServiciosGuitart();
 
         //testSms();
 
@@ -64,6 +67,8 @@ public class CommonsTester {
         //testCambioVuelo();
 
         //testGroupProforma();
+
+        //testDuplicarGrupo();
 
         //testFileProforma();
 
@@ -133,6 +138,39 @@ public class CommonsTester {
         //testInformeEvento();
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testPriceTransferBooking() {
+
+        try {
+
+            Helper.transact(em -> {
+
+                TransferBooking b = em.find(TransferBooking.class, 14280l);
+                b.price(em);
+                System.out.println("" + b.getTotalValue() + "/" + b.getTotalCost());
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testDuplicarGrupo() {
+
+        try {
+
+            Helper.transact(em -> {
+
+                QuotationRequest qr = em.find(QuotationRequest.class, 3l).createDuplicate();
+                em.persist(qr);
+                qr.confirm();
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
     }
 
     private static void testEnvioServiciosGuitart() {
@@ -752,7 +790,7 @@ public class CommonsTester {
     }
 
     private static void testTransferConfirm(String token) {
-        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xMTQiLAogICJiaWtlcyIgOiAwLAogICJwYXgiIDogMSwKICAidmFsb3IiIDogNjcuODIsCiAgInRva2VuIiA6ICJleUFpWTNKbFlYUmxaQ0k2SUNKR2Nta2dUV0Z5SURJeUlERXdPakl5T2pJNUlFTkZWQ0F5TURFNUlpd2dJblZ6WlhKSlpDSTZJQ0poWkcxcGJpSXNJQ0poWjJWdVkzbEpaQ0k2SUNJekluMD0iLAogICJ3aGVlbENoYWlycyIgOiAwLAogICJ0b1RyYW5zZmVyUG9pbnRJZCIgOiAidHAtMTE1IiwKICAib3V0Z29pbmdEYXRlIiA6IDIwMTkwNTE3LAogICJpbmNvbWluZ0RhdGUiIDogMjAxOTA1MTMsCiAgImFnZXMiIDogWyBdLAogICJnb2xmQmFnZ2FnZXMiIDogMCwKICAicHJpY2VJZCIgOiA1LAogICJiaWdMdWdnYWdlcyIgOiAwCn0=";
+        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0yNzEiLAogICJiaWtlcyIgOiAwLAogICJwYXgiIDogMSwKICAidmFsb3IiIDogMTY1Ljg2LAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVkV1VnVFdGNUlESXhJREV4T2pNd09qSXdJRU5GVTFRZ01qQXhPU0lzSUNKMWMyVnlTV1FpT2lBaWQyVmlJaXdnSW1GblpXNWplVWxrSWpvZ0lqVXpJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTc4MSIsCiAgIm91dGdvaW5nRGF0ZSIgOiAyMDE5MDYxNywKICAiaW5jb21pbmdEYXRlIiA6IDIwMTkwNjEzLAogICJhZ2VzIiA6IFsgXSwKICAiZ29sZkJhZ2dhZ2VzIiA6IDAsCiAgInByaWNlSWQiIDogNDg0LAogICJiaWdMdWdnYWdlcyIgOiAwCn0=";
         try {
             BookTransferRQ rq = new BookTransferRQ();
             rq.setBookingReference("Test " + LocalDateTime.now());
@@ -777,9 +815,9 @@ public class CommonsTester {
     }
 
     private static void testTransferDetails(String token) {
-        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0xIiwKICAiYmlrZXMiIDogMCwKICAicGF4IiA6IDIsCiAgInZhbG9yIiA6IDE2MS4xLAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVhSFVnUkdWaklESTNJREUxT2pFNU9qUTBJRU5GVkNBeU1ERTRJaXdnSW5WelpYSkpaQ0k2SUNKM1pXSjRJaXdnSW5CaGNuUnVaWEpKWkNJNklDSTBJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTIiLAogICJvdXRnb2luZ0RhdGUiIDogMjAxOTA1MTMsCiAgImluY29taW5nRGF0ZSIgOiAyMDE5MDUwMSwKICAiYWdlcyIgOiBbIF0sCiAgImdvbGZCYWdnYWdlcyIgOiAwLAogICJwcmljZUlkIiA6IDIsCiAgImJpZ0x1Z2dhZ2VzIiA6IDAKfQ==";
+        String key = "ewogICJmcm9tVHJhbnNmZXJQb2ludElkIiA6ICJ0cC0yNzEiLAogICJiaWtlcyIgOiAwLAogICJwYXgiIDogMSwKICAidmFsb3IiIDogMTY1Ljg2LAogICJ0b2tlbiIgOiAiZXlBaVkzSmxZWFJsWkNJNklDSlVkV1VnVFdGNUlESXhJREV4T2pNd09qSXdJRU5GVTFRZ01qQXhPU0lzSUNKMWMyVnlTV1FpT2lBaWQyVmlJaXdnSW1GblpXNWplVWxrSWpvZ0lqVXpJbjA9IiwKICAid2hlZWxDaGFpcnMiIDogMCwKICAidG9UcmFuc2ZlclBvaW50SWQiIDogInRwLTc4MSIsCiAgIm91dGdvaW5nRGF0ZSIgOiAyMDE5MDYxNywKICAiaW5jb21pbmdEYXRlIiA6IDIwMTkwNjEzLAogICJhZ2VzIiA6IFsgXSwKICAiZ29sZkJhZ2dhZ2VzIiA6IDAsCiAgInByaWNlSWQiIDogNDg0LAogICJiaWdMdWdnYWdlcyIgOiAwCn0=";
         try {
-            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getTransferPriceDetails(token, key, "")));
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getTransferPriceDetails(token, key, "es", "")));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -787,7 +825,7 @@ public class CommonsTester {
 
     private static void testAvailTransfers(String token) {
         try {
-            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-1", "tp-49", 1, 0, 0, 0, 0, 0, 20190501, 20190513)));
+            System.out.println(Helper.toJson(new TransferBookingServiceImpl().getAvailabeTransfers(token, "tp-271", "tp-781", 1, 0, 0, 0, 0, 0, 20190613, 20190617)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }

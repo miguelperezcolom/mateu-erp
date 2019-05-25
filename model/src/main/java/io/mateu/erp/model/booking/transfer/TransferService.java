@@ -6,6 +6,7 @@ import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.ServiceType;
 import io.mateu.erp.model.booking.hotel.HotelServiceLine;
+import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.partners.Provider;
@@ -50,12 +51,6 @@ public class TransferService extends Service {
     @ColumnWidth(150)
     @KPI
     private TransferType transferType;
-
-    @Sum
-    @NotNull
-    @ListColumn
-    @KPI
-    private int pax;
 
     @Section("Extras")
     @Output
@@ -531,8 +526,8 @@ public class TransferService extends Service {
             d.put("effectiveDropoff", "" + getEffectiveDropoff().getName());
             d.put("effectiveDropoffResort", "" + getEffectiveDropoff().getResort().getName());
         }
-        d.put("providers", getProviders());
-        if (forcePickupTime || !TransferType.SHUTTLE.equals(getTransferType())) {
+        if (getProvider() != null) d.put("providers", getProvider().getName());
+        if (forcePickupTime || !TransferType.SHUTTLE.equals(getTransferType()) || (getBooking() instanceof TransferBooking && ((TransferBooking)getBooking()).getOverridePickupTime() != null)) {
             d.put("pickupDate", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM")):"");
             d.put("pickupDate_es", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("E dd MMM", new Locale("es", "ES"))):"");
             d.put("pickupTime", (getPickupTime() != null)?getPickupTime().format(DateTimeFormatter.ofPattern("HH:mm")):"");

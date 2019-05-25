@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
 import io.mateu.erp.dispo.Occupancy;
-import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ManagedEvent;
 import io.mateu.erp.model.booking.parts.HotelBookingLine;
@@ -19,6 +18,7 @@ import io.mateu.erp.model.product.tour.ExcursionShift;
 import io.mateu.erp.model.world.Country;
 import io.mateu.erp.model.world.Destination;
 import io.mateu.erp.model.world.Resort;
+import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CMSService;
@@ -698,7 +698,7 @@ public class CMSServiceImpl implements CMSService {
                 t.setComments(b.getSpecialRequests());
                 t.setId("" + b.getId());
                 t.setLeadname(b.getLeadName());
-                t.setPax(b.getAdults() + b.getChildren());
+                t.setPax(b.getPax());
                 t.setQrcode(Strings.isNullOrEmpty(b.getQrCode())?"" + b.getId():b.getQrCode());
 
                 totalPax += t.getPax();
@@ -772,7 +772,7 @@ public class CMSServiceImpl implements CMSService {
                     t.setComments(b.getSpecialRequests());
                     t.setId("" + b.getId());
                     t.setLeadname(b.getLeadName());
-                    t.setPax(b.getAdults() + b.getChildren());
+                    t.setPax(b.getPax());
                     t.setQrcode(Strings.isNullOrEmpty(b.getQrCode())?"" + b.getId():b.getQrCode());
 
                     rs.setValid(true);
@@ -806,7 +806,7 @@ public class CMSServiceImpl implements CMSService {
         } else {
             Helper.transact(em -> {
 
-                ERPUser u = em.find(ERPUser.class, rq.getUser().trim().toLowerCase());
+                User u = em.find(User.class, rq.getUser().trim().toLowerCase());
 
                 if (u == null) {
                     rs.setStatusCode(404);
@@ -912,7 +912,7 @@ public class CMSServiceImpl implements CMSService {
                                     t.setComments(b.getSpecialRequests());
                                     t.setId("" + b.getId());
                                     t.setLeadname(b.getLeadName());
-                                    t.setPax(b.getAdults() + b.getChildren());
+                                    t.setPax(b.getPax());
                                     t.setQrcode("" + b.getId());
 
                                     totalPax += t.getPax();

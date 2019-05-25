@@ -2,8 +2,11 @@ package io.mateu.erp.model.product.tour;
 
 import com.vaadin.data.provider.DataProvider;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.mdd.core.annotations.DependsOn;
+import io.mateu.mdd.core.annotations.Keep;
+import io.mateu.mdd.core.annotations.SameLine;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,15 +27,18 @@ public class TourPrice implements Comparable<TourPrice> {
 
     @ManyToOne
     @NotNull
+    @Keep
     private Contract contract;
 
     @ManyToOne
     @NotNull
+    @Keep
     private Tour tour;
 
 
     @ManyToOne
     @NotNull
+    @Keep
     private Variant variant;
 
     @DependsOn("tour")
@@ -43,29 +49,49 @@ public class TourPrice implements Comparable<TourPrice> {
     }
 
     @ManyToOne
-    private TourPriceZone zone;
+    private ExcursionPriceZone pickupZone;
 
     @ManyToOne
     private TourExtra extra;
-
-    @Column(name = "_start")
-    private LocalDate start;
-
-    @Column(name = "_end")
-    private LocalDate end;
-
-    private LocalDate bookingWindowStart;
-
-    private LocalDate bookingWindowEnd;
 
     @ManyToOne
     private BillingConcept billingConcept;
 
     private String description;
 
-    private double pricePerAdult;
+    @ManyToOne@NotNull
+    private Tariff tariff;
 
-    private double pricePerChild;
+
+    @Column(name = "_start")
+    private LocalDate start;
+
+    @Column(name = "_end")@SameLine
+    private LocalDate end;
+
+    private LocalDate bookingWindowStart;
+
+    @SameLine
+    private LocalDate bookingWindowEnd;
+
+
+    private int minPax;
+
+
+    private double infantPrice;
+
+    @SameLine
+    private double childPrice;
+
+    @SameLine
+    private double juniorPrice;
+
+    @SameLine
+    private double adultPrice;
+
+    @SameLine
+    private double seniorPrice;
+
 
     @Column(name = "_order")
     private int order;
@@ -79,7 +105,7 @@ public class TourPrice implements Comparable<TourPrice> {
 
         if (tour != null) e.addContent(new Element("tour").setAttribute("id", "" + tour.getId()).setAttribute("name", tour.getName()));
         if (variant != null) e.addContent(new Element("variant").setAttribute("id", "" + variant.getId()).setAttribute("name", variant.getName().toString()));
-        if (zone != null) e.addContent(new Element("resort").setAttribute("id", "" + zone.getId()).setAttribute("name", zone.getName()));
+        if (pickupZone != null) e.addContent(new Element("resort").setAttribute("id", "" + pickupZone.getId()).setAttribute("name", pickupZone.getName()));
         if (extra != null) e.addContent(new Element("extra").setAttribute("id", "" + extra.getId()).setAttribute("name", extra.getName().toString()));
 
         e.setAttribute("order", "" + order);
@@ -100,8 +126,16 @@ public class TourPrice implements Comparable<TourPrice> {
 
         if (finalPrice) e.setAttribute("finalPrice", "");
 
-        e.setAttribute("pricePerAdult", "" + pricePerAdult);
-        e.setAttribute("pricePerChild", "" + pricePerChild);
+        if (tariff != null) e.setAttribute("tariff", "" + tariff);
+
+        e.setAttribute("minPax", "" + minPax);
+
+
+        e.setAttribute("infantPrice", "" + infantPrice);
+        e.setAttribute("childPrice", "" + childPrice);
+        e.setAttribute("juniorPrice", "" + juniorPrice);
+        e.setAttribute("adultPrice", "" + adultPrice);
+        e.setAttribute("seniorPrice", "" + seniorPrice);
 
         e.setAttribute("pdftext", toString());
 
@@ -145,14 +179,31 @@ public class TourPrice implements Comparable<TourPrice> {
             s += "booked to " + bookingWindowEnd.format(dtf);
         }
 
-
-        if (pricePerAdult != 0) {
+        if (minPax != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerAdult + " per adult";
+            s += "for groups with pax >= " + minPax + "";
         }
-        if (pricePerChild != 0) {
+
+
+        if (infantPrice != 0) {
             if (!"".equals(s)) s += ", ";
-            s += pricePerChild + " per child";
+            s += infantPrice + " per infant";
+        }
+        if (childPrice != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += childPrice + " per child";
+        }
+        if (juniorPrice != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += juniorPrice + " per junior";
+        }
+        if (adultPrice != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += adultPrice + " per adult";
+        }
+        if (seniorPrice != 0) {
+            if (!"".equals(s)) s += ", ";
+            s += seniorPrice + " per senior";
         }
 
 
@@ -164,9 +215,9 @@ public class TourPrice implements Comparable<TourPrice> {
             if (!"".equals(s)) s += ", ";
             s += "for " + variant.getName().toString() + " variant";
         }
-        if (zone != null) {
+        if (pickupZone != null) {
             if (!"".equals(s)) s += ", ";
-            s += "for tours from " + zone.getName();
+            s += "for tours from " + pickupZone.getName();
         }
         return s;
     }

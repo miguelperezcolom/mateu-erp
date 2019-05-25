@@ -496,6 +496,7 @@ public class TransferBookingRequest {
                         b.setAudit(new Audit(u));
 
                         b.setPos(getTask().getPointOfSale());
+                        b.setTariff(getTask().getTariff());
                         b.setAgencyReference(agencyReference);
                         b.setAgency(customer);
                         b.setLeadName(passengerName);
@@ -667,7 +668,7 @@ public class TransferBookingRequest {
             }
             vuelosYaChequeados = llegada != null && llegada.isFlightChecked();
         }
-        if (!vuelosYaChequeados) {
+        if (true || !vuelosYaChequeados) {
             if (lastRequest == null || !arrivalFlightCompany.equals(lastRequest.getArrivalFlightCompany()) || !arrivalFlightNumber.equals(lastRequest.getArrivalFlightNumber())) s.setArrivalFlightNumber("" + arrivalFlightCompany + arrivalFlightNumber);
             if (lastRequest == null || !arrivalOriginAirport.equals(lastRequest.getArrivalOriginAirport())) s.setArrivalFlightOrigin("" + arrivalOriginAirport);
             if (lastRequest == null || !arrivalFlightDate.equals(lastRequest.getArrivalFlightDate()) || !arrivalFlightTime.equals(lastRequest.getArrivalFlightTime())) s.setArrivalFlightTime(getTime(arrivalFlightDate + " " + arrivalFlightTime));
@@ -747,7 +748,7 @@ public class TransferBookingRequest {
             }
             vuelosYaChequeados = salida != null && salida.isFlightChecked();
         }
-        if (!vuelosYaChequeados) {
+        if (true || !vuelosYaChequeados) {
             if (lastRequest == null || !departureFlightCompany.equals(lastRequest.getDepartureFlightCompany()) || !departureFlightNumber.equals(lastRequest.getDepartureFlightNumber()))
                 s.setDepartureFlightNumber("" + departureFlightCompany + departureFlightNumber);
             if (lastRequest == null || !departureDestinationAirport.equals(lastRequest.getDepartureDestinationAirport()))

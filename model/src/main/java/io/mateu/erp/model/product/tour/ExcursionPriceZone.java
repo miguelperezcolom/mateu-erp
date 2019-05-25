@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Getter@Setter
-public class TourPriceZone {
+public class ExcursionPriceZone {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class TourPriceZone {
     private String name;
 
     @OneToMany
-    private List<Resort> zones = new ArrayList<>();
+    private List<Resort> resorts = new ArrayList<>();
 
     @ManyToOne
     private TransferPoint meetingPoint;

@@ -9,6 +9,7 @@ import io.mateu.erp.model.booking.CancellationTerm;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.invoicing.Charge;
+import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.BookingDueDate;
 import io.mateu.erp.model.product.DataSheet;
@@ -28,6 +29,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * Created by miguel on 27/7/17.
@@ -65,67 +68,24 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
 
         long finalIdAgencia = idAgencia;
-        Helper.transact(new JPATransaction() {
+        Helper.notransact(new JPATransaction() {
             @Override
             public void run(EntityManager em) throws Throwable {
 
-                AppConfig c = AppConfig.get(em);
+                Agency agency = em.find(Agency.class, finalIdAgencia);
 
-                TransferBooking b = new TransferBooking();
-                b.setAgency(em.find(Agency.class, finalIdAgencia));
-                b.setAdults(pax);
+                TransferPoint origin = em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length())));
+                TransferPoint destination = em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp-".length())));
 
-                b.setOrigin(em.find(TransferPoint.class, Long.parseLong(fromTransferPointId.substring("tp-".length()))));
-                b.setDestination(em.find(TransferPoint.class, Long.parseLong(toTransferPointId.substring("tp-".length()))));
+                LocalDate inDate = null;
+                LocalDate outDate = null;
 
-                if (incomingDate > 0) b.setArrivalFlightTime(LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100).atTime(0, 0));
-                if (outgoingDate > 0) b.setDepartureFlightTime(LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100).atTime(0, 0));
+                if (incomingDate > 0) inDate = LocalDate.of((incomingDate - incomingDate % 10000) / 10000, ((incomingDate - incomingDate % 100) / 100) % 100, incomingDate % 100);
+                if (outgoingDate > 0) outDate = LocalDate.of((outgoingDate - outgoingDate % 10000) / 10000, ((outgoingDate - outgoingDate % 100) / 100) % 100, outgoingDate % 100);
 
-                int encontrados = 0;
+                getAvailabeTransfers(em, token, rs, agency, origin, destination, inDate, outDate, pax, ages, bikes, golfBaggages, skis, bigLuggages, wheelChairs);
 
-                Lists.newArrayList(TransferType.SHUTTLE, TransferType.PRIVATE, TransferType.EXECUTIVE).forEach(tipo -> {
-                    b.setTransferType(tipo);
-                    b.priceServices(em, new ArrayList<>());
-                    if (b.getTotalValue() > 0) {
-                        AvailableTransfer t = new AvailableTransfer();
-                        t.setType("" + b.getTransferType());
-                        DataSheet ds = c.getShuttleDataSheet();
-                        if (TransferType.PRIVATE.equals(tipo)) ds = c.getPrivateDataSheet();
-                        else if (TransferType.EXECUTIVE.equals(tipo)) ds = c.getExecutiveDataSheet();
-                        if (ds != null) {
-                            t.setDescription(ds.getDescription().get("es"));
-                            try {
-                                if (ds.getMainImage() != null) t.setImage(ds.getMainImage().toFileLocator().getUrl());
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            t.setDescription(b.getPriceForVehicle().getName() + " " + b.getPriceForVehicle().getMinPax() + " - " + b.getPriceForVehicle().getMaxPax());
-                        }
-                        t.setVehicle(b.getPriceForVehicle().getName());
-                        Amount a;
-                        t.setTotal(new BestDeal());
-                        t.getTotal().setRetailPrice(a = new Amount());
-                        a.setCurrencyIsoCode("EUR");
-                        a.setValue(b.getTotalValue());
-
-                        try {
-                            t.setKey(getKey(token, fromTransferPointId, toTransferPointId, pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, incomingDate, outgoingDate, b.getPriceFromPriceLine(), b.getTotalValue()));
-                            rs.getAvailableTransfers().add(t);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-
-                        double v = a.getValue();
-
-                        if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
-                        if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
-
-                    }
-                });
-
-                rs.setMsg("" + encontrados + " transfers found. It consumed 24 ms in the server.");
+                rs.setMsg("" + rs.getAvailableTransfers().size() + " transfers found.");
 
             }
         });
@@ -135,6 +95,75 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         rs.setMsg(rs.getMsg() + " It consumed " + (t - t0) + " ms in the server.");
 
         return rs;
+    }
+
+    public void getAvailabeTransfers(EntityManager em, String token, GetAvailableTransfersRS rs, Agency agency, TransferPoint origin, TransferPoint destination, LocalDate incomingDate, LocalDate outgoingDate, int pax, List<Integer> ages, int bikes, int golfBaggages, int skis, int bigLuggages, int wheelChairs) throws Throwable {
+
+        AppConfig c = AppConfig.get(em);
+
+        TransferBooking b = new TransferBooking();
+        b.setAgency(agency);
+        b.setPax(pax);
+
+        b.setOrigin(origin);
+        b.setDestination(destination);
+
+        int inDate = 0;
+        int outDate = 0;
+
+        if (incomingDate != null) {
+            b.setArrivalFlightTime(incomingDate.atTime(1,1));
+            inDate = io.mateu.erp.dispo.Helper.toInt(incomingDate);
+        }
+        if (outgoingDate != null) {
+            b.setDepartureFlightTime(outgoingDate.atTime(1, 1));
+            outDate = io.mateu.erp.dispo.Helper.toInt(outgoingDate);
+        }
+
+        int finalInDate = inDate;
+        int finalOutDate = outDate;
+        Lists.newArrayList(TransferType.SHUTTLE, TransferType.PRIVATE, TransferType.EXECUTIVE).forEach(tipo -> {
+            b.setTransferType(tipo);
+            b.priceServices(em, new ArrayList<>(), true);
+            if (b.getTotalValue() > 0) {
+                AvailableTransfer t = new AvailableTransfer();
+                t.setType("" + b.getTransferType());
+                DataSheet ds = c.getShuttleDataSheet();
+                if (TransferType.PRIVATE.equals(tipo)) ds = c.getPrivateDataSheet();
+                else if (TransferType.EXECUTIVE.equals(tipo)) ds = c.getExecutiveDataSheet();
+                if (ds != null) {
+                    t.setDescription(ds.getDescription().get("es"));
+                    try {
+                        if (ds.getMainImage() != null) t.setImage(ds.getMainImage().toFileLocator().getUrl());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    t.setDescription(b.getPriceForVehicle().getName() + " " + b.getPriceForVehicle().getMinPax() + " - " + b.getPriceForVehicle().getMaxPax());
+                }
+                t.setVehicle(b.getPriceForVehicle().getName());
+                Amount a;
+                t.setTotal(new BestDeal());
+                t.getTotal().setRetailPrice(a = new Amount());
+                a.setCurrencyIsoCode("EUR");
+                a.setValue(b.getTotalValue());
+
+                try {
+                    t.setKey(getKey(token, "tp-" + origin.getId(), "tp-" + destination.getId(), pax, ages, bikes, golfBaggages, bigLuggages, wheelChairs, finalInDate, finalOutDate, b.getPriceFromPriceLine(), b.getTotalValue()));
+                    rs.getAvailableTransfers().add(t);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                double v = a.getValue();
+
+                if (v > 0 && (rs.getMinPrice() == 0 || rs.getMinPrice() > v)) rs.setMinPrice(v);
+                if (v > 0 && (rs.getMaxPrice() == 0 || rs.getMaxPrice() < v)) rs.setMaxPrice(v);
+
+            }
+        });
+
     }
 
     public String getKey(String token, String fromTransferPointId, String toTransferPointId, int pax, List<Integer> ages, int bikes, int golfBaggages, int bigLuggages, int wheelChairs, int incomingDate, int outgoingDate, Price p, double valor) throws IOException {
@@ -166,7 +195,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
     }
 
     @Override
-    public GetTransferPriceDetailsRS getTransferPriceDetails(String token, String key, String coupon) {
+    public GetTransferPriceDetailsRS getTransferPriceDetails(String token, String key, String language, String coupon) {
 
         //todo: validar auth token
 
@@ -182,6 +211,15 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                 TransferBooking b = buildBookingFromKey(em, key);
 
                 b.price(em);
+
+                int release = 0;
+                if (b.getArrivalFlightTime() != null)
+                    release = (int) DAYS.between(LocalDate.now(), b.getArrivalFlightTime().toLocalDate());
+                else if (b.getDepartureFlightTime() != null)
+                    release = (int) DAYS.between(LocalDate.now(), b.getDepartureFlightTime().toLocalDate());
+
+                if (release <= ((Contract)b.getContract()).getRelease()) throw new Exception("Release at contract of " + ((Contract)b.getContract()).getRelease() + " days does not pass.");
+
 
                 if (b.getBikes() != 0) {
                     Remark r;
@@ -208,8 +246,11 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     r.setText("Wheel chairs are on request and an extra charge will be added.");
                 }
 
-                rs.setArrivalInstructions(b.getOrigin().getInstructions());
-                rs.setDepartureInstructions(b.getDestination().getInstructions());
+                String i = "";
+                if (TransferType.SHUTTLE.equals(b.getTransferType())) i = b.getOrigin().getArrivalInstructionsForShuttle() != null?b.getOrigin().getArrivalInstructionsForShuttle().getEs():"";
+                else i = b.getOrigin().getArrivalInstructionsForPrivate() != null?b.getOrigin().getArrivalInstructionsForPrivate().getEs():"";
+                rs.setArrivalInstructions(i);
+                rs.setDepartureInstructions(b.getDestination().getDepartureInstructions() != null?b.getDestination().getDepartureInstructions().getEs():"");
 
                 int pos = 1;
                 for (Charge l : b.getCharges()) {
@@ -225,8 +266,8 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     if (!dd.isPaid()) {
                         PaymentLine pl;
                         rs.getPaymentLines().add(pl = new PaymentLine());
-                        pl.setDate(Integer.parseInt(dd.getDate().format(DateTimeFormatter.ofPattern("yyyyMMdd"))));
-                        pl.setPaymentMethod("WEB");
+                        pl.setDate(Integer.parseInt(dd.getDate().format(DateTimeFormatter.ofPattern("".equalsIgnoreCase(language)?"dd/MM/yyyy":"yyyy-MM-dd"))));
+                        pl.setPaymentMethod("--");
                         pl.setAmount(new Amount(dd.getCurrency().getIsoCode(), dd.getAmount()));
                     }
                 }
@@ -239,6 +280,9 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     cc.setGMTtime(t.getDate().toString());
                 }
 
+                rs.setTotal(new BestDeal());
+                rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), b.getTotalValue()));
+
             });
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -249,50 +293,19 @@ public class TransferBookingServiceImpl implements TransferBookingService {
         return rs;
     }
 
-    private TransferBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
+    public static TransferBooking buildBookingFromKey(EntityManager em, String key) throws IOException {
         Map<String, Object> data = Helper.fromJson(new String((Base64.getDecoder().decode(key))));
 
         System.out.println("key=" + key);
         System.out.println("key decoded=" + new String((Base64.getDecoder().decode(key))));
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
-            System.out.println("creds=" + new String(BaseEncoding.base64().decode((String) data.get("token"))));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("idAgencia=" + idAgencia);
-
-        /*
-                data.put("token", token);
-        data.put("fromTransferPointId", fromTransferPointId);
-        data.put("toTransferPointId", toTransferPointId);
-        data.put("pax", pax);
-        data.put("ages", ages);
-        data.put("bikes", bikes);
-        data.put("golfBaggages", golfBaggages);
-        data.put("bigLuggages", bigLuggages);
-        data.put("wheelChairs", wheelChairs);
-        data.put("incomingDate", incomingDate);
-        data.put("outgoingDate", outgoingDate);
-        data.put("priceId", p.getId());
-        data.put("valor", valor);
-         */
-
+        AuthToken auth = em.find(AuthToken.class, data.get("token"));
 
         TransferBooking b = new TransferBooking();
-        User user = em.find(User.class, login);
-        b.setAudit(new Audit(user));
-        b.setAgency(em.find(Agency.class, idAgencia));
+        b.setAudit(new Audit(auth.getUser()));
+        b.setAgency(auth.getUser().getAgency());
+        b.setPos(auth.getPos());
+        b.setTariff(b.getPos().getTariff());
         b.setCurrency(b.getAgency().getCurrency());
 
         b.setOrigin(em.find(TransferPoint.class, new Long(String.valueOf(data.get("fromTransferPointId")).split("-")[1])));
@@ -351,18 +364,19 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                     TransferBooking b = buildBookingFromKey(em, rq.getKey());
 
+                    if (b.getAgency().getFinancialAgent() == null) throw new Exception("Missing financial agent for agency " + b.getAgency().getName());
+
                     b.setAgencyReference(rq.getBookingReference());
                     if (b.getAgencyReference() == null) b.setAgencyReference("");
                     b.setSpecialRequests(rq.getCommentsToProvider());
                     b.setEmail(rq.getEmail());
                     b.setLeadName(rq.getLeadName());
                     b.setPrivateComments(rq.getPrivateComments());
-                    b.setPos(em.find(AuthToken.class, token).getPos());
                     b.setTelephone(rq.getContactPhone());
                     b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
                     b.setConfirmNow(false);
 
-                    b.setExpiryDate(LocalDateTime.now().plusHours(2)); // por defecto caduca a las 2 horas
+                    if (b.getPos().getHoursForUnpaidCancellation() != 0) b.setExpiryDate(LocalDateTime.now().plusHours(b.getPos().getHoursForUnpaidCancellation()));
 
 
                     if (b.getArrivalFlightTime() != null) {
@@ -423,7 +437,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
             r.setResourceId("tp-" + p.getId());
             r.setName(new MultilingualText("es", p.getName(), "en", p.getName()));
             r.setType("transferpoint");
-            r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+            if (p.getArrivalInstructionsForShuttle() != null) r.setDescription(new MultilingualText("es", p.getArrivalInstructionsForShuttle().getEs(), "en", p.getArrivalInstructionsForShuttle().getEn()));
         });
 
         Collections.sort(rs.getAirports(), Comparator.comparing(a -> a.getName().get("es")));
@@ -462,7 +476,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     r.setResourceId("tp-" + p.getId());
                     r.setName(new MultilingualText("es", p.getName() + " (" + p.getResort().getName() + ")", "en", p.getName() + " (" + p.getResort().getName() + ")"));
                     r.setType("transferpoint");
-                    r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+                    if (p.getArrivalInstructionsForShuttle() != null) r.setDescription(new MultilingualText("es", p.getArrivalInstructionsForShuttle().getEs(), "en", p.getArrivalInstructionsForShuttle().getEn()));
                 }
             })));
 
@@ -489,7 +503,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                 r.setResourceId("tp-" + p.getId());
                 r.setName(new MultilingualText("es", p.getName() + " (" + p.getResort().getName() + ")", "en", p.getName() + " (" + p.getResort().getName() + ")"));
                 r.setType("transferpoint");
-                r.setDescription(new MultilingualText("es", p.getInstructions(), "en", p.getInstructions()));
+                if (p.getArrivalInstructionsForShuttle() != null) r.setDescription(new MultilingualText("es", p.getArrivalInstructionsForShuttle().getEs(), "en", p.getArrivalInstructionsForShuttle().getEn()));
             });
 
         });

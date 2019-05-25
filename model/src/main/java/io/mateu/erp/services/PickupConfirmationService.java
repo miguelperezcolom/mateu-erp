@@ -46,7 +46,7 @@ public class PickupConfirmationService {
                                 found = true;
                                 d.put("result", "ok");
                                 d.put("message", "Found booking with reference " + p + "");
-                                d.put("service", t.getData());
+                                d.put("service", t.getData(true));
                                 t.setPickupConfirmedByWeb(LocalDateTime.now());
                             }
                         }

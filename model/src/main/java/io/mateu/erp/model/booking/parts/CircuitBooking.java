@@ -5,6 +5,8 @@ import com.kbdunn.vaadin.addons.fontawesome.FontAwesome;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.model.booking.PriceBreakdownItem;
+import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
@@ -99,8 +101,11 @@ public class CircuitBooking extends TourBooking {
                     .filter(p -> p.getTour() == null || p.getTour().equals(circuit))
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
                     .forEach(p -> {
-                        v[0] += getAdults() * p.getPricePerAdult();
-                        v[0] += getChildren() * p.getPricePerChild();
+                        v[0] += getInfants() * p.getInfantPrice();
+                        v[0] += getChildren() * p.getChildPrice();
+                        v[0] += getJuniors() * p.getJuniorPrice();
+                        v[0] += getAdults() * p.getAdultPrice();
+                        v[0] += getSeniors() * p.getSeniorPrice();
                     });
             if (v[0] != 0) prices. put(c, v[0]);
         });
@@ -110,6 +115,11 @@ public class CircuitBooking extends TourBooking {
             setTotalValue(Helper.roundEuros(prices.get(v)));
             setContract(v);
         });
+    }
+
+    @Override
+    protected BillingConcept getDefaultBillingConcept(EntityManager em) {
+        return AppConfig.get(em).getBillingConceptForCircuit();
     }
 
     @Override
@@ -124,8 +134,13 @@ public class CircuitBooking extends TourBooking {
             x.put("units", e.getUnits());
         });
         if (extras.size() > 0) m.put("extras", extras);
-        m.put("adults", getAdults());
+
+        m.put("infants", getInfants());
         m.put("children", getChildren());
+        m.put("juniors", getJuniors());
+        m.put("adults", getAdults());
+        m.put("seniors", getSeniors());
+
         if (getProvider() != null) m.put("provider", "" + getProvider().getId() + " - " + getProvider().getName());
         m.put("serviceCost", "" + getOverridedCost());
     }
@@ -133,24 +148,28 @@ public class CircuitBooking extends TourBooking {
 
     @Override
     public String getServiceDataHtml() {
-        String h = "<pre>";
+        final String[] h = {"<pre>"};
 
-        h += "CIRCUIT BOOKING \n";
+        h[0] += "CIRCUIT BOOKING \n";
 
-        h += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
-        h += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
-        h += "Circuit: " + getCircuit().getName() + " \n";
-        if (getVariant() != null) h += "Variant: " + getVariant().getName() + " \n";
-        h += "Adults: " + getAdults() + " \n";
-        h += "Children: " + getChildren() + " \n";
+        h[0] += "Start: " + getStart().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h[0] += "End: " + getEnd().format(DateTimeFormatter.ISO_DATE) + "\n";
+        h[0] += "Circuit: " + getCircuit().getName() + " \n";
+        if (getVariant() != null) h[0] += "Variant: " + getVariant().getName() + " \n";
+
+        if (getInfants() != 0) h[0] += getInfants() + " infants \n";
+        if (getChildren() != 0) h[0] += getChildren() + " children \n";
+        if (getJuniors() != 0) h[0] += getJuniors() + " juniors \n";
+        if (getAdults() != 0) h[0] += getAdults() + " adults \n";
+        if (getSeniors() != 0) h[0] += getSeniors() + " seniors \n";
 
         for (TourBookingExtra e : getExtras()) {
-            h += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
+            h[0] += "Extra: " + e.getExtra().getName() + " X " + e.getUnits() + " \n";
         }
 
-        if (!Strings.isNullOrEmpty(getSpecialRequests())) h += "Special requests: " + getSpecialRequests() + "\n";
+        if (!Strings.isNullOrEmpty(getSpecialRequests())) h[0] += "Special requests: " + getSpecialRequests() + "\n";
 
-        h += "</pre>";
-        return h;
+        h[0] += "</pre>";
+        return h[0];
     }
 }

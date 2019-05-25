@@ -216,4 +216,25 @@ public class QuotationRequestTransfer {
 
         return el;
     }
+
+    public QuotationRequestTransfer createDuplicate(QuotationRequest rq) {
+        QuotationRequestTransfer c = new QuotationRequestTransfer();
+        c.setRq(rq);
+        c.setActive(active);
+        c.setCostOverrided(costOverrided);
+        c.setCostPerPax(costPerPax);
+        c.setCostPerTransfer(costPerTransfer);
+        c.setDestination(destination);
+        c.setFlightDate(flightDate);
+        c.setFlightNumber(flightNumber);
+        c.setFlightOriginOrDestination(flightOriginOrDestination);
+        c.setOrigin(origin);
+        c.setPax(pax);
+        c.setPricePerPax(pricePerPax);
+        c.setPricePerTransfer(pricePerTransfer);
+        c.setProvider(provider);
+        c.setSaleOverrided(saleOverrided);
+        c.setTransferType(transferType);
+        return c;
+    }
 }

@@ -40,6 +40,8 @@ public class Company {
     @ManyToOne@NotNull
     private InvoiceSerial selfBillingSerial;
 
+    private String registryData;
+
 
 
     @Section("Payment data")

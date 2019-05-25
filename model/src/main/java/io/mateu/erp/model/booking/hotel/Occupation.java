@@ -9,10 +9,10 @@ import javax.validation.constraints.NotNull;
 public class Occupation {
 
     @NotNull
-    private int numberOfRooms = 1;
+    private int numberOfRooms;
 
     @NotNull
-    private int paxPerRoom = 2;
+    private int paxPerRoom;
 
     private int[] ages;
 

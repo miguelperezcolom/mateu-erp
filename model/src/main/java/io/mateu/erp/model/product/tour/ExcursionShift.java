@@ -10,8 +10,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +33,7 @@ public class ExcursionShift {
 
     @ManyToOne
     @NotNull
-    private Tour tour;
+    private Excursion excursion;
 
     @Column(name = "_start")
     private LocalDate start;
@@ -43,9 +45,14 @@ public class ExcursionShift {
     private boolean[] weekdays = {true, true, true, true, true, true, true};
 
     /**
+     * en días
+     */
+    private int release;
+
+    /**
      * hora de inicio
      */
-    private int startTime;
+    private LocalTime startTime;
 
 
     @ManyToOne
@@ -54,13 +61,9 @@ public class ExcursionShift {
 
     private int maxPax;
 
-    /**
-     * en días
-     */
-    private int release;
-
     @OneToMany
     @UseCheckboxes
+    @NotEmpty
     private Set<ExcursionLanguage> languages = new HashSet<>();
 
 

@@ -175,7 +175,7 @@ public class Importer {
                 eb.getChildren().forEach(es -> {
                     b.setTransferType(TransferType.valueOf(es.getAttributeValue("transferType")));
                     b.setPos(poses.get(es.getAttributeValue("pos")));
-                    b.setAdults(Integer.parseInt(es.getAttributeValue("pax")));
+                    b.setPax(Integer.parseInt(es.getAttributeValue("pax")));
 
                     b.setTotalValue(Helper.roundEuros(b.getTotalValue() + Double.parseDouble(es.getAttributeValue("totalNet"))));
                     b.setTotalCost(Helper.roundEuros(b.getTotalCost() + Double.parseDouble(es.getAttributeValue("totalCost"))));
@@ -264,7 +264,7 @@ public class Importer {
                         if (ep.getAttribute("email") != null) tp.setEmail(ep.getAttributeValue("email"));
                         if (ep.getAttribute("fax") != null) tp.setFax(ep.getAttributeValue("fax"));
                         if (ep.getAttribute("telephone") != null) tp.setTelephone(ep.getAttributeValue("telephone"));
-                        if (ep.getAttribute("instructions") != null) tp.setInstructions(ep.getAttributeValue("instructions"));
+                        //if (ep.getAttribute("instructions") != null) tp.setInstructions(ep.getAttributeValue("instructions"));
                         puntos.put(ep.getAttributeValue("id"), tp);
                         if (ep.getAttribute("nonExecutiveAlternatePoint") != null) tp.setAlternatePointForNonExecutive(true);
 
@@ -466,7 +466,7 @@ public class Importer {
             concepto = new BillingConcept();
             concepto.setCode("TRA");
             concepto.setLocalizationRule(LocalizationRule.SERVICE);
-            concepto.setTransfer(true);
+            concepto.setTransportIncluded(true);
             concepto.setName("Traslado");
             em.persist(concepto);
 

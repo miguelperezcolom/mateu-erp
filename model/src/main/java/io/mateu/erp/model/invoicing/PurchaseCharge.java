@@ -6,6 +6,7 @@ import io.mateu.erp.model.booking.PurchaseOrder;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.mdd.core.annotations.DependsOn;
+import io.mateu.mdd.core.annotations.Output;
 import io.mateu.mdd.core.dataProviders.JPQLListDataProvider;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,24 +35,13 @@ public class PurchaseCharge extends Charge {
         if (purchaseOrder != null) setProvider(purchaseOrder.getProvider());
     }
 
+    @ManyToOne@Output
+    private IssuedInvoice chargedTo;
 
-    @ManyToOne
-    private Service service;
-
-    public void setService(Service service) {
-        this.service = service;
-        if (service != null) setOffice(service.getOffice());
+    public void setChargedTo(IssuedInvoice chargedTo) throws Exception {
+        if (this.chargedTo != null && this.chargedTo.equals(chargedTo)) throw  new Exception("Can not change the issued invoice this charge is related to");
+        this.chargedTo = chargedTo;
     }
-
-
-    @DependsOn("booking")
-    public DataProvider getServiceDataProvider() throws Throwable {
-        return new JPQLListDataProvider(
-                "select x from " + PurchaseOrder.class.getName() + " y inner join y.services x " +
-                        ((getPurchaseOrder() != null)?" where y.id = " + getPurchaseOrder().getId():" where y.id = 0"));
-    }
-
-
 
 
     public PurchaseCharge() {

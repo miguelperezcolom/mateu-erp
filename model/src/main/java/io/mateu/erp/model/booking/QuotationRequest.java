@@ -9,7 +9,6 @@ import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
-import io.mateu.erp.model.invoicing.*;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.*;
@@ -44,6 +43,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -84,7 +84,7 @@ public class QuotationRequest {
     private String title;
 
     @NotNull@ManyToOne
-    private Activity activity;
+    private GroupType groupType;
 
     @NotNull
     @ListColumn
@@ -93,22 +93,23 @@ public class QuotationRequest {
 
     @KPI
     @ListColumn
-    @Money
+    @Money@Sum
     private double total;
 
     @KPI
     @ListColumn
-    @Money
+    @Money@Sum
     private double totalCost;
 
     @KPI
     @ListColumn
-    @Money
+    @Money@Sum
     private double totalMarkup;
 
     @KPI
     @ListColumn
     @Money
+    @Balance@Sum
     private double balance;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
@@ -786,19 +787,18 @@ public class QuotationRequest {
                 b.setLeadName(getTitle());
                 b.setConfirmed(true);
                 b.setAudit(new Audit(MDD.getCurrentUser()));
-                b.setCostOverrided(true);
-                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
-                b.setValueOverrided(true);
                 b.setPos(getPos());
                 b.setAgencyReference("");
                 b.setAvailable(true);
-                b.setAdults(0);
-                b.setChildren(0);
                 b.setEmail(getEmail());
                 b.setOverridedValue(qrl.getTotalSale());
                 b.setOverridedCostCurrency(getCurrency());
                 b.setOverridedCost(qrl.getTotalCost());
                 b.setTelephone(getTelephone());
+                b.setFirstService(qrl.getFirstService());
+                b.setLastService(qrl.getLastService());
+                b.setAdultTaxPerNight(qrl.getAdultTaxPerNight());
+                b.setChildTaxPerNight(qrl.getChildTaxPerNight());
 
                 b.setHotel(qrl.getHotel());
 
@@ -820,6 +820,16 @@ public class QuotationRequest {
                     hbl.setAdultsPerRoom(hl.getAdultsPerRoom());
                     hbl.setChildrenPerRoom(hl.getChildrenPerRoom());
                     hbl.setAges(hl.getAges());
+
+                    hbl.setPriceOverrided(hl.isSaleOverrided());
+                    hbl.setPricePerAdult(hl.getPricePerAdult());
+                    hbl.setPricePerChild(hl.getPricePerChild());
+                    hbl.setPricePerRoom(hl.getPricePerRoom());
+
+                    hbl.setCostOverrided(hl.isCostOverrided());
+                    hbl.setCostPerAdult(hl.getCostPerAdult());
+                    hbl.setCostPerChild(hl.getCostPerChild());
+                    hbl.setCostPerRoom(hl.getCostPerRoom());
 
                     if (!"".equals(s)) s += "\n";
                     s += "Line " + pos++ + ": ";
@@ -884,8 +894,6 @@ public class QuotationRequest {
                 b.setPos(getPos());
                 b.setAgencyReference("");
                 b.setAvailable(true);
-                b.setAdults(0);
-                b.setChildren(0);
                 b.setEmail(getEmail());
                 b.setOverridedValue(qrl.getTotalSale());
                 b.setOverridedCostCurrency(getCurrency());
@@ -904,7 +912,7 @@ public class QuotationRequest {
                     b.setDepartureFlightNumber(qrl.getFlightNumber());
                     b.setDepartureFlightDestination(qrl.getFlightOriginOrDestination());
                 }
-                b.setAdults(qrl.getPax());
+                b.setPax(qrl.getPax());
                 em.persist(b);
             }
             for (QuotationRequestExcursion qrl : getExcursions()) {
@@ -922,8 +930,6 @@ public class QuotationRequest {
                 b.setPos(getPos());
                 b.setAgencyReference("");
                 b.setAvailable(true);
-                b.setAdults(0);
-                b.setChildren(0);
                 b.setEmail(getEmail());
                 b.setOverridedValue(qrl.getTotalSale());
                 b.setOverridedCostCurrency(getCurrency());
@@ -933,8 +939,7 @@ public class QuotationRequest {
                 b.setExcursion(qrl.getExcursion());
                 b.setVariant(qrl.getVariant());
                 b.setShift(qrl.getShift());
-                b.setAdults(qrl.getAdults());
-                b.setChildren(qrl.getChildren());
+                b.setPax(qrl.getAdults());
                 b.setStart(qrl.getDate());
                 b.setEnd(qrl.getDate());
                 em.persist(b);
@@ -954,8 +959,6 @@ public class QuotationRequest {
                 b.setPos(getPos());
                 b.setAgencyReference("");
                 b.setAvailable(true);
-                b.setAdults(0);
-                b.setChildren(0);
                 b.setEmail(getEmail());
                 b.setOverridedValue(qrl.getTotalSale());
                 b.setOverridedCostCurrency(getCurrency());
@@ -964,9 +967,7 @@ public class QuotationRequest {
 
                 b.setProduct(qrl.getProduct());
                 b.setVariant(qrl.getVariant());
-                b.setUnits(qrl.getUnits());
-                b.setAdults(qrl.getAdults());
-                b.setChildren(qrl.getChildren());
+                b.setPax(qrl.getAdults());
                 b.setStart(qrl.getStart());
                 b.setEnd(qrl.getEnd());
                 b.setOffice(b.getProduct().getOffice());
@@ -992,8 +993,6 @@ public class QuotationRequest {
                 b.setPos(getPos());
                 b.setAgencyReference("");
                 b.setAvailable(true);
-                b.setAdults(0);
-                b.setChildren(0);
                 b.setEmail(getEmail());
                 b.setOverridedValue(qrl.getTotalSale());
                 b.setOverridedCostCurrency(getCurrency());
@@ -1012,4 +1011,48 @@ public class QuotationRequest {
 
     }
 
+    @Action(icon = VaadinIcons.COPY, order = 100)
+    public static void duplicate(Set<QuotationRequest> selection) throws Throwable {
+
+        Helper.transact(em -> {
+
+            for (QuotationRequest s : selection) {
+
+                QuotationRequest o = em.find(QuotationRequest.class, s.getId());
+
+                em.persist(o.createDuplicate());
+
+            }
+
+        });
+
+    }
+
+    public QuotationRequest createDuplicate() {
+        QuotationRequest c = new QuotationRequest();
+
+        c.setOptionDate(optionDate);
+        c.setPos(pos);
+        c.setTitle("Copy of " + title);
+        c.setPrivateComments(privateComments);
+        c.setText(text);
+        c.setTelephone(telephone);
+        c.setName(name);
+        c.setEmail(email);
+        c.setCurrency(currency);
+        c.setAudit(new Audit(MDD.getCurrentUser()));
+        c.setAgency(agency);
+        c.setActive(true);
+        c.setGroupType(groupType);
+        c.setDate(date);
+        c.setHotels(hotels.stream().map(h -> h.createDuplicate(c)).collect(Collectors.toList()));
+        c.setTransfers(transfers.stream().map(h -> h.createDuplicate(c)).collect(Collectors.toList()));
+        c.setExcursions(excursions.stream().map(h -> h.createDuplicate(c)).collect(Collectors.toList()));
+        c.setGenerics(generics.stream().map(h -> h.createDuplicate(c)).collect(Collectors.toList()));
+        c.setLines(lines.stream().map(h -> h.createDuplicate(c)).collect(Collectors.toList()));
+
+        c.updateTotal();
+
+        return c;
+    }
 }

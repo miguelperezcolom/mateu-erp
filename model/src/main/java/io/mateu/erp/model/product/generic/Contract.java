@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.generic;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.AbstractContract;
+import io.mateu.mdd.core.annotations.Ignored;
 import io.mateu.mdd.core.annotations.QLForCombo;
 import io.mateu.mdd.core.annotations.Tab;
 import io.mateu.mdd.core.annotations.UseLinkToListView;
@@ -27,7 +28,7 @@ public class Contract extends AbstractContract {
 
     @Tab("Prices")
     @OneToMany(mappedBy = "contract", cascade = CascadeType.ALL)
-    @UseLinkToListView
+    @Ignored
     private List<Price> prices = new ArrayList<>();
 
 

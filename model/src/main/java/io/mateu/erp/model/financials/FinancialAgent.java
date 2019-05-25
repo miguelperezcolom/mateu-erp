@@ -1,6 +1,7 @@
 package io.mateu.erp.model.financials;
 
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.invoicing.InvoiceSerial;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.payments.MethodOfPayment;
@@ -74,6 +75,9 @@ public class FinancialAgent {
     @Tab("As customer")
 
     private boolean directSale;
+
+    @ManyToOne
+    private InvoiceSerial invoiceSerial;
 
     @NotNull
     private AutomaticInvoiceBasis automaticInvoiceBasis = AutomaticInvoiceBasis.NONE;
