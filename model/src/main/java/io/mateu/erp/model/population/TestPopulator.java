@@ -363,7 +363,7 @@ public class TestPopulator {
                     if (cargos.size() > 0) createInvoice(em, cargos.size() > 100?cargos.subList(0, cargos.size() - cargos.size() % 100):cargos, "" + (System.currentTimeMillis() % 1000), LocalDate.now(), LocalDate.now(), LocalDate.now());
 
                 } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    Helper.printStackTrace(throwable);
                 }
 
 
@@ -374,30 +374,9 @@ public class TestPopulator {
 
     }
 
-    private static void createInvoice(EntityManager em, List<PurchaseCharge> charges, String invoiceNumber, LocalDate invoiceDate, LocalDate dueDate, LocalDate taxDate) throws Exception {
-        ReceivedInvoice result = new ReceivedInvoice();
-        result.setAudit(new Audit(MDD.getCurrentUser()));
-
-
+    private static void createInvoice(EntityManager em, List<PurchaseCharge> charges, String invoiceNumber, LocalDate invoiceDate, LocalDate dueDate, LocalDate taxDate) throws Throwable {
         if (charges.size() == 0) throw new Exception("No charge selected");
-
-        charges.forEach(c -> {
-            result.getLines().add(new PurchaseOrderInvoiceLine(result, c));
-            c.setInvoice(result);
-        });
-
-        result.setNumber(invoiceNumber);
-        result.setIssueDate(invoiceDate);
-        result.setDueDate(dueDate);
-        result.setTaxDate(taxDate);
-        result.setProvider(charges.get(0).getProvider());
-        result.setRecipient(charges.get(0).getPurchaseOrder().getOffice().getCompany().getFinancialAgent());
-        result.setIssuer(result.getProvider().getFinancialAgent());
-        result.setCurrency(result.getProvider().getCurrency());
-
-        if (result.getRecipient() == null) throw new Exception("Missing financial agent for company " + charges.get(0).getPurchaseOrder().getOffice().getCompany().getName() + ". Please fill");
-        if (result.getIssuer() == null) throw new Exception("Missing financial agent for provider " + result.getProvider().getName() + ". Please fill");
-
+        ReceivedInvoice result = new ReceivedInvoice(MDD.getCurrentUser(), charges, charges.get(0).getProvider().getFinancialAgent(), charges.get(0).getPurchaseOrder().getOffice().getCompany().getFinancialAgent(), invoiceNumber);
         em.persist(result);
     }
 

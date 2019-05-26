@@ -88,7 +88,7 @@ public class SendPurchaseOrdersByEmailTask extends SendPurchaseOrdersTask {
             email.addTo((!Strings.isNullOrEmpty(System.getProperty("allemailsto")))?System.getProperty("allemailsto"):getTo());
 
             boolean incluyeTraslados = false;
-            for (PurchaseOrder po : getPurchaseOrders()) for (Service s : po.getServices()) if (s instanceof TransferService) incluyeTraslados = true;
+            for (PurchaseOrder po : getPurchaseOrders()) if (po.getService() instanceof TransferService) incluyeTraslados = true;
 
             if (incluyeTraslados) {
                 File attachment = createExcel();

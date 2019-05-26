@@ -250,7 +250,7 @@ public class BookingMap extends HorizontalLayout {
             } else if (p instanceof Service) {
                 p = ((Service) p).getBooking();
             } else if (p instanceof PurchaseOrder) {
-                p = ((PurchaseOrder) p).getServices().get(0);
+                p = ((PurchaseOrder) p).getService();
             } else if (p instanceof SendPurchaseOrdersTask) {
                 p = ((SendPurchaseOrdersTask) p).getPurchaseOrders().get(0);
             } else {

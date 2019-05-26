@@ -62,8 +62,7 @@ public class Importer {
 
                         if (po != null) {
 
-                            TransferService s = null;
-                            if (po.getServices().size() > 0) s = (TransferService) po.getServices().get(0);
+                            TransferService s = (TransferService) po.getService();
 
                             if (s != null) {
                                 LocalDateTime pud = Helper.toLocalDateTime(fecha);

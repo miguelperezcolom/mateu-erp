@@ -1,4 +1,4 @@
-package io.mateu.mdd.core.model.hotel;
+package io.mateu.common.model.hotel;
 
 
 import org.junit.Test;

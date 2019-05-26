@@ -31,7 +31,7 @@ public class IslandbusHelper {
         for (PurchaseOrder po : pos) {
 
             List<TransferService> transfers = new ArrayList<>();
-            for (Service s : po.getServices()) if (s instanceof TransferService && !TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) transfers.add((TransferService) s);
+            if (po.getService() instanceof TransferService && !TransferType.SHUTTLE.equals(((TransferService) po.getService()).getTransferType())) transfers.add((TransferService) po.getService());
 
             if (transfers.size() > 0) {
 
@@ -183,7 +183,7 @@ public class IslandbusHelper {
         for (PurchaseOrder po : pos) {
 
             List<TransferService> transfers = new ArrayList<>();
-            for (Service s : po.getServices()) if (s instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) s).getTransferType())) transfers.add((TransferService) s);
+            if (po.getService() instanceof TransferService && TransferType.SHUTTLE.equals(((TransferService) po.getService()).getTransferType())) transfers.add((TransferService) po.getService());
 
             if (transfers.size() > 0) {
 

@@ -19,6 +19,7 @@ import lombok.Setter;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -83,7 +84,8 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
         List<Map<String, Object>> f = new ArrayList<>();
         if (!Strings.isNullOrEmpty(getPostscript())) d.put("postscript", getPostscript());
         for (PurchaseOrder po : getPurchaseOrders()) {
-            for (Service s : po.getServices()) {
+            {
+                Service s = po.getService();
                 Map<String, Object> ds = s.getData();
 
                 if (!po.isActive()) ds.put("status", "CANCELLED");

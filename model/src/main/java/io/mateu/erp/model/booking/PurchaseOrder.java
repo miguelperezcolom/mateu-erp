@@ -107,10 +107,8 @@ public class PurchaseOrder {
 
 
     @SearchFilter(field = "id")
-    @UseLinkToListView
-    @ManyToMany(mappedBy = "purchaseOrders")
-    @Caption("Service Id")
-    private List<Service> services = new ArrayList<>();
+    @ManyToOne@NotNull
+    private Service service;
 
 
     @KPI
@@ -224,9 +222,7 @@ public class PurchaseOrder {
             m.put("provider", getProvider().getName());
             m.put("active", active);
             List<String> serviceSignatures = new ArrayList<>();
-            for (Service sv : getServices()) {
-                serviceSignatures.add(sv.createSignature());
-            }
+            serviceSignatures.add(getService().createSignature());
             m.put("serviceSignatures", serviceSignatures);
             s = Helper.toJson(m);
         } catch (Exception e) {
@@ -291,21 +287,8 @@ public class PurchaseOrder {
 
         List<Map<String, Object>> ls = new ArrayList<>();
 
-        List<Service> ss = new ArrayList<>(getServices());
-
-        Collections.sort(ss, new Comparator<Service>() {
-            @Override
-            public int compare(Service o1, Service o2) {
-                LocalDateTime d1 = o1.getStart().atStartOfDay();
-                LocalDateTime d2 = o2.getStart().atStartOfDay();
-                if (o1 instanceof TransferService) d1 = ((TransferService)o1).getFlightTime();
-                if (o2 instanceof TransferService) d2 = ((TransferService)o2).getFlightTime();
-                return d1.compareTo(d2);
-            }
-        });
-
-        for (Service s : ss) {
-            Map<String, Object> ds = s.getData();
+        {
+            Map<String, Object> ds = getService().getData();
             if (!isActive()) ds.put("status", "CANCELLED");
             ls.add(ds);
         }
@@ -327,21 +310,25 @@ public class PurchaseOrder {
     }
 
     private void updateCharges(EntityManager em) {
+
+        //huhhih
+
+
         getCharges().clear();
 
         createCharges(em);
     }
 
     public void createCharges(EntityManager em) {
-        for (Service s : getServices()) if (s.getTotalCost() != 0) {
+        if (getService().getTotalCost() != 0) {
             PurchaseCharge c;
             getCharges().add(c = new PurchaseCharge());
             c.setAudit(new Audit(MDD.getCurrentUser()));
 
-            c.setTotal(s.getTotalCost());
+            c.setTotal(getService().getTotalCost());
             c.setCurrency(getCurrency());
 
-            c.setText("" + s);
+            c.setText("" + getService());
 
             c.setProvider(getProvider());
 
@@ -350,7 +337,7 @@ public class PurchaseOrder {
 
             c.setInvoice(null);
 
-            c.setBillingConcept(s.getBillingConcept(em));
+            c.setBillingConcept(getService().getBillingConcept(em));
         }
     }
 
@@ -363,7 +350,7 @@ public class PurchaseOrder {
     @PrePersist@PreUpdate
     public void pre() {
         LocalDate d = null;
-        for (Service s : services) if (d == null || d.isAfter(s.getStart())) d = s.getStart();
+        if (d == null || d.isAfter(getService().getStart())) d = getService().getStart();
         start = d;
 
         if (currencyExchange == 0) {
@@ -371,9 +358,9 @@ public class PurchaseOrder {
         }
 
         double t = 0;
-        boolean v = !isActive() || services.size() > 0;
+        boolean v = !isActive() || getService() != null;
         if (isActive()) {
-            for (Service service : services) {
+            {
                 t += service.getTotalCost();
                 v = v && service.isCostValued();
             }
@@ -415,8 +402,8 @@ public class PurchaseOrder {
             m.put("provider", getProvider().getName());
             m.put("active", active);
             List<String> serviceSignatures = new ArrayList<>();
-            for (Service sv : getServices()) {
-                serviceSignatures.add("" + sv.getDescription() + " " + sv.getTotalCost());
+            {
+                serviceSignatures.add("" + getService().getDescription() + " " + getService().getTotalCost());
             }
             m.put("serviceSignatures", serviceSignatures);
             s = Helper.toJson(m);
@@ -427,7 +414,7 @@ public class PurchaseOrder {
     }
 
     public void markServicesForUpdate() {
-        getServices().forEach(s -> s.setUpdateRqTime(LocalDateTime.now()));
+        getService().setUpdateRqTime(LocalDateTime.now());
     }
 
     @PostPersist@PostUpdate

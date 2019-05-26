@@ -582,7 +582,7 @@ public abstract class Service {
             arrel.addContent(epo = new Element("po").setAttribute("id", "" + po.getId()));
             if (po.getProvider() != null && po.getProvider().getName() != null) epo.setAttribute("provider", po.getProvider().getName());
 
-            for (Service sx : po.getServices()) {
+            {
 
                 if (Service.this instanceof TransferService) {
 
@@ -724,7 +724,7 @@ public abstract class Service {
                 po = new PurchaseOrder();
                 po.setServiceType(serviceType);
                 po.setAudit(new Audit());
-                po.getServices().add(this);
+                po.setService(this);
                 getPurchaseOrders().add(po);
                 po.setStatus(PurchaseOrderStatus.PENDING);
             }

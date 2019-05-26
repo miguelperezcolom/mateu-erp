@@ -1,4 +1,4 @@
-package io.mateu.mdd.core.model.test;
+package io.mateu.common.model.test;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
