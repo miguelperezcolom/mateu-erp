@@ -72,6 +72,7 @@ public class TestPopulator {
         EmailHelper.setTesting(true);
 
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+        System.setProperty("appconf", "/Users/miguel/quotravel.properties");
 
         try {
             Helper.runCommand("dropdb -U postgres quotravel; createdb -U postgres quotravel");

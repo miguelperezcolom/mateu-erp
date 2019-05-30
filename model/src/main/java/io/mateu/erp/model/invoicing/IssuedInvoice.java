@@ -243,7 +243,7 @@ public class IssuedInvoice extends Invoice {
 
         totalRegimenEspecial.keySet().forEach(v -> {
             double t = Helper.roundEuros(totalRegimenEspecial.get(v));
-            double c = Helper.roundEuros(totalCosteRegimenEspecial.get(v));
+            double c = Helper.roundEuros(totalCosteRegimenEspecial.getOrDefault(v, 0d));
             if (t != 0 || c != 0) {
                 VATLine l;
                 getVATLines().add(l = new VATLine());

@@ -20,6 +20,7 @@ import io.mateu.erp.model.payments.Account;
 import io.mateu.erp.model.payments.MethodOfPayment;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.ProductType;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.Contract;
 import io.mateu.erp.model.product.generic.GenericProduct;
@@ -74,6 +75,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
     public static Currency eur;
     public static Currency usd;
     public static Currency gbp;
+    public static Tariff tariff;
 
     public static void main(String... args) throws Throwable {
 
@@ -406,6 +408,10 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             t.setName("Excursión Isla Saona");
             em.persist(t);
 
+            ExcursionLanguage l = new ExcursionLanguage();
+            l.setCode("es");
+            l.setName(new Literal("Spanish", "Español"));
+            em.persist(l);
 
             excursion = new Excursion();
             excursion.setType(t);
@@ -414,11 +420,13 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             excursion.setName("Excursión Isla Saona");
             excursion.setActive(true);
             excursion.setDuration(TourDuration.WHOLEDAY);
+            excursion.setProductLine(prodLine);
             ExcursionShift s;
             excursion.getShifts().add(s = new ExcursionShift());
             s.setExcursion(excursion);
             s.setName("Turno único");
             s.setWeekdays(new boolean[] {true, true, true, true, true, true, true});
+            s.getLanguages().add(l);
             //genericProduct.setProvidedBy();
             Variant v;
             excursion.getVariants().add(v = new Variant());
@@ -437,6 +445,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setResort(office.getResort());
             p.setOffice(office);
             p.setName("Barco a Isla Saona (ida y vuelta)");
+            p.setProductLine(prodLine);
             p.setActive(true);
             //genericProduct.setProvidedBy();
             Variant vp;
@@ -467,6 +476,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setResort(office.getResort());
             p.setOffice(office);
             p.setName("Comida en Isla Saona");
+            p.setProductLine(prodLine);
             p.setActive(true);
             p.setProvidedBy(proveedor);
             //genericProduct.setProvidedBy();
@@ -496,6 +506,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             p.setResort(office.getResort());
             p.setOffice(office);
             p.setName("Guía oficial");
+            p.setProductLine(prodLine);
             p.setActive(true);
             //genericProduct.setProvidedBy();
             p.getVariants().add(vp = new Variant());
@@ -530,6 +541,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setOffice(office);
             c.setProductLine(prodLine);
             c.setRatesType(RatesType.NET);
+            c.setProductLine(prodLine);
             c.setTitle("Contrato Venta Excursiones 2019");
             c.setType(ContractType.SALE);
             c.setValidFrom(LocalDate.of(2019, 1, 1));
@@ -542,6 +554,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             precio.setContract(c);
             precio.setActive(true);
             precio.setTour(excursion);
+            precio.setTariff(tariff);
             precio.setVariant(excursion.getVariants().get(0));
             precio.setDescription("Precio único");
             precio.setAdultPrice(50.2);
@@ -561,6 +574,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             c.setOffice(office);
             c.setProductLine(prodLine);
             c.setRatesType(RatesType.NET);
+            c.setProductLine(prodLine);
             c.setTitle("Contrato Compra Excursiones 2019");
             c.setType(ContractType.PURCHASE);
             c.setValidFrom(LocalDate.of(2019, 1, 1));
@@ -573,6 +587,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
             precio.setContract(c);
             precio.setActive(true);
             precio.setTour(excursion);
+            precio.setTariff(tariff);
             precio.setVariant(excursion.getVariants().get(0));
             precio.setDescription("Precio único");
             precio.setAdultPrice(30.1);
@@ -883,6 +898,9 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 visa.setName("VISA");
                 em.persist(visa);
 
+                tariff = new Tariff();
+                tariff.setName("Banco Santander 65465465465464");
+                em.persist(tariff);
 
                 io.mateu.erp.model.config.AppConfig ac = io.mateu.erp.model.config.AppConfig.get(em);
 
@@ -984,6 +1002,7 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 pos = new PointOfSale();
                 pos.setName("Point of sale");
                 pos.setOffice(office);
+                pos.setTariff(tariff);
                 em.persist(pos);
 
                 s.getResorts().add(alcudia = resort = new Resort());
