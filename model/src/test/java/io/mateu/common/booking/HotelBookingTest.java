@@ -8,6 +8,7 @@ import io.mateu.erp.model.booking.parts.HotelBookingLine;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -35,7 +36,7 @@ public class HotelBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -48,6 +49,7 @@ public class HotelBookingTest {
             b.setAudit(new Audit(MDD.getCurrentUser()));
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
+            b.setLeadName("Mr test");
             b.setPos(Populator.pos);
             b.setCurrency(Populator.agencia.getCurrency());
 
@@ -79,10 +81,10 @@ public class HotelBookingTest {
             assertEquals(1, xb.getServiceCharges().size());
 
             // la línea de cargo debe ser por el total
-            assertEquals(305, xb.getServiceCharges().get(0).getTotal(), 0);
+            assertEquals(244, xb.getServiceCharges().get(0).getTotal(), 0);
 
             // el total debe estar ok
-            assertEquals(305, xb.getTotalValue(), 0);
+            assertEquals(244, xb.getTotalValue(), 0);
 
         });
 

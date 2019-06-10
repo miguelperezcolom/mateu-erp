@@ -215,7 +215,6 @@ public class Importer {
         FinancialAgent agente;
         cia.setFinancialAgent(agente = new FinancialAgent());
         agente.setName("Viajes Ibiza");
-        agente.setCurrency(em.find(Currency.class, "EUR"));
         AccountingPlan plan;
         cia.setAccountingPlan(plan = new AccountingPlan());
         plan.setName("Plan general");

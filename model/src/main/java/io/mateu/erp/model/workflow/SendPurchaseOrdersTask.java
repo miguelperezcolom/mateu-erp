@@ -2,6 +2,7 @@ package io.mateu.erp.model.workflow;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.model.booking.PurchaseOrder;
+import io.mateu.erp.model.booking.PurchaseOrderStatus;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.freetext.FreeTextService;
 import io.mateu.erp.model.booking.generic.GenericService;
@@ -146,8 +147,21 @@ public abstract class SendPurchaseOrdersTask extends AbstractTask {
 
     @Override
     public void statusChanged() {
-        for (PurchaseOrder po : getPurchaseOrders()) {
-            po.setUpdateRqTime(LocalDateTime.now());
+        if (!TaskResult.CANCELLED.equals(getResult())) {
+            boolean mismaFirma = getSignature() != null && getSignature().equals(createSignature());
+            for (PurchaseOrder po : getPurchaseOrders()) {
+                if (mismaFirma) { // si la firma de los pedidos no ha cambiado podemos darlos como confirmados
+                    if (TaskStatus.FINISHED.equals(getStatus()) && TaskResult.OK.equals(getResult())) {
+                        if (getProvider().isAutomaticOrderConfirmation()) po.setStatus(PurchaseOrderStatus.CONFIRMED);
+                        po.setSentTime(getFinished());
+                        po.setSent(true);
+                    }
+                } else { //TODO: si la firma de los pedidos ha cambiado los ponemos como pendientes?????????? repensar!
+                    po.setStatus(PurchaseOrderStatus.PENDING);
+                    po.setSent(false);
+                    po.setSentTime(null);
+                }
+            }
         }
     }
 

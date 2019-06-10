@@ -1,5 +1,6 @@
 package io.mateu.common.booking;
 
+import com.google.common.collect.Lists;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.QuotationRequest;
@@ -11,6 +12,7 @@ import io.mateu.erp.model.payments.Payment;
 import io.mateu.erp.model.payments.PaymentLine;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.model.util.EmailMock;
@@ -37,7 +39,7 @@ public class PaymentTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -81,7 +83,7 @@ public class PaymentTest {
             Booking bx = em.find(Booking.class, b.getId());
 
             BookingPaymentAllocation a;
-            px.getBreakdown().add(a = new BookingPaymentAllocation());
+            px.setBreakdown(Lists.newArrayList(a = new BookingPaymentAllocation()));
             a.setPayment(px);
             a.setBooking(bx);
             bx.getPayments().add(a);
@@ -116,7 +118,7 @@ public class PaymentTest {
             //p.setBreakdown();
             {
                 PaymentLine l;
-                p.getLines().add(l = new PaymentLine());
+                p.setLines(Lists.newArrayList(l = new PaymentLine()));
                 l.setPayment(p);
                 l.setCurrency(em.find(Currency.class, "EUR"));
                 l.setValue(300);
@@ -124,7 +126,7 @@ public class PaymentTest {
             }
             {
                 PaymentLine l;
-                p.getLines().add(l = new PaymentLine());
+                p.setLines(Helper.extend(p.getLines(), l = new PaymentLine()));
                 l.setPayment(p);
                 l.setCurrency(Populator.usd);
                 l.setValue(200);

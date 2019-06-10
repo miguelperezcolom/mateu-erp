@@ -1,6 +1,7 @@
 package io.mateu.erp.model.invoicing;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
@@ -211,8 +212,9 @@ public class IssuedInvoice extends Invoice {
 
                 l.setInvoice(this);
                 l.setPercent(p);
-                l.setTotal(Helper.roundEuros(vats.get(v).get(p)));
-                l.setBase(Helper.roundEuros(100d * (l.getTotal() / (100d + p))));
+                double totalVatIncluded = Helper.roundEuros(vats.get(v).get(p));
+                l.setBase(Helper.roundEuros(100d * (totalVatIncluded / (100d + p))));
+                l.setTotal(Helper.roundEuros(totalVatIncluded - l.getBase()));
                 l.setVat(v);
             }
 
@@ -243,7 +245,7 @@ public class IssuedInvoice extends Invoice {
 
         totalRegimenEspecial.keySet().forEach(v -> {
             double t = Helper.roundEuros(totalRegimenEspecial.get(v));
-            double c = Helper.roundEuros(totalCosteRegimenEspecial.get(v));
+            double c = totalCosteRegimenEspecial.containsKey(v)?Helper.roundEuros(totalCosteRegimenEspecial.get(v)):0;
             if (t != 0 || c != 0) {
                 VATLine l;
                 getVATLines().add(l = new VATLine());
@@ -315,7 +317,7 @@ public class IssuedInvoice extends Invoice {
                             if (!bookings.contains(bil.getCharge().getBooking())) bookings.add(bil.getCharge().getBooking());
                         }
                     });
-                    /*
+
                     bookings.forEach(b -> {
                         b.getPayments().forEach(a -> {
                             if (a.getInvoice() == null) {
@@ -325,11 +327,11 @@ public class IssuedInvoice extends Invoice {
                                 ipa.setInvoice(i);
                                 ipa.setPayment(a.getPayment());
                                 ipa.setValue(a.getValue());
-                                ipa.getPayment().getBreakdown().add(ipa);
+                                ipa.getPayment().setBreakdown(Helper.extend(ipa.getPayment().getBreakdown(), ipa));
                             }
                         });
                     });
-                    */
+
 
                 });
 

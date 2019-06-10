@@ -32,6 +32,9 @@ public class Price {
     private Tariff tariff;
 
     @ManyToOne
+    private Extra extra;
+
+    @ManyToOne
     @NotNull
     @SearchFilter
     private Zone origin;
@@ -61,6 +64,13 @@ public class Price {
     private double price;
 
     private double returnPrice;
+
+    @Column(name = "_order")
+    private int order;
+
+    private boolean finalPrice;
+
+
 
     @Ignored
     private boolean deprecated;

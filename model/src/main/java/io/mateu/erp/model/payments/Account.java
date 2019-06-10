@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -39,7 +40,7 @@ public class Account {
     private double balance;
 
     @Ignored
-    private boolean markedForUpdate;
+    private LocalDateTime triggerUpdate;
 
     @Override
     public String toString() {
@@ -49,21 +50,21 @@ public class Account {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (markedForUpdate) {
+        if (triggerUpdate != null) {
             WorkflowEngine.add(() -> {
 
                 try {
                     Helper.transact(em -> {
 
                         Account b = em.merge(Account.this);
-                        if (b.isMarkedForUpdate()) {
+                        if (b.getTriggerUpdate() != null) {
 
 
                             Double l = (Double) em.createQuery("select sum(x.valueInNucs) from " + Payment.class.getName() + " x where x.account.id = " + b.getId()).getSingleResult();
 
                             b.setBalance(l);
 
-                            b.setMarkedForUpdate(false);
+                            b.setTriggerUpdate(null);
 
                         }
 

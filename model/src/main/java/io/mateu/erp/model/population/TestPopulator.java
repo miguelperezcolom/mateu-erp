@@ -20,6 +20,7 @@ import io.mateu.erp.model.invoicing.*;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.organization.SalesPoint;
 import io.mateu.erp.model.partners.*;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.*;
@@ -171,11 +172,11 @@ public class TestPopulator {
                     booking.getPayments().add(a = new BookingPaymentAllocation());
                     a.setPayment(p);
                     a.setBooking(booking);
-                    p.getBreakdown().add(a);
+                    p.setBreakdown(Lists.newArrayList(a));
                     a.setValue(v);
 
                     PaymentLine l;
-                    p.getLines().add(l = new PaymentLine());
+                    p.setLines(Lists.newArrayList(l = new PaymentLine()));
                     l.setPayment(p);
                     l.setMethodOfPayment(visa);
                     l.setValue(v);
@@ -210,6 +211,7 @@ public class TestPopulator {
                     cts.getLines().add(l = new CommissionTermsLine());
                     l.setTerms(cts);
                     l.setAgent(agente);
+                    l.setBasis(CommissionAplicationBasis.MARKUP);
                     l.setProductLine(productLine);
                     l.setStart(LocalDate.of(2019, 01, 01));
                     l.setEnd(LocalDate.of(2019, 12, 31));
@@ -1053,6 +1055,8 @@ public class TestPopulator {
 
             List<Circuit> circuitos = Helper.selectObjects("select x from " + Circuit.class.getName() + " x");
 
+            List<Market> markets = Helper.selectObjects("select x from " + Market.class.getName() + " x");
+
             List<Ticket> tickets = crearTickets(em, excursiones);
 
 
@@ -1092,15 +1096,16 @@ public class TestPopulator {
                 if (nextInt() % 2 == 0) {
                      rep = reps.get(nextInt() % reps.size());
                 }
+                Market market = markets.get(nextInt() % markets.size());
 
 
                 switch (nextInt() % 6) {
-                    case 0: crearReservaTraslado(em, u, f, puntos, poses, conceptosTraslados, agencia, rep); break;
-                    case 1: crearReservaHotel(em, u, f, hoteles, poses, conceptosHotel, agencia, rep); break;
-                    case 2: crearReservaFreeText(em, u, f, oficinas, poses, conceptosFreeText, agencia, proveedores, lineasProducto, rep); break;
-                    case 3: crearReservaGenerico(em, u, f, oficinas, poses, conceptosFreeText, agencia, genericos, rep); break;
-                    case 4: crearReservaExcursion(em, u, f, oficinas, poses, conceptosFreeText, agencia, excursiones, rep); break;
-                    case 5: crearReservaCircuito(em, u, f, oficinas, poses, conceptosFreeText, agencia, circuitos, rep); break;
+                    case 0: crearReservaTraslado(em, u, f, puntos, poses, conceptosTraslados, agencia, rep, market); break;
+                    case 1: crearReservaHotel(em, u, f, hoteles, poses, conceptosHotel, agencia, rep, market); break;
+                    case 2: crearReservaFreeText(em, u, f, oficinas, poses, conceptosFreeText, agencia, proveedores, lineasProducto, rep, market); break;
+                    case 3: crearReservaGenerico(em, u, f, oficinas, poses, conceptosFreeText, agencia, genericos, rep, market); break;
+                    case 4: crearReservaExcursion(em, u, f, oficinas, poses, conceptosFreeText, agencia, excursiones, rep, market); break;
+                    case 5: crearReservaCircuito(em, u, f, oficinas, poses, conceptosFreeText, agencia, circuitos, rep, market); break;
                 }
 
                 em.flush();
@@ -1142,7 +1147,7 @@ public class TestPopulator {
         return l;
     }
 
-    private static void crearReservaExcursion(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Excursion> excursiones, CommissionAgent rep) throws Throwable {
+    private static void crearReservaExcursion(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Excursion> excursiones, CommissionAgent rep, Market market) throws Throwable {
         ExcursionBooking b = new ExcursionBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1161,6 +1166,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
         b.setPax(3);
 
@@ -1191,7 +1197,7 @@ public class TestPopulator {
     }
 
 
-    private static void crearReservaCircuito(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Circuit> circuitos, CommissionAgent rep) throws Throwable {
+    private static void crearReservaCircuito(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Circuit> circuitos, CommissionAgent rep, Market market) throws Throwable {
         CircuitBooking b = new CircuitBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1208,6 +1214,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
 
 
@@ -1236,7 +1243,7 @@ public class TestPopulator {
         em.persist(b);
     }
 
-    private static void crearReservaGenerico(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<GenericProduct> genericos, CommissionAgent rep) throws Throwable {
+    private static void crearReservaGenerico(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<GenericProduct> genericos, CommissionAgent rep, Market market) throws Throwable {
         GenericBooking b = new GenericBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1264,6 +1271,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
 
 
@@ -1292,7 +1300,7 @@ public class TestPopulator {
         em.persist(b);
     }
 
-    private static void crearReservaTraslado(EntityManager em, User u, File f, List<TransferPoint> puntos, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, CommissionAgent rep) throws Throwable {
+    private static void crearReservaTraslado(EntityManager em, User u, File f, List<TransferPoint> puntos, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, CommissionAgent rep, Market market) throws Throwable {
         TransferBooking b = new TransferBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1306,6 +1314,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
 
         b.setTransferType(TransferType.SHUTTLE);
@@ -1349,7 +1358,7 @@ public class TestPopulator {
 
 
 
-    public static void crearReservaHotel(EntityManager em, User u, File f, List<Hotel> hoteles, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, CommissionAgent rep) throws Throwable {
+    public static void crearReservaHotel(EntityManager em, User u, File f, List<Hotel> hoteles, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, CommissionAgent rep, Market market) throws Throwable {
         HotelBooking b = new HotelBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1362,6 +1371,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
         //b.setActive(nextInt() % 10 > 2);
         b.setConfirmed(nextInt() % 10 > 2);
@@ -1405,7 +1415,7 @@ public class TestPopulator {
     }
 
 
-    private static void crearReservaFreeText(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Provider> proveedores, List<ProductLine> lineasProducto, CommissionAgent rep) throws Throwable {
+    private static void crearReservaFreeText(EntityManager em, User u, File f, List<Office> oficinas, List<PointOfSale> poses, List<BillingConcept> conceptos, Agency agencia, List<Provider> proveedores, List<ProductLine> lineasProducto, CommissionAgent rep, Market market) throws Throwable {
         FreeTextBooking b = new FreeTextBooking();
         if (f != null) {
             f.getBookings().add(b);
@@ -1424,6 +1434,7 @@ public class TestPopulator {
         b.setAgencyReference("" + (nextInt() % 1000000000));
         b.setEmail("miguelperezcolom@gmail.com");
         b.setTelephone(LoremIpsum.getInstance().getPhone());
+        b.setMarket(market);
 
         b.setPax(1 + (nextInt() % 2));
         LocalDate d0 = LocalDate.now().minusDays(10).plusDays(nextInt() % 30);
@@ -1517,6 +1528,7 @@ public class TestPopulator {
         pos.setTariff(em.find(Tariff.class, 1l));
         pos.setOffice(oficinas.get(0));
         pos.setFinancialAgent(crearAgenteFinanciero(em, pn, pn));
+        pos.setSalesPoint(em.find(SalesPoint.class, 1l));
         em.persist(pos);
 
 
@@ -1966,17 +1978,24 @@ public class TestPopulator {
 
             }
 
+            SalesPoint sp = new SalesPoint();
+            sp.setName("Office");
+            sp.setOffice(o);
+            em.persist(sp);
+
 
             PointOfSale pos = new PointOfSale();
             pos.setName("Web");
             pos.setOffice(o);
             pos.setTariff(em.find(Tariff.class, 1l));
+            pos.setSalesPoint(sp);
             em.persist(pos);
 
             pos = new PointOfSale();
             pos.setName("Agencia");
             pos.setOffice(o);
             pos.setTariff(em.find(Tariff.class, 1l));
+            pos.setSalesPoint(sp);
             em.persist(pos);
 
 
@@ -2035,7 +2054,6 @@ public class TestPopulator {
         a.setAutomaticInvoiceBasis(AutomaticInvoiceBasis.NONE);
         a.setCity(LoremIpsum.getInstance().getCity());
         a.setCountry(LoremIpsum.getInstance().getCountry());
-        a.setCurrency(em.find(Currency.class, "EUR"));
         a.setEmail("miguelperezcolom@gmail.com");
         a.setEU(true);
         a.setInvoiceGrouping(InvoiceGrouping.BOOKING);

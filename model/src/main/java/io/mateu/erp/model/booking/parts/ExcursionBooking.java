@@ -10,6 +10,7 @@ import io.mateu.erp.model.booking.ValidationStatus;
 import io.mateu.erp.model.booking.generic.GenericService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.organization.SalesPoint;
 import io.mateu.erp.model.performance.Accessor;
 import io.mateu.erp.model.product.ContractType;
 import io.mateu.erp.model.product.Variant;
@@ -17,6 +18,8 @@ import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.ExcursionLanguage;
 import io.mateu.erp.model.product.tour.ExcursionShift;
+import io.mateu.erp.model.product.tour.TourPickupTime;
+import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.revenue.ProductLine;
 import io.mateu.mdd.core.MDD;
 import io.mateu.mdd.core.annotations.Position;
@@ -66,6 +69,20 @@ public class ExcursionBooking extends TourBooking {
 
     public DataProvider getLanguageDataProvider() {
         return new ListDataProvider(shift != null?shift.getLanguages():new ArrayList());
+    }
+
+    public void setSalesPoint(SalesPoint salesPoint) {
+        super.setSalesPoint(salesPoint);
+        if (salesPoint != null && salesPoint.getPickupPoint() != null) {
+            setPickup(salesPoint.getPickupPoint());
+        }
+    }
+
+    public void setPickup(TransferPoint pickup) {
+        super.setPickup(pickup);
+        if (pickup != null) for (TourPickupTime t : getShift().getPickupTimes()) {
+            if (pickup.equals(t.getPoint()) && t.getTime() != null) setPickupTime(t.getTime().atDate(getStart()));
+        }
     }
 
 

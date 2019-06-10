@@ -30,7 +30,6 @@ public class TourCost {
     private Tour tour;
 
     @ManyToOne
-    @NotNull
     private Variant variant;
 
     @DependsOn("product")
@@ -48,7 +47,7 @@ public class TourCost {
     @ManyToOne
     private ProductType type;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private AbstractProduct product;
 
     @DependsOn("type")
@@ -88,6 +87,9 @@ public class TourCost {
 
     private int units;
 
+    private boolean cash;
+
+    private boolean providerConfirmationRequired;
 
     private boolean overrideCost;
 
@@ -99,6 +101,8 @@ public class TourCost {
     private double costPerService;
 
     private double costPerUnit;
+
+    private double costPerPax;
 
     private double costPerInfant;
 
@@ -125,6 +129,10 @@ public class TourCost {
     }
 
     public boolean isCostPerUnitVisible() {
+        return overrideCost;
+    }
+
+    public boolean isCostPerPaxVisible() {
         return overrideCost;
     }
 

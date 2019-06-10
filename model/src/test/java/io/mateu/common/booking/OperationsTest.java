@@ -1,5 +1,7 @@
 package io.mateu.common.booking;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.ProcessingStatus;
 import io.mateu.erp.model.booking.PurchaseOrderStatus;
@@ -14,6 +16,7 @@ import io.mateu.erp.model.payments.PaymentLine;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -25,7 +28,7 @@ import java.time.LocalDate;
 import static org.junit.Assert.*;
 
 
-public class FreeTextBookingTest {
+public class OperationsTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -40,7 +43,7 @@ public class FreeTextBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -122,6 +125,14 @@ public class FreeTextBookingTest {
 
             // la reserva debe estar disponible
             assertEquals(xb.isAvailable(), true);
+
+            // debemos haber registrado que alguna vez se ha mandado al proveedor
+            assertTrue(xb.getServices().get(0).isEverSentToProvider());
+
+
+            // debe estar visible en el resumen
+            assertTrue(xb.getServices().get(0).isVisibleInSummary());
+
         });
 
 
@@ -149,7 +160,6 @@ public class FreeTextBookingTest {
         });
 
         // cancelamos el servicio
-
         Helper.transact(em -> {
 
             FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
@@ -169,7 +179,7 @@ public class FreeTextBookingTest {
             assertEquals(ProcessingStatus.CONFIRMED, xb.getServices().get(0).getProcessingStatus());
 
             // el coste total debe estar ok
-            assertEquals(70.01, xb.getTotalCost(), 0);
+            assertEquals(0, xb.getTotalCost(), 0);
         });
 
         // reactivamos el servicio
@@ -316,10 +326,10 @@ public class FreeTextBookingTest {
             pa.setValue(30.5);
             Payment p;
             pa.setPayment(p = new Payment());
-            p.getBreakdown().add(pa);
+            p.setBreakdown(Lists.newArrayList(pa));
 
             PaymentLine l;
-            p.getLines().add(l = new PaymentLine());
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
             l.setPayment(p);
             l.setMethodOfPayment(Populator.visa);
             l.setCurrency(xb.getCurrency());
@@ -359,10 +369,10 @@ public class FreeTextBookingTest {
             pa.setValue(50);
             Payment p;
             pa.setPayment(p = new Payment());
-            p.getBreakdown().add(pa);
+            p.setBreakdown(Lists.newArrayList(pa));
 
             PaymentLine l;
-            p.getLines().add(l = new PaymentLine());
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
             l.setPayment(p);
             l.setMethodOfPayment(Populator.visa);
             l.setCurrency(xb.getCurrency());
@@ -391,7 +401,7 @@ public class FreeTextBookingTest {
 
 
         // facturamos
-        Helper.transact(em -> {
+        Helper.notransact(em -> {
 
             FreeTextBooking xb = em.find(FreeTextBooking.class, b.getId());
 
@@ -433,7 +443,7 @@ public class FreeTextBookingTest {
             em.persist(p);
 
             PaymentLine l;
-            p.getLines().add(l = new PaymentLine());
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
             l.setPayment(p);
             l.setMethodOfPayment(Populator.visa);
             l.setCurrency(xb.getCurrency());
@@ -445,7 +455,7 @@ public class FreeTextBookingTest {
             ipa.setInvoice(i);
             ipa.setPayment(p);
             ipa.setValue(p.getValueInNucs());
-            ipa.getPayment().getBreakdown().add(ipa);
+            ipa.getPayment().setBreakdown(Lists.newArrayList(ipa));
 
         });
 
@@ -472,7 +482,6 @@ public class FreeTextBookingTest {
             b.setAudit(new Audit(MDD.getCurrentUser()));
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
-            b.setLeadName("Mr test");
             b.setPos(Populator.pos);
             b.setProvider(Populator.proveedor);
 

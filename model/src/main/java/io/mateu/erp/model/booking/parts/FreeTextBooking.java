@@ -40,12 +40,12 @@ public class FreeTextBooking extends Booking {
 
     @TextArea
     @NotEmpty
-    @Position(15)
+    @Position(16)
     private String serviceDescription;
 
     @NotNull
     @ManyToOne
-    @Position(16)
+    @Position(17)
     private ProductLine productLine;
 
 

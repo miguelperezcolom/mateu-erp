@@ -15,6 +15,8 @@ import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.tour.Circuit;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.transfer.TransferPoint;
+import io.mateu.erp.model.world.Destination;
+import io.mateu.erp.model.world.Resort;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.CommonsService;
@@ -68,7 +70,7 @@ public class CommonsServiceImpl implements CommonsService {
                         es.getResorts().stream().sorted((z1, z2) -> z1.getOrder() - z2.getOrder()).forEach(el -> {
                             City l;
                             s.getCities().add(l = new City());
-                            l.setResourceId("zon-" + el.getId());
+                            l.setResourceId("res-" + el.getId());
                             l.setName(new MultilingualText("es", el.getName()));
                             l.setUrlFriendlyName(Helper.urlize(el.getName()));
 
@@ -727,6 +729,7 @@ case: 'latitude': --> latitud
 
     public SearchPortfolioRS searchPortfolio(String token,
                                              String language,
+                                             String product,
                                              String query) throws Throwable {
         SearchPortfolioRS rs = new SearchPortfolioRS();
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
@@ -734,6 +737,43 @@ case: 'latitude': --> latitud
         rs.setStatusCode(200);
 
         Helper.notransact(em -> {
+
+            if ("hotel".equalsIgnoreCase(product)) {
+
+            } else if ("excursion".equalsIgnoreCase(product)) {
+
+            } else if ("circuit".equalsIgnoreCase(product)) {
+
+            } else if ("generic".equalsIgnoreCase(product)) {
+
+            } else {
+
+            }
+
+
+            ((List<io.mateu.erp.model.world.Country>)em.createQuery("select x from " + io.mateu.erp.model.world.Country.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+                Match m;
+                rs.getMatches().add(m = new Match());
+                m.setName(h.getName());
+                m.setResourceId("cou-" + h.getIsoCode());
+                m.setDescription("" + h.getName());
+            });
+
+            ((List<Destination>)em.createQuery("select x from " + Destination.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+                Match m;
+                rs.getMatches().add(m = new Match());
+                m.setName(h.getName());
+                m.setResourceId("des-" + h.getId());
+                m.setDescription("" + h.getName() + " (" + h.getCountry().getName() + ")");
+            });
+
+            ((List<Resort>)em.createQuery("select x from " + Resort.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
+                Match m;
+                rs.getMatches().add(m = new Match());
+                m.setName(h.getName());
+                m.setResourceId("res-" + h.getId());
+                m.setDescription("" + h.getName() + " (" + h.getDestination().getName() + ")");
+            });
 
             ((List<Hotel>)em.createQuery("select x from " + Hotel.class.getName() + " x where lower(x.name) like :s").setParameter("s", "%" + query.toLowerCase().replaceAll("'", "''") + "%").getResultList()).forEach(h -> {
                 Match m;

@@ -1,5 +1,6 @@
 package io.mateu.erp.model.financials;
 
+import io.mateu.erp.model.organization.SalesPoint;
 import io.mateu.erp.model.partners.CommissionAgent;
 import io.mateu.erp.model.revenue.ProductLine;
 import lombok.Getter;
@@ -34,6 +35,19 @@ public class CommissionTermsLine {
     @Column(name = "_end")
     private LocalDate end;
 
+    @NotNull
+    private CommissionAplicationBasis basis;
+
     private double percent;
+
+    @ManyToOne
+    private SalesPoint salesPoint;
+
+    @ManyToOne
+    private CommissionAgent supervisor;
+
+    private double supervisorPercentOnCommission;
+
+
 
 }

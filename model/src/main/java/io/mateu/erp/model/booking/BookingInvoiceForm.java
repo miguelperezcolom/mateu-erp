@@ -158,22 +158,22 @@ public class BookingInvoiceForm {
     @Action(icon = VaadinIcons.INVOICE, order = 2)
     public void createInvoice() throws Throwable {
 
-        if (booking.getAgency() == null) throw new Error("Agency must have a financial agent. Please set financial agent for " + booking.getAgency().getName());
-        if (booking.getAgency().getCompany() == null) throw new Error("Agency must have a company. Please set company for " + booking.getAgency().getName());
-        if (booking.getAgency().getCompany().getFinancialAgent() == null) throw new Error("Company must have a financial agent. Please set financial agent for " + booking.getAgency().getCompany().getName());
-
-
         Helper.transact(em -> {
 
-            List<BookingCharge> charges = new ArrayList<>();
-            charges.addAll(booking.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
+            Booking b = em.find(Booking.class, booking.getId());
 
-            Invoice i = new IssuedInvoice(MDD.getCurrentUser(), charges, false, booking.getAgency().getCompany().getFinancialAgent(), booking.getAgency().getFinancialAgent(), null);
-            ((IssuedInvoice) i).setAgency(booking.getAgency());
+            if (b.getAgency() == null) throw new Error("Agency must have a financial agent. Please set financial agent for " + b.getAgency().getName());
+            if (b.getAgency().getCompany() == null) throw new Error("Agency must have a company. Please set company for " + b.getAgency().getName());
+            if (b.getAgency().getCompany().getFinancialAgent() == null) throw new Error("Company must have a financial agent. Please set financial agent for " + b.getAgency().getCompany().getName());
+
+
+            List<BookingCharge> charges = new ArrayList<>();
+            charges.addAll(b.getCharges().stream().filter(i -> i.getInvoice() == null).collect(Collectors.toList()));
+
+            IssuedInvoice i = new IssuedInvoice(MDD.getCurrentUser(), charges, false, b.getAgency().getCompany().getFinancialAgent(), b.getAgency().getFinancialAgent(), null);
+            i.setAgency(b.getAgency());
             i.setNumber(((IssuedInvoice) i).getAgency().getCompany().getBillingSerial().createInvoiceNumber());
             em.persist(i);
-
-            charges.forEach(c -> em.merge(c));
 
         });
 

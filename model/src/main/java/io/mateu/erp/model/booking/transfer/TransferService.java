@@ -341,11 +341,11 @@ public class TransferService extends Service {
         for (Contract c : contracts) for (Price p : c.getPrices()) {
             boolean ok = true;
             ok &= getTransferType().equals(p.getTransferType());
-            ok &= ((p.getOrigin().getResorts().contains(getEffectivePickup().getResort()) || p.getOrigin().getPoints().contains(getEffectivePickup()))
-                    && (p.getDestination().getResorts().contains(getEffectiveDropoff().getResort()) || p.getDestination().getPoints().contains(getEffectiveDropoff())))
+            ok &= ((p.getOrigin().getResorts().contains(getPickup().getResort()) || p.getOrigin().getPoints().contains(getPickup()))
+                    && (p.getDestination().getResorts().contains(getDropoff().getResort()) || p.getDestination().getPoints().contains(getDropoff())))
                     ||
-                    ((p.getOrigin().getResorts().contains(getEffectiveDropoff().getResort()) || p.getOrigin().getPoints().contains(getEffectiveDropoff()))
-                            && (p.getDestination().getResorts().contains(getEffectivePickup().getResort()) || p.getDestination().getPoints().contains(getEffectivePickup())));
+                    ((p.getOrigin().getResorts().contains(getDropoff().getResort()) || p.getOrigin().getPoints().contains(getDropoff()))
+                            && (p.getDestination().getResorts().contains(getPickup().getResort()) || p.getDestination().getPoints().contains(getPickup())));
             ok &= p.getVehicle().getMinPax() <= getPax();
             ok &= p.getVehicle().getMaxPax() >= getPax();
             if (ok) prices.add(p);

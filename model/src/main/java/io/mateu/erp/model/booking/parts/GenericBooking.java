@@ -43,15 +43,15 @@ public class GenericBooking extends Booking {
 
     @NotNull
     @ManyToOne
-    @Position(14)
+    @Position(15)
     private Office office;
 
     @ManyToOne@NotNull
-    @Position(15)
+    @Position(16)
     private GenericProduct product;
 
     @ManyToOne@NotNull
-    @Position(16)
+    @Position(17)
     private Variant variant;
 
     public DataProvider getVariantDataProvider() {
@@ -63,7 +63,7 @@ public class GenericBooking extends Booking {
 
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
-    @Position(17)
+    @Position(18)
     private List<GenericBookingExtra> extras = new ArrayList<>();
 
 
@@ -111,6 +111,7 @@ public class GenericBooking extends Booking {
         s.setDeliveryDate(getStart());
         s.setReturnDate(getEnd());
 
+        s.setUnits(getUnits());
         s.setInfants(getInfants());
         s.setChildren(getChildren());
         s.setJuniors(getJuniors());
@@ -146,11 +147,13 @@ public class GenericBooking extends Booking {
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
                     .forEach(p -> {
 
+                        v[0] += getUnits() * p.getUnitPrice();
                         v[0] += getInfants() * p.getInfantPrice();
                         v[0] += getChildren() * p.getChildPrice();
                         v[0] += getJuniors() * p.getJuniorPrice();
                         v[0] += getAdults() * p.getAdultPrice();
                         v[0] += getSeniors() * p.getSeniorPrice();
+                        v[0] += finalDias * getUnits() * p.getUnitPricePerDay();
                         v[0] += finalDias * getInfants() * p.getInfantPricePerDay();
                         v[0] += finalDias * getChildren() * p.getChildPricePerDay();
                         v[0] += finalDias * getJuniors() * p.getJuniorPricePerDay();

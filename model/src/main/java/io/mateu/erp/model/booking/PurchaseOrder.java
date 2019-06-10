@@ -119,6 +119,7 @@ public class PurchaseOrder {
 
     public void setSent(boolean v) {
         this.sent = v;
+        if (!v) status = PurchaseOrderStatus.PENDING;
     }
 
     @Section("Delivering")
@@ -440,8 +441,6 @@ public class PurchaseOrder {
                             }
 
                             if (po.getUpdateRqTime() != null) {
-                                po.summarize(em);
-
                                 po.markServicesForUpdate();
 
                                 po.setSignature(po.createSignature());
@@ -465,33 +464,6 @@ public class PurchaseOrder {
         });
 
     }
-
-    public void summarize(EntityManager em) {
-        System.out.println("PO " + getId() + ".summarize");
-
-        updateStatusFromTasks(em);
-
-    }
-
-    private void updateStatusFromTasks(EntityManager em) {
-        if (sendingTasks.size() > 0) {
-            SendPurchaseOrdersTask t = sendingTasks.get(sendingTasks.size() - 1);
-            if (!TaskResult.CANCELLED.equals(t.getResult())) {
-                if (t.getSignature() != null && t.getSignature().equals(t.createSignature())) {
-                    if (TaskStatus.FINISHED.equals(t.getStatus()) && TaskResult.OK.equals(t.getResult())) {
-                        if (getProvider().isAutomaticOrderConfirmation()) setStatus(PurchaseOrderStatus.CONFIRMED);
-                        setSentTime(t.getFinished());
-                        setSent(true);
-                    }
-                } else {
-                    setStatus(PurchaseOrderStatus.PENDING);
-                    setSent(false);
-                    setSentTime(null);
-                }
-            }
-        }
-    }
-
 
     public static GridDecorator getGridDecorator() {
         return new GridDecorator() {

@@ -23,6 +23,11 @@ public class PaymentLine {
     @ManyToOne@NotNull
     private Payment payment;
 
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+        pushUp();
+    }
+
     @ManyToOne
     @NotNull
     private MethodOfPayment methodOfPayment;
@@ -32,12 +37,21 @@ public class PaymentLine {
     @NotNull
     private Currency currency;
 
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+        if (currencyExchange == 0 && currency != null) setCurrencyExchange(currency.getExchangeRateToNucs());
+    }
 
     /*
     positivo es a nuestro favor (cobro)
     negativo es en nuestra contra (pago)
      */
     private double value;
+
+    public void setValue(double value) {
+        this.value = value;
+        sumUp();
+    }
 
     private double transactionCost;
 
@@ -47,32 +61,30 @@ public class PaymentLine {
     @Output
     private double currencyExchange;
 
+    public void setCurrencyExchange(double currencyExchange) {
+        this.currencyExchange = currencyExchange;
+        sumUp();
+    }
+
     @Output
     private double currencyExchangeCost;
 
     @Output
     private double valueInNucs;
 
-
-    @PreUpdate@PrePersist
-    public void pre() throws Throwable {
-        if (currencyExchange == 0) setCurrencyExchange(getCurrency().getExchangeRateToNucs());
-        setValueInNucs(Helper.roundEuros(getValue() * getCurrencyExchange()));
+    public void setValueInNucs(double valueInNucs) {
+        this.valueInNucs = valueInNucs;
+        pushUp();
     }
 
+    public void pushUp() {
+        if (payment != null) {
+            payment.updateBalance();
+        }
+    }
 
-    @PostPersist@PostUpdate@PostRemove
-    public void post() {
-        WorkflowEngine.add(() -> {
-            try {
-                Helper.transact(em -> {
-                    PaymentLine p = em.find(PaymentLine.class, getId());
-                    p.getPayment().setMarkedForUpdate(true);
-                });
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
+    public void sumUp() {
+        setValueInNucs(Helper.roundEuros(getValue() * getCurrencyExchange()));
     }
 
 }

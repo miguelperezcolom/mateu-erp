@@ -1,10 +1,12 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
 import com.vaadin.ui.themes.ValoTheme;
+import io.mateu.erp.model.biz.Coupon;
 import io.mateu.erp.model.booking.parts.HotelBooking;
 import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.transfer.TransferService;
@@ -16,8 +18,10 @@ import io.mateu.erp.model.invoicing.Charge;
 import io.mateu.erp.model.invoicing.ChargeType;
 import io.mateu.erp.model.invoicing.ExtraBookingCharge;
 import io.mateu.erp.model.organization.PointOfSale;
+import io.mateu.erp.model.organization.SalesPoint;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.partners.CommissionAgent;
+import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.AbstractContract;
@@ -102,13 +106,22 @@ public abstract class Booking {
 
     public void setAgency(Agency agency) {
         this.agency = agency;
-        setCurrency(agency.getCurrency());
+        if (agency != null) {
+            setCurrency(agency.getCurrency());
+            setMarket(agency.getMarket());
+        }
     }
+
+    private boolean mice;
 
     @ManyToOne
     @ListColumn
     @ColumnWidth(120)
     private Tariff tariff;
+
+    @NotNull
+    @ManyToOne
+    private Market market;
 
     @NotNull
     @MainSearchFilter
@@ -119,6 +132,7 @@ public abstract class Booking {
     @ColumnWidth(200)
     @ListColumn
     @MainSearchFilter
+    @NotEmpty
     private String leadName;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "booking")
@@ -259,6 +273,15 @@ public abstract class Booking {
     @ColumnWidth(156)
     private PointOfSale pos;
 
+    public void setPos(PointOfSale pos) {
+        this.pos = pos;
+        if (pos != null && pos.getSalesPoint() != null) salesPoint = pos.getSalesPoint();
+    }
+
+    @ManyToOne
+    @NotNull
+    @SearchFilter
+    private SalesPoint salesPoint;
 
     private LocalDateTime formalizationDate;
 
@@ -368,7 +391,7 @@ public abstract class Booking {
     @ManyToOne
     private Currency overridedCostCurrency;
 
-    public boolean isOverridedCostVisible() {
+    public boolean isOverridedCostCurrencyVisible() {
         return costOverrided;
     }
 
@@ -449,6 +472,11 @@ public abstract class Booking {
     @OrderColumn(name = "_orderInBooking")
     private List<CancellationTerm> cancellationTerms = new ArrayList<>();
 
+    @NotWhenCreating
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderColumn(name = "_orderInBooking")
+    @UseLinkToListView
+    private List<BookingIssue> issues = new ArrayList<>();
 
     @ManyToOne
     @SearchFilter
@@ -511,6 +539,9 @@ public abstract class Booking {
 
     @Ignored
     private boolean forcePre = false;
+
+    @Output@ManyToOne
+    private Coupon coupon;
 
     @Ignored
     private String qrCode;
@@ -823,6 +854,9 @@ public abstract class Booking {
 
         AppConfig appconfig = AppConfig.get(em);
 
+        if (Strings.isNullOrEmpty(email)) email = getEmail();
+        if (Strings.isNullOrEmpty(email) && getAgency().isDocumentationRequired()) email = getAgency().getEmail();
+
         if (Strings.isNullOrEmpty(email)) System.out.println("***************************************\nNo valid email address to send booking. Please fill.\n***************************************");
         else {
             SendEmailTask t;
@@ -1096,7 +1130,7 @@ public abstract class Booking {
             p.setAgent(getAgency().getFinancialAgent());
 
             PaymentLine l;
-            p.getLines().add(l = new PaymentLine());
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
             l.setPayment(p);
             l.setMethodOfPayment(methodOfPayment);
             l.setCurrency(currency);
@@ -1104,7 +1138,7 @@ public abstract class Booking {
 
 
             BookingPaymentAllocation a;
-            p.getBreakdown().add(a = new BookingPaymentAllocation());
+            p.setBreakdown(Lists.newArrayList(a = new BookingPaymentAllocation()));
             a.setPayment(p);
             a.setBooking(this);
             getPayments().add(a);
@@ -1492,20 +1526,10 @@ public abstract class Booking {
         double total = 0;
         double totalNeto = 0;
         double totalCoste = 0;
-        double totalPagado = 0;
-
-        for (Charge c : getServiceCharges()) {
-            total += c.getTotal();
-            totalNeto += c.getTotal();
-        }
 
         for (Charge c : getCharges()) {
             total += c.getTotal();
             totalNeto += c.getTotal();
-        }
-
-        for (BookingPaymentAllocation pa : getPayments()) {
-            totalPagado += pa.getValue();
         }
 
         for (Service service : getServices()) {
@@ -1517,9 +1541,7 @@ public abstract class Booking {
         setTotalNetValue(Helper.roundEuros(totalNeto));
         setTotalCost(Helper.roundEuros(totalCoste));
 
-        setTotalPaid(Helper.roundEuros(totalPagado));
-        setBalance(Helper.roundEuros(totalPagado - totalNeto));
-
+        updateBalance();
 
         setValueInNucs(Helper.roundEuros(totalNeto * getCurrency().getExchangeRateToNucs()));
         setCostInNucs(Helper.roundEuros(totalCoste * getCurrency().getExchangeRateToNucs()));
@@ -1534,6 +1556,17 @@ public abstract class Booking {
         if (getPos() != null) getPos().setUpdatePending(true);
 
         if (getFile() != null) getFile().updateTotals();
+
+    }
+
+    public void updateBalance() {
+        double totalPagado = 0;
+
+        for (BookingPaymentAllocation pa : getPayments()) {
+            totalPagado += pa.getValue();
+        }
+        setTotalPaid(Helper.roundEuros(totalPagado));
+        setBalance(Helper.roundEuros(totalPagado - getTotalNetValue()));
 
     }
 

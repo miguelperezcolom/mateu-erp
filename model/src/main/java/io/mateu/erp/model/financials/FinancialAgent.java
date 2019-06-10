@@ -15,6 +15,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,11 +55,6 @@ public class FinancialAgent {
     private String fax;
 
     private String email;
-
-    @NotNull
-    @ManyToOne
-    @ListColumn
-    private Currency currency;
 
     @TextArea
     private String comments;
@@ -146,7 +142,7 @@ public class FinancialAgent {
 
 
     @Ignored
-    private boolean markedForUpdate;
+    private LocalDateTime triggerUpdate;
 
 
     @Override
@@ -159,7 +155,7 @@ public class FinancialAgent {
     @PostUpdate@PostPersist
     public void post() {
 
-        if (isMarkedForUpdate()) {
+        if (triggerUpdate != null) {
 
             WorkflowEngine.add(() -> {
 
@@ -167,16 +163,14 @@ public class FinancialAgent {
                 try {
                     Helper.transact(em -> {
                         FinancialAgent b = em.find(FinancialAgent.class, getId());
-                        if (b.isMarkedForUpdate()) {
 
-                            Double l = (Double) em.createQuery("select sum(x.balance) from " + Payment.class.getName() + " x where x.agent.id = " + b.getId()).getSingleResult();
+                        Double l = (Double) em.createQuery("select sum(x.balance) from " + Payment.class.getName() + " x where x.agent.id = " + b.getId()).getSingleResult();
 
-                            if (l != null) {
-                                b.setBalance(l);
-                            }
-
-                            b.setMarkedForUpdate(false);
+                        if (l != null) {
+                            b.setBalance(l);
                         }
+
+                        b.setTriggerUpdate(null);
 
                     });
                 } catch (Throwable throwable) {

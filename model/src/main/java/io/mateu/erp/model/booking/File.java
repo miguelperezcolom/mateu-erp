@@ -71,6 +71,8 @@ public class File {
     @ManyToOne@NotNull
     private Agency agency;
 
+    private boolean mice;
+
     @ListColumn
     @SearchFilter
     @NotEmpty
@@ -154,6 +156,9 @@ public class File {
     private List<FilePaymentAllocation> payments = new ArrayList<>();
 
 
+    @Embedded
+    private BookingInvoiceData invoiceData;
+
     @Ignored
     private LocalDateTime updateRqTime = null;
 
@@ -183,12 +188,6 @@ public class File {
             s.cancel(em);
         }
     }
-
-    @Action(icon = VaadinIcons.DOLLAR)
-    public void changeCurrency(EntityManager em) {
-        //todo: cambiar moneda
-    }
-
 
 
 

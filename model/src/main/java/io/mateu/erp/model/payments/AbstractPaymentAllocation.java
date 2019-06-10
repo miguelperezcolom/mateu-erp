@@ -20,12 +20,22 @@ public abstract class AbstractPaymentAllocation {
     @ManyToOne@NotNull
     private Payment payment;
 
-    private double value;
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+        pushUp();
+    }
 
+    private double value;
 
     public void setValue(double value) {
         this.value = value;
-        if (payment != null) payment.updateBalance();
+        pushUp();
+    }
+
+    public void pushUp() {
+        if (payment != null) {
+            payment.updateBalance();
+        }
     }
 
     @Override

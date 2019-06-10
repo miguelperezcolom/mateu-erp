@@ -1,11 +1,13 @@
 package io.mateu.common.booking;
 
+import com.google.common.collect.Lists;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.QuotationRequest;
 import io.mateu.erp.model.booking.QuotationRequestLine;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.model.util.EmailMock;
@@ -15,6 +17,8 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -35,7 +39,7 @@ public class QuotationRequestTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -103,6 +107,7 @@ public class QuotationRequestTest {
         Helper.transact(em -> {
 
             r.setActive(true);
+            r.setGroupType(Populator.groupType);
             r.setAgency(Populator.agencia);
             r.setAudit(new Audit(MDD.getCurrentUser()));
             r.setCurrency(Populator.agencia.getCurrency());
@@ -111,9 +116,10 @@ public class QuotationRequestTest {
             r.setName("Miguel");
             r.setPos(Populator.pos);
             if (rellenarLineas) {
+                List<QuotationRequestLine> lineas = new ArrayList<>();
                 {
                     QuotationRequestLine l;
-                    r.getLines().add(l = new QuotationRequestLine());
+                    lineas.add(l = new QuotationRequestLine());
                     l.setRq(r);
                     l.setActive(true);
                     l.setCost(300);
@@ -129,7 +135,7 @@ public class QuotationRequestTest {
                 }
                 {
                     QuotationRequestLine l;
-                    r.getLines().add(l = new QuotationRequestLine());
+                    lineas.add(l = new QuotationRequestLine());
                     l.setRq(r);
                     l.setActive(true);
                     l.setCost(30);
@@ -143,6 +149,7 @@ public class QuotationRequestTest {
                     l.setProductLine(Populator.prodLine);
                     l.setUnits(3);
                 }
+                r.setLines(lineas);
             }
             //r.setLines();
             r.setTelephone("45646464646");

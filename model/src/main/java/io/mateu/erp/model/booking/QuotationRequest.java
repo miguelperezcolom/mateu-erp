@@ -1,6 +1,7 @@
 package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.ui.Grid;
 import com.vaadin.ui.StyleGenerator;
@@ -114,7 +115,11 @@ public class QuotationRequest {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
-    private List<QuotationRequestHotel> hotels = new ArrayList<>();
+    private List<QuotationRequestHotel> hotels = ImmutableList.of();
+
+    public List<QuotationRequestHotel> getHotels() {
+        return ImmutableList.copyOf(hotels);
+    }
 
     public String getHotelsHtml() {
         String h = "<div class='lines'>";
@@ -130,7 +135,11 @@ public class QuotationRequest {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
-    private List<QuotationRequestTransfer> transfers = new ArrayList<>();
+    private List<QuotationRequestTransfer> transfers = ImmutableList.of();
+
+    public List<QuotationRequestTransfer> getTransfers() {
+        return ImmutableList.copyOf(transfers);
+    }
 
     public String getTransfersHtml() {
         String h = "<div class='lines'>";
@@ -147,7 +156,11 @@ public class QuotationRequest {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
-    private List<QuotationRequestExcursion> excursions = new ArrayList<>();
+    private List<QuotationRequestExcursion> excursions = ImmutableList.of();
+
+    public List<QuotationRequestExcursion> getExcursions() {
+        return ImmutableList.copyOf(excursions);
+    }
 
     public String getExcursionsHtml() {
         String h = "<div class='lines'>";
@@ -163,7 +176,11 @@ public class QuotationRequest {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
-    private List<QuotationRequestGeneric> generics = new ArrayList<>();
+    private List<QuotationRequestGeneric> generics = ImmutableList.of();
+
+    public List<QuotationRequestGeneric> getGenerics() {
+        return generics;
+    }
 
     public String getGenericsHtml() {
         String h = "<div class='lines'>";
@@ -179,7 +196,11 @@ public class QuotationRequest {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rq")
     @NotInlineEditable
-    private List<QuotationRequestLine> lines = new ArrayList<>();
+    private List<QuotationRequestLine> lines = ImmutableList.of();
+
+    public List<QuotationRequestLine> getLines() {
+        return lines;
+    }
 
     public String getLinesHtml() {
         String h = "<div class='lines'>";

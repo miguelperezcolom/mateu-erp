@@ -37,7 +37,6 @@ public class TourPrice implements Comparable<TourPrice> {
 
 
     @ManyToOne
-    @NotNull
     @Keep
     private Variant variant;
 
@@ -78,6 +77,12 @@ public class TourPrice implements Comparable<TourPrice> {
     private int minPax;
 
 
+    private double servicePrice;
+
+    @SameLine
+    private double paxPrice;
+
+    @SameLine
     private double infantPrice;
 
     @SameLine

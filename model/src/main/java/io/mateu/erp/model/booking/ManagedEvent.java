@@ -94,6 +94,9 @@ public class ManagedEvent {
     @UseLinkToListView
     private List<Service> services = new ArrayList<>();
 
+    @TextArea
+    private String privateComments;
+
 
     @Ignored
     private boolean updatePending;

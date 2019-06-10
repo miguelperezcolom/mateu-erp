@@ -48,6 +48,9 @@ public class PointOfSale {
     @ManyToOne@NotNull
     private Tariff tariff;
 
+    @ManyToOne@NotNull
+    private SalesPoint salesPoint;
+
     private String email;
 
     private int hoursForUnpaidCancellation;

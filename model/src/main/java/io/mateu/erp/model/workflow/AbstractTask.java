@@ -58,9 +58,9 @@ public abstract class AbstractTask {
 
     public void setStatus(TaskStatus status) {
         if (!Helper.equals(this.status, status)) {
+            this.status = status;
             statusChanged();
         }
-        this.status = status;
     }
 
     public void statusChanged() {
@@ -70,6 +70,15 @@ public abstract class AbstractTask {
     @SearchFilter
     @Output
     private TaskResult result;
+
+    public void setResult(TaskResult result) {
+        if (!Helper.equals(this.result, result)) {
+            this.result = result;
+            statusChanged();
+        }
+    }
+
+
     @ListColumn
     @Output
     private String log;

@@ -56,7 +56,7 @@ public class GenericService extends Service {
     @Output
     private List<GenericServiceExtra> extras = new ArrayList<>();
 
-
+    private int units;
 
     @NotNull@Output
     private LocalDate deliveryDate;
@@ -139,11 +139,13 @@ public class GenericService extends Service {
                     .filter(p -> p.getVariant() == null || p.getVariant().equals(variant))
                     .forEach(p -> {
 
+                        v[0] += getUnits() * p.getUnitPrice();
                         v[0] += getInfants() * p.getInfantPrice();
                         v[0] += getChildren() * p.getChildPrice();
                         v[0] += getJuniors() * p.getJuniorPrice();
                         v[0] += getAdults() * p.getAdultPrice();
                         v[0] += getSeniors() * p.getSeniorPrice();
+                        v[0] += finalDias * getUnits() * p.getUnitPricePerDay();
                         v[0] += finalDias * getInfants() * p.getInfantPricePerDay();
                         v[0] += finalDias * getChildren() * p.getChildPricePerDay();
                         v[0] += finalDias * getJuniors() * p.getJuniorPricePerDay();

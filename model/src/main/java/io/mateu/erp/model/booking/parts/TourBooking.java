@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking.parts;
 
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.product.tour.TourPickupTime;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.mdd.core.annotations.*;
 import lombok.Getter;
@@ -33,6 +34,7 @@ public abstract class TourBooking extends Booking {
     @ManyToOne@Position(16)
     private TransferPoint pickup;
 
+    private LocalDateTime pickupTime;
 
     @ManyToOne@Position(17)
     private TransferPoint dropoff;

@@ -298,7 +298,7 @@ public abstract class Invoice {
             if (l.isExempt()) el.setAttribute("exempt", "");
             el.setAttribute("percent", pf.format(l.getPercent()));
             el.setAttribute("base", nf.format(l.getBase()));
-            el.setAttribute("vat", nf.format(l.getVat()));
+            if (l.getVat() != null) el.setAttribute("vat", l.getVat().getName());
             el.setAttribute("total", nf.format(l.getTotal()));
 
         }

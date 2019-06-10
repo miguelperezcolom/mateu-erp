@@ -70,20 +70,18 @@ public class TransferPoint {
     @TextArea@ManyToOne(cascade = CascadeType.ALL)
     private Literal arrivalInstructionsForPrivate;
 
-    @TextArea@SameLine@ManyToOne(cascade = CascadeType.ALL)
+    @TextArea@ManyToOne(cascade = CascadeType.ALL)
     private Literal arrivalInstructionsForShuttle;
 
-    @TextArea@SameLine@ManyToOne(cascade = CascadeType.ALL)
+    @TextArea@ManyToOne(cascade = CascadeType.ALL)
     private Literal departureInstructions;
 
     private String address;
 
     private String email;
 
-    @SameLine
     private String telephone;
 
-    @SameLine
     private String fax;
 
     private int minutesForNationalFlights;

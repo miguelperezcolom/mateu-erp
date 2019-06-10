@@ -13,6 +13,7 @@ import io.mateu.mdd.core.util.Helper;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CacheRetrieveMode;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.time.LocalDate;
@@ -142,6 +143,7 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
                 s += " order by x.start";
 
                 Query q = em.createQuery(s);
+                q.setHint("eclipselink.cache-usage", "DoNotCheckCache");
                 params.keySet().forEach(k -> q.setParameter(k, params.get(k)));
                 List<TransferService> bookings = q.getResultList();
 
@@ -200,7 +202,8 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
 
                 s += " order by x.start";
 
-                Query q = em.createQuery(s);
+                Query q = em.createQuery(s); //.setHint("javax.persistence.cache.retrieveMode", CacheRetrieveMode.BYPASS);
+                q.setHint("eclipselink.cache-usage", "DoNotCheckCache");
                 params.keySet().forEach(k -> q.setParameter(k, params.get(k)));
                 List<TransferService> bookings = q.getResultList();
 

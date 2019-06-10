@@ -311,7 +311,7 @@
 
                                             <fo:block space-after="3pt"><xsl:value-of select="@base"/>&#x00A0;€</fo:block>
 
-                                            <fo:block space-after="3pt"><xsl:value-of select="@vat"/>&#x00A0;€</fo:block>
+                                            <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0;€</fo:block>
                                         </xsl:for-each>
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>

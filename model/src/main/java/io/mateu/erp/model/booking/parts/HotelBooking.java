@@ -65,11 +65,43 @@ public class HotelBooking extends Booking {
         return false;
     }
 
-    public boolean isAdultsVisible() {
+    public boolean isInfantsVisible() {
         return false;
     }
 
     public boolean isChildrenVisible() {
+        return false;
+    }
+
+    public boolean isJuniorsVisible() {
+        return false;
+    }
+
+    public boolean isAdultsVisible() {
+        return false;
+    }
+
+    public boolean isSeniorsVisible() {
+        return false;
+    }
+
+    public boolean isFreeInfantsVisible() {
+        return false;
+    }
+
+    public boolean isFreeChildrenVisible() {
+        return false;
+    }
+
+    public boolean isFreeJuniorsVisible() {
+        return false;
+    }
+
+    public boolean isFreeAdultsVisible() {
+        return false;
+    }
+
+    public boolean isFreeSeniorsVisible() {
         return false;
     }
 

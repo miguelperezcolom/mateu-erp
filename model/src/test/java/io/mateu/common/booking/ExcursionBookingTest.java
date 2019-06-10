@@ -4,6 +4,7 @@ import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.parts.ExcursionBooking;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -31,7 +32,7 @@ public class ExcursionBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -44,6 +45,7 @@ public class ExcursionBookingTest {
             b.setAudit(new Audit(MDD.getCurrentUser()));
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
+            b.setLeadName("Mr test");
             b.setPos(Populator.pos);
             b.setCurrency(Populator.agencia.getCurrency());
 
@@ -53,7 +55,7 @@ public class ExcursionBookingTest {
             b.setExcursion(Populator.excursion);
             b.setVariant(Populator.excursion.getVariants().get(0));
             b.setShift(Populator.excursion.getShifts().get(0));
-            b.setPax(3);
+            b.setAdults(3);
 
             em.persist(b);
         });

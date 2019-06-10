@@ -228,8 +228,10 @@ public abstract class Service {
 
     public void setAlreadyPurchased(boolean alreadyPurchased) {
         this.alreadyPurchased = alreadyPurchased;
-        setSignature(createSignature());
-        if (alreadyPurchased) setProcessingStatus(ProcessingStatus.CONFIRMED);
+        if (alreadyPurchased) {
+            setSignature(createSignature());
+            setProcessingStatus(ProcessingStatus.CONFIRMED);
+        }
     }
 
     private String providerReference;
@@ -264,7 +266,7 @@ public abstract class Service {
 
     @SearchFilter(field = "id")
     @Caption("Purchase Order Id")
-    @ManyToMany
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "service")
     @OrderColumn(name = "_orderInService")
     @UseLinkToListView
     private List<PurchaseOrder> purchaseOrders = new ArrayList<>();
@@ -373,19 +375,19 @@ public abstract class Service {
 
                     if (allSent) {
                         ps = ProcessingStatus.SENT;
-
-                        boolean allConfirmed = true;
-                        boolean anyRejected = false;
-
-                        for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
-                            if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) allConfirmed = false;
-                            if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
-                        }
-
-                        if (allConfirmed) ps = ProcessingStatus.CONFIRMED;
-                        else if (anyRejected) ps = ProcessingStatus.REJECTED;
-
                     }
+
+                    boolean allConfirmed = true;
+                    boolean anyRejected = false;
+
+                    for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
+                        if (!PurchaseOrderStatus.CONFIRMED.equals(po.getStatus())) allConfirmed = false;
+                        if (PurchaseOrderStatus.REJECTED.equals(po.getStatus())) anyRejected = true;
+                    }
+
+                    if (allConfirmed) ps = ProcessingStatus.CONFIRMED;
+                    else if (anyRejected) ps = ProcessingStatus.REJECTED;
+
 
                 }
 
@@ -496,6 +498,10 @@ public abstract class Service {
 
     public void checkPurchase(EntityManager em, User u) throws Throwable {
         if (getPurchaseOrders().size() == 0 || getSignature() == null || !getSignature().equals(createSignature())) {
+            for (PurchaseOrder po : getPurchaseOrders()) if (po.isActive()) {
+                po.setSent(false);
+                po.setStatus(PurchaseOrderStatus.PENDING);
+            }
             setProcessingStatus(ProcessingStatus.INITIAL);
             refreshPurchaseOrders(em, u);
         } else {
@@ -548,7 +554,6 @@ public abstract class Service {
             prov = po.getProvider();
         }
         setProvider(prov);
-        setSignature(createSignature());
     }
 
 
@@ -967,6 +972,7 @@ public abstract class Service {
             else error = error.substring(error.indexOf(":"));
             System.out.println(error);
         }
+        setSignature(createSignature());
 
     }
 

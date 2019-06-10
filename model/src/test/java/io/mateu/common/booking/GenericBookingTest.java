@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.parts.GenericBooking;
 import io.mateu.erp.model.population.Populator;
 import io.mateu.erp.model.workflow.TaskStatus;
 import io.mateu.mdd.core.MDD;
+import io.mateu.mdd.core.model.authentication.AdminUser;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
@@ -34,7 +35,7 @@ public class GenericBookingTest {
 
         assertTrue(EmailHelper.isTesting());
 
-        assertNotNull(Helper.find(ERPUser.class, "admin"));
+        assertNotNull(Helper.find(AdminUser.class, "admin"));
 
     }
 
@@ -47,6 +48,7 @@ public class GenericBookingTest {
             b.setAudit(new Audit(MDD.getCurrentUser()));
             b.setAgency(Populator.agencia);//em.createQuery(em.getCriteriaBuilder().createQuery(Partner.class)).getResultList()
             b.setAgencyReference("TEST");
+            b.setLeadName("Mr test.");
             b.setPos(Populator.pos);
             b.setCurrency(Populator.agencia.getCurrency());
 
@@ -55,7 +57,8 @@ public class GenericBookingTest {
             b.setOffice(Populator.office);
 
             b.setProduct(Populator.genericProduct);
-            b.setPax(1);
+            b.setVariant(b.getProduct().getVariants().get(0));
+            b.setUnits(1);
 
             em.persist(b);
         });

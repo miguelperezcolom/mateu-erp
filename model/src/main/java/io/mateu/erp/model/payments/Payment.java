@@ -1,5 +1,6 @@
 package io.mateu.erp.model.payments;
 
+import com.google.common.collect.ImmutableList;
 import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
@@ -12,6 +13,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,13 +39,19 @@ public class Payment {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "payment")
     @UseLinkToListView
-    private List<PaymentLine> lines = new ArrayList<>();
+    private List<PaymentLine> lines = ImmutableList.of();
 
+    public List<PaymentLine> getLines() {
+        return ImmutableList.copyOf(lines);
+    }
 
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     @UseLinkToListView
-    private List<AbstractPaymentAllocation> breakdown = new ArrayList<>();
+    private List<AbstractPaymentAllocation> breakdown = ImmutableList.of();
 
+    public List<AbstractPaymentAllocation> getBreakdown() {
+        return ImmutableList.copyOf(breakdown);
+    }
 
     @KPI
     private double valueInNucs;
@@ -52,20 +60,13 @@ public class Payment {
     private double balance;
 
     @Ignored
-    private boolean markedForUpdate;
+    private LocalDateTime triggerUpdate;
+
+
+
 
 
     public void updateBalance() {
-        double consumed = 0;
-        for (AbstractPaymentAllocation a : breakdown) {
-            consumed += a.getValue();
-        }
-        setBalance(Helper.roundEuros(valueInNucs - consumed));
-    }
-
-
-    @PreUpdate@PrePersist
-    public void pre() throws Throwable {
         double v = 0;
         for (PaymentLine l : lines) {
             v += l.getValueInNucs();
@@ -81,6 +82,12 @@ public class Payment {
     }
 
 
+    @PreUpdate@PrePersist
+    public void pre() throws Throwable {
+        updateBalance();
+    }
+
+
     @PostPersist@PostUpdate@PostRemove
     public void post() {
         WorkflowEngine.add(() -> {
@@ -89,10 +96,8 @@ public class Payment {
                 Helper.transact(em -> {
                     Payment p = em.find(Payment.class, getId());
 
-                    p.setMarkedForUpdate(false);
-
-                    p.getAgent().setMarkedForUpdate(true);
-                    p.getAccount().setMarkedForUpdate(true);
+                    p.getAgent().setTriggerUpdate(LocalDateTime.now());
+                    p.getAccount().setTriggerUpdate(LocalDateTime.now());
                 });
             } catch (Throwable throwable) {
                 throwable.printStackTrace();

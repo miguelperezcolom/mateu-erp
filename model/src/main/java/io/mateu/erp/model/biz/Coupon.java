@@ -2,24 +2,32 @@ package io.mateu.erp.model.biz;
 
 import io.mateu.erp.model.financials.Currency;
 import io.mateu.mdd.core.annotations.KPI;
+import io.mateu.mdd.core.annotations.SameLine;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 
 @Entity
 @Getter
 @Setter
 public class Coupon {
 
-    @Id@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Id
+    private String code;
+
+    public void setCode(String code) {
+        this.code = code != null?code.toUpperCase().trim():null;
+    }
 
     private String name;
 
-    @KPI
-    private String code;
+    private LocalDate bookingWindowStart;
+
+    @SameLine
+    private LocalDate bookingWindowEnd;
 
 
     private double percentDiscount;

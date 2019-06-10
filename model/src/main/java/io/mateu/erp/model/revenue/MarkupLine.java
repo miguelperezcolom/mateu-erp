@@ -28,10 +28,6 @@ public class MarkupLine {
 
     private boolean active;
 
-    private double minimumRevenuePerBooking;
-
-    private double maximumRevenuePerBooking;
-
     private double percent;
 
 }

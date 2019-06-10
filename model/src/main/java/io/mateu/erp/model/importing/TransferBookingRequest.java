@@ -499,6 +499,7 @@ public class TransferBookingRequest {
                         b.setTariff(getTask().getTariff());
                         b.setAgencyReference(agencyReference);
                         b.setAgency(customer);
+                        b.setMarket(customer.getMarket());
                         b.setLeadName(passengerName);
                         b.setTelephone(phone);
                         b.setEmail(email);

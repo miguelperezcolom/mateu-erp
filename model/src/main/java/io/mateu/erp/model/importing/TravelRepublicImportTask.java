@@ -157,7 +157,8 @@ public class TravelRepublicImportTask extends TransferImportTask {
             rq.setServiceType(TransferType.PRIVATE);
         rq.setVehicle(type);
 
-        rq.setPassengerName(m.get("LeadName"));
+//        rq.setPassengerName(m.get("LeadName"));
+        rq.setPassengerName(Strings.isNullOrEmpty(m.get("ContactName"))?m.get("LeadName"):m.get("ContactName"));
         rq.setPhone("");
         rq.setAdults(Integer.parseInt(m.get("Adults")));
         rq.setChildren(Integer.parseInt(m.get("Children")));

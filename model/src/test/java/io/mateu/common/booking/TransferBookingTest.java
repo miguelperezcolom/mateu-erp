@@ -52,7 +52,7 @@ public class TransferBookingTest {
             b.setOrigin(Populator.apt);
             b.setDestination(Populator.hotelEnAlcudia);
 
-            b.setPax(3);
+            b.setAdults(3);
 
             b.setArrivalFlightOrigin("MAD");
             b.setArrivalFlightNumber("UX4578");
@@ -730,7 +730,7 @@ public class TransferBookingTest {
 
             xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
 
-            xb.setPax(xb.getPax() + 1);
+            xb.setAdults(xb.getAdults() + 1);
 
         });
 
@@ -770,7 +770,7 @@ public class TransferBookingTest {
 
             xb.getServices().get(0).getPurchaseOrders().get(0).getProvider().setAutomaticOrderSending(false);
 
-            xb.setPax(xb.getPax() + 1);
+            xb.setChildren(xb.getChildren() + 1);
 
         });
 
