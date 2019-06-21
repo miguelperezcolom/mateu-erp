@@ -18,6 +18,7 @@ import io.mateu.mdd.core.interfaces.GridDecorator;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -874,7 +875,7 @@ public abstract class Service {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (updateRqTime != null) WorkflowEngine.add(new Runnable() {
+        if (updateRqTime != null) WorkflowEngine.add(new Task() {
             @Override
             public void run() {
                 try {
@@ -1047,8 +1048,13 @@ public abstract class Service {
         xml.setAttribute("adults", "" + adults);
         xml.setAttribute("seniors", "" + seniors);
 
+        addInstructions(xml);
+
 
         return xml;
+    }
+
+    public void addInstructions(Element xml) {
     }
 
     public Element getSupplierXml() {

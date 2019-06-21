@@ -7,6 +7,7 @@ import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.importing.TransferBookingRequest;
 import io.mateu.erp.model.invoicing.BookingCharge;
 import io.mateu.erp.model.invoicing.IssuedInvoice;
@@ -14,6 +15,8 @@ import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.organization.PointOfSaleSettlementForm;
 import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.population.Populator;
+import io.mateu.erp.model.tpv.TPV;
+import io.mateu.erp.model.tpv.TPVTransaction;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersByEmailTask;
 import io.mateu.erp.model.workflow.SendPurchaseOrdersTask;
 import io.mateu.erp.services.easytravelapi.*;
@@ -51,9 +54,13 @@ public class CommonsTester {
         EmailHelper.setTesting(true);
 
         String token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
-        token = "eyAiY3JlYXRlZCI6ICJUdWUgTWF5IDIxIDExOjMwOjIwIENFU1QgMjAxOSIsICJ1c2VySWQiOiAid2ViIiwgImFnZW5jeUlkIjogIjUzIn0=";
+        token = "eyAiY3JlYXRlZCI6ICJGcmkgTWFyIDIyIDEwOjIyOjI5IENFVCAyMDE5IiwgInVzZXJJZCI6ICJhZG1pbiIsICJhZ2VuY3lJZCI6ICIzIn0=";
 
-        testPriceTransferBooking();
+        //testBooked();
+
+        //testTPV();
+
+        //testPriceTransferBooking();
 
         //testBorrarDuplicados();
 
@@ -103,7 +110,7 @@ public class CommonsTester {
 
         //testTransferConfirm(token);
         
-        //testGenericAvail(token);
+        testGenericAvail(token);
 
         //testGenericRates(token);
 
@@ -138,6 +145,49 @@ public class CommonsTester {
         //testInformeEvento();
 
         WorkflowEngine.exit(0);
+    }
+
+    private static void testBooked() {
+
+        try {
+
+            Helper.transact(em -> {
+
+                TransferBooking b = em.find(TransferBooking.class, 14280l);
+                b.price(em);
+                System.out.println("" + b.getTotalValue() + "/" + b.getTotalCost());
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+
+    }
+
+    private static void testTPV()  {
+
+        TPVTransaction t = new TPVTransaction();
+        try {
+            Helper.transact(em -> {
+
+                t.setTpv(em.find(TPV.class, 1l));
+                t.setSubject("TEST");
+                t.setBooking(em.find(Booking.class, 1l));
+                t.setValue(1);
+                t.setCurrency(em.find(Currency.class, "EUR"));
+                t.setLanguage("es");
+                em.persist(t);
+
+            });
+
+            Helper.escribirFichero("/home/miguel/work/tpv.html", "<html><body>" + TPVTransaction.getForm(t.getId()) + "</body></html>");
+
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+
     }
 
     private static void testPriceTransferBooking() {
@@ -733,7 +783,7 @@ public class CommonsTester {
 
     private static void testExcursionAvail(String token) {
         try {
-            System.out.println(Helper.toJson(new ActivityBookingServiceImpl().getAvailableActivities(token, 20190325, "cou-ES", "es")));
+            System.out.println(Helper.toJson(new ActivityBookingServiceImpl().getAvailableActivities(token, 20190628, "cou-ES", null)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -767,7 +817,7 @@ public class CommonsTester {
 
     private static void testGenericCheck(String token) {
         try {
-            System.out.println(Helper.toJson(new GenericBookingServiceImpl().check(token, "gen-1", 0, 0, 1, 20190601, 20190607, "es")));
+            System.out.println(Helper.toJson(new GenericBookingServiceImpl().check(token, "gen-1", 0, 0, 1, 20190601, 20190607, "es", null)));
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }

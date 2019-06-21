@@ -195,7 +195,7 @@ public class AgentAccessServiceImpl implements AgentAccessService {
                     //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 
                     b.setShift(b.getManagedEvent().getShift());
-                    b.setLanguage(b.getShift().getLanguages().iterator().next());
+                    b.setExcursionLanguage(b.getShift().getLanguages().iterator().next());
                     //b.setLanguage(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir idioma excursión
                     //b.setPickup(em.find(Excursion.class, new Long(String.valueOf(data.get("activity"))))); //todo: añadir pickup a la excursión
 

@@ -28,6 +28,7 @@ import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.model.util.Constants;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -421,7 +422,7 @@ public class PurchaseOrder {
     @PostPersist@PostUpdate
     public void post() throws Exception, Throwable {
 
-        if (updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Runnable() {
+        if (updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Task() {
             @Override
             public void run() {
 

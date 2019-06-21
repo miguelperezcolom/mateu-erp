@@ -65,7 +65,9 @@
                         <p></p>
                         ${paymentlink!}
                         <p></p>
-                        <p>Dispone de <b>2 horas</b> para realizar el pago de la reserva: ${totalretail}</p>
+                        <#if expirydate?? >
+                        <p>Dispone hasta <b>${expirydate!}</b> para realizar el pago de la reserva: ${totalretail}</p>
+                        </#if>
                     </center>
 
                     <p></p>
@@ -172,9 +174,6 @@
 
 
                     </td><td style="border-left: 1px dashed black; padding-left: 10px; vertical-align: top;">
-
-                        <p><!-- EL PAGO DEL DEPÓSITO O DEL TOTAL SERÁ PROCESADO NORMALMENTE EN LAS PRÓXIMAS 24-48 HORAS. -->SU RESERVA LE SERÁ CONFIRMADA A TRAVÉS DE E-MAIL UNA VEZ EL PAGO SE HAYA PROCESADO CORRECTAMENTE.</p>
-                        <p><b>POR FAVOR RECUERDE QUE SI NO EFECTÚA EL PAGO EN LAS PRÓXIMAS 2 HORAS ESTA RESERVA SE CANCELARÁ AUTOMÁTICAMENTE.</b></p>
 
                         ${paymentremarks!'---'}
 

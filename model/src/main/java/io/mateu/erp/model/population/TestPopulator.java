@@ -73,7 +73,7 @@ public class TestPopulator {
         EmailHelper.setTesting(true);
 
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
-        System.setProperty("appconf", "/Users/miguel/quotravel.properties");
+        //System.setProperty("appconf", "/Users/miguel/quotravel.properties");
 
         try {
             Helper.runCommand("dropdb -U postgres quotravel; createdb -U postgres quotravel");
@@ -286,6 +286,7 @@ public class TestPopulator {
             tpv.setPaypalEmail("miguelperezcolom-facilitator@gmail.com");
             tpv.setPrivateKey("AK-Srf2HoktGIeYhzN9FsIUHYatUAV5R4bvvRJ.jRmqwzL-TMTbY5CVQ");
             tpv.setType(TPVTYPE.PAYPAL);
+            tpv.setMethodOfPayment(em.find(MethodOfPayment.class, 2l));
             tpv.setXml(false);
 
             em.persist(tpv);
@@ -314,6 +315,7 @@ public class TestPopulator {
             tpv.setOffice(em.find(Office.class, 1l));
             tpv.setOkUrl("https://sanbox1.quotravel.eu/tpv/ok");
             tpv.setType(TPVTYPE.SERMEPA);
+            tpv.setMethodOfPayment(em.find(MethodOfPayment.class, 2l));
             tpv.setXml(false);
 
             em.persist(tpv);
@@ -1159,7 +1161,7 @@ public class TestPopulator {
         b.setExcursion(excursiones.get(nextInt() % excursiones.size()));
         b.setVariant(b.getExcursion().getVariants().get(nextInt() % b.getExcursion().getVariants().size()));
         b.setShift(b.getExcursion().getShifts().get(nextInt() % b.getExcursion().getShifts().size()));
-        b.setLanguage(em.find(ExcursionLanguage.class, "es"));
+        b.setExcursionLanguage(em.find(ExcursionLanguage.class, "es"));
 
         b.setCommissionAgent(rep);
         b.setAgency(agencia);
@@ -1408,7 +1410,7 @@ public class TestPopulator {
         b.setValueOverrided(true);
         b.setCostOverrided(true);
         b.setOverridedValue(b.getTotalValue());
-        b.setOverridedCost(b.getTotalCost());
+        b.setOverridedCost((nextInt() % 10000) / 10d);
         b.setOverridedCostCurrency(b.getCurrency());
 
 
@@ -2034,6 +2036,7 @@ public class TestPopulator {
             p.setType(TransferPointType.AIRPORT);
             p.setName(a.getName());
             p.setArrivalInstructionsForPrivate(new Literal(LoremIpsum.getInstance().getWords(30, 70), LoremIpsum.getInstance().getWords(30, 70)));
+            p.setArrivalInstructionsForExecutive(new Literal(LoremIpsum.getInstance().getWords(30, 70), LoremIpsum.getInstance().getWords(30, 70)));
             p.setArrivalInstructionsForShuttle(new Literal(LoremIpsum.getInstance().getWords(30, 70), LoremIpsum.getInstance().getWords(30, 70)));
             p.setDepartureInstructions(new Literal(LoremIpsum.getInstance().getWords(30, 70), LoremIpsum.getInstance().getWords(30, 70)));
 

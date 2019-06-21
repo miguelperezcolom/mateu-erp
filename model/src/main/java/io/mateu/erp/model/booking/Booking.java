@@ -39,6 +39,7 @@ import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.common.Resource;
 import io.mateu.mdd.core.model.config.Template;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -109,6 +110,7 @@ public abstract class Booking {
         if (agency != null) {
             setCurrency(agency.getCurrency());
             setMarket(agency.getMarket());
+            setLanguage(agency.getLanguage());
         }
     }
 
@@ -122,6 +124,9 @@ public abstract class Booking {
     @NotNull
     @ManyToOne
     private Market market;
+
+    @NotNull
+    private Language language = Language.en;
 
     @NotNull
     @MainSearchFilter
@@ -676,7 +681,7 @@ public abstract class Booking {
         d.put("totalCost", totalCost);
 
         d.put("id", getId());
-        d.put("locator", getId());
+        d.put("locator", "" + getId());
         d.put("leadName", getLeadName());
         d.put("telephone", getTelephone());
         d.put("email", getEmail());
@@ -685,7 +690,7 @@ public abstract class Booking {
         d.put("status", (todoCancelado)?"CANCELLED":"ACTIVE");
         d.put("created", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
         if (getFormalizationDate() != null) d.put("formalization", getFormalizationDate().toString());
-        else d.put("formalization", getAudit().getCreated().format(DateTimeFormatter.BASIC_ISO_DATE.ISO_DATE_TIME));
+        else d.put("formalization", getAudit().getCreated().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
         d.put("office", "");
 
         d.put("comments", comentarios);
@@ -728,6 +733,9 @@ public abstract class Booking {
             d.put("paymentlink", getTPVTransactions().get(0).getBoton(em));
         }
 
+        if (getExpiryDate() != null) {
+            d.put("expirydate", getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        }
 
         d.put("servicedata", getServiceDataHtml());
 
@@ -777,6 +785,18 @@ public abstract class Booking {
     public String getPaymentRemarksHtml() {
         String h = "";
 
+        if (getBalance() == 0) {
+            h += "<p><b>RESERVA PAGADA</b></p>";
+        } else {
+
+        if (getExpiryDate() != null) {
+            h += "                        \n" +
+                    "\n" +
+                    "                        <p><!-- EL PAGO DEL DEPÓSITO O DEL TOTAL SERÁ PROCESADO NORMALMENTE EN LAS PRÓXIMAS 24-48 HORAS. -->SU RESERVA LE SERÁ CONFIRMADA A TRAVÉS DE E-MAIL UNA VEZ EL PAGO SE HAYA PROCESADO CORRECTAMENTE.</p>\n" +
+                    "                        <p><b>POR FAVOR RECUERDE QUE SI NO EFECTÚA EL PAGO ANTES DE " + getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + " ESTA RESERVA SE CANCELARÁ AUTOMÁTICAMENTE.</b></p>\n" +
+                    "\n";
+        }
+
         if (getPos().getTpv() != null) h += "<p>Pago a realizar online utilizando " + getPos().getTpv().getName() + ".</p>";
         else h += "<p>Sin forma de pago concreta.</p>";
 
@@ -793,6 +813,8 @@ public abstract class Booking {
                 "\n" +
                 "                        <p>A partir del 9º día de estancia este impuesto se reduce al 50%</p>\n";
 
+        }
+
         return h;
     }
 
@@ -802,11 +824,14 @@ public abstract class Booking {
 
         String h = "";
 
-        h += "                            <tr><td>Total a pagar ahora</td><td align='right'>" + df.format(getTotalValue()) + " &euro;</td></tr>\n";
+        if (getBalance() != 0) {
 
-        if (false) h +=
-                "                            <tr><td>Depósito a pagar ahora</td><td align='right'>1.152,00 &euro;</td></tr>\n" +
-                "                            <tr><td>A pagar el 13/07/2018</td><td align='right'>2.567,00 &euro;</td></tr>\n";
+            h += "                            <tr><td>Total a pagar ahora</td><td align='right'>" + df.format(getTotalValue()) + " &euro;</td></tr>\n";
+
+            if (false) h +=
+                    "                            <tr><td>Depósito a pagar ahora</td><td align='right'>1.152,00 &euro;</td></tr>\n" +
+                            "                            <tr><td>A pagar el 13/07/2018</td><td align='right'>2.567,00 &euro;</td></tr>\n";
+        }
 
         return h;
     }
@@ -1056,13 +1081,31 @@ public abstract class Booking {
     @NotWhenCreating
     public void sendPaymentEmail(@NotEmpty String changeEmail, String subject, String postscript, @NotNull TPV tpv, FastMoney amount) throws Throwable {
 
+        if (getAgency() == null) throw  new Exception("Please set the agency for this booking");
+        if (getAgency().getFinancialAgent() == null) throw  new Exception("Please set financial agent for " + getAgency().getName());
 
+        TPVTransaction tt = new TPVTransaction();
 
         Helper.transact(em ->{
 
             long t0 = new Date().getTime();
 
-            AppConfig appconfig = AppConfig.get(em);
+            tt.setValue(amount.getNumber().doubleValueExact());
+            tt.setCurrency(em.find(Currency.class, amount.getCurrency().getCurrencyCode()));
+            tt.setBooking(this);
+            TPVTransactions.add(tt);
+            tt.setLanguage("es");
+            tt.setSubject((!Strings.isNullOrEmpty(subject))?subject:"Payment for booking " + getId() + " for " + amount);
+            tt.setTpv(tpv);
+
+            em.persist(tt);
+
+            em.merge(this);
+
+        });
+
+
+        Helper.transact(em -> {
 
             String to = changeEmail;
             if (Strings.isNullOrEmpty(to)) {
@@ -1073,7 +1116,6 @@ public abstract class Booking {
                 }
             }
             if (Strings.isNullOrEmpty(to)) throw new Exception("No valid email address. Please check the agency " + getAgency().getName() + " and fill the email field.");
-
 
             SendEmailTask t;
             tasks.add(t = new SendEmailTask());
@@ -1087,18 +1129,9 @@ public abstract class Booking {
             t.setDescription("Send payment email for " + amount);
             t.getBookings().add(this);
 
-
-            TPVTransaction tt = new TPVTransaction();
-            tt.setValue(amount.getNumber().doubleValueExact());
-            tt.setCurrency(em.find(Currency.class, amount.getCurrency().getCurrencyCode()));
-            tt.setBooking(this);
-            TPVTransactions.add(tt);
-            tt.setLanguage("es");
-            tt.setSubject((!Strings.isNullOrEmpty(subject))?subject:"Payment for booking " + getId() + " for " + amount);
-            tt.setTpv(tpv);
-            em.merge(t);
-
             String msg = postscript;
+
+            AppConfig appconfig = AppConfig.get(em);
 
             String freemark = appconfig.getPaymentEmailTemplate();
 
@@ -1112,10 +1145,10 @@ public abstract class Booking {
 
             t.setMessage(msg);
 
+            em.persist(t);
+
             em.merge(this);
-
         });
-
 
     }
 
@@ -1258,7 +1291,7 @@ public abstract class Booking {
     @PostPersist@PostUpdate
     public void post() {
         System.out.println("Booking " + getId() + ".post(" + changeRecordRqTime + "," + updateRqTime + "," + priceUpdateRqTime + ")");
-        if (changeRecordRqTime != null || updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Runnable() {
+        if (changeRecordRqTime != null || updateRqTime != null || priceUpdateRqTime != null) WorkflowEngine.add(new Task() {
             @Override
             public void run() {
                 System.out.println("Booking " + getId() + ".post(" + changeRecordRqTime + "," + updateRqTime + "," + priceUpdateRqTime + ").run()");
@@ -1721,7 +1754,7 @@ public abstract class Booking {
                             if (o instanceof Booking) {
                                 if (!((Booking)o).isActive()) s = (s != null)?s + " cancelled":"cancelled";
                             } else {
-                                if (!((Boolean)((Object[])o)[9])) {
+                                if (!((Boolean)((Object[])o)[10])) {
                                     s = (s != null)?s + " cancelled":"cancelled";
                                 }
                             }

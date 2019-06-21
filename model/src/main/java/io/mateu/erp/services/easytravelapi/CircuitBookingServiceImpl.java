@@ -41,29 +41,14 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         System.out.println("available circuits. token = " + token);
 
-        LocalDate formalizationDate = LocalDate.now();
-
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
         try {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
 
+
+                AuthToken t = em.find(AuthToken.class, token);
 
                 Map<Long, Tag> labels = new HashMap<>();
 
@@ -74,12 +59,12 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
                     {
 
                         CircuitBooking b = new CircuitBooking();
-                        b.setAgency(em.find(Agency.class, finalIdAgencia));
+                        b.setAgency(t.getUser().getAgency());
 
                         b.setCircuit(e);
                         b.setStart(LocalDate.now());
                         b.setEnd(LocalDate.now());
-                        b.setPax(1);
+                        b.setAdults(1);
 
 
                         double min = 0;
@@ -172,36 +157,23 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         System.out.println("activity rates. token = " + token);
 
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
         try {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
+
+                AuthToken t = em.find(AuthToken.class, token);
 
                 Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
                 CircuitBooking b = new CircuitBooking();
-                b.setAgency(em.find(Agency.class, finalIdAgencia));
+                b.setAgency(t.getUser().getAgency());
 
                 b.setCircuit(e);
                 b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
                 b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-                b.setPax(1);
+                b.setAdults(1);
 
 
                 rs.setVariants(new ArrayList<>());
@@ -243,35 +215,23 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
         System.out.println("activity rates. token = " + token);
 
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
 
-        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
+
+            AuthToken t = em.find(AuthToken.class, token);
 
             Circuit e = em.find(Circuit.class, Long.parseLong(key.split("-")[1]));
 
             CircuitBooking b = new CircuitBooking();
-            b.setAgency(em.find(Agency.class, finalIdAgencia));
+            b.setAgency(t.getUser().getAgency());
 
             b.setCircuit(e);
             b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
             b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-            b.setPax(adults);
+            b.setAdults(adults);
+            b.setChildren(children);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
             b.priceServices(em, new ArrayList<>());
@@ -325,58 +285,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
                 CircuitBooking b = buildBookingFromKey(em, key);
 
-                // todo: meter todo esto en el priceFromServices de TransferBooking
-
-                //b.price(em);
-
-                List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
-
-                int encontrados = 0;
-
-                for (Contract c : contratos) {
-
-                    boolean contratoOk = true;
-
-                    contratoOk = contratoOk && !c.getValidFrom().isAfter(b.getStart());
-                    contratoOk = contratoOk && !c.getValidTo().isBefore(b.getEnd());
-
-                    //todo: comprobar file window y demás condiciones
-
-                    if (contratoOk) {
-
-                        for (TourPrice p : c.getPrices()) {
-
-                            boolean precioOk = true;
-
-                            //todo: aplicar políticas precios correctamente
-                            /*
-
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getResorts().contains(b.getOrigin().getResort());
-
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getResorts().contains(b.getDestination().getResort()));
-
-                            precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
-
-                            */
-
-                            if (precioOk) {
-
-                                double valor = Helper.roundEuros(p.getAdultPrice() * b.getPax());
-                                if (valor != 0) {
-                                    rs.setTotal(new BestDeal());
-                                    rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
-                                }
-                                //todo: añadir contrato a la reserva
-                                //b.setContract(c);
-
-                            }
-                        }
-
-                    }
-
-                }
-
-                b.summarize(em);
+                b.price(em);
 
                 if (true) {
                     Remark r;
@@ -427,21 +336,7 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
 
         System.out.println(Helper.toJson(data));
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        long idPos = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        AuthToken t = em.find(AuthToken.class, data.get("token"));
 
         /*
         data.put("token", token);
@@ -456,15 +351,15 @@ public class CircuitBookingServiceImpl implements CircuitBookingService {
          */
 
         CircuitBooking b = new CircuitBooking();
-        User user = em.find(User.class, login);
-        b.setAudit(new Audit(user));
-        b.setAgency(em.find(Agency.class, idAgencia));
+        b.setAudit(new Audit(t.getUser()));
+        b.setAgency(t.getUser().getAgency());
         b.setCurrency(b.getAgency().getCurrency());
-        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setPos(t.getPos());
         b.setTariff(b.getPos().getTariff());
 
         b.setCircuit(em.find(Circuit.class, new Long(String.valueOf(data.get("activity")))));
-        b.setPax((Integer) data.get("adults"));
+        b.setAdults((Integer) data.get("adults"));
+        b.setChildren((Integer) data.get("children"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

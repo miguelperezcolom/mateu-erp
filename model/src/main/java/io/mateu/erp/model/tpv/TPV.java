@@ -2,10 +2,12 @@ package io.mateu.erp.model.tpv;
 
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.payments.Account;
+import io.mateu.erp.model.payments.MethodOfPayment;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Getter
@@ -38,6 +40,9 @@ public class TPV {
     private String notificationUrl;
     private String okUrl;
     private String koUrl;
+
+    @ManyToOne@NotNull
+    private MethodOfPayment methodOfPayment;
 
     @ManyToOne
     private Account account;

@@ -65,7 +65,7 @@ public class ExcursionBooking extends TourBooking {
 
     @ManyToOne
     @Position(21)
-    private ExcursionLanguage language;
+    private ExcursionLanguage excursionLanguage;
 
     public DataProvider getLanguageDataProvider() {
         return new ListDataProvider(shift != null?shift.getLanguages():new ArrayList());

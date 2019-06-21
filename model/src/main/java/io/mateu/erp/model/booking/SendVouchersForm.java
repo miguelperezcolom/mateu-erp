@@ -35,7 +35,7 @@ public class SendVouchersForm {
     private String postscript;
 
     @IFrame
-    @FullWidth
+    @Width("1000px")
     private URL vouchers;
 
 

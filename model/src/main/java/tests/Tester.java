@@ -3,8 +3,10 @@ package tests;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.Inventory;
 import io.mateu.erp.tests.TestPopulator;
+import io.mateu.mdd.core.model.util.EmailHelper;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 
 import java.util.List;
 
@@ -12,7 +14,14 @@ public class Tester {
 
     public static void main(String... args) throws Throwable {
 
+        System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
+
+        EmailHelper.setTesting(true);
+
+
         //populate();
+
+        testVuelos();
 
         testSplit();
 
@@ -21,6 +30,22 @@ public class Tester {
         //testCuboParos();
 
         //testCuboCupo();
+
+        WorkflowEngine.exit(0);
+    }
+
+    private static void testVuelos() {
+
+        try {
+            Helper.transact(em -> {
+
+
+
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
     }
 

@@ -48,26 +48,13 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         LocalDate formalizationDate = LocalDate.now();
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
         try {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
+
+                AuthToken t = em.find(AuthToken.class, token);
 
                 Map<Long, Tag> labels = new HashMap<>();
                 List<GenericProduct> excursions = new ArrayList<>();
@@ -88,14 +75,15 @@ public class GenericBookingServiceImpl implements GenericBookingService {
                 };
 
                 GenericBooking b = new GenericBooking();
-                b.setAgency(em.find(Agency.class, finalIdAgencia));
+                b.setAgency(t.getUser().getAgency());
 
 
                 excursions.forEach(e -> {
                     {
 
                         b.setProduct(e);
-                        b.setPax(1);
+                        b.setUnits(1);
+                        b.setAdults(1);
                         try {
                             double min = 0;
 
@@ -178,37 +166,30 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("generic rates: productId = " + productId + ", language = " + language);
 
 
-        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
+
+            AuthToken t = em.find(AuthToken.class, token);
 
             GenericProduct e = em.find(GenericProduct.class, Long.parseLong(productId.split("-")[1]));
 
             rs.setDateDependant(e.isDateDependant());
             rs.setDatesRangeDependant(e.isDatesRangeDependant());
+            rs.setAdultsDependant(e.isAdultsDependant());
+            rs.setChildrenDependant(e.isChildrenDependant());
+            rs.setUnitsDependant(e.isUnitsDependant());
             rs.setVariantDependant(e.getVariants().size() > 0);
 
 
 
 
             GenericBooking b = new GenericBooking();
-            b.setAgency(em.find(Agency.class, finalIdAgencia));
+            b.setAgency(t.getUser().getAgency());
             b.setProduct(e);
-            b.setPax(1);
+            b.setUnits(1);
+            b.setAdults(1);
 
             e.getVariants().forEach(v -> {
 
@@ -243,12 +224,14 @@ public class GenericBookingServiceImpl implements GenericBookingService {
     }
 
     @Override
-    public CheckGenericRS check(String token, String productId, int adults, int children, int units, int start, int end, String language) throws Throwable {
+    public CheckGenericRS check(String token, String productId, int adults, int children, int units, int start, int end, String language, String variant) throws Throwable {
         CheckGenericRS rs = new CheckGenericRS();
 
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Done");
+
+        System.out.println("generic check: productId = " + productId + ", adults = " + adults + ", children = " + children + ", units = " + units + ", start = " + start + ", end = " + end + ", language = " + language);
 
         Helper.notransact(em -> {
 
@@ -256,6 +239,9 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             Variant v = null;
             if (productId.split("-").length > 2) {
                 v = em.find(Variant.class, Long.parseLong(productId.split("-")[2]));
+            }
+            if (!Strings.isNullOrEmpty(variant)) {
+                v = em.find(Variant.class, Long.parseLong(variant.contains("-")?variant.substring(variant.lastIndexOf("-") + 1):variant));
             }
             String key = getKey(token, "" + e.getId(), v != null?"" + v.getId():null, start, end, language, units, adults, children);
 
@@ -309,6 +295,9 @@ public class GenericBookingServiceImpl implements GenericBookingService {
         rs.setSystemTime(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME));
         rs.setStatusCode(200);
         rs.setMsg("Price details");
+
+        System.out.println("generic price detais: key = " + key + ", language = " + language + ", supplements = " + supplements + ", coupon = " + coupon);
+
 
         try {
             Helper.notransact(em -> {
@@ -375,28 +364,13 @@ public class GenericBookingServiceImpl implements GenericBookingService {
 
         System.out.println(Helper.toJson(data));
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        long idPos = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        AuthToken t = em.find(AuthToken.class, data.get("token"));
 
         GenericBooking b = new GenericBooking();
-        User user = em.find(User.class, login);
-        b.setAudit(new Audit(user));
-        b.setAgency(em.find(Agency.class, idAgencia));
+        b.setAudit(new Audit(t.getUser()));
+        b.setAgency(t.getUser().getAgency());
         b.setCurrency(b.getAgency().getCurrency());
-        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setPos(t.getPos());
         b.setTariff(b.getPos().getTariff());
 
         b.setProduct(em.find(GenericProduct.class, new Long(String.valueOf(data.get("product")))));
@@ -404,7 +378,9 @@ public class GenericBookingServiceImpl implements GenericBookingService {
             b.setVariant(em.find(Variant.class, new Long(String.valueOf(data.get("variant")))));
         }
 
-        b.setPax((Integer) data.get("pax"));
+        b.setUnits((Integer) data.get("units"));
+        b.setAdults((Integer) data.get("adults"));
+        b.setChildren((Integer) data.get("children"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

@@ -4,16 +4,16 @@ package io.mateu.common;
 import io.mateu.erp.dispo.DispoRQ;
 import io.mateu.erp.dispo.HotelAvailabilityRunner;
 import io.mateu.erp.dispo.ModeloDispo;
+import io.mateu.erp.dispo.Occupancy;
 import io.mateu.erp.dispo.interfaces.product.IHotelContract;
+import io.mateu.erp.model.partners.Agency;
 import io.mateu.mdd.core.model.config.AppConfig;
-import io.mateu.erp.model.partners.Partner;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.erp.model.product.hotel.contracting.HotelContract;
 import io.mateu.erp.tests.TestPopulator;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
 import org.easytravelapi.hotel.AvailableHotel;
-import org.easytravelapi.hotel.Occupancy;
 import org.easytravelapi.hotel.Option;
 
 import javax.persistence.EntityManager;
@@ -92,7 +92,7 @@ public class DispoTest {
                     hoteles.add(em.find(Hotel.class, idHotel));
                 }
 
-                Partner a = em.find(Partner.class, 1l);
+                Agency a = em.find(Agency.class, 1l);
 
                 //System.out.println("" + hoteles.size() + " hoteles encontrados");
 
@@ -125,9 +125,7 @@ public class DispoTest {
             long t = System.currentTimeMillis();
             int numeroPrecios = 0;
             for (AvailableHotel ah : finalDispo) {
-                for (Option o : ah.getOptions()) {
-                    numeroPrecios += o.getPrices().size();
-                }
+                numeroPrecios ++;
             }
 
             System.out.println("" + dispo.size() + " hoteles disponibles / " + numeroPrecios + " precios en " + (t - t0) + " ms.");

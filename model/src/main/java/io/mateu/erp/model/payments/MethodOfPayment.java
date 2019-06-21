@@ -18,8 +18,7 @@ public class MethodOfPayment {
     @NotEmpty
     private String name;
 
-
-
+    private double transactionCostPercent;
 
 
     @Override

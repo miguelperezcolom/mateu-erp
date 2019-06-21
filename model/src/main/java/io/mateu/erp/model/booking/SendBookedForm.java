@@ -14,6 +14,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class SendBookedForm {
     private String postscript;
 
     @IFrame
-    @FullWidth
+    @Width("1000px")
     private URL preview;
 
 
@@ -63,7 +64,9 @@ public class SendBookedForm {
                 msg = Helper.freemark(freemark, data);
             }
 
-            Files.write(msg.getBytes(), temp);
+            System.out.println(msg);
+
+            Helper.escribirFichero(temp.getAbsolutePath(), msg);
 
         });
 

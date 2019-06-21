@@ -7,6 +7,7 @@ import io.mateu.mdd.core.data.Data;
 import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -95,7 +96,7 @@ public class TransferPointMapping {
 
         if (persisted.get() != null) persisted.get().remove(getText());
 
-        WorkflowEngine.add(new Runnable() {
+        WorkflowEngine.add(new Task() {
 
             long tpmId = getId();
 

@@ -388,6 +388,19 @@
 
                             <fo:block><xsl:value-of select="@remarks"></xsl:value-of></fo:block>
 
+                            <xsl:if test="instructions">
+
+                                <fo:block font-size="12pt" margin-top="5mm"><fo:inline font-weight="bold">Instrucciones</fo:inline> / <fo:inline font-style="italic">Instructions</fo:inline></fo:block>
+
+                                <xsl:for-each select="instructions">
+                                    <fo:block><xsl:value-of select="."></xsl:value-of></fo:block>
+                                </xsl:for-each>
+
+                            </xsl:if>
+
+
+
+
                             <fo:block width="100%" border-top-width="0.5pt" border-top-style="solid" margin-top="5mm" margin-bottom="2mm"></fo:block>
 
 

@@ -1,8 +1,14 @@
 package io.mateu.erp.model.tpv;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.payments.BookingPaymentAllocation;
+import io.mateu.erp.model.payments.MethodOfPayment;
+import io.mateu.erp.model.payments.Payment;
+import io.mateu.erp.model.payments.PaymentLine;
 import io.mateu.erp.model.webpay.Digest;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
@@ -21,12 +27,18 @@ import javax.crypto.NoSuchPaddingException;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.security.*;
 import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -37,10 +49,10 @@ public class TPVTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private TPV tpv;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private Currency currency;
 
     private double value;
@@ -51,11 +63,9 @@ public class TPVTransaction {
 
     private TPVTRANSACTIONSTATUS status = TPVTRANSACTIONSTATUS.PENDING;
 
-
-
     private String language;
 
-    @ManyToOne
+    @ManyToOne@NotNull
     private Booking booking;
 
     private String subject;
@@ -72,7 +82,7 @@ public class TPVTransaction {
 
                 TPVTransaction t = em.find(TPVTransaction.class, transactionId);
 
-                h[0] = t.getForm(em, t.getLanguage(), t.getBooking().getId(), t.getId(), t.getValue(), "" + t.getCurrency().getIsoNumericCode(), t.getSubject());
+                h[0] = t.getForm(em, t.getLanguage(), t.getBooking().getId(), t.getId(), t.getValue(), "" + t.getCurrency().getIsoCode(), t.getSubject());
 
             }
         });
@@ -93,20 +103,35 @@ public class TPVTransaction {
 
         StringBuffer h = new StringBuffer();
 
+
+        if (getBooking() != null && getBooking().getExpiryDate() != null) {
+
+            if ("es".equals(language)) h.append("<h2>Por favor recuerde que tiene hasta el " + getBooking().getExpiryDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " a las " + getBooking().getExpiryDate().format(DateTimeFormatter.ofPattern("HH:mm")) + " para realizar el pago. Si no es posible confirmar el mismo, esta reserva se cancelará automáticamente.</h2>");
+            else h.append("<h2>Please notice you can pay until " + getBooking().getExpiryDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " at " + getBooking().getExpiryDate().format(DateTimeFormatter.ofPattern("HH:mm")) + ". If it is not possible to confirm the payment by that time this booking will be automatically cancelled.</h2>");
+
+        }
+
+
         if (TPVTYPE.SERMEPA.equals(getTpv().getType())) {
 
 
             ApiMacSha256 apiMacSha256 = new ApiMacSha256();
 
-            apiMacSha256.setParameter("DS_MERCHANT_AMOUNT", getMerchantAmount(getTpv().isTesting()?0.1:amount));
-            apiMacSha256.setParameter("DS_MERCHANT_ORDER", "" + getId());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
-            apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency));
-            apiMacSha256.setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
-            apiMacSha256.setParameter("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
-            apiMacSha256.setParameter("DS_MERCHANT_URLOK", getTpv().getOkUrl());
-            apiMacSha256.setParameter("DS_MERCHANT_URLKO", getTpv().getKoUrl());
+            Map<String, String> values = new HashMap<>();
+            values.put("DS_MERCHANT_AMOUNT", getMerchantAmount(getTpv().isTesting()?0.1:amount));
+            values.put("DS_MERCHANT_ORDER", new DecimalFormat("0000").format(getId()));
+            values.put("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
+            values.put("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency));
+            values.put("DS_MERCHANT_TRANSACTIONTYPE", "0");
+            values.put("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
+            values.put("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
+            values.put("DS_MERCHANT_URLOK", getTpv().getOkUrl());
+            values.put("DS_MERCHANT_URLKO", getTpv().getKoUrl());
+
+
+            values.forEach((k,v) -> System.out.println("" + k + ": " + v));
+
+            values.forEach((k,v) -> apiMacSha256.setParameter(k, v));
 
             String params = apiMacSha256.createMerchantParameters();
             String signature = apiMacSha256.createMerchantSignature(getTpv().getMerchantSecret());
@@ -174,6 +199,8 @@ public class TPVTransaction {
             h.append("<h1>UNKNOWN TPV TYPE: " + getTpv().getType() + "</h1>");
         }
 
+        System.out.println(h);
+
         return h.toString();
     }
 
@@ -206,15 +233,20 @@ public class TPVTransaction {
         if (TPVTYPE.SERMEPA.equals(getTpv().getType()) || TPVTYPE.WEBPAY.equals(getTpv().getType())) {
             ApiMacSha256 apiMacSha256 = new ApiMacSha256();
 
-            apiMacSha256.setParameter("DS_MERCHANT_AMOUNT", getMerchantAmount(amount));
-            apiMacSha256.setParameter("DS_MERCHANT_ORDER", "" + getId());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
-            apiMacSha256.setParameter("DS_MERCHANT_CURRENCY", "" + currency.getIsoNumericCode());
-            apiMacSha256.setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
-            apiMacSha256.setParameter("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
-            apiMacSha256.setParameter("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
-            apiMacSha256.setParameter("DS_MERCHANT_URLOK", getTpv().getOkUrl());
-            apiMacSha256.setParameter("DS_MERCHANT_URLKO", getTpv().getKoUrl());
+            Map<String, String> values = new HashMap<>();
+            values.put("DS_MERCHANT_AMOUNT", getMerchantAmount(getTpv().isTesting()?0.1:amount));
+            values.put("DS_MERCHANT_ORDER", new DecimalFormat("0000").format(getId()));
+            values.put("DS_MERCHANT_MERCHANTCODE", getTpv().getMerchantCode());
+            values.put("DS_MERCHANT_CURRENCY", getMerchantCurrency(em, currency.getIsoCode()));
+            values.put("DS_MERCHANT_TRANSACTIONTYPE", "0");
+            values.put("DS_MERCHANT_TERMINAL", getTpv().getMerchantTerminal());
+            values.put("DS_MERCHANT_MERCHANTURL", getTpv().getNotificationUrl() + "/" + getId());
+            values.put("DS_MERCHANT_URLOK", getTpv().getOkUrl());
+            values.put("DS_MERCHANT_URLKO", getTpv().getKoUrl());
+
+            values.forEach((k,v) -> System.out.println("" + k + ": " + v));
+
+            values.forEach((k,v) -> apiMacSha256.setParameter(k, v));
 
             String params = apiMacSha256.createMerchantParameters();
             String signature = apiMacSha256.createMerchantSignature(getTpv().getMerchantSecret());
@@ -225,7 +257,7 @@ public class TPVTransaction {
             h.append("<input type='hidden' name=Ds_SignatureVersion value='HMAC_SHA256_V1' />");
             h.append("<input type='hidden' name=Ds_MerchantParameters value='" + params + "' />");
             h.append("<input type='hidden' name=Ds_Signature value='" + signature + "' />");
-            h.append("<input type='submit' class='btn' value='PAY NOW' />");
+            h.append("<input type='submit' class='btn btn-primary' value='PAY NOW' />");
             h.append("</form>");
 
             return h.toString();
@@ -367,11 +399,22 @@ public class TPVTransaction {
         //Ds_TransactionType=0&Ds_Card_Country=724&Ds_Date=08%2F10%2F2015&Ds_SecurePayment=1&Ds_Signature=342F34F69DB3A62FA9017F818136CFD6655C4BC8&Ds_Order=3276851&Ds_Hour=07%3A48&Ds_Response=0000&Ds_AuthorisationCode=311629&Ds_Currency=978&Ds_ConsumerLanguage=1&Ds_Card_Type=D&Ds_MerchantCode=266168905&Ds_Amount=10&Ds_Terminal=002
 
         System.out.println("****TPVNOTIFICACION****");
+        Map<String, Object> params = new HashMap<>();
         for (String n : request.getParameterMap().keySet()) {
             for (String v : request.getParameterValues(n)) {
                 System.out.println("" + n + ":" + v);
+                params.put(n, v);
             }
         }
+
+        if (params.containsKey("Ds_MerchantParameters")) {
+            String json = new String(Base64.getDecoder().decode("eyJEc19EYXRlIjoiMTJcLzA2XC8yMDE5IiwiRHNfSG91ciI6IjE5OjMxIiwiRHNfU2VjdXJlUGF5bWVudCI6IjEiLCJEc19DYXJkX0NvdW50cnkiOiI3MjQiLCJEc19BbW91bnQiOiIxMCIsIkRzX0N1cnJlbmN5IjoiOTc4IiwiRHNfT3JkZXIiOiIwMDA5IiwiRHNfTWVyY2hhbnRDb2RlIjoiMDc5MTk0NjQzIiwiRHNfVGVybWluYWwiOiIwMDMiLCJEc19SZXNwb25zZSI6IjAwMDAiLCJEc19NZXJjaGFudERhdGEiOiIiLCJEc19UcmFuc2FjdGlvblR5cGUiOiIwIiwiRHNfQ29uc3VtZXJMYW5ndWFnZSI6IjEiLCJEc19BdXRob3Jpc2F0aW9uQ29kZSI6IjE2MTI2NyIsIkRzX0NhcmRfQnJhbmQiOiIxIn0="));
+            System.out.println(json);
+            Map<String, Object> m = Helper.fromJson(json);
+
+            m.forEach((k,v) -> params.put(k, v));
+        }
+
         System.out.println("****TPVNOTIFICACION****");
 
         Helper.transact(new JPATransaction() {
@@ -379,6 +422,8 @@ public class TPVTransaction {
             public void run(EntityManager em) throws Exception {
 
                 String uri = request.getRequestURI();
+
+
 
                 String idtransaccion = uri.substring(uri.lastIndexOf("/") + 1);
                 if (idtransaccion == null && request.getParameter("idtransaccion") != null) {
@@ -392,15 +437,20 @@ public class TPVTransaction {
                 TPVTransaction t = em.find(TPVTransaction.class, Long.parseLong(idtransaccion));
                 Booking r = t.getBooking();
 
-                //todo: registrar la notificación
-                //r.getLog().add(new Log(Helper.toJson(request.getParameterMap())));
+                String log = t.getLog();
+                if (log == null) log = "";
+                if (!"".equals(log)) log += "\n";
+                log += LocalDateTime.now() + "\n";
+                log += uri + "\n";
+                log += Helper.toJson(params);
+                t.setLog(log);
 
 
                 boolean ok = false;
 
                 switch (t.getTpv().getType()) {
                     case SERMEPA:
-                        String src = request.getParameter("Ds_Response");
+                        String src = (String) params.get("Ds_Response");
                         ok = !Strings.isNullOrEmpty(src) && Helper.toInt(src) < 101;
                         break;
                     case WEBPAY:
@@ -416,6 +466,7 @@ public class TPVTransaction {
 
                 if (ok) {
                     t.setStatus(TPVTRANSACTIONSTATUS.OK);
+                    String authCode = "";
                     if (TPVTYPE.WEBPAY.equals(t.getTpv().getType())) {
                         String msg = "";
                         if (request.getParameter("PRCODE") != null) {
@@ -431,30 +482,35 @@ public class TPVTransaction {
                             msg += "RESULTTEXT=" + request.getParameter("RESULTTEXT");
                         }
                         response.sendRedirect("tpvok.jsp?msg=" + msg);
+                    } else if (TPVTYPE.SERMEPA.equals(t.getTpv().getType())) {
+                        if (params.containsKey("Ds_AuthorisationCode")) authCode = (String) params.get("Ds_AuthorisationCode");
                     }
 
-                    //todo: grabar el pago
-
-                    /*
 
                     Payment p = new Payment();
-                    p.setAgent();
-                    p.setBreakdown();
-                    p.setCost();
-                    p.setCurrency();
-                    p.setDestination();
-                    p.setOrigin();
-                    p.setValue();
+                    p.setAgent(t.getBooking().getAgency().getFinancialAgent());
+                    BookingPaymentAllocation a;
+                    p.setBreakdown(Lists.newArrayList(a = new BookingPaymentAllocation()));
+                    a.setBooking(t.getBooking());
+                    a.getBooking().getPayments().add(a);
+                    a.setValue(t.getValue());
+                    a.setPayment(p);
+
+                    PaymentLine l;
+                    p.setLines(Lists.newArrayList(l = new PaymentLine()));
+                    l.setPayment(p);
+                    l.setValue(t.getValue());
+                    l.setCurrency(t.getCurrency());
+                    l.setMethodOfPayment(t.getTpv().getMethodOfPayment());
+                    l.setTransactionCost(Helper.roundEuros(t.getTpv().getMethodOfPayment().getTransactionCostPercent() * t.getValue() / 100d));
+                    l.setCurrencyExchangeCost(0);
+                    l.setTransactionId(authCode);
+
+                    p.setAccount(t.getTpv().getAccount());
+                    p.setDate(LocalDate.now());
+                    p.setTriggerUpdate(LocalDateTime.now());
+
                     em.persist(p);
-
-                    BookingPaymentAllocation p;
-                    r.getPayments().add(p = new BookingPaymentAllocation());
-                    p.setAuditoria(new Auditoria());
-                    p.setTipo(TipoPago.TPV);
-                    p.setImporte(t.getAmount());
-                    p.setReserva(r);
-
-                    */
 
                 } else {
                     t.setStatus(TPVTRANSACTIONSTATUS.ERROR);
@@ -474,7 +530,6 @@ public class TPVTransaction {
                         }
                         response.sendRedirect("tpvko.jsp?msg=" + msg);
                     }
-
                 }
 
 

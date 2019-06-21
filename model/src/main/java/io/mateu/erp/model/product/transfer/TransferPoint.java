@@ -71,6 +71,9 @@ public class TransferPoint {
     private Literal arrivalInstructionsForPrivate;
 
     @TextArea@ManyToOne(cascade = CascadeType.ALL)
+    private Literal arrivalInstructionsForExecutive;
+
+    @TextArea@ManyToOne(cascade = CascadeType.ALL)
     private Literal arrivalInstructionsForShuttle;
 
     @TextArea@ManyToOne(cascade = CascadeType.ALL)

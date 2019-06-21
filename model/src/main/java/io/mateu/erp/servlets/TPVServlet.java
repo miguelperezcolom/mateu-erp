@@ -1,6 +1,7 @@
 package io.mateu.erp.servlets;
 
 import io.mateu.erp.model.tpv.TPVTransaction;
+import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.Utils;
 
 import javax.servlet.ServletException;
@@ -27,11 +28,12 @@ public class TPVServlet extends HttpServlet {
         resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         resp.setHeader("Pragma", "no-cache");
         resp.setHeader("Expires", "0");
+        resp.setContentType("text/html; charset=UTF-8");
 
         String uri = req.getRequestURI();
         try {
 
-            if (uri.endsWith("lanzadera")) {
+            if (uri.contains("lanzadera")) {
                 resp.getWriter().print("<html>\n" +
                         "<head>\n" +
                         "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
@@ -41,12 +43,12 @@ public class TPVServlet extends HttpServlet {
                 resp.getWriter().print(TPVTransaction.getForm(Long.parseLong(req.getParameter("idtransaccion"))));
                 resp.getWriter().print("</body>\n" +
                         "</html>");
-            } else if (uri.endsWith("notificacion")) {
+            } else if (uri.contains("notificacion")) {
                 TPVTransaction.procesarPost(req, resp);
-            } else if (uri.endsWith("ok")) {
-                resp.getWriter().print(Utils.read(this.getClass().getResourceAsStream("/general/tpvok.html")));
-            } else if (uri.endsWith("ko")) {
-                resp.getWriter().print(Utils.read(this.getClass().getResourceAsStream("/general/tpvko.html")));
+            } else if (uri.contains("ok")) {
+                resp.getWriter().print(Helper.leerInputStream(this.getClass().getResourceAsStream("/io/mateu/erp/html/tpvok.html"), "utf-8"));
+            } else if (uri.contains("ko")) {
+                resp.getWriter().print(Helper.leerInputStream(this.getClass().getResourceAsStream("/io/mateu/erp/html/tpvok.html"), "utf-8"));
             }
 
         } catch (Exception e) {

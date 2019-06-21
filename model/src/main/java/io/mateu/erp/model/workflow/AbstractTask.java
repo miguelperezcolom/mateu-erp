@@ -8,6 +8,7 @@ import io.mateu.mdd.core.data.UserData;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -149,7 +150,7 @@ public abstract class AbstractTask {
 
     @PostPersist@PostUpdate
     public void post() {
-        if (TaskStatus.PENDING.equals(status)) WorkflowEngine.add(new Runnable() {
+        if (TaskStatus.PENDING.equals(status)) WorkflowEngine.add(new Task() {
             @Override
             public void run() {
                 try {

@@ -113,30 +113,15 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         System.out.println("available hotels. token = " + token);
 
-        LocalDate formalizationDate = LocalDate.now();
-
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
         List<Long> idsHoteles = new ArrayList<>();
 
-        if (idHotel > 0) idsHoteles.add(idHotel);
+        AuthToken t = Helper.find(AuthToken.class, token);
+
+        if (t.getHotel() != null) idsHoteles.add(t.getHotel().getId());
         else {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(new JPATransaction() {
                 @Override
                 public void run(EntityManager em) throws Throwable {
@@ -177,7 +162,7 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                     List<? extends Occupancy> ocups = getOccupancies(occupancies);
 
 
-                    Agency a = em.find(Agency.class, finalIdAgencia);
+                    Agency a = t.getUser().getAgency();
 
                     HotelBooking hb = new HotelBooking();
                     hb.setAgency(a);
@@ -327,13 +312,13 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         }
 
-        long t = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
 
         recordStats(rs, io.mateu.erp.dispo.Helper.toDate(checkIn).toEpochDay(), io.mateu.erp.dispo.Helper.toDate(checkOut).toEpochDay());
 
-        long t1 = System.currentTimeMillis();
+        long t2 = System.currentTimeMillis();
 
-        String msg = "" + rs.getHotels().size() + " hotels returned. It consumed " + (t - t0) + " ms in the server. Stats took " + (t1 - t) + " ms.";
+        String msg = "" + rs.getHotels().size() + " hotels returned. It consumed " + (t0 - t1) + " ms in the server. Stats took " + (t2 - t1) + " ms.";
 
         System.out.println(msg);
 
@@ -351,34 +336,18 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
         DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
 
-        LocalDate formalizationDate = LocalDate.now();
-
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         long t0 = System.currentTimeMillis();
 
 
-        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
             Hotel h = em.find(Hotel.class, Long.parseLong(rq.getHotelId().substring("hot-".length())));
 
+            AuthToken t = em.find(AuthToken.class, token);
 
             HotelBooking hb = new HotelBooking();
-            hb.setAgency(em.find(Agency.class, finalIdAgencia));
+            hb.setAgency(t.getUser().getAgency());
             hb.setCurrency(hb.getAgency().getCurrency());
             hb.setHotel(h);
 
@@ -526,29 +495,15 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Price details");
 
-        long idPos = Long.parseLong(System.getProperty("idpos", "1"));
-
-        long idAgencia = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
-        long finalIdAgencia = idAgencia;
         try {
             Helper.notransact((JPATransaction) (em) -> {
 
-
+                AuthToken t = em.find(AuthToken.class, token);
 
                 HotelBooking hb = new HotelBooking();
-                hb.setAgency(em.find(Agency.class, finalIdAgencia));
+                hb.setAgency(t.getUser().getAgency());
                 hb.setCurrency(hb.getAgency().getCurrency());
 
                 DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -618,6 +573,8 @@ public class HotelBookingServiceImpl implements HotelBookingService {
 
                 }
 
+                hb.price(em);
+
                 rs.setAvailableServices(new ArrayList<>());
                 supls.forEach(s -> {
                     Service x;
@@ -680,11 +637,11 @@ public class HotelBookingServiceImpl implements HotelBookingService {
                 }
 
 
-                for (CancellationTerm t : hb.getCancellationTerms()) {
+                for (CancellationTerm ct : hb.getCancellationTerms()) {
                     CancellationCost cc;
                     rs.getCancellationCosts().add(cc = new CancellationCost());
-                    cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), t.getAmount()));
-                    cc.setGMTtime(t.getDate().toString());
+                    cc.setRetail(new Amount(hb.getAgency().getCurrency().getIsoCode(), ct.getAmount()));
+                    cc.setGMTtime(ct.getDate().toString());
                 }
 
 
@@ -723,38 +680,23 @@ public class HotelBookingServiceImpl implements HotelBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Booking confirmed");
 
-        long idAgencia = 0;
-        long idPos = 0;
-        final UserData u = new UserData();
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            u.setLogin(login);
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         long t0 = System.currentTimeMillis();
 
-        long finalIdAgencia = idAgencia;
         try {
+
 
             io.mateu.erp.model.booking.Booking[] bx = new io.mateu.erp.model.booking.Booking[1];
 
             Helper.transact((JPATransaction) (em) -> {
 
+                AuthToken t = em.find(AuthToken.class, token);
+
                 DateTimeFormatter dfx = DateTimeFormatter.ofPattern("yyyyMMdd");
 
-                User user = em.find(User.class, u.getLogin());
-
                 HotelBooking hb = new HotelBooking();
-                hb.setAudit(new Audit(user));
-                hb.setAgency(em.find(Agency.class, finalIdAgencia));
+                hb.setAudit(new Audit(t.getUser()));
+                hb.setAgency(t.getUser().getAgency());
                 hb.setCurrency(hb.getAgency().getCurrency());
                 hb.setAgencyReference(rq.getBookingReference());
                 if (hb.getAgencyReference() == null) hb.setAgencyReference("");

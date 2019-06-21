@@ -248,6 +248,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
 
                 String i = "";
                 if (TransferType.SHUTTLE.equals(b.getTransferType())) i = b.getOrigin().getArrivalInstructionsForShuttle() != null?b.getOrigin().getArrivalInstructionsForShuttle().getEs():"";
+                else if (TransferType.EXECUTIVE.equals(b.getTransferType())) i = b.getOrigin().getArrivalInstructionsForExecutive() != null?b.getOrigin().getArrivalInstructionsForExecutive().getEs():"";
                 else i = b.getOrigin().getArrivalInstructionsForPrivate() != null?b.getOrigin().getArrivalInstructionsForPrivate().getEs():"";
                 rs.setArrivalInstructions(i);
                 rs.setDepartureInstructions(b.getDestination().getDepartureInstructions() != null?b.getDestination().getDepartureInstructions().getEs():"");
@@ -375,6 +376,7 @@ public class TransferBookingServiceImpl implements TransferBookingService {
                     b.setTelephone(rq.getContactPhone());
                     b.setConfirmed(b.getAgency() != null && !b.getAgency().getFinancialAgent().isDirectSale());
                     b.setConfirmNow(false);
+                    b.setConfirmed(false);
 
                     if (b.getPos().getHoursForUnpaidCancellation() != 0) b.setExpiryDate(LocalDateTime.now().plusHours(b.getPos().getHoursForUnpaidCancellation()));
 

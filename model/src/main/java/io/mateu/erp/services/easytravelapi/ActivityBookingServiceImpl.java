@@ -49,30 +49,18 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
-        System.out.println("available activities. token = " + token);
+        System.out.println("available activities. token = " + token + ", start = " + start + ", resorts = " + resorts + ", language = " + language);
 
         LocalDate formalizationDate = LocalDate.now();
-
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         long t0 = System.currentTimeMillis();
 
         try {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
+
+
+                AuthToken t = em.find(AuthToken.class, token);
 
                 Map<Long, Tag> labels = new HashMap<>();
                 List<Excursion> excursions = new ArrayList<>();
@@ -98,12 +86,13 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                         try {
                             ExcursionBooking b = new ExcursionBooking();
-                            b.setAgency(em.find(Agency.class, finalIdAgencia));
+                            b.setAgency(t.getUser().getAgency());
 
                             b.setExcursion(e);
                             b.setStart(io.mateu.erp.dispo.Helper.toDate(start));
                             b.setEnd(io.mateu.erp.dispo.Helper.toDate(start));
-                            b.setPax(1);
+                            b.setAdults(1);
+                            b.setCurrency(b.getAgency().getCurrency());
 
                             double min = 0;
 
@@ -196,36 +185,23 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         System.out.println("activity rates. token = " + token);
 
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         long t0 = System.currentTimeMillis();
 
         try {
 
-            long finalIdAgencia = idAgencia;
             Helper.notransact(em -> {
+
+                AuthToken t = em.find(AuthToken.class, token);
 
                 Excursion e = em.find(Excursion.class, Long.parseLong(activityId.split("-")[1]));
 
                 ExcursionBooking b = new ExcursionBooking();
-                b.setAgency(em.find(Agency.class, finalIdAgencia));
+                b.setAgency(t.getUser().getAgency());
 
                 b.setExcursion(e);
                 b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
                 b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-                b.setPax(1);
+                b.setAdults(1);
 
 
                 rs.setVariants(new ArrayList<>());
@@ -252,6 +228,7 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
                     }
 
                 });
+
 
                 LocalDate d = LocalDate.of((date - date % 10000) / 10000, ((date - date % 100) / 100) % 100, date % 100);
 
@@ -347,38 +324,26 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         rs.setStatusCode(200);
         rs.setMsg("Done");
 
-        System.out.println("activity rates. token = " + token);
+        System.out.println("activity check. token = " + token + ", key =" + key + ", date = " + date + ", language = " + language + ", adults = " + adults + ", children = " + children + ", variant = " + variant + ", shift = " + shift + ", pickup = " + pickup + ", activityLanguage = " + activityLanguage);
 
-
-        long idAgencia = 0;
-        long idHotel = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode(token)));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         long t0 = System.currentTimeMillis();
 
 
-        long finalIdAgencia = idAgencia;
         Helper.notransact(em -> {
+
+            AuthToken t = em.find(AuthToken.class, token);
 
             Excursion e = em.find(Excursion.class, Long.parseLong(key.split("-")[1]));
 
             ExcursionBooking b = new ExcursionBooking();
-            b.setAgency(em.find(Agency.class, finalIdAgencia));
+            b.setAgency(t.getUser().getAgency());
 
             b.setExcursion(e);
             b.setStart(io.mateu.erp.dispo.Helper.toDate(date));
             b.setEnd(io.mateu.erp.dispo.Helper.toDate(date));
-            b.setPax(adults + children);
+            b.setAdults(adults);
+            b.setChildren(children);
 
             b.setVariant(em.find(Variant.class, Long.parseLong(variant)));
             b.setShift(em.find(ExcursionShift.class, Long.parseLong(shift)));
@@ -434,56 +399,12 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
                 ExcursionBooking b = buildBookingFromKey(em, key);
 
-                // todo: meter todo esto en el priceFromServices de TransferBooking
+                rs.setKey(key);
 
-                //b.price(em);
+                b.price(em);
 
-                List<Contract> contratos = em.createQuery("select s from " + Contract.class.getName() + " s").getResultList();
-
-                int encontrados = 0;
-
-                for (Contract c : contratos) {
-
-                    boolean contratoOk = true;
-
-                    contratoOk = contratoOk && !c.getValidFrom().isAfter(b.getStart());
-                    contratoOk = contratoOk && !c.getValidTo().isBefore(b.getEnd());
-
-                    //todo: comprobar file window y demás condiciones
-
-                    if (contratoOk) {
-
-                        for (TourPrice p : c.getPrices()) {
-
-                            boolean precioOk = true;
-
-                            //todo: aplicar políticas precios correctamente
-                            /*
-
-                            boolean precioOk = p.getOrigin().getPoints().contains(b.getOrigin()) || p.getOrigin().getResorts().contains(b.getOrigin().getResort());
-
-                            precioOk = precioOk && (p.getDestination().getPoints().contains(b.getDestination()) || p.getDestination().getResorts().contains(b.getDestination().getResort()));
-
-                            precioOk = precioOk && p.getVehicle().getMinPax() <= b.getAdults() && p.getVehicle().getMaxPax() >= b.getAdults();
-
-                            */
-
-                            if (precioOk) {
-
-                                double valor = Helper.roundEuros(p.getAdultPrice() * b.getPax());
-                                if (valor != 0) {
-                                    rs.setTotal(new BestDeal());
-                                    rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), valor));
-                                }
-                                //todo: añadir contrato a la reserva
-                                //b.setContract(c);
-
-                            }
-                        }
-
-                    }
-
-                }
+                rs.setTotal(new BestDeal());
+                rs.getTotal().setRetailPrice(new Amount(b.getCurrency().getIsoCode(), b.getTotalValue()));
 
 
                 if (true) {
@@ -535,22 +456,6 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
 
         System.out.println(Helper.toJson(data));
 
-        long idAgencia = 0;
-        long idHotel = 0;
-        long idPos = 0;
-        String login = "";
-        try {
-            Credenciales creds = new Credenciales(new String(BaseEncoding.base64().decode((String) data.get("token"))));
-            if (!Strings.isNullOrEmpty(creds.getAgentId())) idAgencia = Long.parseLong(creds.getAgentId());
-            if (!Strings.isNullOrEmpty(creds.getPosId())) idPos = Long.parseLong(creds.getPosId());
-            if (!Strings.isNullOrEmpty(creds.getHotelId())) idHotel = Long.parseLong(creds.getHotelId());
-            //rq.setLanguage(creds.getLan());
-            login = creds.getLogin();
-            //rq.setPassword(creds.getPass());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         /*
         data.put("token", token);
         data.put("activity", key);
@@ -563,17 +468,19 @@ public class ActivityBookingServiceImpl implements ActivityBookingService {
         data.put("activityLanguage", activityLanguage);
          */
 
+        AuthToken t = em.find(AuthToken.class, data.get("token"));
+
         ExcursionBooking b = new ExcursionBooking();
-        User user = em.find(User.class, login);
-        b.setAudit(new Audit(user));
-        b.setAgency(em.find(Agency.class, idAgencia));
+        b.setAudit(new Audit(t.getUser()));
+        b.setAgency(t.getUser().getAgency());
         b.setCurrency(b.getAgency().getCurrency());
-        b.setPos(em.find(PointOfSale.class, idPos));
+        b.setPos(t.getPos());
         b.setTariff(b.getPos().getTariff());
 
 
         b.setExcursion(em.find(Excursion.class, new Long(String.valueOf(data.get("activity")))));
-        b.setPax((Integer) data.get("pax"));
+        if (data.containsKey("adults")) b.setAdults((Integer) data.get("adults"));
+        if (data.containsKey("children")) b.setChildren((Integer) data.get("children"));
 
         //Price p = em.find(Price.class, new Long(String.valueOf(data.get("priceId"))));
 

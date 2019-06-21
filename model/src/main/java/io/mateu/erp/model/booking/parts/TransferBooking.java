@@ -555,6 +555,7 @@ public class TransferBooking extends Booking {
         if (getArrivalFlightTime() != null) {
             String i = "";
             if (TransferType.SHUTTLE.equals(getTransferType())) i = getOrigin().getArrivalInstructionsForShuttle() != null?getOrigin().getArrivalInstructionsForShuttle().getEs():"";
+            else if (TransferType.EXECUTIVE.equals(getTransferType())) i = getOrigin().getArrivalInstructionsForExecutive() != null?getOrigin().getArrivalInstructionsForExecutive().getEs():"";
             else i = getOrigin().getArrivalInstructionsForPrivate() != null?getOrigin().getArrivalInstructionsForPrivate().getEs():"";
             h += "Arrival instructions:\n" + (Strings.isNullOrEmpty(i)?"--":i) + "\n";
         }

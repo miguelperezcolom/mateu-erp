@@ -3,7 +3,7 @@
     <parent>
         <artifactId>all</artifactId>
         <groupId>io.mateu.erp</groupId>
-        <version>0.0.2-SNAPSHOT</version>
+        <version>0.0.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -19,7 +19,7 @@
         <vertx.projectVersion>3.4.2</vertx.projectVersion>
         <vertx.version>3.4.2</vertx.version>
         <vertx.verticle>io.mateu.common.traductores.caval.out.Vertice</vertx.verticle>
-        <cxf.version>3.2.0</cxf.version>
+        <cxf.version>3.3.0</cxf.version>
         <jackson-core-version>2.9.1</jackson-core-version>
     </properties>
 
@@ -102,6 +102,25 @@
             <artifactId>slf4j-jcl</artifactId>
             <version>1.7.22</version>
         </dependency>
+
+        <!-- 11 -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.4.0-b180830.0438</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>2.3.1</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>rt</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

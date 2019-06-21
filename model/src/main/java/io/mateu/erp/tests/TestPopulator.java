@@ -293,6 +293,7 @@ public class TestPopulator {
                                 TransferPoint p = new TransferPoint();
                                 p.setName((String) dtp.get("name"));
                                 p.setArrivalInstructionsForPrivate(new Literal("--", "--"));
+                                p.setArrivalInstructionsForExecutive(new Literal("--", "--"));
                                 p.setArrivalInstructionsForShuttle(new Literal("--", "--"));
                                 p.setDepartureInstructions(new Literal("--", "--"));
                                 p.setType(TransferPointType.valueOf((String) dtp.get("type")));

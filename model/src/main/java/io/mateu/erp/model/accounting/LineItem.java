@@ -4,6 +4,7 @@ package io.mateu.erp.model.accounting;
 
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,7 +53,7 @@ public class LineItem {
     @PostUpdate@PostPersist
     public void post() {
 
-        WorkflowEngine.add(new Runnable() {
+        WorkflowEngine.add(new Task() {
 
             long xid = getId();
 

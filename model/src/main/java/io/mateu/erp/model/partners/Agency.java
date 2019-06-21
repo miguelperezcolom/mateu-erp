@@ -1,6 +1,7 @@
 package io.mateu.erp.model.partners;
 
 import io.mateu.erp.model.booking.Booking;
+import io.mateu.erp.model.booking.Language;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.financials.CancellationRules;
 import io.mateu.erp.model.financials.Currency;
@@ -49,6 +50,9 @@ public class Agency {
 
     @ManyToOne
     private Market market;
+
+    @NotNull
+    private Language language = Language.en;
 
     @ManyToOne
     @NotNull

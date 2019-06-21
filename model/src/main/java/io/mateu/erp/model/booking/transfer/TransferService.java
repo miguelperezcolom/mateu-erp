@@ -239,40 +239,6 @@ public class TransferService extends Service {
     }
 
     @Override
-    public void validate(EntityManager em) {
-        super.validate(em);
-        //todo: hay que moverlo a la reserva
-        /*
-        if (ValidationStatus.VALID.equals(getValidationStatus())) {
-            if (getEffectivePickup() == null) {
-                addValidationMessage("Missing pickup or not mapped");
-                setValidationStatus(ValidationStatus.INVALID);
-            }
-            if (getEffectiveDropoff() == null) {
-                addValidationMessage("Missing dropoff or not mapped");
-                setValidationStatus(ValidationStatus.INVALID);
-            }
-            if (getPickupTime() != null && getPickupTime().plusHours(2).isAfter(getFlightTime())) {
-                addValidationMessage("Pickup time less than 2 hours before flight time");
-                if (ValidationStatus.VALID.equals(getValidationStatus())) setValidationStatus(ValidationStatus.WARNING);
-            }
-        }
-        */
-    }
-
-    private void addValidationMessage(String s) {
-        //todo: hay que moverlo a la reserva
-        /*
-        if (!Strings.isNullOrEmpty(s)) {
-            String x = getValidationMessage();
-            if (x == null) x = "";
-            if (!"".equals(x)) x += ". ";
-            setValidationMessage(x + s);
-        }
-        */
-    }
-
-    @Override
     public boolean isAllMapped(EntityManager em) {
         return getEffectivePickup() != null && getEffectiveDropoff() != null;
     }
@@ -771,5 +737,24 @@ public class TransferService extends Service {
         if (TransferDirection.OUTBOUND.equals(getDirection())) d = "Outbound";
         else if (TransferDirection.POINTTOPOINT.equals(getDirection())) d = "Point to point";
         return d + " transfer from " + getPickup().getName() + " to " + getDropoff().getName() + (getPreferredVehicle() != null?" in " + getPreferredVehicle().getName():"") + " for " + getPax() + " pax";
+    }
+
+
+    @Override
+    public void addInstructions(Element xml) {
+        super.addInstructions(xml);
+        if (TransferDirection.OUTBOUND.equals(getDirection())) {
+            String txt = getDropoff().getDepartureInstructions() != null?getDropoff().getDepartureInstructions().get(getBooking().getLanguage().name()):"";
+            if (!Strings.isNullOrEmpty(txt)) xml.addContent(new Element("instructions").setText(txt));
+        } else if (TransferType.SHUTTLE.equals(getTransferType())) {
+            String txt = getPickup().getArrivalInstructionsForShuttle() != null?getPickup().getArrivalInstructionsForShuttle().get(getBooking().getLanguage().name()):"";
+            if (!Strings.isNullOrEmpty(txt)) xml.addContent(new Element("instructions").setText(txt));
+        } else if (TransferType.EXECUTIVE.equals(getTransferType())) {
+            String txt = getPickup().getArrivalInstructionsForExecutive() != null?getPickup().getArrivalInstructionsForExecutive().get(getBooking().getLanguage().name()):"";
+            if (!Strings.isNullOrEmpty(txt)) xml.addContent(new Element("instructions").setText(txt));
+        } else {
+            String txt = getPickup().getArrivalInstructionsForPrivate() != null?getPickup().getArrivalInstructionsForPrivate().get(getBooking().getLanguage().name()):"";
+            if (!Strings.isNullOrEmpty(txt)) xml.addContent(new Element("instructions").setText(txt));
+        }
     }
 }

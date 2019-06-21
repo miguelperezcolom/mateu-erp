@@ -21,6 +21,7 @@ import io.mateu.mdd.core.interfaces.CalendarLimiter;
 import io.mateu.mdd.core.util.DatesRange;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -464,7 +465,7 @@ public class HotelContract extends AbstractContract implements IHotelContract, C
 
     @PostUpdate@PostPersist@PostRemove
     public void post() {
-        WorkflowEngine.add(new Runnable() {
+        WorkflowEngine.add(new Task() {
             @Override
             public void run() {
                 try {

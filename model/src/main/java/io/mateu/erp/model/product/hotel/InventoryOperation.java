@@ -3,6 +3,7 @@ package io.mateu.erp.model.product.hotel;
 import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.User;
 import io.mateu.mdd.core.util.Helper;
+import io.mateu.mdd.core.workflow.Task;
 import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
@@ -68,7 +69,7 @@ public class InventoryOperation {
 
     @PostPersist@PostUpdate@PostRemove
     public void post() {
-        WorkflowEngine.add(new Runnable() {
+        WorkflowEngine.add(new Task() {
             @Override
             public void run() {
                 try {
