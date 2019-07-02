@@ -13,10 +13,7 @@ import io.mateu.erp.model.booking.transfer.TransferService;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
-import io.mateu.erp.model.invoicing.BookingCharge;
-import io.mateu.erp.model.invoicing.Charge;
-import io.mateu.erp.model.invoicing.ChargeType;
-import io.mateu.erp.model.invoicing.ExtraBookingCharge;
+import io.mateu.erp.model.invoicing.*;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.organization.SalesPoint;
 import io.mateu.erp.model.partners.Agency;
@@ -61,6 +58,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -1182,6 +1180,40 @@ public abstract class Booking {
         }
     }
 
+
+    @Action(icon = VaadinIcons.EURO)
+    public static void enterPayment(EntityManager em, Set<Booking> selection, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment) throws Throwable {
+        List<FinancialAgent> agents = selection.stream().map(i -> i.getAgency().getFinancialAgent()).distinct().collect(Collectors.toList());
+        double amount = selection.stream().map(i -> i.getTotalValue()).reduce((t, v) -> t + v).get();
+        if (agents.size() > 1) throw  new Exception("More than one financial agent selected. Please select invoices to 1 financial agent only.");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(agents.get(0));
+
+            PaymentLine l;
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(selection.iterator().next().getCurrency());
+            l.setValue(amount);
+
+            List<AbstractPaymentAllocation> x= new ArrayList<>();
+            selection.stream().map(j -> em.find(Booking.class, j.getId())).forEach(i -> {
+                BookingPaymentAllocation a;
+                x.add(a = new BookingPaymentAllocation());
+                i.getPayments().add(a);
+                a.setValue(Helper.roundEuros(-1d * i.getBalance()));
+                a.setPayment(p);
+                a.setBooking(i);
+            });
+            p.setBreakdown(x);
+
+            em.persist(p);
+        }
+    }
+
     @Action(order = 6, icon = VaadinIcons.INVOICE)
     @NotWhenCreating
     public BookingInvoiceForm invoice() throws Throwable {
@@ -1601,6 +1633,11 @@ public abstract class Booking {
         setTotalPaid(Helper.roundEuros(totalPagado));
         setBalance(Helper.roundEuros(totalPagado - getTotalNetValue()));
 
+    }
+
+    public void setPayments(List<BookingPaymentAllocation> payments) {
+        this.payments = payments;
+        updateBalance();
     }
 
     private void updateDueDates(EntityManager em) {

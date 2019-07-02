@@ -9,10 +9,11 @@ import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
+import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.LocalizationRule;
 import io.mateu.erp.model.partners.Agency;
-import io.mateu.erp.model.payments.InvoicePaymentAllocation;
+import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
 import io.mateu.mdd.core.annotations.*;
@@ -29,6 +30,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -255,13 +257,13 @@ public class IssuedInvoice extends Invoice {
                 l.setBase(Helper.roundEuros(t - c));
                 l.setTotal(Helper.roundEuros(l.getPercent() * (t - c) / 100d));
                 l.setSpecialRegime(true);
+                l.setSpecialRegimeTotal(Helper.roundEuros(t));
+                l.setLegalText(v.getSpecialRegimeText());
             }
         });
 
 
         setTotal(total);
-
-        setRetainedPercent(0);
     }
 
 
@@ -298,6 +300,39 @@ public class IssuedInvoice extends Invoice {
         return new SelfBillForm(selection);
     }
 
+
+    @Action(icon = VaadinIcons.EURO)
+    public static void enterPayment(EntityManager em, Set<IssuedInvoice> selection, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment) throws Throwable {
+        List<FinancialAgent> agents = selection.stream().map(i -> i.getRecipient()).distinct().collect(Collectors.toList());
+        double amount = selection.stream().map(i -> i.getTotal()).reduce((t, v) -> t + v).get();
+        if (agents.size() > 1) throw  new Exception("More than one financial agent selected. Please select invoices to 1 financial agent only.");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(agents.get(0));
+
+            PaymentLine l;
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(selection.iterator().next().getCurrency());
+            l.setValue(amount);
+
+            List<AbstractPaymentAllocation> x= new ArrayList<>();
+            selection.stream().map(j -> em.find(IssuedInvoice.class, j.getId())).forEach(i -> {
+                InvoicePaymentAllocation a;
+                x.add(a = new InvoicePaymentAllocation());
+                i.getPayments().add(a);
+                a.setValue(Helper.roundEuros(-1d * i.getBalance()));
+                a.setPayment(p);
+                a.setInvoice(i);
+            });
+            p.setBreakdown(x);
+
+            em.persist(p);
+        }
+    }
 
     @PostPersist
     public void post() {

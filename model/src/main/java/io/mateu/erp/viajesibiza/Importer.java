@@ -1,13 +1,15 @@
 package io.mateu.erp.viajesibiza;
 
-import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.TransferBooking;
 import io.mateu.erp.model.booking.transfer.TransferPointMapping;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
-import io.mateu.erp.model.importing.*;
+import io.mateu.erp.model.importing.ShuttleDirectAutoImport;
+import io.mateu.erp.model.importing.ShuttleDirectImportTask;
+import io.mateu.erp.model.importing.TravelRepublicAutoImport;
+import io.mateu.erp.model.importing.TravelRepublicImportTask;
 import io.mateu.erp.model.organization.Company;
 import io.mateu.erp.model.organization.Office;
 import io.mateu.erp.model.organization.PointOfSale;
@@ -215,12 +217,7 @@ public class Importer {
         FinancialAgent agente;
         cia.setFinancialAgent(agente = new FinancialAgent());
         agente.setName("Viajes Ibiza");
-        AccountingPlan plan;
-        cia.setAccountingPlan(plan = new AccountingPlan());
-        plan.setName("Plan general");
-        plan.setCurrency(eur = em.find(Currency.class, "EUR"));
         em.persist(agente);
-        em.persist(plan);
         em.persist(cia);
 
 

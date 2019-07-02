@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -25,4 +27,8 @@ public class BookingPaymentAllocation extends AbstractPaymentAllocation {
         if (booking != null) booking.updateBalance();
     }
 
+    @PrePersist@PreUpdate
+    public void pre() {
+        setDescription(booking != null?"Booking " + booking.getId() + "(" + booking.getAgency().getName() + " - " + booking.getAgencyReference() + ")":"---");
+    }
 }

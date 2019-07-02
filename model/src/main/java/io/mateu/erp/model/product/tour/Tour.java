@@ -1,6 +1,7 @@
 package io.mateu.erp.model.product.tour;
 
 import io.mateu.erp.model.booking.ManagedEvent;
+import io.mateu.erp.model.partners.Provider;
 import io.mateu.erp.model.product.AbstractProduct;
 import io.mateu.mdd.core.annotations.Action;
 import io.mateu.mdd.core.annotations.Ignored;
@@ -11,6 +12,7 @@ import lombok.Setter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ public class Tour extends AbstractProduct {
     @Ignored
     private List<TourCost> costs = new ArrayList<>();
 
+    @ManyToOne
+    private Provider pool;
 
     @Section("Operation")
     private boolean freeSale;

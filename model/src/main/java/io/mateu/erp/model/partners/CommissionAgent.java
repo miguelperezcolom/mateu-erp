@@ -30,6 +30,11 @@ public class CommissionAgent {
     @ManyToOne
     private FinancialAgent financialAgent;
 
+    @ManyToOne
+    private CommissionAgent supervisor;
+
+    private double supervisorPercentOnCommissions;
+
 
     private String fullAddress;
 

@@ -1,6 +1,5 @@
 package io.mateu.erp.model.organization;
 
-import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.invoicing.InvoiceSerial;
 import io.mateu.mdd.core.annotations.Section;
@@ -26,9 +25,6 @@ public class Company {
     @ManyToOne
     private FinancialAgent financialAgent;
 
-    @NotNull
-    @ManyToOne
-    private AccountingPlan accountingPlan;
 
     @ManyToOne(cascade = CascadeType.ALL)
     private Resource logo;

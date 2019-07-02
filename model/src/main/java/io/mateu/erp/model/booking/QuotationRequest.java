@@ -12,6 +12,7 @@ import io.mateu.erp.model.financials.Currency;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.organization.PointOfSale;
 import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.partners.Market;
 import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.product.transfer.TransferPointType;
 import io.mateu.erp.model.workflow.AbstractTask;
@@ -71,6 +72,11 @@ public class QuotationRequest {
     @ManyToOne
     @ListColumn
     private Agency agency;
+
+    @NotNull
+    @ManyToOne
+    @ListColumn
+    private Market market;
 
     @ManyToOne@NotNull
     private PointOfSale pos;
@@ -352,7 +358,7 @@ public class QuotationRequest {
                             if (o instanceof QuotationRequest) {
                                 if (!((QuotationRequest)o).isActive()) s = (s != null)?s + " cancelled":"cancelled";
                             } else {
-                                if (!((Boolean)((Object[])o)[3])) {
+                                if (!((Boolean)((Object[])o)[4])) {
                                     s = (s != null)?s + " cancelled":"cancelled";
                                 }
                             }
@@ -821,7 +827,11 @@ public class QuotationRequest {
                 b.setAdultTaxPerNight(qrl.getAdultTaxPerNight());
                 b.setChildTaxPerNight(qrl.getChildTaxPerNight());
 
+                b.setMarket(getMarket());
+                b.setTariff(qrl.getTariff());
+
                 b.setHotel(qrl.getHotel());
+                b.setOverridedBillingConcept(c.getBillingConceptForHotel());
 
                 String s = "";
 
@@ -921,6 +931,9 @@ public class QuotationRequest {
                 b.setOverridedCost(qrl.getTotalCost());
                 b.setTelephone(getTelephone());
 
+                b.setMarket(getMarket());
+                b.setTariff(qrl.getTariff());
+
                 b.setTransferType(qrl.getTransferType());
                 b.setOrigin(qrl.getOrigin());
                 b.setDestination(qrl.getDestination());
@@ -957,6 +970,10 @@ public class QuotationRequest {
                 b.setOverridedCost(qrl.getTotalCost());
                 b.setTelephone(getTelephone());
 
+                b.setMarket(getMarket());
+                b.setTariff(qrl.getTariff());
+
+
                 b.setExcursion(qrl.getExcursion());
                 b.setVariant(qrl.getVariant());
                 b.setShift(qrl.getShift());
@@ -985,6 +1002,10 @@ public class QuotationRequest {
                 b.setOverridedCostCurrency(getCurrency());
                 b.setOverridedCost(qrl.getTotalCost());
                 b.setTelephone(getTelephone());
+
+                b.setMarket(getMarket());
+                b.setTariff(qrl.getTariff());
+
 
                 b.setProduct(qrl.getProduct());
                 b.setVariant(qrl.getVariant());

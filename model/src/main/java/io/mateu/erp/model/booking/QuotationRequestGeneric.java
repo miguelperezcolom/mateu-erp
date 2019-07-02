@@ -4,6 +4,7 @@ package io.mateu.erp.model.booking;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.generic.GenericProduct;
 import io.mateu.erp.model.product.hotel.BoardType;
@@ -46,6 +47,10 @@ public class QuotationRequestGeneric {
     public DataProvider getVariantDataProvider() {
         return new ListDataProvider(product != null?product.getVariants():new ArrayList());
     }
+
+    @NotNull
+    @ManyToOne
+    private Tariff tariff;
 
 
     @Column(name = "_start")

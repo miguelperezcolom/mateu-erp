@@ -3,6 +3,7 @@ package io.mateu.erp.model.booking;
 
 import com.google.common.base.Strings;
 import io.mateu.erp.dispo.Helper;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.hotel.Hotel;
 import io.mateu.mdd.core.annotations.NotInlineEditable;
 import io.mateu.mdd.core.annotations.Output;
@@ -37,6 +38,10 @@ public class QuotationRequestHotel {
     @NotNull
     @ManyToOne
     private Hotel hotel;
+
+    @NotNull
+    @ManyToOne
+    private Tariff tariff;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "hotel")@NotInlineEditable
     private List<QuotationRequestHotelLine> lines = new ArrayList<>();

@@ -4,6 +4,7 @@ package io.mateu.erp.model.booking;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.data.provider.ListDataProvider;
 import io.mateu.erp.dispo.Helper;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.Variant;
 import io.mateu.erp.model.product.tour.Excursion;
 import io.mateu.erp.model.product.tour.ExcursionShift;
@@ -40,6 +41,11 @@ public class QuotationRequestExcursion {
     @NotNull
     @ManyToOne
     private Variant variant;
+
+    @NotNull
+    @ManyToOne
+    private Tariff tariff;
+
 
     public DataProvider getVariantDataProvider() {
         return new ListDataProvider(excursion != null?excursion.getVariants():new ArrayList());

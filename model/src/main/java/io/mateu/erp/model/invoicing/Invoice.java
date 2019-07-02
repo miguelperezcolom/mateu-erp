@@ -9,6 +9,8 @@ import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.financials.Currency;
+import io.mateu.erp.model.partners.Agency;
+import io.mateu.erp.model.payments.BookingPaymentAllocation;
 import io.mateu.erp.model.payments.InvoicePaymentAllocation;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
@@ -69,11 +71,13 @@ public abstract class Invoice {
     @NotEmpty
     @Output
     @ListColumn
+    @MainSearchFilter
     private String number;
 
     @NotNull
     @Output
     @ListColumn
+    @MainSearchFilter
     private LocalDate issueDate;
 
     @NotNull
@@ -88,16 +92,18 @@ public abstract class Invoice {
     @NotNull
     @Output
     @ListColumn
+    @MainSearchFilter
     private FinancialAgent issuer;
 
     @ManyToOne
     @NotNull
     @Output
     @ListColumn
+    @MainSearchFilter
     private FinancialAgent recipient;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
-    @Output
+    @UseLinkToListView
     private List<AbstractInvoiceLine> lines = new ArrayList<>();
 
 
@@ -120,27 +126,21 @@ public abstract class Invoice {
     private boolean valid = true;
 
     @KPI
+    private double totalPaid;
+
+    @KPI
     @ListColumn
     private boolean paid;
 
     @KPI
     private double balance;
 
-    @Output
-    private double retainedPercent;
-
-    @Output
-    private double retainedTotal;
-
     @ManyToOne
     @Output
     private VAT vat;
 
-    @Output
-    private boolean specialRegime;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "invoice")
-    @Output
+    @UseLinkToListView
     private List<VATLine> VATLines = new ArrayList<>();
 
 
@@ -154,9 +154,20 @@ public abstract class Invoice {
 
     @OneToMany(mappedBy = "invoice")
     @OrderColumn(name = "id")
-    @UseLinkToListView(addEnabled = true, deleteEnabled = true)
+    @UseLinkToListView
     private List<InvoicePaymentAllocation> payments = new ArrayList<>();
 
+
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (id != 0 && obj != null && obj instanceof Invoice && id == ((Invoice) obj).getId());
+    }
 
 
     public Invoice() {
@@ -300,7 +311,10 @@ public abstract class Invoice {
             el.setAttribute("base", nf.format(l.getBase()));
             if (l.getVat() != null) el.setAttribute("vat", l.getVat().getName());
             el.setAttribute("total", nf.format(l.getTotal()));
-
+            if (l.isSpecialRegime()) {
+                if (l.getLegalText() != null) el.setAttribute("text", l.getLegalText());
+                el.setAttribute("specialRegimeTotal", nf.format(l.getSpecialRegimeTotal()));
+            }
         }
 
 
@@ -317,12 +331,7 @@ public abstract class Invoice {
             t += l.getTotal();
         }
         setTotal(Helper.roundEuros(t));
-        double p = 0;
-        for (InvoicePaymentAllocation payment : payments) {
-            p += payment.getValue();
-        }
-        setBalance(Helper.roundEuros(total - p));
-        setPaid(getBalance() <= 0);
+        updateBalance();
     }
 
 
@@ -416,4 +425,20 @@ public abstract class Invoice {
         return url[0];
     }
 
+    public void updateBalance() {
+        double totalPagado = 0;
+
+        for (InvoicePaymentAllocation pa : getPayments()) {
+            totalPagado += pa.getValue();
+        }
+
+        setTotalPaid(Helper.roundEuros(totalPagado));
+        setBalance(Helper.roundEuros(totalPagado - getTotal()));
+        setPaid(Math.abs(balance) < 0.1);
+    }
+
+    public void setPayments(List<InvoicePaymentAllocation> payments) {
+        this.payments = payments;
+        updateBalance();
+    }
 }

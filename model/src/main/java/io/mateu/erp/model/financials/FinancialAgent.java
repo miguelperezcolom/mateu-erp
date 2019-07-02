@@ -97,15 +97,13 @@ public class FinancialAgent {
 
     private boolean invoicePerKey;
 
-    private String customerAccountNumber;
-
     @Tab("As provider")
     private boolean specialRegime;
 
     private boolean invoicesBeforeCheckinAllowed;
 
     @ManyToOne
-    private RetentionTerms retention;
+    private RetentionTerms retentionTerms;
 
     @ManyToOne
     private MethodOfPayment methodOfPayment;
@@ -117,8 +115,6 @@ public class FinancialAgent {
     private String IBAN;
 
     private String SWIFT;
-
-    private String providerAccountNumber;
 
 
     @Tab("Credit")
@@ -149,6 +145,17 @@ public class FinancialAgent {
     public String toString() {
         return getName();
     }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj || (id != 0 && obj != null && obj instanceof FinancialAgent && id == ((FinancialAgent) obj).getId());
+    }
+
 
 
 

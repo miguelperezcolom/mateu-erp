@@ -1,7 +1,9 @@
 package io.mateu.erp.model.invoicing;
 
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.vaadin.icons.VaadinIcons;
 import io.mateu.erp.model.booking.Booking;
 import io.mateu.erp.model.booking.Service;
 import io.mateu.erp.model.booking.parts.*;
@@ -9,14 +11,13 @@ import io.mateu.erp.model.config.AppConfig;
 import io.mateu.erp.model.financials.BillingConcept;
 import io.mateu.erp.model.financials.FinancialAgent;
 import io.mateu.erp.model.financials.LocalizationRule;
+import io.mateu.erp.model.financials.RetentionTerms;
 import io.mateu.erp.model.partners.Agency;
 import io.mateu.erp.model.partners.Provider;
+import io.mateu.erp.model.payments.*;
 import io.mateu.erp.model.taxes.VAT;
 import io.mateu.erp.model.taxes.VATPercent;
-import io.mateu.mdd.core.annotations.Action;
-import io.mateu.mdd.core.annotations.Indelible;
-import io.mateu.mdd.core.annotations.NewNotAllowed;
-import io.mateu.mdd.core.annotations.Output;
+import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.interfaces.WizardPage;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.model.authentication.User;
@@ -29,10 +30,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -45,6 +44,17 @@ public class ReceivedInvoice extends Invoice {
     @NotNull
     @Output
     private Provider provider;
+
+    @ManyToOne
+    @Output
+    private RetentionTerms retentionTerms;
+
+    @Output
+    private double retainedPercent;
+
+    @Output
+    private double retainedTotal;
+
 
 
     public ReceivedInvoice() {
@@ -218,6 +228,39 @@ public class ReceivedInvoice extends Invoice {
     @Action("Enter invoices")
     public static WizardPage enter() {
         return new EnterInvoicesWizardParametersPage();
+    }
+
+    @Action(icon = VaadinIcons.EURO)
+    public static void enterPayment(EntityManager em, Set<ReceivedInvoice> selection, @NotNull Account account, @NotNull MethodOfPayment methodOfPayment) throws Throwable {
+        List<FinancialAgent> agents = selection.stream().map(i -> i.getIssuer()).distinct().collect(Collectors.toList());
+        double amount = selection.stream().map(i -> i.getTotal()).reduce((t, v) -> t + v).get();
+        if (agents.size() > 1) throw  new Exception("More than one financial agent selected. Please select invoices from 1 financial agent only.");
+        if (amount != 0) {
+            Payment p = new Payment();
+            p.setAccount(account);
+            p.setDate(LocalDate.now());
+            p.setAgent(agents.get(0));
+
+            PaymentLine l;
+            p.setLines(Lists.newArrayList(l = new PaymentLine()));
+            l.setPayment(p);
+            l.setMethodOfPayment(methodOfPayment);
+            l.setCurrency(selection.iterator().next().getCurrency());
+            l.setValue(amount);
+
+            List<AbstractPaymentAllocation> x= new ArrayList<>();
+            selection.stream().map(j -> em.find(ReceivedInvoice.class, j.getId())).forEach(i -> {
+                InvoicePaymentAllocation a;
+                x.add(a = new InvoicePaymentAllocation());
+                i.getPayments().add(a);
+                a.setValue(Helper.roundEuros(-1d * i.getBalance()));
+                a.setPayment(p);
+                a.setInvoice(i);
+            });
+            p.setBreakdown(x);
+
+            em.persist(p);
+        }
     }
 
 }

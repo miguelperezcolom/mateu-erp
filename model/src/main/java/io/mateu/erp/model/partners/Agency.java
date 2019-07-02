@@ -211,6 +211,10 @@ public class Agency {
     }
 
 
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
     @Override
     public boolean equals(Object obj) {

@@ -273,14 +273,16 @@
                                             <fo:block space-after="3pt">
 
                                                 <xsl:choose>
-                                                    <xsl:when test="@regime = 'SPECIAL'">Total IVA incluido (régimen especial)</xsl:when>
+                                                    <xsl:when test="@specialRegime">Total IVA incluido (régimen especial)</xsl:when>
                                                     <xsl:when test="vat = ''">Total IVA no aplicable</xsl:when>
                                                     <xsl:otherwise>Base with <xsl:value-of select="@percent"/>% IVA</xsl:otherwise>
                                                 </xsl:choose>
 
                                             </fo:block>
 
+                                            <xsl:if test="not(@specialRegime)">
                                             <fo:block space-after="3pt">IVA (<xsl:value-of select="@percent"/>%)</fo:block>
+                                            </xsl:if>
 
                                         </xsl:for-each>
 
@@ -309,9 +311,18 @@
                                             border-right-width="0.2px">
                                         <xsl:for-each select="vats/vat">
 
-                                            <fo:block space-after="3pt"><xsl:value-of select="@base"/>&#x00A0;€</fo:block>
+                                            <xsl:choose>
+                                                <xsl:when test="@specialRegime">
+                                                    <fo:block space-after="3pt"><xsl:value-of select="@specialRegimeTotal"/>&#x00A0;€</fo:block>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <fo:block space-after="3pt"><xsl:value-of select="@base"/>&#x00A0;€</fo:block>
 
-                                            <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0;€</fo:block>
+                                                    <fo:block space-after="3pt"><xsl:value-of select="@total"/>&#x00A0;€</fo:block>
+
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+
                                         </xsl:for-each>
 
                                         <fo:block space-after="3pt" color="white">x</fo:block>

@@ -75,6 +75,9 @@ public class ManagedEvent {
 
     private boolean active = true;
 
+    @KPI
+    private boolean deriveToThePool;
+
 
     private int maxUnits;
 
@@ -97,6 +100,15 @@ public class ManagedEvent {
     @TextArea
     private String privateComments;
 
+    @KPI@Money
+    private double totalSale;
+
+    @KPI@Money
+    private double totalCost;
+
+    @KPI@Money@Balance
+    private double totalMarkup;
+
 
     @Ignored
     private boolean updatePending;
@@ -111,10 +123,19 @@ public class ManagedEvent {
 
                         ManagedEvent e = em.find(ManagedEvent.class, getId());
 
+                        double sale = 0;
+                        double cost = 0;
                         int bkd = 0;
-                        for (TourBooking b : e.getBookings()) bkd += b.getPax();
+                        for (TourBooking b : e.getBookings()) {
+                            if (b.isActive()) bkd += b.getPax();
+                            sale += b.getTotalValue();
+                            cost += b.getTotalCost();
+                        }
                         e.setUnitsBooked(bkd);
                         e.setUnitsLeft(e.getMaxUnits() - e.getUnitsBooked());
+                        e.setTotalSale(Helper.roundEuros(sale));
+                        e.setTotalCost(Helper.roundEuros(cost));
+                        e.setTotalMarkup(Helper.roundEuros(sale - cost));
 
                         e.setUpdatePending(false);
 
@@ -293,7 +314,6 @@ public class ManagedEvent {
     public static void close(EntityManager em, Set<ManagedEvent> sel) {
         sel.forEach(e -> {
             e.setActive(false);
-            em.merge(e);
         });
     }
 
@@ -301,7 +321,6 @@ public class ManagedEvent {
     public static void open(EntityManager em, Set<ManagedEvent> sel) {
         sel.forEach(e -> {
             e.setActive(true);
-            em.merge(e);
         });
     }
 
@@ -309,6 +328,14 @@ public class ManagedEvent {
     @Action
     public static void sendEmail(Set<ManagedEvent> sel, @Help("If blank the postscript will be sent as the email body") Template template, String changeEmail, @Help("If blank, the subject from the templaet will be used") String subject, @TextArea String postscript) {
 
+    }
+
+
+    @Action
+    public static void deriveToThePool(EntityManager em, Set<ManagedEvent> sel) {
+        sel.forEach(e -> {
+            if (e.getTour().getPool() != null) e.setDeriveToThePool(true);
+        });
     }
 
 

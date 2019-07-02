@@ -16,9 +16,9 @@ public class BookingEmailTester {
         System.setProperty("appconf", "/home/miguel/work/quotravel.properties");
 
         try {
-            //testBooked(2618l); // traslado confirmada
+            testBooked(1l); // traslado confirmada
             //testBooked(2617l); // traslado cancelada
-            testVouchers(2616l); // traslado confirmada
+            //testVouchers(2616l); // traslado confirmada
             //testVouchers(2617l); // traslado cancelada
             //testVouchers(2630l); // texto libre
             //testVouchers(2626l); // genérico

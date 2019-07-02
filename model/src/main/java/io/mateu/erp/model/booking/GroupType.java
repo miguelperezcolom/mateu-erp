@@ -18,4 +18,11 @@ public class GroupType {
     @NotEmpty
     private String name;
 
+
+    public GroupType() {
+    }
+
+    public GroupType(@NotEmpty String name) {
+        this.name = name;
+    }
 }

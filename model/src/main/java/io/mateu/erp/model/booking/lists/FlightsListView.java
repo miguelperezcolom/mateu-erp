@@ -157,6 +157,7 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
                         if (TransferDirection.OUTBOUND.equals(b.getDirection())) ((TransferBooking)b.getBooking()).setDepartureFlightNumber(flightNumber);
                         else ((TransferBooking)b.getBooking()).setArrivalFlightNumber(flightNumber);
                         b.getBooking().setUpdateRqTime(LocalDateTime.now());
+                        b.setFlightNumber(flightNumber);
                         System.out.println("flight number set to " + flightNumber);
                     }
                     if (flightTime != null) {
@@ -164,6 +165,7 @@ public class FlightsListView extends AbstractJPQLListView<FlightsListView.Row> {
                         d = LocalDateTime.of(d.getYear(), d.getMonthValue(), d.getDayOfMonth(), ((flightTime - flightTime % 100) / 100), flightTime % 100);
                         if (TransferDirection.OUTBOUND.equals(b.getDirection())) ((TransferBooking)b.getBooking()).setDepartureFlightTime(d);
                         else ((TransferBooking)b.getBooking()).setArrivalFlightTime(d);
+                        b.setFlightTime(d);
                         b.getBooking().setUpdateRqTime(LocalDateTime.now());
                         System.out.println("flight time set to " + flightTime);
                     }

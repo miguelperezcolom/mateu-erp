@@ -5,8 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import io.mateu.erp.model.accounting.AccountingPlan;
-import io.mateu.erp.model.authentication.ERPUser;
 import io.mateu.erp.model.booking.GroupType;
 import io.mateu.erp.model.financials.*;
 import io.mateu.erp.model.invoicing.InvoiceSerial;
@@ -46,6 +44,8 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Map;
+
+import io.mateu.erp.model.product.generic.Contract;
 
 /**
  * used to populate a database with initial values
@@ -972,11 +972,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 em.flush();
 
 
-                AccountingPlan plan = new AccountingPlan();
-                plan.setName("Accounting plan");
-                plan.setCurrency(eur);
-                em.persist(plan);
-
                 FinancialAgent a = new FinancialAgent();
                 a.setName("We.inc");
                 a.setBusinessName("We.inc SLU");
@@ -1002,7 +997,6 @@ public class Populator extends io.mateu.mdd.core.model.population.Populator {
                 Company cia = new Company();
                 cia.setName("We");
                 cia.setFinancialAgent(a);
-                cia.setAccountingPlan(plan);
                 cia.setBillingSerial(serieFacturas);
                 cia.setSelfBillingSerial(serieAbonos);
                 em.persist(cia);

@@ -3,13 +3,11 @@ package io.mateu.erp.model.population;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.thedeanda.lorem.LoremIpsum;
-import io.mateu.erp.model.accounting.AccountingPlan;
 import io.mateu.erp.model.authentication.AgencyUser;
 import io.mateu.erp.model.authentication.AuthToken;
 import io.mateu.erp.model.authentication.CommissionAgentUser;
 import io.mateu.erp.model.biz.Coupon;
-import io.mateu.erp.model.booking.Booking;
-import io.mateu.erp.model.booking.File;
+import io.mateu.erp.model.booking.*;
 import io.mateu.erp.model.booking.parts.*;
 import io.mateu.erp.model.booking.tickets.Ticket;
 import io.mateu.erp.model.booking.tickets.TicketBook;
@@ -125,6 +123,8 @@ public class TestPopulator {
 
             crearReservas();
 
+            crearGrupos();
+
             crearPagos();
 
             crearFacturas();
@@ -136,6 +136,136 @@ public class TestPopulator {
             EmailHelper.setTesting(false);
 
         } else throw new Exception("There already exist hotels or agencies in the database");
+
+    }
+
+    private static void crearGrupos() throws Throwable {
+
+        Helper.transact(em -> {
+
+            List<CommissionAgent> reps = Helper.selectObjects("select x from " + CommissionAgent.class.getName() + " x order by x.name");
+
+            List<PointOfSale> poses = Helper.selectObjects("select x from " + PointOfSale.class.getName() + " x order by x.name");
+
+            List<BillingConcept> conceptosTraslados = Lists.newArrayList(em.find(BillingConcept.class, "TRA"));
+
+            List<BillingConcept> conceptosHotel = Lists.newArrayList(em.find(BillingConcept.class, "EST"));
+
+            List<BillingConcept> conceptosFreeText = Lists.newArrayList(em.find(BillingConcept.class, "CAR"), em.find(BillingConcept.class, "IB"), em.find(BillingConcept.class, "AE"), em.find(BillingConcept.class, "TRANS"));
+
+            List<Agency> agencias = Helper.selectObjects("select x from " + Agency.class.getName() + " x");
+
+            List<Provider> proveedores = Helper.selectObjects("select x from " + Provider.class.getName() + " x");
+
+            List<Hotel> hoteles = Helper.selectObjects("select x from " + Hotel.class.getName() + " x");
+
+            List<TransferPoint> puntos = Helper.selectObjects("select x from " + TransferPoint.class.getName() + " x");
+
+            List<Office> oficinas = Helper.selectObjects("select x from " + Office.class.getName() + " x");
+
+            List<ProductLine> lineasProducto = Helper.selectObjects("select x from " + ProductLine.class.getName() + " x");
+
+            List<GenericProduct> genericos = Helper.selectObjects("select x from " + GenericProduct.class.getName() + " x");
+
+            List<Excursion> excursiones = Helper.selectObjects("select x from " + Excursion.class.getName() + " x");
+
+            List<Circuit> circuitos = Helper.selectObjects("select x from " + Circuit.class.getName() + " x");
+
+            List<Market> markets = Helper.selectObjects("select x from " + Market.class.getName() + " x");
+
+            List<GroupType> tiposGrupo = Lists.newArrayList("Fútbol", "Imserso", "Fin de curso").stream().map(s -> em.merge(new GroupType(s))).collect(Collectors.toList());
+
+            User u = (User) Helper.selectObjects("select x from " + User.class.getName() + " x").get(0);
+
+            Currency eur = em.find(Currency.class, "EUR");
+
+            LocalDate d = LocalDate.now().minusDays(10);
+
+            LoremIpsum li = LoremIpsum.getInstance();
+
+            File f = null;
+            for (int i = 0; i < 40; i++) {
+
+                LocalDate d0 = d.plusDays(nextInt() % 30);
+                LocalDate d1 = d0.plusDays(nextInt() % 10);
+
+                Agency agencia = agencias.get(nextInt() % agencias.size());
+                CommissionAgent rep = null;
+
+
+                QuotationRequest qr = new QuotationRequest();
+                qr.setGroupType(tiposGrupo.get(nextInt() % tiposGrupo.size()));
+                qr.setDate(LocalDate.now());
+                qr.setActive(true);
+                qr.setAudit(new Audit(u));
+                qr.setAgency(agencia);
+                qr.setCurrency(eur);
+                qr.setEmail(li.getEmail());
+                qr.setName(li.getName());
+                qr.setTelephone(li.getPhone());
+                qr.setText(li.getWords(30));
+                qr.setPrivateComments(li.getWords(20));
+                qr.setTitle(li.getName());
+                qr.setPos(poses.get(nextInt() % poses.size()));
+
+                if (nextInt() % 2 == 0) {
+                    rep = reps.get(nextInt() % reps.size());
+                }
+                Market market = markets.get(nextInt() % markets.size());
+
+                qr.setMarket(market);
+
+                QuotationRequestHotel h;
+                qr.setHotels(Lists.newArrayList(h = new QuotationRequestHotel()));
+                h.setRq(qr);
+                h.setSpecialRequests(li.getWords(10));
+                h.setHotel(hoteles.get(nextInt() % hoteles.size()));
+                h.setFirstService(HotelMeal.DINNER);
+                h.setLastService(HotelMeal.BREAKFAST);
+                h.setAdultTaxPerNight(1);
+                h.setChildTaxPerNight(0.40);
+                h.setTariff(em.find(Tariff.class, 1l));
+                QuotationRequestHotelLine hl;
+                h.getLines().add(hl = new QuotationRequestHotelLine());
+                hl.setHotel(h);
+                hl.setStart(d0);
+                hl.setRoom(h.getHotel().getRooms().get(0));
+                hl.setSaleOverrided(true);
+                hl.setPricePerRoom(30);
+                hl.setPricePerAdult(25);
+                hl.setPricePerChild(10);
+                hl.setNumberOfRooms(50);
+                hl.setAdultsPerRoom(2);
+                hl.setChildrenPerRoom(1);
+                hl.setEnd(d1);
+                hl.setCostOverrided(true);
+                hl.setCostPerRoom(20);
+                hl.setCostPerAdult(15);
+                hl.setCostPerChild(5);
+                hl.setBoard(h.getHotel().getBoards().get(0));
+
+
+                em.persist(qr);
+
+                em.flush();
+            }
+
+
+
+        });
+
+        Helper.transact(em -> {
+            ((List<QuotationRequest>)em.createQuery("select x from " + QuotationRequest.class.getName() + " x order by x.id").getResultList()).forEach(b -> {
+                if (nextInt() % 10 > 4) b.confirm();
+            });
+        });
+
+        Helper.transact(em -> {
+            ((List<QuotationRequest>)em.createQuery("select x from " + QuotationRequest.class.getName() + " x order by x.id").getResultList()).forEach(b -> {
+                if (nextInt() % 10 > 2) b.cancel();
+            });
+        });
+
 
     }
 
@@ -464,11 +594,11 @@ public class TestPopulator {
                 iva.getPercents().add(p = new VATPercent());
                 p.setVat(iva);
                 p.setBillingConcept(concepto);
-                p.setPercent(10);
+                p.setPercent(11);
             }
 
             List<BillingConcept> conceptosFreeText = new ArrayList<>();
-            for (String n : Lists.newArrayList("OTROS-Otros", "CAR-Alquiler coche", "IB-Billete IBERIA", "AE-Billete AIREUROPA", "TRANS-Billete TRANSMEDITERRANEA")) {
+            for (String n : Lists.newArrayList("OTROS-Otros", "CAR-Alquiler coche", "IB-Billete IBERIA", "AE-Billete AIREUROPA", "TRANS-Billete TRANSMEDITERRANEA", "TAX-Impuestos")) {
                 BillingConcept concepto;
                 conceptosFreeText.add(concepto = new BillingConcept());
                 concepto.setName(n.split("-")[1]);
@@ -482,11 +612,21 @@ public class TestPopulator {
                     AppConfig.get(em).setBillingConceptForCircuit(concepto);
                     concepto.setSpecialRegime(true);
                 }
-                VATPercent p;
-                iva.getPercents().add(p = new VATPercent());
-                p.setVat(iva);
-                p.setBillingConcept(concepto);
-                p.setPercent(21);
+                if ("otros".equalsIgnoreCase(concepto.getCode())) {
+                    AppConfig.get(em).setBillingConceptForLocalTaxes(concepto);
+                    concepto.setSpecialRegime(false);
+                    VATPercent p;
+                    iva.getPercents().add(p = new VATPercent());
+                    p.setVat(iva);
+                    p.setBillingConcept(concepto);
+                    p.setPercent(0);
+                } else {
+                    VATPercent p;
+                    iva.getPercents().add(p = new VATPercent());
+                    p.setVat(iva);
+                    p.setBillingConcept(concepto);
+                    p.setPercent(12);
+                }
             }
         });
 
@@ -653,6 +793,52 @@ public class TestPopulator {
                 ds.setMainImage(new Resource(new URL("http://www.exploreviva.com/wp-content/uploads/2017/07/exc-saonasup.jpg"
                         //"https://x.cdrst.com/foto/hotel-sf/fd1/medianaresp/hotel-los-delfines-servicios-5502a1d.jpg"
                 )));
+
+
+
+                Currency eur = em.find(Currency.class, "EUR");
+                int posCoste = 0;
+                {
+                    TourCost c;
+                    p.getCosts().add(c = new TourCost());
+                    c.setTour(p);
+                    c.setProduct(productos.get(posCoste));
+                    c.setProductVariant(c.getProduct().getVariants().get(0));
+                    c.setType(c.getProduct().getType());
+                    c.setOrder(posCoste);
+                    c.setCash(false);
+                    c.setCostPerPax(15.2);
+                    c.setCurrency(eur);
+                    c.setDay(0);
+                    c.setMinCost(50);
+                    c.setOverrideCost(true);
+                    c.setProvider(proveedores.get(posCoste));
+                    c.setProviderConfirmationRequired(false);
+                    c.setFromTourPax(0);
+                    c.setToTourPax(100);
+                    c.setVariant(null);
+                }
+                posCoste++;
+                {
+                    TourCost c;
+                    p.getCosts().add(c = new TourCost());
+                    c.setTour(p);
+                    c.setProduct(productos.get(posCoste));
+                    c.setProductVariant(c.getProduct().getVariants().get(0));
+                    c.setType(c.getProduct().getType());
+                    c.setOrder(posCoste);
+                    c.setCash(false);
+                    c.setCostPerPax(21.3);
+                    c.setCurrency(eur);
+                    c.setDay(0);
+                    c.setMinCost(0);
+                    c.setOverrideCost(true);
+                    c.setProvider(proveedores.get(posCoste));
+                    c.setProviderConfirmationRequired(false);
+                    c.setFromTourPax(0);
+                    c.setToTourPax(100);
+                    c.setVariant(null);
+                }
 
 
                 em.persist(p);
@@ -1808,6 +1994,7 @@ public class TestPopulator {
             VAT v = new VAT();
             v.setName("IVA");
             v.setSpecialRegimePercent(21);
+            v.setSpecialRegimeText("Régimen especial de las agencias de viajes");
             em.persist(v);
 
             em.flush();
@@ -1815,6 +2002,7 @@ public class TestPopulator {
             v = new VAT();
             v.setName("IGIC");
             v.setSpecialRegimePercent(21);
+            v.setSpecialRegimeText("Régimen especial de las agencias de viajes");
             em.persist(v);
 
 
@@ -1880,10 +2068,6 @@ public class TestPopulator {
             Company co = new Company();
             co.setName("Viajes Ibiza");
             co.setFinancialAgent(crearAgenteFinanciero(em, co.getName(), "Invisa"));
-            AccountingPlan plan;
-            co.setAccountingPlan(plan = new AccountingPlan());
-            plan.setName("Plan general");
-            plan.setCurrency(em.find(Currency.class, "EUR"));
             InvoiceSerial is;
             co.setBillingSerial(is = new InvoiceSerial());
             is.setName("Facturas emitidas");
@@ -1895,7 +2079,6 @@ public class TestPopulator {
             is.setNextNumber(1);
             is.setPrefix("R-2019/");
             em.persist(is);
-            em.persist(plan);
             em.persist(co);
             em.flush();
 
@@ -2059,15 +2242,15 @@ public class TestPopulator {
         a.setCity(LoremIpsum.getInstance().getCity());
         a.setCountry(LoremIpsum.getInstance().getCountry());
         a.setEmail("miguelperezcolom@gmail.com");
-        a.setEU(true);
+        a.setEU(nextInt() % 2 == 0);
         a.setInvoiceGrouping(InvoiceGrouping.BOOKING);
         a.setMethodOfPayment(em.find(MethodOfPayment.class, 2l));
         a.setCustomerPaymentTerms(em.find(PaymentTerms.class, 2l));
         a.setPostalCode("07001");
-        a.setRetention(null);
+        a.setRetentionTerms(null);
         a.setRiskType(RiskType.CREDIT);
         a.setSpecialRegime(true);
-        a.setVat(em.find(VAT.class, 1l));
+        if (a.isEU() && nextInt() % 3 > 0) a.setVat(em.find(VAT.class, 1l));
         a.setVatIdentificationNumber("A638978787333");
 
         em.persist(a);
@@ -2154,15 +2337,20 @@ public class TestPopulator {
         Helper.transact(em -> {
 
             for (String[] d : new String[][]{
-                    {"EUR", "Euro", "978"}
-                    , {"USD", "US dollar", "840"}
-                    , {"GBP", "GB Pound", "826"}}) {
+                    {"EUR", "Euro", "978", "€", "&euro;", "1"}
+                    //, {"USD", "US dollar", "840", "$", "&dollar;", "1.123"}
+                    //, {"GBP", "GB Pound", "826", "£", "&pound;", "0.756"}
+                }
+            ) {
 
                 if (Helper.find(Currency.class, d[0]) == null) {
                     Currency c = new Currency();
                     c.setIsoCode(d[0]);
                     c.setName(d[1]);
                     c.setIsoNumericCode(Integer.parseInt(d[2]));
+                    c.setSymbol(d[3]);
+                    c.setEntity(d[4]);
+                    c.setExchangeRateToNucs(Double.parseDouble(d[5]));
                     em.persist(c);
                 }
 

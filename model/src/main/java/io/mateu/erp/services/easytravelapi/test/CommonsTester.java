@@ -110,7 +110,7 @@ public class CommonsTester {
 
         //testTransferConfirm(token);
         
-        testGenericAvail(token);
+        //testGenericAvail(token);
 
         //testGenericRates(token);
 
@@ -134,7 +134,7 @@ public class CommonsTester {
 
         //testGroup();
 
-        //testInvoice();
+        testInvoice();
 
         //testLiquidacion();
 
@@ -575,8 +575,43 @@ public class CommonsTester {
         }
     }
 
-
     private static void testInvoice() {
+
+        try {
+            Helper.transact(em -> {
+
+                AppConfig.get(em).setXslfoForIssuedInvoice(Resources.toString(Resources.getResource(Populator.class, "/io/mateu/erp/xsl/factura.xsl"), Charsets.UTF_8));
+
+            });
+
+            Helper.transact(em -> {
+
+                IssuedInvoice i = em.find(IssuedInvoice.class, 84l);
+
+                Document xml = new Document(new Element("invoices"));
+
+                xml.getRootElement().addContent(i.toXml(em));
+
+                System.out.println(Helper.toString(xml.getRootElement()));
+
+
+                File temp = new File("/home/miguel/Descargas/factura.pdf");
+
+                FileOutputStream fileOut = new FileOutputStream(temp);
+                //String sxslfo = Resources.toString(Resources.getResource(Contract.class, xslfo), Charsets.UTF_8);
+                String sxml = new XMLOutputter(Format.getPrettyFormat()).outputString(xml);
+                System.out.println("xml=" + sxml);
+                fileOut.write(Helper.fop(new StreamSource(new StringReader(AppConfig.get(em).getXslfoForIssuedInvoice())), new StreamSource(new StringReader(sxml))));
+                fileOut.close();
+
+            });
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
+    }
+
+    private static void testFileInvoice() {
 
         try {
             Helper.transact(em -> {

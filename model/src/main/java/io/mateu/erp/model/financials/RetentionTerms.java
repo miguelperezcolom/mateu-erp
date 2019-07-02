@@ -16,14 +16,8 @@ public class RetentionTerms {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Tab("Info")
     @NotEmpty
     private String name;
-
-    //todo: convertir en enumeración????
-    @ManyToOne
-    @NotNull
-    private RetentionType type;
 
     private double percent;
 

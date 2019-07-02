@@ -30,6 +30,8 @@ public class VATLine {
 
     private boolean specialRegime;
 
+    private double specialRegimeTotal;
 
+    private String legalText;
 
 }

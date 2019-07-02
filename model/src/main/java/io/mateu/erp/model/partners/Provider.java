@@ -190,10 +190,14 @@ public class Provider {
     }
 
 
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || (obj != null && obj instanceof Provider && id == ((Provider) obj).getId());
+        return this == obj || (obj != null && obj instanceof Provider && id > 0 && id == ((Provider) obj).getId());
     }
 
 

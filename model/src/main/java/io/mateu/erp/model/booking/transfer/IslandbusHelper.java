@@ -86,7 +86,7 @@ public class IslandbusHelper {
                     TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getDropoff():s.getPickup();
                     //TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
 
-                    punto.setAttribute("PuntoRecogida", "" + tp.getId());
+                    punto.setAttribute("PuntoRecogida", "Q" + tp.getId());
                     punto.setAttribute("NombrePunto", tp.getName());
                     LocalDateTime t = null;
                     if (TransferDirection.INBOUND.equals(firstService.getDirection())) t = s.getFlightTime();
@@ -224,7 +224,7 @@ public class IslandbusHelper {
                     TransferPoint tp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getDropoff():s.getPickup();
                     TransferPoint etp = TransferDirection.INBOUND.equals(firstService.getDirection())?s.getEffectiveDropoff():s.getEffectivePickup();
 
-                    shut.addContent(new Element("codigoHotel").setText("" + tp.getId()));
+                    shut.addContent(new Element("codigoHotel").setText("Q" + tp.getId()));
 
                     String hotel = tp.getName().toUpperCase();
                     if (hotel.length() > 50) hotel = hotel.substring(0, 50);

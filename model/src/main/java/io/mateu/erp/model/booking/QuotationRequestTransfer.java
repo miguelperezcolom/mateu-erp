@@ -2,6 +2,7 @@ package io.mateu.erp.model.booking;
 
 import io.mateu.erp.dispo.Helper;
 import io.mateu.erp.model.partners.Provider;
+import io.mateu.erp.model.product.Tariff;
 import io.mateu.erp.model.product.transfer.TransferPoint;
 import io.mateu.erp.model.product.transfer.TransferType;
 import io.mateu.mdd.core.annotations.DependsOn;
@@ -31,6 +32,11 @@ public class QuotationRequestTransfer {
     private QuotationRequest rq;
 
     private boolean active = true;
+
+    @NotNull
+    @ManyToOne
+    private Tariff tariff;
+
 
     @NotNull
     private LocalDateTime flightDate;

@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -21,4 +23,11 @@ public class QuotationRequestPaymentAllocation extends AbstractPaymentAllocation
         this.quotationRequest = quotationRequest;
         if (quotationRequest != null) quotationRequest.setForcePre(true);
     }
+
+    @PrePersist
+    @PreUpdate
+    public void pre() {
+        setDescription(quotationRequest != null?"Quotation " + quotationRequest.getId() + " - " + quotationRequest.getName():"---");
+    }
+
 }

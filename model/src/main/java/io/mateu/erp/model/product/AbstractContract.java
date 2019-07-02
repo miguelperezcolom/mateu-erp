@@ -18,6 +18,7 @@ import io.mateu.mdd.core.annotations.*;
 import io.mateu.mdd.core.model.authentication.Audit;
 import io.mateu.mdd.core.util.Helper;
 import io.mateu.mdd.core.util.JPATransaction;
+import io.mateu.mdd.core.workflow.WorkflowEngine;
 import lombok.Getter;
 import lombok.Setter;
 import org.jdom2.Document;
@@ -223,7 +224,7 @@ public abstract class AbstractContract {
 
 
 
-    @PreUpdate
+    @PrePersist@PreUpdate
     public void pre() throws Error {
         if (ContractType.PURCHASE.equals(getType()) && getSupplier() == null) throw new Error("Supplier is required for purchase contracts");
         clauses.sort((c1, c2) -> c1.getOrder() - c2.getOrder());
@@ -435,41 +436,51 @@ public abstract class AbstractContract {
     }
 
 
-    @PrePersist
-    public void prePersist() {
-        pre();
+    @PostPersist
+    public void postPersist() {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
-        Accessor acc = Accessor.get(em);
+        WorkflowEngine.add(() -> {
+            try {
+                Helper.transact(em -> {
+                    Accessor acc = Accessor.get(em);
 
-        if (this instanceof Contract) {
-            acc.getGenericContracts().add((Contract) this);
-            em.merge(acc);
-        } else if (this instanceof io.mateu.erp.model.product.transfer.Contract) {
-            acc.getTransferContracts().add((io.mateu.erp.model.product.transfer.Contract) this);
-            em.merge(acc);
-        }
-        else if (this instanceof io.mateu.erp.model.product.tour.Contract) {
-            acc.getTourContracts().add((io.mateu.erp.model.product.tour.Contract) this);
-            em.merge(acc);
-        }
+                    AbstractContract c = em.find(AbstractContract.class, getId());
+
+                    if (c instanceof Contract) {
+                        acc.getGenericContracts().add((Contract) c);
+                    } else if (c instanceof io.mateu.erp.model.product.transfer.Contract) {
+                        acc.getTransferContracts().add((io.mateu.erp.model.product.transfer.Contract) c);
+                    }
+                    else if (c instanceof io.mateu.erp.model.product.tour.Contract) {
+                        acc.getTourContracts().add((io.mateu.erp.model.product.tour.Contract) c);
+                    }
+                });
+
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
+
     }
 
-    @PreRemove
-    public void preRemove() {
+    @PostRemove
+    public void postRemove() {
 
-        EntityManager em = Helper.getEMFromThreadLocal();
-        Accessor acc = Accessor.get(em);
+        WorkflowEngine.add(() -> {
+            Helper.transact(em -> {
+                Accessor acc = Accessor.get(em);
 
-        if (this instanceof Contract) {
-            acc.getGenericContracts().remove((Contract) this);
-            em.merge(acc);
-        } else if (this instanceof io.mateu.erp.model.product.transfer.Contract) {
-            acc.getTransferContracts().remove((io.mateu.erp.model.product.transfer.Contract) this);
-            em.merge(acc);
-        } else if (this instanceof io.mateu.erp.model.product.tour.Contract) {
-            acc.getTourContracts().remove((io.mateu.erp.model.product.tour.Contract) this);
-            em.merge(acc);
-        }
+                AbstractContract c = em.find(AbstractContract.class, getId());
+
+                if (c instanceof Contract) {
+                    acc.getGenericContracts().remove((Contract) c);
+                } else if (c instanceof io.mateu.erp.model.product.transfer.Contract) {
+                    acc.getTransferContracts().remove((io.mateu.erp.model.product.transfer.Contract) c);
+                } else if (c instanceof io.mateu.erp.model.product.tour.Contract) {
+                    acc.getTourContracts().remove((io.mateu.erp.model.product.tour.Contract) c);
+                }
+
+            });
+        });
     }
 }

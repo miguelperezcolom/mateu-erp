@@ -53,10 +53,10 @@ public class Payment {
         return ImmutableList.copyOf(breakdown);
     }
 
-    @KPI
+    @KPI@Money
     private double valueInNucs;
 
-    @KPI
+    @KPI@Money
     private double balance;
 
     @Ignored
@@ -74,7 +74,7 @@ public class Payment {
 
         double r = 0;
         for (AbstractPaymentAllocation a : breakdown) {
-            r += a.getValue();
+            if (!(a instanceof BookingPaymentAllocation) || ((BookingPaymentAllocation) a).getInvoice() == null) r += a.getValue();
         }
 
         setBalance(Helper.roundEuros(v - r));

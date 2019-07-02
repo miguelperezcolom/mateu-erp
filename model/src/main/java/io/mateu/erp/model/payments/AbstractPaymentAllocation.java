@@ -1,6 +1,10 @@
 package io.mateu.erp.model.payments;
 
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.StyleGenerator;
 import io.mateu.erp.model.booking.Passenger;
+import io.mateu.erp.model.booking.Service;
+import io.mateu.mdd.core.interfaces.GridDecorator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +29,8 @@ public abstract class AbstractPaymentAllocation {
         pushUp();
     }
 
+    private String description;
+
     private double value;
 
     public void setValue(double value) {
@@ -47,4 +53,31 @@ public abstract class AbstractPaymentAllocation {
     public String toString() {
         return "" + payment.getDate() + " " + value;
     }
+
+
+    public static GridDecorator getGridDecorator() {
+        return new GridDecorator() {
+            @Override
+            public void decorateGrid(Grid grid) {
+                grid.getColumns().forEach(col -> {
+
+                    StyleGenerator old = ((Grid.Column) col).getStyleGenerator();
+
+                    ((Grid.Column)col).setStyleGenerator(new StyleGenerator() {
+                        @Override
+                        public String apply(Object o) {
+                            String s = null;
+                            if (old != null) s = old.apply(o);
+
+                            if (o instanceof BookingPaymentAllocation) {
+                                if (((BookingPaymentAllocation)o).getInvoice() != null) s = (s != null)?s + " cancelled":"cancelled";
+                            }
+                            return s;
+                        }
+                    });
+                });
+            }
+        };
+    }
+
 }

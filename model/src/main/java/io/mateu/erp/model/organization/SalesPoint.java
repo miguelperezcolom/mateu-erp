@@ -47,7 +47,7 @@ public class SalesPoint {
     @NotNull
     private CommissionAplicationBasis basis = CommissionAplicationBasis.MARKUP;
 
-    private double percent;
+    private double commissionPercent;
 
 
 
