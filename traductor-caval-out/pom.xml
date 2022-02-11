@@ -17,7 +17,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <vertx.projectVersion>3.4.2</vertx.projectVersion>
-        <vertx.version>3.4.2</vertx.version>
+        <vertx.version>3.9.4</vertx.version>
         <vertx.verticle>io.mateu.common.traductores.caval.out.Vertice</vertx.verticle>
         <cxf.version>3.3.0</cxf.version>
         <jackson-core-version>2.9.1</jackson-core-version>
